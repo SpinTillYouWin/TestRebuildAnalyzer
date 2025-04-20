@@ -3411,7 +3411,7 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
 
-def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
+def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled, num_consecutive_spins):
     """Track and display the history of Dozen hits for the last N spins, with optional alerts for consecutive hits and sequence matching."""
     recommendations = []
     sequence_recommendations = []
@@ -3422,8 +3422,11 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
         consecutive_hits_threshold = int(consecutive_hits_threshold)
         sequence_length = int(sequence_length)
         follow_up_spins = int(follow_up_spins)
+        num_consecutive_spins = int(num_consecutive_spins)
         if num_spins_to_check < 1:
-            return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>", "<p>Error: Number of spins to check must be at least 1.</p>"
+            return "Error: Number of spins to track must be at least 1.", "<p>Error: Number of spins to track must be at least 1.</p>", "<p>Error: Number of spins to track must be at least 1.</p>"
+        if num_consecutive_spins < 1:
+            return "Error: Number of spins for consecutive hits must be at least 1.", "<p>Error: Number of spins for consecutive hits must be at least 1.</p>", "<p>Error: Number of spins for consecutive hits must be at least 1.</p>"
         if consecutive_hits_threshold < 1:
             return "Error: Consecutive hits threshold must be at least 1.", "<p>Error: Consecutive hits threshold must be at least 1.</p>", "<p>Error: Consecutive hits threshold must be at least 1.</p>"
         if sequence_length < 1:
@@ -3433,19 +3436,18 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     except (ValueError, TypeError):
         return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>", "<p>Error: Invalid inputs. Please use positive integers.</p>"
 
-    # Add print statement here to debug the number of spins being tracked
+    # Get the last N spins for sequence matching
     recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
-    print(f"dozen_tracker: Tracking {num_spins_to_check} spins, recent_spins length = {len(recent_spins)}")
+    print(f"dozen_tracker: Tracking {num_spins_to_check} spins for sequence matching, recent_spins length = {len(recent_spins)}")
     
-    if not recent_spins:
-        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
+    # Get the last M spins for consecutive hits
+    consecutive_spins = state.last_spins[-num_consecutive_spins:] if len(state.last_spins) >= num_consecutive_spins else state.last_spins
+    print(f"dozen_tracker: Tracking {num_consecutive_spins} spins for consecutive hits, consecutive_spins length = {len(consecutive_spins)}")
     
-    # Get the last N spins
-    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
     if not recent_spins:
         return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
 
-    # Map each spin to its Dozen
+    # Map each spin to its Dozen for sequence matching
     dozen_pattern = []
     dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0, "Not in Dozen": 0}
     for spin in recent_spins:
@@ -3464,6 +3466,23 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 dozen_pattern.append("Not in Dozen")
                 dozen_counts["Not in Dozen"] += 1
+
+    # Map each spin to its Dozen for consecutive hits
+    consecutive_dozen_pattern = []
+    for spin in consecutive_spins:
+        spin_value = int(spin)
+        if spin_value == 0:
+            consecutive_dozen_pattern.append("Not in Dozen")
+        else:
+            found = False
+            for name, numbers in DOZENS.items():
+                if spin_value in numbers:
+                    consecutive_dozen_pattern.append(name)
+                    found = True
+                    break
+            if not found:
+                consecutive_dozen_pattern.append("Not in Dozen")
+
     # Map the entire spin history to Dozens for sequence matching
     full_dozen_pattern = []
     for spin in state.last_spins:
@@ -3487,8 +3506,8 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     max_streak_dozen = None
     max_streak_end_index = -1  # Track the end index of the maximum streak
     if alert_enabled:
-        for i in range(len(dozen_pattern)):
-            dozen = dozen_pattern[i]
+        for i in range(len(consecutive_dozen_pattern)):
+            dozen = consecutive_dozen_pattern[i]
             if dozen == "Not in Dozen":  # 0 breaks the streak
                 current_streak = 1
                 current_dozen = None
@@ -3562,34 +3581,23 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                 sequence_html_output += "<p>Sequence matching is disabled. Enable it to see results.</p>"
             elif len(dozen_pattern) < sequence_length:
                 sequence_html_output += f"<p>Not enough spins to match a sequence of length {sequence_length}.</p>"
-            elif not sequence_matches:
-                sequence_html_output += "<p>No sequence matches found yet.</p>"
             else:
-                sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-                for start_idx, seq in sequence_matches:
-                    sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
-                sequence_html_output += "</ul>"
-                if sequence_recommendations:
-                    sequence_html_output += "<h4>Latest Match Details:</h4>"
-                    sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-                    for rec in sequence_recommendations:
-                        if "Alert:" in rec:
-                            sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
-                        else:
-                            sequence_html_output += f"<li>{rec}</li>"
-                    sequence_html_output += "</ul>"
+                sequence_html_output += "<p>No sequence matches found yet.</p>"
+            return "\n".join(recommendations), html_output, sequence_html_output
 
     # Text summary for Dozen Tracker
-    recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
-    recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
+    recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins for Sequence Matching, Last {len(consecutive_spins)} Spins for Consecutive Hits):")
+    recommendations.append("Dozen History (Sequence Matching): " + ", ".join(dozen_pattern))
+    recommendations.append("Dozen History (Consecutive Hits): " + ", ".join(consecutive_dozen_pattern))
     if alert_enabled and max_streak >= consecutive_hits_threshold:
         recommendations.append(f"\nAlert: {max_streak_dozen} hit {max_streak} times consecutively!")
-    recommendations.append("\nSummary of Dozen Hits:")
+    recommendations.append("\nSummary of Dozen Hits (Sequence Matching):")
     for name, count in dozen_counts.items():
         recommendations.append(f"{name}: {count} hits")
 
     # HTML representation for Dozen Tracker
-    html_output = f'<h4>Dozen Tracker (Last {len(recent_spins)} Spins):</h4>'
+    html_output = f'<h4>Dozen Tracker (Last {len(recent_spins)} Spins for Sequence Matching, Last {len(consecutive_spins)} Spins for Consecutive Hits):</h4>'
+    html_output += '<h5>Dozen History (Sequence Matching):</h5>'
     html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
     for dozen in dozen_pattern:
         color = {
@@ -3600,9 +3608,20 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
         }.get(dozen, "#808080")
         html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
     html_output += '</div>'
+    html_output += '<h5>Dozen History (Consecutive Hits):</h5>'
+    html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
+    for dozen in consecutive_dozen_pattern:
+        color = {
+            "1st Dozen": "#FF6347",  # Tomato red
+            "2nd Dozen": "#4682B4",  # Steel blue
+            "3rd Dozen": "#32CD32",  # Lime green
+            "Not in Dozen": "#808080"  # Gray for 0
+        }.get(dozen, "#808080")
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
+    html_output += '</div>'
     if alert_enabled and max_streak >= consecutive_hits_threshold:
         html_output += f'<p style="color: red; font-weight: bold;">Alert: {max_streak_dozen} hit {max_streak} times consecutively!</p>'
-    html_output += '<h4>Summary of Dozen Hits:</h4>'
+    html_output += '<h4>Summary of Dozen Hits (Sequence Matching):</h4>'
     html_output += '<ul style="list-style-type: none; padding-left: 0;">'
     for name, count in dozen_counts.items():
         html_output += f'<li>{name}: {count} hits</li>'
@@ -3632,7 +3651,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             sequence_html_output += "</ul>"
 
     return "\n".join(recommendations), html_output, sequence_html_output
-
+# Lines after (context)
 # New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
@@ -4353,6 +4372,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value="5",
                         interactive=True
                     )
+                    # NEW: Dropdown for Consecutive Hits Spin Count
+                    dozen_tracker_consecutive_spins_dropdown = gr.Dropdown(
+                        label="Number of Spins for Consecutive Hits",
+                        choices=["3", "4", "5", "6", "10", "15", "20"],
+                        value="3",
+                        interactive=True
+                    )
                     dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
                         label="Alert on Consecutive Dozen Hits",
                         choices=["3", "4", "5"],
@@ -4364,6 +4390,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value=False,
                         interactive=True
                     )
+                    # Lines after (context)
                     dozen_tracker_sequence_length_dropdown = gr.Dropdown(
                         label="Sequence Length to Match (X)",
                         choices=["3", "4", "5"],
@@ -6434,6 +6461,185 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
+    # Dozen Tracker Event Handlers
+    try:
+        dozen_tracker_spins_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_spins_dropdown.change handler: {str(e)}")
+
+    try:
+        dozen_tracker_consecutive_hits_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
+
+    try:
+        dozen_tracker_alert_checkbox.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_alert_checkbox.change handler: {str(e)}")
+
+    try:
+        dozen_tracker_sequence_length_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_sequence_length_dropdown.change handler: {str(e)}")
+
+    try:
+        dozen_tracker_follow_up_spins_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_follow_up_spins_dropdown.change handler: {str(e)}")
+
+    try:
+        dozen_tracker_sequence_alert_checkbox.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None,
+                neighbours_count,
+                strong_numbers_count,
+                dozen_tracker_spins,
+                top_color,
+                middle_color,
+                lower_color
+            ),
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
+
+    try:
+        dozen_tracker_consecutive_spins_dropdown.change(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox,
+                dozen_tracker_consecutive_spins_dropdown
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None,
+                neighbours_count,
+                strong_numbers_count,
+                dozen_tracker_spins,
+                top_color,
+                middle_color,
+                lower_color
+            ),
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in dozen_tracker_consecutive_spins_dropdown.change handler: {str(e)}")
 
     # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
