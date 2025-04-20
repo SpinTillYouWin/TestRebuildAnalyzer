@@ -539,7 +539,7 @@ def render_sides_of_zero_display():
             width: 100%;
             padding: 5px 0;
         }}
-        @media (max-width: 600px) {{
+        @media (max-width: 767px) {{
             .number-list {{
                 justify-content: flex-start;
             }}
