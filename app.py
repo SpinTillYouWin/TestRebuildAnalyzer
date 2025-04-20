@@ -163,6 +163,7 @@ class RouletteState:
         self.status_color = "white"  # Default color for active status
         self.last_dozen_alert_index = -1  # Track the last spin index where a Dozen alert was triggered
         self.last_alerted_spins = None  # Track the specific spins that triggered the last alert
+        self.alerted_patterns = set()  # Track patterns (as tuples) that have already triggered a sequence match alert
         
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
@@ -3525,48 +3526,68 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     # Detect sequence matches (only if sequence alert is enabled)
     sequence_matches = []
     sequence_follow_ups = []
-    if sequence_alert_enabled and len(dozen_pattern) >= sequence_length:
-        # Collect all sequences of length X
-        sequences = []
-        for i in range(len(dozen_pattern) - sequence_length + 1):
-            seq = tuple(dozen_pattern[i:i + sequence_length])
-            sequences.append((i, seq))
+    if sequence_alert_enabled and len(full_dozen_pattern) >= sequence_length:
+        # Take the last X spins to check for a match
+        last_x_spins = full_dozen_pattern[-sequence_length:] if len(full_dozen_pattern) >= sequence_length else full_dozen_pattern
+        print(f"dozen_tracker: Checking last {sequence_length} spins for sequence matching, last_x_spins = {last_x_spins}")
+        
+        if len(last_x_spins) < sequence_length:
+            print(f"dozen_tracker: Not enough spins to check for sequence of length {sequence_length}.")
+        else:
+            # Convert the last X spins to a tuple for comparison
+            last_x_pattern = tuple(last_x_spins)
+            
+            # Collect all sequences of length X within the tracking window (recent_spins)
+            sequences = []
+            for i in range(len(dozen_pattern) - sequence_length + 1):
+                seq = tuple(dozen_pattern[i:i + sequence_length])
+                # Only consider sequences that end before the last X spins
+                if i + sequence_length <= len(dozen_pattern) - sequence_length:
+                    sequences.append((i, seq))
+            
+            print(f"dozen_tracker: Found {len(sequences)} sequences of length {sequence_length} in the tracking window")
 
-        # Find matching sequences
-        for i in range(len(sequences)):
-            for j in range(i + 1, len(sequences)):
-                if sequences[i][1] == sequences[j][1]:
-                    start_idx = sequences[j][0]
-                    sequence_matches.append((start_idx, sequences[j][1]))
-                    # Get the next Y spins after the first occurrence
-                    first_start_idx = sequences[i][0]
-                    follow_up_start = first_start_idx + sequence_length
-                    follow_up_end = follow_up_start + follow_up_spins
-                    if follow_up_end <= len(dozen_pattern):
-                        follow_up = dozen_pattern[follow_up_start:follow_up_end]
-                        sequence_follow_ups.append((start_idx, sequences[j][1], follow_up))
+            # Check if the last X spins match any previous sequence
+            for start_idx, seq in sequences:
+                if seq == last_x_pattern:
+                    # Check if we've already alerted for this exact pattern
+                    if seq not in state.alerted_patterns:
+                        sequence_matches.append((start_idx, seq))
+                        # Get the next Y spins after the first occurrence
+                        follow_up_start = start_idx + sequence_length
+                        follow_up_end = follow_up_start + follow_up_spins
+                        if follow_up_end <= len(dozen_pattern):
+                            follow_up = dozen_pattern[follow_up_start:follow_up_end]
+                            sequence_follow_ups.append((start_idx, seq, follow_up))
+                        # Mark this pattern as alerted
+                        state.alerted_patterns.add(seq)
 
-        # If a match is found, provide betting recommendations
-        if sequence_matches:
-            latest_match = max(sequence_matches, key=lambda x: x[0])  # Latest match by start index
-            latest_start_idx, matched_sequence = latest_match
-            # Find the follow-up spins for the first occurrence of this sequence
-            first_occurrence = min((seq for seq in sequences if seq[1] == matched_sequence), key=lambda x: x[0])[0]
-            follow_up_start = first_occurrence + sequence_length
-            follow_up_end = follow_up_start + follow_up_spins
-            if follow_up_end <= len(dozen_pattern):
-                follow_up = dozen_pattern[follow_up_start:follow_up_end]
-                gr.Warning(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx + 1} to {latest_start_idx + sequence_length}!")
-                sequence_recommendations.append(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx + 1} to {latest_start_idx + sequence_length}!")
-                sequence_recommendations.append(f"Previous follow-up spins (next {follow_up_spins}): {', '.join(follow_up)}")
-                sequence_recommendations.append("Betting Recommendations (Bet Against Historical Follow-Ups):")
-                all_dozens = ["1st Dozen", "2nd Dozen", "3rd Dozen"]
-                for idx, dozen in enumerate(follow_up):
-                    if dozen == "Not in Dozen":
-                        sequence_recommendations.append(f"Spin {idx + 1}: 0 (Not in Dozen) - No bet recommendation.")
-                    else:
-                        dozens_to_bet = [d for d in all_dozens if d != dozen]
-                        sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
+            # If a match is found, provide betting recommendations
+            if sequence_matches:
+                latest_match = max(sequence_matches, key=lambda x: x[0])  # Latest match by start index
+                latest_start_idx, matched_sequence = latest_match
+                # Find the follow-up spins for the first occurrence of this sequence
+                first_occurrence = min((seq for seq in sequences if seq[1] == matched_sequence), key=lambda x: x[0])[0]
+                follow_up_start = first_occurrence + sequence_length
+                follow_up_end = follow_up_start + follow_up_spins
+                # Adjust indices for the full spin history
+                latest_start_idx_full = len(full_dozen_pattern) - sequence_length
+                if follow_up_end <= len(dozen_pattern):
+                    follow_up = dozen_pattern[follow_up_start:follow_up_end]
+                    gr.Warning(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx_full + 1} to {latest_start_idx_full + sequence_length}!")
+                    sequence_recommendations.append(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx_full + 1} to {latest_start_idx_full + sequence_length}!")
+                    sequence_recommendations.append(f"Previous follow-up spins (next {follow_up_spins}): {', '.join(follow_up)}")
+                    sequence_recommendations.append("Betting Recommendations (Bet Against Historical Follow-Ups):")
+                    all_dozens = ["1st Dozen", "2nd Dozen", "3rd Dozen"]
+                    for idx, dozen in enumerate(follow_up):
+                        if dozen == "Not in Dozen":
+                            sequence_recommendations.append(f"Spin {idx + 1}: 0 (Not in Dozen) - No bet recommendation.")
+                        else:
+                            dozens_to_bet = [d for d in all_dozens if d != dozen]
+                            sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
+            else:
+                # If no match is found, reset the alerted patterns to allow future matches
+                state.alerted_patterns.clear()
 
     # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
@@ -3608,7 +3629,9 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     else:
         sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
         for start_idx, seq in sequence_matches:
-            sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
+            # Adjust the start index for display based on the full spin history
+            display_start_idx = len(full_dozen_pattern) - sequence_length
+            sequence_html_output += f"<li>Match found at spins {display_start_idx + 1} to {display_start_idx + sequence_length}: {', '.join(seq)}</li>"
         sequence_html_output += "</ul>"
         if sequence_recommendations:
             sequence_html_output += "<h4>Latest Match Details:</h4>"
