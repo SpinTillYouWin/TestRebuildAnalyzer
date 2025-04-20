@@ -539,6 +539,11 @@ def render_sides_of_zero_display():
             width: 100%;
             padding: 5px 0;
         }}
+        @media (max-width: 600px) {{
+            .number-list {{
+                justify-content: flex-start;
+            }}
+        }}
         .number-item {{
             width: 20px;
             height: 20px;
@@ -581,7 +586,7 @@ def render_sides_of_zero_display():
             font-size: 10px;
         }}
         .tooltip {{
-            position: absolute inan;
+            position: absolute;
             background: #333;
             color: white;
             padding: 2px 5px;
@@ -671,7 +676,7 @@ def render_sides_of_zero_display():
         }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
-        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
+        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🕵️</h4>
         <div class="tracker-container">
             <div class="tracker-column">
                 <div class="circular-progress" id="left-progress">
@@ -742,7 +747,7 @@ def render_sides_of_zero_display():
             }});
         }});
     </script>
-    """   
+    """
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
