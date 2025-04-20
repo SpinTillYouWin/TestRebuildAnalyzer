@@ -539,11 +539,6 @@ def render_sides_of_zero_display():
             width: 100%;
             padding: 5px 0;
         }}
-        @media (max-width: 767px) {{
-            .number-list {{
-                justify-content: flex-start;
-            }}
-        }}
         .number-item {{
             width: 20px;
             height: 20px;
@@ -586,7 +581,7 @@ def render_sides_of_zero_display():
             font-size: 10px;
         }}
         .tooltip {{
-            position: absolute;
+            position: absolute inan;
             background: #333;
             color: white;
             padding: 2px 5px;
@@ -676,7 +671,7 @@ def render_sides_of_zero_display():
         }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
-        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🕵️</h4>
+        <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
         <div class="tracker-container">
             <div class="tracker-column">
                 <div class="circular-progress" id="left-progress">
@@ -747,8 +742,7 @@ def render_sides_of_zero_display():
             }});
         }});
     </script>
-    """
-    
+    """   
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -3961,16 +3955,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML(
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1.5; transition: transform 0.2s ease; box-sizing: border-box; touch-action: manipulation;">🚀 Take the Tour!</button>
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1.5; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center; touch-action: manipulation;">📖 View Guide</a>
+                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
             </div>
             <style>
                 #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
                     transform: scale(1.05);
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-                #start-tour-btn:active, a[href*="drive.google.com"]:active {
-                    transform: scale(0.95);
                 }
             </style>
             '''
