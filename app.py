@@ -581,7 +581,7 @@ def render_sides_of_zero_display():
             font-size: 10px;
         }}
         .tooltip {{
-            position: absolute;
+            position: absolute inan;
             background: #333;
             color: white;
             padding: 2px 5px;
@@ -608,6 +608,28 @@ def render_sides_of_zero_display():
             max-width: 600px;
             margin: 0 auto;
             font-family: Arial, sans-serif;
+        }}
+        .roulette-table {{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            background-color: #2e7d32;  /* Green felt background */
+            border: 2px solid #d3d3d3;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            overflow-x: auto;  /* Enable horizontal scrolling */
+            overflow-y: hidden;  /* Prevent vertical scrolling */
+        }}
+        .table-row {{
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            width: 100%;
+            min-width: 580px;  /* Ensure the row is wide enough for all buttons */
+            white-space: nowrap;  /* Prevent buttons from wrapping */
         }}
         @media (max-width: 600px) {{
             .tracker-container {{
@@ -720,8 +742,7 @@ def render_sides_of_zero_display():
             }});
         }});
     </script>
-    """
-    
+    """   
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
