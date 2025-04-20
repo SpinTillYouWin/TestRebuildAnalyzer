@@ -3928,8 +3928,8 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
         gr.HTML(
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <button id="start-tour-btn" onclick="startTour()" style="padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: transform 0.2s ease;">🚀 Take the Tour!</button>
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; transition: transform 0.2s ease;">📖 View Guide</a>
+                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
             </div>
             <style>
                 #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
@@ -3938,6 +3938,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 }
             </style>
             '''
+        )    
         )
 
     # Define state and components used across sections
