@@ -3433,19 +3433,14 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     except (ValueError, TypeError):
         return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>", "<p>Error: Invalid inputs. Please use positive integers.</p>"
 
-    # Add print statement here to debug the number of spins being tracked
+    # Get the last N spins for sequence matching
     recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
-    print(f"dozen_tracker: Tracking {num_spins_to_check} spins, recent_spins length = {len(recent_spins)}")
+    print(f"dozen_tracker: Tracking {num_spins_to_check} spins for sequence matching, recent_spins length = {len(recent_spins)}")
     
-    if not recent_spins:
-        return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
-    
-    # Get the last N spins
-    recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
     if not recent_spins:
         return "Dozen Tracker: No spins recorded yet.", "<p>Dozen Tracker: No spins recorded yet.</p>", "<p>Dozen Tracker: No spins recorded yet.</p>"
 
-    # Map each spin to its Dozen
+    # Map each spin to its Dozen for sequence matching
     dozen_pattern = []
     dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0, "Not in Dozen": 0}
     for spin in recent_spins:
@@ -3464,6 +3459,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 dozen_pattern.append("Not in Dozen")
                 dozen_counts["Not in Dozen"] += 1
+
     # Map the entire spin history to Dozens for sequence matching
     full_dozen_pattern = []
     for spin in state.last_spins:
@@ -3486,30 +3482,39 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     max_streak = 1
     max_streak_dozen = None
     max_streak_end_index = -1  # Track the end index of the maximum streak
+    streak_start_index = 0  # Track the start index of the current streak
+    alert_triggered = False  # Flag to track if an alert has been triggered in this analysis
+
     if alert_enabled:
         for i in range(len(dozen_pattern)):
             dozen = dozen_pattern[i]
             if dozen == "Not in Dozen":  # 0 breaks the streak
                 current_streak = 1
                 current_dozen = None
+                streak_start_index = i + 1
                 continue
             if current_dozen is None or dozen != current_dozen:
                 current_dozen = dozen
                 current_streak = 1
+                streak_start_index = i
             else:
                 current_streak += 1
-                # Only consider streaks that end after the last alerted index
-                if current_streak >= consecutive_hits_threshold and i > state.last_dozen_alert_index:
-                    if current_streak > max_streak:
+
+            # Check if we have a streak of at least the threshold
+            if current_streak >= consecutive_hits_threshold:
+                # Check if this streak starts after the last alerted streak ends
+                if streak_start_index > state.last_dozen_alert_index:
+                    # Only trigger the alert if we haven't already alerted in this analysis
+                    if not alert_triggered:
                         max_streak = current_streak
                         max_streak_dozen = current_dozen
                         max_streak_end_index = i
-        # Trigger alert only for the maximum streak that ends after the last alerted index
-        if max_streak_end_index > state.last_dozen_alert_index and max_streak >= consecutive_hits_threshold:
-            gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
-            state.last_dozen_alert_index = max_streak_end_index  # Update the last alerted index
-        elif max_streak < consecutive_hits_threshold:
-            state.last_dozen_alert_index = -1  # Reset if no streak meets the threshold
+                        gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
+                        state.last_dozen_alert_index = max_streak_end_index  # Update the last alerted index
+                        alert_triggered = True  # Mark that we've triggered an alert
+        # Reset the alert index if no streak meets the threshold
+        if max_streak < consecutive_hits_threshold:
+            state.last_dozen_alert_index = -1
 
     # Detect sequence matches (only if sequence alert is enabled)
     sequence_matches = []
@@ -3556,33 +3561,11 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                     else:
                         dozens_to_bet = [d for d in all_dozens if d != dozen]
                         sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
-        else:
-            sequence_html_output = "<h4>Sequence Matching Results:</h4>"
-            if not sequence_alert_enabled:
-                sequence_html_output += "<p>Sequence matching is disabled. Enable it to see results.</p>"
-            elif len(dozen_pattern) < sequence_length:
-                sequence_html_output += f"<p>Not enough spins to match a sequence of length {sequence_length}.</p>"
-            elif not sequence_matches:
-                sequence_html_output += "<p>No sequence matches found yet.</p>"
-            else:
-                sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-                for start_idx, seq in sequence_matches:
-                    sequence_html_output += f"<li>Match found at spins {start_idx + 1} to {start_idx + sequence_length}: {', '.join(seq)}</li>"
-                sequence_html_output += "</ul>"
-                if sequence_recommendations:
-                    sequence_html_output += "<h4>Latest Match Details:</h4>"
-                    sequence_html_output += "<ul style='list-style-type: none; padding-left: 0;'>"
-                    for rec in sequence_recommendations:
-                        if "Alert:" in rec:
-                            sequence_html_output += f"<li style='color: red; font-weight: bold;'>{rec}</li>"
-                        else:
-                            sequence_html_output += f"<li>{rec}</li>"
-                    sequence_html_output += "</ul>"
 
     # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
-    if alert_enabled and max_streak >= consecutive_hits_threshold:
+    if alert_enabled and max_streak >= consecutive_hits_threshold and alert_triggered:
         recommendations.append(f"\nAlert: {max_streak_dozen} hit {max_streak} times consecutively!")
     recommendations.append("\nSummary of Dozen Hits:")
     for name, count in dozen_counts.items():
@@ -3600,7 +3583,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
         }.get(dozen, "#808080")
         html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
     html_output += '</div>'
-    if alert_enabled and max_streak >= consecutive_hits_threshold:
+    if alert_enabled and max_streak >= consecutive_hits_threshold and alert_triggered:
         html_output += f'<p style="color: red; font-weight: bold;">Alert: {max_streak_dozen} hit {max_streak} times consecutively!</p>'
     html_output += '<h4>Summary of Dozen Hits:</h4>'
     html_output += '<ul style="list-style-type: none; padding-left: 0;">'
