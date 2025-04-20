@@ -3939,7 +3939,6 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             </style>
             '''
         )
-        )
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
