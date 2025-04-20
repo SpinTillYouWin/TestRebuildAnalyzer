@@ -3948,10 +3948,10 @@ def clear_last_spins_display():
 # ... (previous imports, function definitions, and state setup remain unchanged) ...
 
 # Build the Gradio interface
-with gr.Blocks(title="Roulette Spin Analyzer") as demo:
+with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
-        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>Roulette Spin Analyzer</h1>")
+        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
         gr.HTML(
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
@@ -3965,7 +3965,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
                 }
             </style>
             '''
-        )    
+        )
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
@@ -4570,7 +4570,7 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
         with gr.Column():
-            with gr.Accordion("Top Strategies with Roulette Spin Analyzer 🎥", open=False, elem_id="top-strategies"):
+            with gr.Accordion("Top Strategies with WheelPulse by S.T.Y.W 📈🎥", open=False, elem_id="top-strategies"):
                 gr.Markdown("### Explore Strategies Through Videos")
                 video_category_dropdown = gr.Dropdown(
                     label="Select Video Category",
