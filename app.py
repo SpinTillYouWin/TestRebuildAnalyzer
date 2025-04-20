@@ -767,6 +767,8 @@ def validate_spins_input(spins_input):
     return spins_display_value, formatted_html
 
 def add_spin(number, current_spins, num_to_show):
+    import time
+    start_time = time.time()
     print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
@@ -800,21 +802,25 @@ def add_spin(number, current_spins, num_to_show):
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
+    print(f"add_spin: Time to update scores: {time.time() - start_time:.2f} seconds")
 
     # Update state with new spins
     new_spins = spins.copy()
-    state.selected_numbers.clear()  # Clear before rebuilding
     for num_str in valid_spins:
         num = int(num_str)
         new_spins.append(str(num))
-        state.selected_numbers.add(num)
         state.last_spins.append(str(num))
         state.spin_history.append(action_log.pop(0))
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
-    state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
+        # Limit last_spins to 100 spins
+        if len(state.last_spins) > 100:
+            state.last_spins.pop(0)
+        # Update selected_numbers incrementally
+        state.selected_numbers.add(num)
 
+    print(f"add_spin: Time to update state: {time.time() - start_time:.2f} seconds")
     new_spins_str = ", ".join(new_spins)
     if errors:
         success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
@@ -826,10 +832,10 @@ def add_spin(number, current_spins, num_to_show):
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
-        print(f"add_spin: formatted_spins='{formatted_spins}'")
+        print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
         
-    # Function to clear spins
+# Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
