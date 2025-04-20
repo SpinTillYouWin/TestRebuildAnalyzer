@@ -537,9 +537,7 @@ def render_sides_of_zero_display():
             margin-top: 10px;
             overflow-x: auto;
             width: 100%;
-            min-width: 859px;  /* Ensure full width of the list */
             padding: 5px 0;
-            box-sizing: border-box;
         }}
         @media (max-width: 767px) {{
             .number-list {{
@@ -615,13 +613,33 @@ def render_sides_of_zero_display():
             max-width: 600px;
             margin: 0 auto;
             font-family: Arial, sans-serif;
-            overflow-x: auto;  /* Ensure parent allows scrolling */
         }}
-        @media (max-width: 767px) {{
+        .roulette-table {{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            background-color: #2e7d32;  /* Green felt background */
+            border: 2px solid #d3d3d3;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            overflow-x: auto;  /* Enable horizontal scrolling */
+            overflow-y: hidden;  /* Prevent vertical scrolling */
+        }}
+        .table-row {{
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            width: 100%;
+            min-width: 580px;  /* Ensure the row is wide enough for all buttons */
+            white-space: nowrap;  /* Prevent buttons from wrapping */
+        }}
+        @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
                 align-items: center;
-                max-width: 100%;  /* Allow full width for scrolling */
             }}
             .number-list {{
                 flex-wrap: nowrap;
@@ -657,7 +675,7 @@ def render_sides_of_zero_display():
             }}
         }}
     </style>
-    <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px; overflow-x: auto;">
+    <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🕵️</h4>
         <div class="tracker-container">
             <div class="tracker-column">
