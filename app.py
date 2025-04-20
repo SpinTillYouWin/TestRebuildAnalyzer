@@ -5457,23 +5457,54 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             fn=clear_all,
             inputs=[],
             outputs=[
-                spins_display, spins_textbox, spin_analysis_output, last_spin_display,
-                even_money_output, dozens_output, columns_output, streets_output,
-                corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, spin_counter
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                last_spin_display,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                spin_counter,
+                sides_of_zero_display  # Added missing output
             ]
         ).then(
             fn=clear_outputs,
             inputs=[],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, color_code_output
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                color_code_output
             ]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+            ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -5609,13 +5640,42 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             fn=load_session,
             inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
-                spins_display, spins_textbox, spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output
             ]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None,
+                neighbours_count,
+                strong_numbers_count,
+                dozen_tracker_spins,
+                top_color,
+                middle_color,
+                lower_color
+            ),
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
             outputs=[dynamic_table_output]
         ).then(
             fn=format_spins_as_html,
@@ -5627,7 +5687,14 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             outputs=[color_code_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+            ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -5638,19 +5705,56 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
             fn=undo_last_spin,
             inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                spins_textbox, spins_display, dynamic_table_output, strategy_output,
-                color_code_output, spin_counter
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                spins_textbox,
+                spins_display,
+                dynamic_table_output,
+                strategy_output,
+                color_code_output,
+                spin_counter,
+                sides_of_zero_display  # Added missing output
             ]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None,
+                neighbours_count,
+                strong_numbers_count,
+                dozen_tracker_spins,
+                top_color,
+                middle_color,
+                lower_color
+            ),
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
             outputs=[dynamic_table_output]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, kbox],
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+            ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
@@ -5785,15 +5889,30 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
 
         dozen_tracker_sequence_alert_checkbox.change(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox
+            ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None,
+                neighbours_count,
+                strong_numbers_count,
+                dozen_tracker_spins,
+                top_color,
+                middle_color,
+                lower_color
+            ),
             inputs=[
                 strategy_dropdown,
                 neighbours_count_slider,
                 strong_numbers_count_slider,
-                dozen_tracker_spins,
+                dozen_tracker_spins_dropdown,  # Corrected from dozen_tracker_spins
                 top_color_picker,
                 middle_color_picker,
                 lower_color_picker
