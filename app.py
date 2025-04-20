@@ -157,12 +157,12 @@ class RouletteState:
         self.progression_state = None  # e.g., Fibonacci index or Labouchere list
         self.labouchere_sequence = ""  # Default Labouchere sequence
         self.target_profit = 10  # Default target profit in units for Labouchere
-        # Line 1: Added the new initialization above this line
         self.is_stopped = False
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         self.status_color = "white"  # Default color for active status
         self.last_dozen_alert_index = -1  # Track the last spin index where a Dozen alert was triggered
+        self.last_alerted_spins = None  # Track the specific spins that triggered the last alert
         
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
@@ -3476,45 +3476,51 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             if not found:
                 full_dozen_pattern.append("Not in Dozen")
 
-    # Detect consecutive Dozen hits (only if alert is enabled)
-    current_streak = 1
-    current_dozen = None
-    max_streak = 1
-    max_streak_dozen = None
-    max_streak_end_index = -1  # Track the end index of the maximum streak
-    streak_start_index = 0  # Track the start index of the current streak
-    alert_triggered = False  # Flag to track if an alert has been triggered in this analysis
-
+    # Detect consecutive Dozen hits in the LAST 3 spins only (if alert is enabled)
     if alert_enabled:
-        for i in range(len(dozen_pattern)):
-            dozen = dozen_pattern[i]
-            if dozen == "Not in Dozen":  # 0 breaks the streak
-                current_streak = 1
-                current_dozen = None
-                streak_start_index = i + 1
-                continue
-            if current_dozen is None or dozen != current_dozen:
-                current_dozen = dozen
-                current_streak = 1
-                streak_start_index = i
-            else:
-                current_streak += 1
-
-            # Check if we have a streak of at least the threshold
-            if current_streak >= consecutive_hits_threshold:
-                # Check if this streak starts after the last alerted streak ends
-                if streak_start_index > state.last_dozen_alert_index:
-                    # Only trigger the alert if we haven't already alerted in this analysis
-                    if not alert_triggered:
-                        max_streak = current_streak
-                        max_streak_dozen = current_dozen
-                        max_streak_end_index = i
-                        gr.Warning(f"Alert: {max_streak_dozen} has hit {max_streak} times consecutively!")
-                        state.last_dozen_alert_index = max_streak_end_index  # Update the last alerted index
-                        alert_triggered = True  # Mark that we've triggered an alert
-        # Reset the alert index if no streak meets the threshold
-        if max_streak < consecutive_hits_threshold:
+        # Take only the last 3 spins (or fewer if not enough spins)
+        last_three_spins = state.last_spins[-3:] if len(state.last_spins) >= 3 else state.last_spins
+        print(f"dozen_tracker: Checking last 3 spins for consecutive hits, last_three_spins = {last_three_spins}")
+        
+        if len(last_three_spins) < 3:
+            print("dozen_tracker: Not enough spins to check for consecutive hits (need at least 3).")
             state.last_dozen_alert_index = -1
+            state.last_alerted_spins = None
+        else:
+            # Map the last 3 spins to their Dozens
+            last_three_dozens = []
+            for spin in last_three_spins:
+                spin_value = int(spin)
+                if spin_value == 0:
+                    last_three_dozens.append("Not in Dozen")
+                else:
+                    found = False
+                    for name, numbers in DOZENS.items():
+                        if spin_value in numbers:
+                            last_three_dozens.append(name)
+                            found = True
+                            break
+                    if not found:
+                        last_three_dozens.append("Not in Dozen")
+            
+            print(f"dozen_tracker: Last 3 spins dozens = {last_three_dozens}")
+
+            # Check if all 3 spins are in the same Dozen and not "Not in Dozen"
+            if (last_three_dozens[0] == last_three_dozens[1] == last_three_dozens[2] and 
+                last_three_dozens[0] != "Not in Dozen"):
+                current_dozen = last_three_dozens[0]
+                # Convert last_three_spins to a tuple for comparison (immutable and hashable)
+                current_spins_tuple = tuple(last_three_spins)
+                # Check if this set of spins is different from the last alerted set
+                if state.last_alerted_spins != current_spins_tuple:
+                    gr.Warning(f"Alert: {current_dozen} has hit 3 times consecutively!")
+                    recommendations.append(f"Alert: {current_dozen} has hit 3 times consecutively!")
+                    state.last_dozen_alert_index = len(state.last_spins) - 1  # Update the last alerted index
+                    state.last_alerted_spins = current_spins_tuple  # Store the spins that triggered this alert
+            else:
+                # If the last 3 spins don't form a streak, reset the alert index and spins
+                state.last_dozen_alert_index = -1
+                state.last_alerted_spins = None
 
     # Detect sequence matches (only if sequence alert is enabled)
     sequence_matches = []
@@ -3565,8 +3571,6 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append("Dozen History: " + ", ".join(dozen_pattern))
-    if alert_enabled and max_streak >= consecutive_hits_threshold and alert_triggered:
-        recommendations.append(f"\nAlert: {max_streak_dozen} hit {max_streak} times consecutively!")
     recommendations.append("\nSummary of Dozen Hits:")
     for name, count in dozen_counts.items():
         recommendations.append(f"{name}: {count} hits")
@@ -3583,8 +3587,10 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
         }.get(dozen, "#808080")
         html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{dozen}</span>'
     html_output += '</div>'
-    if alert_enabled and max_streak >= consecutive_hits_threshold and alert_triggered:
-        html_output += f'<p style="color: red; font-weight: bold;">Alert: {max_streak_dozen} hit {max_streak} times consecutively!</p>'
+    if alert_enabled and "Alert:" in "\n".join(recommendations):
+        # Extract the alert message from recommendations
+        alert_message = next((line for line in recommendations if line.startswith("Alert:")), "")
+        html_output += f'<p style="color: red; font-weight: bold;">{alert_message}</p>'
     html_output += '<h4>Summary of Dozen Hits:</h4>'
     html_output += '<ul style="list-style-type: none; padding-left: 0;">'
     for name, count in dozen_counts.items():
