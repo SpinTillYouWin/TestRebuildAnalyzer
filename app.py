@@ -4743,18 +4743,56 @@ with gr.Blocks(title="Roulette Spin Analyzer") as demo:
           min-width: 800px !important;
       }
     
-      /* Roulette Table */
-      .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-      .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-      .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-      .roulette-button:hover { opacity: 0.8; }
-      .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-      .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-      .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-      .roulette-table { display: flex !important; flex-direction: column !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; }
-      .table-row { display: flex !important; gap: 0 !important; margin: 0 !important; padding: 0 !important; flex-wrap: nowrap !important; line-height: 0 !important; }
-    
-      /* Buttons */
+        /* Roulette Table */
+        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+        .roulette-button:hover { opacity: 0.8; }
+        .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+        .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+        .roulette-table { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            gap: 0 !important; 
+            margin: 0 !important; 
+            padding: 5px !important; 
+            background-color: #2e7d32 !important; /* Green felt background */
+            border: 2px solid #d3d3d3 !important; 
+            border-radius: 5px !important; 
+            width: 100% !important; 
+            max-width: 600px !important; 
+            margin: 0 auto !important; 
+            overflow-x: auto !important; /* Enable horizontal scrolling */
+            overflow-y: hidden !important; /* Prevent vertical scrolling */
+        }
+        .table-row { 
+            display: flex !important; 
+            gap: 0 !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            flex-wrap: nowrap !important; 
+            line-height: 0 !important; 
+            min-width: 580px !important; /* Ensure the row is wide enough for all buttons */
+            white-space: nowrap !important; /* Prevent buttons from wrapping */
+        }
+        
+        /* Responsive adjustments for desktop */
+        @media (min-width: 768px) {
+            .roulette-table {
+                max-width: 800px !important; /* Larger max-width on desktop */
+            }
+            .table-row {
+                min-width: 754px !important; /* Adjusted for larger buttons: 13 × 48px + 12 × 5px = 684px + 60px = 744px */
+            }
+            .roulette-button, .empty-button {
+                width: 48px !important; /* Slightly larger buttons on desktop */
+                height: 48px !important;
+                font-size: 16px !important; /* Larger font size for better readability */
+            }
+        }
+        
+        /* Buttons */    
             .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
       button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; display: inline-block !important; }
       button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
