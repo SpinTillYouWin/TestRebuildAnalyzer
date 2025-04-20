@@ -3413,6 +3413,9 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
 
 def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled, num_consecutive_spins):
     """Track and display the history of Dozen hits for the last N spins, with optional alerts for consecutive hits and sequence matching."""
+    # Debug: Log raw input values
+    print(f"dozen_tracker inputs: num_spins_to_check={num_spins_to_check}, consecutive_hits_threshold={consecutive_hits_threshold}, alert_enabled={alert_enabled}, sequence_length={sequence_length}, follow_up_spins={follow_up_spins}, sequence_alert_enabled={sequence_alert_enabled}, num_consecutive_spins={num_consecutive_spins}")
+    
     recommendations = []
     sequence_recommendations = []
     
