@@ -188,7 +188,7 @@ class RouletteState:
             "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
             "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
         }
-        self.use_casino_winners = False  # Ensure it's reset here too
+        self.use_casino_winners = False  # This resets the checkbox state
         # ... rest of the reset method ...
 
     def reset_even_money_alert(self):
@@ -1755,7 +1755,7 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
+def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, strong_numbers_count, use_winners, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input):
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
@@ -1796,6 +1796,9 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         if state.last_spins_hash != spins_hash:
             state.reset_even_money_alert()
             state.last_spins_hash = spins_hash
+
+        # Update casino data to ensure the latest values are applied
+        casino_data_output = update_casino_data(use_winners, even_odd_input, red_black_input, low_high_input, dozens_input, columns_input)
 
         # Batch update scores
         action_log = update_scores_batch(spins)
@@ -1891,15 +1894,16 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         print(f"analyze_spins: strongest_numbers_output='{strongest_numbers_output}'")
 
-        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count)
+        # Pass casino data inputs to create_dynamic_table to ensure highlights persist
+        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count)
         print(f"analyze_spins: dynamic_table_html generated")
 
-        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
+        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, sides_of_zero_display())
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
         return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
@@ -5492,12 +5496,35 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[spins_display, last_spin_display]
         ).then(
             fn=analyze_spins,
-            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[
+                spins_display,
+                reset_scores_checkbox,
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                use_winners_checkbox,
+                even_odd_input,
+                red_black_input,
+                low_high_input,
+                dozens_input,
+                columns_input
+            ],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                sides_of_zero_display
             ]
         ).then(
             fn=update_spin_counter,
@@ -5666,15 +5693,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         analyze_button.click(
             fn=analyze_spins,
-            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[
+                spins_display,
+                reset_scores_checkbox,
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                use_winners_checkbox,
+                even_odd_input,
+                red_black_input,
+                low_high_input,
+                dozens_input,
+                columns_input
+            ],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                sides_of_zero_display
             ]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         ).then(
