@@ -4676,6 +4676,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
+      /* Step 3: New CSS to Force Proper Scrolling */
+      /* Ensure the entire app container is scrollable */
+      html, body {
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: auto !important;
+      }
+
+      #component-0 {
+          height: auto !important;
+          min-height: 100vh !important;
+          overflow: auto !important;
+      }
+
+      /* Ensure the header doesn’t interfere with scrolling */
+      #header-row {
+          position: relative !important;
+          z-index: 1 !important;
+      }
+      /* End of Step 3 Additions */
+
       /* General Layout */
       .gr-row { margin: 0 !important; padding: 5px 0 !important; }
       .gr-column { margin: 0 !important; padding: 5px !important; }
@@ -5460,6 +5482,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
         console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
       });
+
+      /* Step 4: New JavaScript to Test Zoom Behavior */
+      // Force re-render on load and scroll to fix layout issues
+      document.addEventListener("DOMContentLoaded", () => {
+          window.scrollTo(0, 0); // Scroll to top on load
+          setTimeout(() => {
+              window.dispatchEvent(new Event('resize')); // Trigger resize event to force re-render
+          }, 1000);
+      });
+
+      window.addEventListener("scroll", () => {
+          if (window.scrollY < 10) {
+              window.scrollTo(0, 0); // Ensure top is reachable
+              window.dispatchEvent(new Event('resize')); // Force re-render near the top
+          }
+      });
+      /* End of Step 4 Additions */
     </script>
     """)
 
