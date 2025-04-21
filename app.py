@@ -696,31 +696,31 @@ def render_sides_of_zero_display():
         {number_list}
     </div>
     <script>
-        function updateCircularProgress(id, progress) {{
+        function updateCircularProgress(id, progress) {
             const element = document.getElementById(id);
-            if (!element) {{
+            if (!element) {
                 console.error('Element not found: ' + id);
                 return;
-            }}
-            const colors = {{
+            }
+            const colors = {
                 'left-progress': '#6a1b9a',
                 'zero-progress': '#00695c',
                 'right-progress': '#f4511e'
-            }};
+            };
             const color = colors[id] || '#d3d3d3';
-            element.style.background = `conic-gradient(${{color}} ${{progress}}%, #d3d3d3 ${{progress}}% 100%)`;
+            element.style.background = `conic-gradient(${color} ${progress}%, #d3d3d3 ${progress}% 100%)`;
             element.querySelector('span').textContent = element.querySelector('span').textContent;
-        }}
+        }
         updateCircularProgress('left-progress', {left_progress});
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
-
+    
         // Tooltip functionality for numbers
-        document.querySelectorAll('.number-item').forEach(element => {{
-            element.addEventListener('mouseover', (e) => {{
+        document.querySelectorAll('.number-item').forEach(element => {
+            element.addEventListener('mouseover', (e) => {
                 const hits = element.getAttribute('data-hits');
                 const num = element.getAttribute('data-number');
-                const tooltipText = `Number ${{num}}: ${{hits}} hits`;
+                const tooltipText = `Number ${num}: ${hits} hits`;
                 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
@@ -730,18 +730,18 @@ def render_sides_of_zero_display():
                 
                 const rect = element.getBoundingClientRect();
                 const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
                 tooltip.style.opacity = '1';
-            }});
+            });
             
-            element.addEventListener('mouseout', () => {{
+            element.addEventListener('mouseout', () => {
                 const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
+                if (tooltip) {
                     tooltip.remove();
-                }}
-            }});
-        }});
+                }
+            });
+        });
     </script>
     """   
 def validate_spins_input(spins_input):
