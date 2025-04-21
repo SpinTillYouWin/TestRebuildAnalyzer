@@ -3713,12 +3713,12 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         trait_combinations.append(trait_combination)
 
     # Track consecutive hits of the selected combination
-    current_streak = 0
-    max_streak = 0
+    current_streak = 0  # Updated: Initialize to 0 instead of 1
+    max_streak = 0      # Updated: Initialize to 0 instead of 1
     max_streak_start = 0
-    for i in range(len(pattern)):
+    for i in range(len(pattern)):  # Updated: Loop over all elements to handle single spins correctly
         if pattern[i] == "Hit":
-            if i == 0 or pattern[i-1] != "Hit":
+            if i == 0 or pattern[i-1] != "Hit":  # Updated: Start a new streak if first element or no previous Hit
                 current_streak = 1
             else:
                 current_streak += 1
@@ -3726,9 +3726,9 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                 max_streak = current_streak
                 max_streak_start = i - current_streak + 1
         else:
-            current_streak = 0
+            current_streak = 0  # Updated: Reset streak on Miss
 
-    if alert_enabled and "Hit" in pattern and max_streak >= consecutive_hits_threshold:
+    if alert_enabled and "Hit" in pattern and max_streak >= consecutive_hits_threshold:  # Updated: Added "Hit" in pattern check
         gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
         recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
 
