@@ -741,8 +741,7 @@ def render_sides_of_zero_display():
                 'zero-progress': '#00695c',
                 'right-progress': '#f4511e'
             }};
-            const color = colors[id] || '#d3d3d3';
-            element.style.background = `conic-gradient(${color} ${progress}%, #d3d3d3 ${progress}% 100%)`;
+            element.style.background = `conic-gradient(${colors[id] || '#d3d3d3'} ${progress}%, #d3d3d3 ${progress}% 100%)`;
             element.querySelector('span').textContent = element.querySelector('span').textContent;
         }}
         updateCircularProgress('left-progress', {left_progress});
