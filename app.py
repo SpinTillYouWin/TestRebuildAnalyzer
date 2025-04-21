@@ -404,7 +404,7 @@ colors = {
 }
 
 
-# Lines before (context)
+# Lines Before
 def format_spins_as_html(spins, num_to_show):
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -434,6 +434,7 @@ def format_spins_as_html(spins, num_to_show):
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
 
+# Updated Code
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -488,7 +489,7 @@ def render_sides_of_zero_display():
     
     return f"""
     <style>
-        .circular-progress {{
+        .circular-progress {
             position: relative;
             width: 80px;
             height: 80px;
@@ -499,8 +500,8 @@ def render_sides_of_zero_display():
             justify-content: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: all 0.5s ease;
-        }}
-        .circular-progress::before {{
+        }
+        .circular-progress::before {
             content: '';
             position: absolute;
             width: 60px;
@@ -508,29 +509,29 @@ def render_sides_of_zero_display():
             background: #e0e0e0;
             border-radius: 50%;
             z-index: 1;
-        }}
-        .circular-progress span {{
+        }
+        .circular-progress span {
             position: relative;
             z-index: 2;
             font-size: 12px;
             font-weight: bold;
             color: #333;
             text-align: center;
-        }}
-        #left-progress {{
+        }
+        #left-progress {
             background: conic-gradient(#6a1b9a {left_progress}% , #d3d3d3 {left_progress}% 100%);
-        }}
-        #zero-progress {{
+        }
+        #zero-progress {
             background: conic-gradient(#00695c {zero_progress}% , #d3d3d3 {zero_progress}% 100%);
-        }}
-        #right-progress {{
+        }
+        #right-progress {
             background: conic-gradient(#f4511e {right_progress}% , #d3d3d3 {right_progress}% 100%);
-        }}
-        .circular-progress:hover {{
+        }
+        .circular-progress:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }}
-        .number-list {{
+        }
+        .number-list {
             display: flex;
             flex-wrap: nowrap;
             gap: 3px;
@@ -539,8 +540,8 @@ def render_sides_of_zero_display():
             overflow-x: auto;
             width: 100%;
             padding: 5px 0;
-        }}
-        .number-item {{
+        }
+        .number-item {
             width: 20px;
             height: 20px;
             line-height: 20px;
@@ -552,14 +553,14 @@ def render_sides_of_zero_display():
             justify-content: center;
             position: relative;
             flex-shrink: 0;
-        }}
-        .number-item.zero-number {{
+        }
+        .number-item.zero-number {
             width: 60px;
             height: 60px;
             line-height: 60px;
             font-size: 30px;
-        }}
-        .hit-badge {{
+        }
+        .hit-badge {
             position: absolute;
             top: -4px;
             right: -4px;
@@ -572,17 +573,17 @@ def render_sides_of_zero_display():
             line-height: 12px;
             border-radius: 50%;
             z-index: 2;
-        }}
-        .number-item.zero-number .hit-badge {{
+        }
+        .number-item.zero-number .hit-badge {
             top: -6px;
             right: -6px;
             width: 20px;
             height: 20px;
             line-height: 20px;
             font-size: 10px;
-        }}
-        .tooltip {{
-            position: absolute inan;
+        }
+        .tooltip {
+            position: absolute;
             background: #333;
             color: white;
             padding: 2px 5px;
@@ -593,14 +594,14 @@ def render_sides_of_zero_display():
             opacity: 0;
             transition: opacity 0.2s ease;
             white-space: nowrap;
-        }}
-        .tracker-column {{
+        }
+        .tracker-column {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 5px;
-        }}
-        .tracker-container {{
+        }
+        .tracker-container {
             display: flex;
             flex-direction: row;
             justify-content: space-around;
@@ -609,7 +610,7 @@ def render_sides_of_zero_display():
             max-width: 600px;
             margin: 0 auto;
             font-family: Arial, sans-serif;
-        }}
+        }
 
         /* Roulette Table */
         .roulette-table { 
@@ -626,7 +627,7 @@ def render_sides_of_zero_display():
             margin: 0 auto !important; 
             overflow-x: auto !important; /* Enable horizontal scrolling */
             overflow-y: hidden !important; /* Prevent vertical scrolling */
-        }}
+        }
         .roulette-wheel-animation {
             position: fixed;
             top: 20%;
@@ -642,15 +643,15 @@ def render_sides_of_zero_display():
             pointer-events: none;
             z-index: 1000;
             transition: opacity 0.5s ease;
-        }}
+        }
         .roulette-wheel-animation.active {
             opacity: 0.8;
             animation: spinWheel 2s linear;
-        }}
+        }
         @keyframes spinWheel {
             from { transform: translate(-50%, -50%) rotate(0deg); }
             to { transform: translate(-50%, -50%) rotate(720deg); }
-        }}
+        }
         .table-row { 
             display: flex !important; 
             gap: 0 !important; 
@@ -660,49 +661,49 @@ def render_sides_of_zero_display():
             line-height: 0 !important; 
             min-width: 580px !important; /* Ensure the row is wide enough for all buttons */
             white-space: nowrap !important; /* Prevent buttons from wrapping */
-        }}
+        }
         .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
         .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
         .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
         
-        @media (max-width: 600px) {{
-            .tracker-container {{
+        @media (max-width: 600px) {
+            .tracker-container {
                 flex-direction: column;
                 align-items: center;
-            }}
-            .number-list {{
+            }
+            .number-list {
                 flex-wrap: nowrap;
                 overflow-x: auto;
-            }}
-            .number-item {{
+            }
+            .number-item {
                 width: 16px;
                 height: 16px;
                 line-height: 16px;
                 font-size: 8px;
-            }}
-            .number-item.zero-number {{
+            }
+            .number-item.zero-number {
                 width: 64px;
                 height: 64px;
                 line-height: 64px;
                 font-size: 32px;
-            }}
-            .hit-badge {{
+            }
+            .hit-badge {
                 width: 10px;
                 height: 10px;
                 line-height: 10px;
                 font-size: 6px;
                 top: -3px;
                 right: -3px;
-            }}
-            .number-item.zero-number .hit-badge {{
+            }
+            .number-item.zero-number .hit-badge {
                 width: 20px;
                 height: 20px;
                 line-height: 20px;
                 font-size: 10px;
                 top: -6px;
                 right: -6px;
-            }}
-        }}
+            }
+        }
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
@@ -729,31 +730,31 @@ def render_sides_of_zero_display():
         {number_list}
     </div>
     <script>
-        function updateCircularProgress(id, progress) {{
+        function updateCircularProgress(id, progress) {
             const element = document.getElementById(id);
-            if (!element) {{
+            if (!element) {
                 console.error('Element not found: ' + id);
                 return;
-            }}
-            const colors = {{
+            }
+            const colors = {
                 'left-progress': '#6a1b9a',
                 'zero-progress': '#00695c',
                 'right-progress': '#f4511e'
-            }};
+            };
             const color = colors[id] || '#d3d3d3';
-            element.style.background = `conic-gradient(${{color}} ${{progress}}%, #d3d3d3 ${{progress}}% 100%)`;
+            element.style.background = `conic-gradient(${color} ${progress}%, #d3d3d3 ${progress}% 100%)`;
             element.querySelector('span').textContent = element.querySelector('span').textContent;
-        }}
+        }
         updateCircularProgress('left-progress', {left_progress});
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
 
         // Tooltip functionality for numbers
-        document.querySelectorAll('.number-item').forEach(element => {{
-            element.addEventListener('mouseover', (e) => {{
+        document.querySelectorAll('.number-item').forEach(element => {
+            element.addEventListener('mouseover', (e) => {
                 const hits = element.getAttribute('data-hits');
                 const num = element.getAttribute('data-number');
-                const tooltipText = `Number ${{num}}: ${{hits}} hits`;
+                const tooltipText = `Number ${num}: ${hits} hits`;
                 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
@@ -763,20 +764,22 @@ def render_sides_of_zero_display():
                 
                 const rect = element.getBoundingClientRect();
                 const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
                 tooltip.style.opacity = '1';
-            }});
+            });
             
-            element.addEventListener('mouseout', () => {{
+            element.addEventListener('mouseout', () => {
                 const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
+                if (tooltip) {
                     tooltip.remove();
-                }}
-            }});
-        }});
+                }
+            });
+        });
     </script>
-    """   
+    """
+
+# Lines After
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
