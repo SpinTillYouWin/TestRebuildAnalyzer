@@ -3957,12 +3957,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+        roulette_buttons = []  # Store buttons to attach handlers later
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
                     for num in row:
                         if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                            btn = gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                            roulette_buttons.append(None)  # Placeholder for empty buttons
                         else:
                             color = colors.get(str(num), "black")
                             is_selected = int(num) in state.selected_numbers
@@ -3974,29 +3976,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
-                            # Attach the click event directly
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            ).then(
-                                fn=even_money_tracker,
-                                inputs=[
-                                    even_money_tracker_spins_dropdown,
-                                    even_money_tracker_consecutive_hits_dropdown,
-                                    even_money_tracker_alert_checkbox,
-                                    even_money_tracker_combination_mode_dropdown,
-                                    even_money_tracker_red_checkbox,
-                                    even_money_tracker_black_checkbox,
-                                    even_money_tracker_even_checkbox,
-                                    even_money_tracker_odd_checkbox,
-                                    even_money_tracker_low_checkbox,
-                                    even_money_tracker_high_checkbox,
-                                    even_money_tracker_identical_traits_checkbox,
-                                    even_money_tracker_consecutive_identical_dropdown
-                                ],
-                                outputs=[gr.State(), even_money_tracker_output]
-                            )
+                            roulette_buttons.append((btn, num))  # Store button and number
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -5418,6 +5398,32 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     """)
 
     # Event Handlers (moved to the end)
+    for btn_info in roulette_buttons:
+        if btn_info is None:  # Skip empty buttons
+            continue
+        btn, num = btn_info
+        btn.click(
+            fn=add_spin,
+            inputs=[gr.State(value=num), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
     try:
         spins_textbox.change(
             fn=validate_spins_input,
