@@ -474,21 +474,20 @@ def render_sides_of_zero_display():
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
     # Define the order of numbers for the European roulette wheel
-    # Original order starting from 26 clockwise
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    # Split into Left Side (26 to 5), Zero (0), and Right Side (32 to 10)
     left_side = original_order[:18]  # 26 to 5
     zero = [0]
     right_side = original_order[19:]  # 32 to 10
-    # Reverse the Left Side to start from 5 and end at 26
     left_side_reversed = left_side[::-1]
-    # Combine the parts: Left Side (reversed), Zero, Right Side
     wheel_order = left_side_reversed + zero + right_side
+    
+    # Get the latest spin for bounce effect
+    latest_spin = int(state.last_spins[-1]) if state.last_spins else None
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
-    # Generate HTML for the single number list
+    # Generate HTML for the number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -497,7 +496,8 @@ def render_sides_of_zero_display():
         for num, hits in numbers:
             color = colors.get(str(num), "black")
             badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
-            class_name = "number-item" + (" zero-number" if num == 0 else "")
+            # Apply bounce class to the latest spin
+            class_name = "number-item" + (" zero-number" if num == 0 else "") + (" bounce" if num == latest_spin else "")
             number_html.append(
                 f'<span class="{class_name}" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
             )
@@ -506,6 +506,7 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
+    # HTML output with JavaScript to remove bounce class
     return f"""
     <style>
         .circular-progress {{
@@ -602,7 +603,7 @@ def render_sides_of_zero_display():
             font-size: 10px;
         }}
         .tooltip {{
-            position: absolute inan;
+            position: absolute;
             background: #333;
             color: white;
             padding: 2px 5px;
@@ -629,28 +630,6 @@ def render_sides_of_zero_display():
             max-width: 600px;
             margin: 0 auto;
             font-family: Arial, sans-serif;
-        }}
-        .roulette-table {{
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 5px;
-            background-color: #2e7d32;  /* Green felt background */
-            border: 2px solid #d3d3d3;
-            border-radius: 5px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            overflow-x: auto;  /* Enable horizontal scrolling */
-            overflow-y: hidden;  /* Prevent vertical scrolling */
-        }}
-        .table-row {{
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            width: 100%;
-            min-width: 580px;  /* Ensure the row is wide enough for all buttons */
-            white-space: nowrap;  /* Prevent buttons from wrapping */
         }}
         @media (max-width: 600px) {{
             .tracker-container {{
@@ -762,8 +741,15 @@ def render_sides_of_zero_display():
                 }}
             }});
         }});
+
+        // Remove bounce class after animation
+        document.querySelectorAll('.bounce').forEach(element => {{
+            setTimeout(() => {{
+                element.classList.remove('bounce');
+            }}, 400);
+        }});
     </script>
-    """   
+    """
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -4696,45 +4682,40 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
-      /* General Layout */
-      .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-      .gr-column { margin: 0 !important; padding: 5px !important; }
-      .gr-box { border-radius: 5px !important; }
-      
-      /* Style for Dealer’s Spin Tracker accordion */
-      #sides-of-zero-accordion {
-          background-color: #f5c6cb !important;
-          padding: 10px !important;
-      }
-      #sides-of-zero-accordion > div {
-          background-color: #f5c6cb !important;
-      }
-      #sides-of-zero-accordion summary {
-          background-color: #dc3545 !important;
-          color: #fff !important;
-          padding: 10px !important;
-          border-radius: 5px !important;
-      }
-      
-      /* Style for Feedback Section accordion */
-      #feedback-section summary {
-          background-color: #dc3545 !important;
-          color: #fff !important;
-          padding: 10px !important;
-          border-radius: 5px !important;
-      }
-      
-      /* Hide stray labels in the Sides of Zero section */
-      .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
-          display: none !important;
-      }
-      
-      /* Hide stray labels in the Sides of Zero section */
-      .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
-          display: none !important;
-      }
-      
-     /* Header Styling */
+        /* General Layout */
+        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+        .gr-column { margin: 0 !important; padding: 5px !important; }
+        .gr-box { border-radius: 5px !important; }
+        
+        /* Style for Dealer’s Spin Tracker accordion */
+        #sides-of-zero-accordion {
+            background-color: #f5c6cb !important;
+            padding: 10px !important;
+        }
+        #sides-of-zero-accordion > div {
+            background-color: #f5c6cb !important;
+        }
+        #sides-of-zero-accordion summary {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+        }
+        
+        /* Style for Feedback Section accordion */
+        #feedback-section summary {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+        }
+        
+        /* Hide stray labels in the Sides of Zero section */
+        .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
+            display: none !important;
+        }
+        
+        /* Header Styling */
         #header-row {
             display: flex !important;
             align-items: center !important;
@@ -4749,12 +4730,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
         
-      /* Fix Selected Spins Label Cutoff */
-      #selected-spins-row {
-          width: 100% !important;
-          max-width: none !important;
-          overflow: visible !important;
-      }
+        /* Fix Selected Spins Label Cutoff */
+        #selected-spins-row {
+            width: 100% !important;
+            max-width: none !important;
+            overflow: visible !important;
+        }
         #selected-spins label {
             white-space: normal !important;
             width: 100% !important;
@@ -4769,10 +4750,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             font-size: 14px !important; /* Reduced font size */
             margin-top: 5px !important; /* Added to shift text downward */
         }
-      #selected-spins {
-          width: 100% !important;
-          min-width: 800px !important;
-      }
+        #selected-spins {
+            width: 100% !important;
+            min-width: 800px !important;
+        }
     
         /* Roulette Table */
         .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
@@ -4824,262 +4805,248 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* Buttons */    
-            .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-      button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; display: inline-block !important; }
-      button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
-      button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-      
-      /* Updated: Remove display: inline-block to match container width */
-      button.green-btn {
-          background-color: #28a745 !important;
-          color: white !important;
-          border: 1px solid #000 !important;
-          padding: 8px 16px !important;
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-          box-sizing: border-box !important;
-      }
-      button.green-btn:hover {
-          background-color: #218838 !important;
-          transform: scale(1.05) !important;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-      }
-      
-      button.clear-spins-btn {
-          background-color: #ff4444 !important;
-          color: white !important;
-          border: 1px solid #000 !important;
-          box-sizing: border-box !important;
-          display: inline-block !important;
-      }
-      button.clear-spins-btn:hover {
-          background-color: #cc0000 !important;
-      }
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      
-      /* Ensure columns have appropriate spacing */
-      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-      
-      /* Compact Components */
-      .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-      /* End Updated */
-      
-      button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-      /* Ensure columns have appropriate spacing */
-      .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-      
-      /* Compact Components */
-      .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-      .long-slider .gr-box { width: 100% !important; }
-      /* Target the Accordion and its children */
-      .gr-accordion { background-color: #ffffff !important; }
-      .gr-accordion * { background-color: #ffffff !important; }
-      .gr-accordion .gr-column { background-color: #ffffff !important; }
-      .gr-accordion .gr-row { background-color: #ffffff !important; }
+        .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
+        button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
+        button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
+        
+        /* Remove display: inline-block to match container width */
+        button.green-btn {
+            background-color: #28a745 !important;
+            color: white !important;
+            border: 1px solid #000 !important;
+            padding: 8px 16px !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            box-sizing: border-box !important;
+        }
+        button.green-btn:hover {
+            background-color: #218838 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        button.clear-spins-btn {
+            background-color: #ff4444 !important;
+            color: white !important;
+            border: 1px solid #000 !important;
+            box-sizing: border-box !important;
+            display: inline-block !important;
+        }
+        button.clear-spins-btn:hover {
+            background-color: #cc0000 !important;
+        }
+        button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+        button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+        
+        /* Ensure columns have appropriate spacing */
+        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+        
+        /* Compact Components */
+        .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        .long-slider .gr-box { width: 100% !important; }
+        
+        /* Target the Accordion and its children */
+        .gr-accordion { background-color: #ffffff !important; }
+        .gr-accordion * { background-color: #ffffff !important; }
+        .gr-accordion .gr-column { background-color: #ffffff !important; }
+        .gr-accordion .gr-row { background-color: #ffffff !important; }
     
-      /* Section Labels */
-      #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-      #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-      /* Updated: Compact dropdown styling for Select Category and Select Strategy */
-      #select-category select, #strategy-dropdown select {
-          max-height: 150px !important;
-          overflow-y: auto !important;
-          scrollbar-width: thin !important;
-          font-size: 14px;
-          padding: 5px;
-          background-color: #f9f9f9;
-          border: 1px solid #ccc;
-          border-radius: 3px;
-      }
-      #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
-          width: 6px;
-      }
-      #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
-          background-color: #888;
-          border-radius: 3px;
-      }
-      
-      /* Scrollable Tables */
-      .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+        /* Section Labels */
+        #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+        #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+        #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+        #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+        #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+        #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+        
+        /* Compact dropdown styling for Select Category and Select Strategy */
+        #select-category select, #strategy-dropdown select {
+            max-height: 150px !important;
+            overflow-y: auto !important;
+            scrollbar-width: thin !important;
+            font-size: 14px;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
+            width: 6px;
+        }
+        #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 3px;
+        }
+        
+        /* Scrollable Tables */
+        .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-      /* Spin Counter Styling */
-      .spin-counter {
-          font-size: 16px !important;
-          font-weight: bold !important;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-          padding: 8px 12px !important;
-          border: 2px solid #3498DB !important;
-          border-radius: 8px !important;
-          margin-top: 0 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-      }
-      .spin-counter:hover {
-          transform: scale(1.05) !important;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-      }
+        /* Spin Counter Styling */
+        .spin-counter {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+            padding: 8px 12px !important;
+            border: 2px solid #3498DB !important;
+            border-radius: 8px !important;
+            margin-top: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        .spin-counter:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
     
-      /* Last Spins Container */
-      .last-spins-container {
-          background-color: #f5f5f5 !important; /* Light gray background */
-          border: 1px solid #d3d3d3 !important; /* Subtle gray border */
-          padding: 10px !important;
-          border-radius: 5px !important;
-          margin-top: 10px !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
-      }
-      
-      /* New: Fade-in animation for Last Spins */
-      .fade-in {
-          animation: fadeIn 0.5s ease-in;
-      }
-      @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-      }
-      
-      /* New: Flash animation for new spins */
-      .flash.red {
-          animation: flashRed 0.3s ease-in-out;
-      }
-      .flash.green {
-          animation: flashGreen 0.3s ease-in-out;
-      }
-      .flash.black {
-          animation: flashBlack 0.3s ease-in-out;
-      }
-      @keyframes flashRed {
-          0%, 100% { background-color: red; }
-          50% { background-color: #ff3333; }
-      }
-      @keyframes flashGreen {
-          0%, 100% { background-color: green; }
-          50% { background-color: #33cc33; }
-      }
-      @keyframes flashBlack {
-          0%, 100% { background-color: black; }
-          50% { background-color: #333333; }
-      }
+        /* Last Spins Container */
+        .last-spins-container {
+            background-color: #f5f5f5 !important; /* Light gray background */
+            border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin-top: 10px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+        }
+        
+        /* Fade-in animation for Last Spins */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Flash animation for new spins */
+        .flash.red {
+            animation: flashRed 0.3s ease-in-out;
+        }
+        .flash.green {
+            animation: flashGreen 0.3s ease-in-out;
+        }
+        .flash.black {
+            animation: flashBlack 0.3s ease-in-out;
+        }
+        @keyframes flashRed {
+            0%, 100% { background-color: red; }
+            50% { background-color: #ff3333; }
+        }
+        @keyframes flashGreen {
+            0%, 100% { background-color: green; }
+            50% { background-color: #33cc33; }
+        }
+        @keyframes flashBlack {
+            0%, 100% { background-color: black; }
+            50% { background-color: #333333; }
+        }
+        
+        /* New: Bounce animation for Dealer's Spin Tracker numbers */
+        .bounce {
+            animation: bounce 0.4s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
     
-      /* Spin Counter Styling */
-      .spin-counter {
-          font-size: 14px !important; /* Reduced from 16px */
-          font-weight: bold !important;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 4px 8px !important; /* Reduced from 8px 12px */
-          border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 6px !important; /* Reduced from 8px */
-          margin-top: 0 !important; /* Align with textbox */
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-      }
+        /* Spin Counter Styling */
+        .spin-counter {
+            font-size: 14px !important; /* Reduced from 16px */
+            font-weight: bold !important;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+            padding: 4px 8px !important; /* Reduced from 8px 12px */
+            border: 2px solid #3498DB !important; /* Darker blue border */
+            border-radius: 6px !important; /* Reduced from 8px */
+            margin-top: 0 !important; /* Align with textbox */
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+        }
     
-      .sides-of-zero-container {
-          background-color: #ffffff !important;
-          border: 1px solid #d3d3d3 !important;
-          padding: 10px !important;
-          border-radius: 5px !important;
-          margin: 10px 0 !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-      }
+        .sides-of-zero-container {
+            background-color: #ffffff !important;
+            border: 1px solid #d3d3d3 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin: 10px 0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }
     
-      /* Spin Counter Styling */
-      .spin-counter {
-          font-size: 14px !important; /* Reduced from 16px */
-          font-weight: bold !important;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-          padding: 4px 8px !important; /* Reduced from 8px 12px */
-          border: 2px solid #3498DB !important; /* Darker blue border */
-          border-radius: 6px !important; /* Reduced from 8px */
-          margin-top: 0 !important; /* Align with textbox */
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-      }
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
+            td, th { padding: 5px; font-size: 12px; }
+            .gr-textbox { font-size: 12px; }
+            .scrollable-table { max-height: 200px; }
+            .long-slider { width: 100% !important; }
+            .header-title { font-size: 1.8em !important; }
+        }
     
-      /* Responsive Design */
-      @media (max-width: 600px) {
-          .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-          td, th { padding: 5px; font-size: 12px; }
-          .gr-textbox { font-size: 12px; }
-          .scrollable-table { max-height: 200px; }
-          .long-slider { width: 100% !important; }
-          .header-title { font-size: 1.8em !important; }
-      }
+        #strongest-numbers-dropdown select {
+            -webkit-appearance: menulist !important;
+            -moz-appearance: menulist !important;
+            appearance: menulist !important;
+        }
+        #strategy-dropdown select {
+            font-size: 14px;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #strategy-dropdown select option:checked {
+            font-weight: bold;
+            background-color: #e0e0ff; /* Light blue to indicate selection */
+            color: #000;
+        }
+        .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
+        .betting-progression .gr-button { width: 100px; margin: 5px; }
+        .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
     
-      #strongest-numbers-dropdown select {
-          -webkit-appearance: menulist !important;
-          -moz-appearance: menulist !important;
-          appearance: menulist !important;
-      }
-      #strategy-dropdown select {
-          font-size: 14px;
-          padding: 5px;
-          background-color: #f9f9f9;
-          border: 1px solid #ccc;
-          border-radius: 3px;
-      }
-      #strategy-dropdown select option:checked {
-          font-weight: bold;
-          background-color: #e0e0ff; /* Light blue to indicate selection */
-          color: #000;
-      }
-      .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
-      .betting-progression .gr-button { width: 100px; margin: 5px; }
-      .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        /* Top Strategies Accordion */
+        #top-strategies summary {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+        }
     
-      /* Top Strategies Accordion */
-      #top-strategies summary {
-          background-color: #dc3545 !important;
-          color: #fff !important;
-          padding: 10px !important;
-          border-radius: 5px !important;
-      }
+        /* Video Section */
+        #top-strategies .gr-box {
+            background-color: #f5c6cb !important;
+            padding: 15px !important;
+            border-radius: 5px !important;
+        }
+        #video-category-dropdown label, #video-dropdown label {
+            background-color: #87CEEB !important;
+            color: black !important;
+            padding: 5px !important;
+            border-radius: 3px !important;
+        }
+        #video-output {
+            margin-top: 15px !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+        }
+        #video-output iframe {
+            max-width: 100% !important;
+            border-radius: 5px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
     
-      /* Video Section */
-      #top-strategies .gr-box {
-          background-color: #f5c6cb !important;
-          padding: 15px !important;
-          border-radius: 5px !important;
-      }
-      #video-category-dropdown label, #video-dropdown label {
-          background-color: #87CEEB !important;
-          color: black !important;
-          padding: 5px !important;
-          border-radius: 3px !important;
-      }
-      #video-output {
-          margin-top: 15px !important;
-          width: 100% !important;
-          display: flex !important;
-          justify-content: center !important;
-      }
-      #video-output iframe {
-          max-width: 100% !important;
-          border-radius: 5px !important;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-      }
-    
-      /* Responsive Design for Video */
-      @media (max-width: 600px) {
-          #video-output iframe {
-              height: 200px !important;
-          }
-      }
+        /* Responsive Design for Video */
+        @media (max-width: 600px) {
+            #video-output iframe {
+                height: 200px !important;
+            }
+        }
     </style>
     """)
     print("CSS Updated")
