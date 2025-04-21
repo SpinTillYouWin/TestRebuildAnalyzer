@@ -429,14 +429,14 @@ def format_spins_as_html(spins, num_to_show):
     html_spins = []
     for i, spin in enumerate(spin_list):
         color = colors.get(spin.strip(), "black")  # Default to black if not found
-        # Apply flash class to the newest spin(s) (last in the list)
-        class_attr = 'fade-in flash ' + color if i == len(spin_list) - 1 else 'fade-in'
+        # Apply flip and flash classes to the newest spin(s) (last in the list)
+        class_attr = f'fade-in flip flash {color}' if i == len(spin_list) - 1 else 'fade-in'
         html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
     
-    # Add JavaScript to remove fade-in and flash classes after animations
+    # Add JavaScript to remove fade-in, flash, and flip classes after animations
     html_output += '''
     <script>
         document.querySelectorAll('.fade-in').forEach(element => {
@@ -448,6 +448,11 @@ def format_spins_as_html(spins, num_to_show):
             setTimeout(() => {
                 element.classList.remove('flash');
             }, 300);
+        });
+        document.querySelectorAll('.flip').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('flip');
+            }, 500);
         });
     </script>
     '''
@@ -4943,13 +4948,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             50% { background-color: #333333; }
         }
         
-        /* New: Bounce animation for Dealer's Spin Tracker numbers */
+        /* Bounce animation for Dealer's Spin Tracker numbers */
         .bounce {
             animation: bounce 0.4s ease-in-out;
         }
         @keyframes bounce {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
+        }
+        
+        /* New: Flip animation for Last Spins new numbers */
+        .flip {
+            animation: flip 0.5s ease-in-out;
+        }
+        @keyframes flip {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
         }
     
         /* Spin Counter Styling */
