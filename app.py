@@ -610,28 +610,61 @@ def render_sides_of_zero_display():
             margin: 0 auto;
             font-family: Arial, sans-serif;
         }}
-        .roulette-table {{
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 5px;
-            background-color: #2e7d32;  /* Green felt background */
-            border: 2px solid #d3d3d3;
-            border-radius: 5px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            overflow-x: auto;  /* Enable horizontal scrolling */
-            overflow-y: hidden;  /* Prevent vertical scrolling */
+
+        /* Roulette Table */
+        .roulette-table { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            gap: 0 !important; 
+            margin: 0 !important; 
+            padding: 5px !important; 
+            background-color: #2e7d32 !important; /* Green felt background */
+            border: 2px solid #d3d3d3 !important; 
+            border-radius: 5px !important; 
+            width: 100% !important; 
+            max-width: 600px !important; 
+            margin: 0 auto !important; 
+            overflow-x: auto !important; /* Enable horizontal scrolling */
+            overflow-y: hidden !important; /* Prevent vertical scrolling */
         }}
-        .table-row {{
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            width: 100%;
-            min-width: 580px;  /* Ensure the row is wide enough for all buttons */
-            white-space: nowrap;  /* Prevent buttons from wrapping */
+        .roulette-wheel-animation {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 5px solid #FFD700; /* Gold border */
+            border-top-color: #FF0000; /* Red segment */
+            border-right-color: #000000; /* Black segment */
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
         }}
+        .roulette-wheel-animation.active {
+            opacity: 0.8;
+            animation: spinWheel 2s linear;
+        }}
+        @keyframes spinWheel {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(720deg); }
+        }}
+        .table-row { 
+            display: flex !important; 
+            gap: 0 !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            flex-wrap: nowrap !important; 
+            line-height: 0 !important; 
+            min-width: 580px !important; /* Ensure the row is wide enough for all buttons */
+            white-space: nowrap !important; /* Prevent buttons from wrapping */
+        }}
+        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+        
         @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
@@ -788,6 +821,7 @@ def validate_spins_input(spins_input):
     print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
     return spins_display_value, formatted_html
 
+# Lines Before
 def add_spin(number, current_spins, num_to_show):
     import time
     start_time = time.time()
@@ -854,8 +888,21 @@ def add_spin(number, current_spins, num_to_show):
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
+        # Trigger the roulette wheel animation
+        animation_script = """
+        <script>
+            const wheel = document.getElementById('roulette-wheel');
+            if (wheel) {
+                wheel.classList.add('active');
+                setTimeout(() => {
+                    wheel.classList.remove('active');
+                }, 2000);
+            }
+        </script>
+        """
+        formatted_spins += animation_script
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()
         
 # Function to clear spins
 def clear_spins():
@@ -1816,6 +1863,19 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
 
         dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count)
         print(f"analyze_spins: dynamic_table_html generated")
+        # Append animation trigger to dynamic table HTML
+        animation_script = """
+        <script>
+            const wheel = document.getElementById('roulette-wheel');
+            if (wheel) {
+                wheel.classList.add('active');
+                setTimeout(() => {
+                    wheel.classList.remove('active');
+                }, 2000);
+            }
+        </script>
+        """
+        dynamic_table_html += animation_script
 
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
@@ -4015,6 +4075,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
+        gr.HTML('<div class="roulette-wheel-animation" id="roulette-wheel"></div>')
         table_layout = [
             ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
