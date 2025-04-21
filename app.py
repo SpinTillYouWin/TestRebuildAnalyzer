@@ -611,23 +611,6 @@ def render_sides_of_zero_display():
             margin: 0 auto;
             font-family: Arial, sans-serif;
         }}
-
-        /* Roulette Table */
-        .roulette-table {{ 
-            display: flex !important; 
-            flex-direction: column !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 5px !important; 
-            background-color: #2e7d32 !important; /* Green felt background */
-            border: 2px solid #d3d3d3 !important; 
-            border-radius: 5px !important; 
-            width: 100% !important; 
-            max-width: 600px !important; 
-            margin: 0 auto !important; 
-            overflow-x: auto !important; /* Enable horizontal scrolling */
-            overflow-y: hidden !important; /* Prevent vertical scrolling */
-        }}
         .roulette-wheel-animation {{
             position: fixed;
             top: 20%;
@@ -635,9 +618,9 @@ def render_sides_of_zero_display():
             transform: translate(-50%, -50%);
             width: 100px;
             height: 100px;
-            border: 5px solid #FFD700; /* Gold border */
-            border-top-color: #FF0000; /* Red segment */
-            border-right-color: #000000; /* Black segment */
+            border: 5px solid #FFD700;
+            border-top-color: #FF0000;
+            border-right-color: #000000;
             border-radius: 50%;
             opacity: 0;
             pointer-events: none;
@@ -652,20 +635,6 @@ def render_sides_of_zero_display():
             from {{ transform: translate(-50%, -50%) rotate(0deg); }}
             to {{ transform: translate(-50%, -50%) rotate(720deg); }}
         }}
-        .table-row {{ 
-            display: flex !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            flex-wrap: nowrap !important; 
-            line-height: 0 !important; 
-            min-width: 580px !important; /* Ensure the row is wide enough for all buttons */
-            white-space: nowrap !important; /* Prevent buttons from wrapping */
-        }}
-        .roulette-button.green {{ background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }}
-        .roulette-button.red {{ background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }}
-        .roulette-button.black {{ background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }}
-        
         @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
