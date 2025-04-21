@@ -3645,18 +3645,17 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
 
     return "\n".join(recommendations), html_output, sequence_html_output
 
-# New: Even Money Bet Tracker Function
+    # New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
+    # Sanitize inputs with defaults to prevent None or invalid values
+    spins_to_check = int(spins_to_check) if spins_to_check and str(spins_to_check).strip().isdigit() else 5
+    consecutive_hits_threshold = int(consecutive_hits_threshold) if consecutive_hits_threshold and str(consecutive_hits_threshold).strip().isdigit() else 3
+    consecutive_identical_count = int(consecutive_identical_count) if consecutive_identical_count and str(consecutive_identical_count).strip().isdigit() else 2
+
     # Validate inputs
-    try:
-        spins_to_check = int(spins_to_check)
-        consecutive_hits_threshold = int(consecutive_hits_threshold)
-        consecutive_identical_count = int(consecutive_identical_count)
-        if spins_to_check < 1 or consecutive_hits_threshold < 1 or consecutive_identical_count < 1:
-            return "Error: Inputs must be at least 1.", "<div class='even-money-tracker-container'><p>Error: Inputs must be at least 1.</p></div>"
-    except (ValueError, TypeError):
-        return "Error: Invalid inputs. Use positive integers.", "<div class='even-money-tracker-container'><p>Error: Invalid inputs. Use positive integers.</p></div>"
+    if spins_to_check < 1 or consecutive_hits_threshold < 1 or consecutive_identical_count < 1:
+        return "Error: Inputs must be at least 1.", "<div class='even-money-tracker-container'><p>Error: Inputs must be at least 1.</p></div>"
 
     # Get recent spins
     recent_spins = state.last_spins[-spins_to_check:] if len(state.last_spins) >= spins_to_check else state.last_spins
