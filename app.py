@@ -427,20 +427,27 @@ def format_spins_as_html(spins, num_to_show):
     
     # Format each spin as a colored span
     html_spins = []
-    for spin in spin_list:
+    for i, spin in enumerate(spin_list):
         color = colors.get(spin.strip(), "black")  # Default to black if not found
-        html_spins.append(f'<span class="fade-in" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
+        # Apply flash class to the newest spin(s) (last in the list)
+        class_attr = 'fade-in flash ' + color if i == len(spin_list) - 1 else 'fade-in'
+        html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
     
-    # Add JavaScript to remove fade-in class after animation
+    # Add JavaScript to remove fade-in and flash classes after animations
     html_output += '''
     <script>
         document.querySelectorAll('.fade-in').forEach(element => {
             setTimeout(() => {
                 element.classList.remove('fade-in');
             }, 500);
+        });
+        document.querySelectorAll('.flash').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('flash');
+            }, 300);
         });
     </script>
     '''
@@ -4936,6 +4943,46 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+      }
+      
+      /* New: Flash animation for new spins */
+      .flash.red {
+          animation: flashRed 0.3s ease-in-out;
+      }
+      .flash.green {
+          animation: flashGreen 0.3s ease-in-out;
+      }
+      .flash.black {
+          animation: flashBlack 0.3s ease-in-out;
+      }
+      @keyframes flashRed {
+          0%, 100% { background-color: red; }
+          50% { background-color: #ff3333; }
+      }
+      @keyframes flashGreen {
+          0%, 100% { background-color: green; }
+          50% { background-color: #33cc33; }
+      }
+      @keyframes flashBlack {
+          0%, 100% { background-color: black; }
+          50% { background-color: #333333; }
+      }
+    
+      /* Spin Counter Styling */
+      .spin-counter {
+          font-size: 14px !important; /* Reduced from 16px */
+          font-weight: bold !important;
+          color: #ffffff !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 4px 8px !important; /* Reduced from 8px 12px */
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 6px !important; /* Reduced from 8px */
+          margin-top: 0 !important; /* Align with textbox */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
     
       .sides-of-zero-container {
