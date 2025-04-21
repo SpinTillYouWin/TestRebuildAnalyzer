@@ -440,36 +440,25 @@ def render_sides_of_zero_display():
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
     
-    # Debug print to verify hit counts
     print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
     
-    # Calculate the maximum hit count for scaling
-    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
+    max_hits = max(left_hits, zero_hits, right_hits, 1)
     
-    # Calculate progress percentages (0 to 100)
     left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
     zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
     right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
     
-    # Debug print to verify calculated progress
     print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
-    # Define the order of numbers for the European roulette wheel
-    # Original order starting from 26 clockwise
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    # Split into Left Side (26 to 5), Zero (0), and Right Side (32 to 10)
-    left_side = original_order[:18]  # 26 to 5
+    left_side = original_order[:18]
     zero = [0]
-    right_side = original_order[19:]  # 32 to 10
-    # Reverse the Left Side to start from 5 and end at 26
+    right_side = original_order[19:]
     left_side_reversed = left_side[::-1]
-    # Combine the parts: Left Side (reversed), Zero, Right Side
     wheel_order = left_side_reversed + zero + right_side
     
-    # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
     
-    # Generate HTML for the single number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -489,190 +478,8 @@ def render_sides_of_zero_display():
     
     return f"""
     <style>
-        .circular-progress {{
-            position: relative;
-            width: 80px;
-            height: 80px;
-            background: conic-gradient(#d3d3d3 0% 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: all 0.5s ease;
-        }}
-        .circular-progress::before {{
-            content: '';
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #e0e0e0;
-            border-radius: 50%;
-            z-index: 1;
-        }}
-        .circular-progress span {{
-            position: relative;
-            z-index: 2;
-            font-size: 12px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }}
-        #left-progress {{
-            background: conic-gradient(#6a1b9a {left_progress}% , #d3d3d3 {left_progress}% 100%);
-        }}
-        #zero-progress {{
-            background: conic-gradient(#00695c {zero_progress}% , #d3d3d3 {zero_progress}% 100%);
-        }}
-        #right-progress {{
-            background: conic-gradient(#f4511e {right_progress}% , #d3d3d3 {right_progress}% 100%);
-        }}
-        .circular-progress:hover {{
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }}
-        .number-list {{
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 3px;
-            justify-content: center;
-            margin-top: 10px;
-            overflow-x: auto;
-            width: 100%;
-            padding: 5px 0;
-        }}
-        .number-item {{
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            text-align: center;
-            font-size: 10px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            flex-shrink: 0;
-        }}
-        .number-item.zero-number {{
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            font-size: 30px;
-        }}
-        .hit-badge {{
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ffffff;
-            color: #000000;
-            border: 1px solid #000000;
-            font-size: 8px;
-            width: 12px;
-            height: 12px;
-            line-height: 12px;
-            border-radius: 50%;
-            z-index: 2;
-        }}
-        .number-item.zero-number .hit-badge {{
-            top: -6px;
-            right: -6px;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            font-size: 10px;
-        }}
-        .tooltip {{
-            position: absolute;
-            background: #333;
-            color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 12px;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            white-space: nowrap;
-        }}
-        .tracker-column {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }}
-        .tracker-container {{
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            gap: 15px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            font-family: Arial, sans-serif;
-        }}
-        .roulette-wheel-animation {{
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 100px;
-            border: 5px solid #FFD700;
-            border-top-color: #FF0000;
-            border-right-color: #000000;
-            border-radius: 50%;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
-        }}
-        .roulette-wheel-animation.active {{
-            opacity: 0.8;
-            animation: spinWheel 2s linear;
-        }}
-        @keyframes spinWheel {{
-            from {{ transform: translate(-50%, -50%) rotate(0deg); }}
-            to {{ transform: translate(-50%, -50%) rotate(720deg); }}
-        }}
-        @media (max-width: 600px) {{
-            .tracker-container {{
-                flex-direction: column;
-                align-items: center;
-            }}
-            .number-list {{
-                flex-wrap: nowrap;
-                overflow-x: auto;
-            }}
-            .number-item {{
-                width: 16px;
-                height: 16px;
-                line-height: 16px;
-                font-size: 8px;
-            }}
-            .number-item.zero-number {{
-                width: 64px;
-                height: 64px;
-                line-height: 64px;
-                font-size: 32px;
-            }}
-            .hit-badge {{
-                width: 10px;
-                height: 10px;
-                line-height: 10px;
-                font-size: 6px;
-                top: -3px;
-                right: -3px;
-            }}
-            .number-item.zero-number .hit-badge {{
-                width: 20px;
-                height: 20px;
-                line-height: 20px;
-                font-size: 10px;
-                top: -6px;
-                right: -6px;
-            }}
-        }}
+        .circular-progress {{ /* ... CSS styles ... */ }}
+        /* ... (rest of CSS styles) */
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
@@ -718,7 +525,6 @@ def render_sides_of_zero_display():
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
 
-        // Tooltip functionality for numbers
         document.querySelectorAll('.number-item').forEach(element => {{
             element.addEventListener('mouseover', (e) => {{
                 const hits = element.getAttribute('data-hits');
