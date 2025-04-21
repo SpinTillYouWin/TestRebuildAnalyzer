@@ -3648,14 +3648,23 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
 # New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
+    # Sanitize numeric inputs to prevent None or empty values
+    try:
+        spins_to_check = int(spins_to_check) if spins_to_check is not None and str(spins_to_check).strip() else 5
+        consecutive_hits_threshold = int(consecutive_hits_threshold) if consecutive_hits_threshold is not None and str(consecutive_hits_threshold).strip() else 3
+        consecutive_identical_count = int(consecutive_identical_count) if consecutive_identical_count is not None and str(consecutive_identical_count).strip() else 2
+    except (ValueError, TypeError) as e:
+        print(f"Sanitization error: {str(e)}. Using defaults: spins_to_check=5, consecutive_hits_threshold=3, consecutive_identical_count=2")
+        spins_to_check = 5
+        consecutive_hits_threshold = 3
+        consecutive_identical_count = 2
+
     # Validate inputs
     try:
-        spins_to_check = int(spins_to_check)
-        consecutive_hits_threshold = int(consecutive_hits_threshold)
-        consecutive_identical_count = int(consecutive_identical_count)
         if spins_to_check < 1 or consecutive_hits_threshold < 1 or consecutive_identical_count < 1:
             return "Error: Inputs must be at least 1.", "<div class='even-money-tracker-container'><p>Error: Inputs must be at least 1.</p></div>"
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as e:
+        print(f"Validation error: {str(e)}")
         return "Error: Invalid inputs. Use positive integers.", "<div class='even-money-tracker-container'><p>Error: Invalid inputs. Use positive integers.</p></div>"
 
     # Get recent spins
