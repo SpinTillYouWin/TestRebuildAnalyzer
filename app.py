@@ -129,11 +129,72 @@ class RouletteState:
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []  # Tracks each spin's effects for undoing
+        self.spin_history = []
+        self.casino_data = {
+            "spins_count": 100,
+            "hot_numbers": {},
+            "cold_numbers": {},
+            "even_odd": {"Even": 0.0, "Odd": 0.0},
+            "red_black": {"Red": 0.0, "Black": 0.0},
+            "low_high": {"Low": 0.0, "High": 0.0},
+            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+        }
+        self.use_casino_winners = False  # Add this line to define the attribute
+        self.bankroll = 1000
+        self.initial_bankroll = 1000
+        self.base_unit = 10
+        self.stop_loss = -500
+        self.stop_win = 200
+        self.bet_type = "Even Money"
+        self.progression = "Martingale"
+        self.current_bet = self.base_unit
+        self.next_bet = self.base_unit
+        self.progression_state = None
+        self.labouchere_sequence = ""
+        self.target_profit = 10
+        self.is_stopped = False
+        self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+        self.status = "Active"
+        self.status_color = "white"
+        self.last_dozen_alert_index = -1
+        self.last_alerted_spins = None
+        self.alerted_patterns = set()
         self.last_even_money_alert = None
         self.last_even_money_alert_spins = None
         self.last_even_money_alert_time = None
-        self.last_spins_hash = None  # Track the hash of spins to detect changes
+        self.last_spins_hash = None
+
+    def reset(self):
+        self.scores = {n: 0 for n in range(37)}
+        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
+        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
+        self.column_scores = {name: 0 for name in COLUMNS.keys()}
+        self.street_scores = {name: 0 for name in STREETS.keys()}
+        self.corner_scores = {name: 0 for name in CORNERS.keys()}
+        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
+        self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
+        self.last_spins = []
+        self.spin_history = []
+        self.casino_data = {
+            "spins_count": 100,
+            "hot_numbers": {},
+            "cold_numbers": {},
+            "even_odd": {"Even": 0.0, "Odd": 0.0},
+            "red_black": {"Red": 0.0, "Black": 0.0},
+            "low_high": {"Low": 0.0, "High": 0.0},
+            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+        }
+        self.use_casino_winners = False  # Ensure it's reset here too
+        # ... rest of the reset method ...
+
+    def reset_even_money_alert(self):
+        self.last_even_money_alert = None
+        self.last_even_money_alert_spins = None
+        self.last_even_money_alert_time = None
 
     def reset_even_money_alert(self):
         """Reset the even money alert state."""
