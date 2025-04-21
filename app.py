@@ -5965,7 +5965,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
         
-# Dozen Tracker Event Handlers
+    # Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
@@ -6042,7 +6042,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_dropdown,
                 neighbours_count_slider,
                 strong_numbers_count_slider,
-                dozen_tracker_spins_dropdown,  # Corrected from dozen_tracker_spins
+                dozen_tracker_spins_dropdown,
                 top_color_picker,
                 middle_color_picker,
                 lower_color_picker
@@ -6052,6 +6052,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
 
+    # Line 1: Start of updated section
     # Even Money Tracker Event Handlers
     even_money_tracker_spins_dropdown.change(
         fn=even_money_tracker,
@@ -6065,7 +6066,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6081,7 +6084,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6097,7 +6102,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6113,7 +6120,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6129,7 +6138,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6145,7 +6156,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6161,7 +6174,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6177,7 +6192,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6193,7 +6210,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
@@ -6209,10 +6228,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_tracker_even_checkbox,
             even_money_tracker_odd_checkbox,
             even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,  # Added missing input
+            even_money_tracker_consecutive_identical_dropdown  # Added missing input
         ],
         outputs=[gr.State(), even_money_tracker_output]
     )
+    # Line 2: End of updated section
 
     # Casino data event handlers
     inputs_list = [
