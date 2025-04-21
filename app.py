@@ -3713,17 +3713,24 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         trait_combinations.append(trait_combination)
 
     # Track consecutive hits of the selected combination
-    current_streak = 1
-    max_streak = 1
+    current_streak = 0
+    max_streak = 0
     max_streak_start = 0
-    for i in range(1, len(pattern)):
-        if pattern[i] == "Hit" and pattern[i-1] == "Hit":
-            current_streak += 1
+    for i in range(len(pattern)):
+        if pattern[i] == "Hit":
+            if i == 0 or pattern[i-1] != "Hit":
+                current_streak = 1
+            else:
+                current_streak += 1
             if current_streak > max_streak:
                 max_streak = current_streak
                 max_streak_start = i - current_streak + 1
         else:
-            current_streak = 1 if pattern[i] == "Hit" else 0
+            current_streak = 0
+
+    if alert_enabled and "Hit" in pattern and max_streak >= consecutive_hits_threshold:
+        gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
 
     # Track consecutive identical trait combinations (independent of category selection)
     identical_recommendations = []
@@ -3830,7 +3837,7 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
     recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
     recommendations.append("History: " + ", ".join(pattern))
-    if alert_enabled and max_streak >= consecutive_hits_threshold:
+    if alert_enabled and "Hit" in pattern and max_streak >= consecutive_hits_threshold:  # Updated: Added "Hit" in pattern check
         gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
         recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
     recommendations.append("\nSummary of Hits:")
