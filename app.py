@@ -429,10 +429,23 @@ def format_spins_as_html(spins, num_to_show):
     html_spins = []
     for spin in spin_list:
         color = colors.get(spin.strip(), "black")  # Default to black if not found
-        html_spins.append(f'<span style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
+        html_spins.append(f'<span class="fade-in" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
-    return f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+    html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+    
+    # Add JavaScript to remove fade-in class after animation
+    html_output += '''
+    <script>
+        document.querySelectorAll('.fade-in').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('fade-in');
+            }, 500);
+        });
+    </script>
+    '''
+    
+    return html_output
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
@@ -4914,6 +4927,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           border-radius: 5px !important;
           margin-top: 10px !important;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+      }
+      
+      /* New: Fade-in animation for Last Spins */
+      .fade-in {
+          animation: fadeIn 0.5s ease-in;
+      }
+      @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
       }
     
       .sides-of-zero-container {
