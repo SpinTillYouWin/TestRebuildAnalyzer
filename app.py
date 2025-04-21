@@ -4898,24 +4898,66 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
       /* Spin Counter Styling */
       .spin-counter {
-          font-size: 16px !important;
+          font-size: 14px !important; /* Reduced from 16px */
           font-weight: bold !important;
           color: #ffffff !important;
-          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-          padding: 8px 12px !important;
-          border: 2px solid #3498DB !important;
-          border-radius: 8px !important;
-          margin-top: 0 !important;
+          background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
+          padding: 4px 8px !important; /* Reduced from 8px 12px */
+          border: 2px solid #3498DB !important; /* Darker blue border */
+          border-radius: 6px !important; /* Reduced from 8px */
+          margin-top: 0 !important; /* Align with textbox */
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
       }
-      .spin-counter:hover {
-          transform: scale(1.05) !important;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    
+      /* Line 1: Start of updated section */
+      /* Fix Selected Spins Label Cutoff */
+      #selected-spins-row {
+          width: 100% !important;
+          max-width: 100% !important; /* Changed from none to ensure container bounds */
+          overflow: visible !important;
+          display: flex !important;
+          flex-wrap: wrap !important; /* Allow wrapping on smaller screens */
+          gap: 10px !important; /* Add spacing between textbox and counter */
       }
+      #selected-spins {
+          width: 100% !important;
+          max-width: 100% !important; /* Replace min-width: 800px with responsive sizing */
+          flex: 1 1 auto !important; /* Allow textbox to grow/shrink */
+      }
+      #selected-spins label {
+          white-space: normal !important;
+          width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
+          display: block !important;
+          background-color: #87CEEB;
+          color: black;
+          padding: 10px 5px !important;
+          border-radius: 3px;
+          line-height: 1.5em !important;
+          font-size: 14px !important;
+          margin-top: 5px !important;
+      }
+      @media (max-width: 600px) {
+          #selected-spins {
+              width: 100% !important;
+              max-width: 100% !important; /* Ensure full width on small screens */
+          }
+          #selected-spins label {
+              font-size: 12px !important; /* Smaller font for mobile */
+              padding: 8px 5px !important;
+          }
+          .spin-counter {
+              width: 100% !important; /* Full width on small screens */
+              font-size: 12px !important;
+              padding: 4px 6px !important;
+          }
+      }
+      /* Line 2: End of updated section */
     
       /* Last Spins Container */
       .last-spins-container {
@@ -4927,6 +4969,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
       }
     
+      /* Sides of Zero Container */
       .sides-of-zero-container {
           background-color: #ffffff !important;
           border: 1px solid #d3d3d3 !important;
