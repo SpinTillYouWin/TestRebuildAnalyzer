@@ -8,6 +8,17 @@ from roulette_data import (
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
 
+class State:
+    def __init__(self):
+        self.last_spins = []
+        self.scores = {i: 0 for i in range(37)}  # Scores for numbers 0-36
+        self.side_scores = {
+            "Left Side of Zero": 0,
+            "Right Side of Zero": 0,
+        }
+        self.selected_numbers = []
+        self.last_clicked_number = None  # Track the last clicked number for shine effect
+
 def update_scores_batch(spins):
     """Update scores for a batch of spins and return actions for undoevet."""
     action_log = []
@@ -755,49 +766,56 @@ def render_sides_of_zero_display():
         }});
     </script>
     """
+
+def render_roulette_table():
+    rows = [
+        ["", "", "", "", "", "", "", "", "", "", "", "", "0"],
+        ["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+        ["2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+        ["1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"],
+    ]
+    
+    colors = {
+        "0": "green",
+        "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
+        "19": "red", "21": "red", "23": "red", "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
+        "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black", "13": "black", "15": "black", "17": "black",
+        "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
+    }
+    
+    html = '<div class="roulette-table">'
+    for row in rows:
+        html += '<div class="table-row">'
+        for num in row:
+            if num == "":
+                html += '<span class="empty-button"></span>'
+            else:
+                color = colors.get(num, "black")
+                # Apply shine class to the last clicked number
+                class_attr = f"roulette-button {color}" + (" shine" if state.last_clicked_number == int(num) else "")
+                selected = int(num) in state.selected_numbers
+                class_attr += " selected" if selected else ""
+                html += f'<span class="{class_attr}" onclick="this.dispatchEvent(new CustomEvent(\'click_number\', {{detail: {{number: \'{num}\'}}}}))">{num}</span>'
+        html += '</div>'
+    html += '</div>'
+    
+    # Add JavaScript to remove shine class after animation
+    html += '''
+    <script>
+        document.querySelectorAll('.shine').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('shine');
+            }, 400);
+        });
+    </script>
+    '''
+    
+    return html
+
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
     print(f"validate_spins_input: spins_input='{spins_input}'")
-    if not spins_input or not spins_input.strip():
-        print("validate_spins_input: No spins input provided.")
-        return "", "<h4>Last Spins</h4><p>No spins entered.</p>"
-
-    raw_spins = [s.strip() for s in spins_input.split(",") if s.strip()]
-    valid_spins = []
-    errors = []
-
-    for spin in raw_spins:
-        try:
-            num = int(spin)
-            if not (0 <= num <= 36):
-                errors.append(f"'{spin}' is out of range (0-36)")
-                continue
-            valid_spins.append(str(num))
-        except ValueError:
-            errors.append(f"'{spin}' is not a valid number")
-            continue
-
-    if not valid_spins:
-        error_msg = "Invalid input:\n- " + "\n- ".join(errors)
-        gr.Warning(error_msg)
-        print(f"validate_spins_input: Errors - {error_msg}")
-        return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
-
-    # Update state.last_spins and spins_display
-    state.last_spins = valid_spins
-    state.selected_numbers = set(int(s) for s in valid_spins)
-    action_log = update_scores_batch(valid_spins)
-    for i, spin in enumerate(valid_spins):
-        state.spin_history.append(action_log[i])
-        # Limit spin history to 100 spins
-        if len(state.spin_history) > 100:
-            state.spin_history.pop(0)
-
-    spins_display_value = ", ".join(valid_spins)
-    formatted_html = format_spins_as_html(spins_display_value, 36)  # Default to showing all spins
-    print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
-    return spins_display_value, formatted_html
 
 def add_spin(number, current_spins, num_to_show):
     import time
@@ -844,6 +862,8 @@ def add_spin(number, current_spins, num_to_show):
         new_spins.append(str(num))
         state.last_spins.append(str(num))
         state.spin_history.append(action_log.pop(0))
+        # Set last_clicked_number for the shine effect
+        state.last_clicked_number = num
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
@@ -866,9 +886,8 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
-        
-# Function to clear spins
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()
+
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
@@ -4026,34 +4045,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
-        table_layout = [
-            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-        ]
         with gr.Column(elem_classes="roulette-table"):
-            for row in table_layout:
-                with gr.Row(elem_classes="table-row"):
-                    for num in row:
-                        if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                        else:
-                            color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
-                            if is_selected:
-                                btn_classes.append("selected")
-                            btn = gr.Button(
-                                value=num,
-                                min_width=40,
-                                elem_classes=btn_classes
-                            )
-                            # Attach the click event directly
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            )
+            roulette_table_output = gr.HTML(
+                value=render_roulette_table(),
+                elem_classes=["roulette-table"]
+            )
+            # Handle clicks on roulette table numbers
+            def handle_table_click(event_data, current_spins, num_to_show):
+                if event_data and 'number' in event_data:
+                    return add_spin(event_data['number'], current_spins, num_to_show)
+                return current_spins, current_spins, "<h4>Last Spins</h4><p>No number clicked.</p>", update_spin_counter(), render_sides_of_zero_display()
+
+            roulette_table_output.change(
+                fn=handle_table_click,
+                inputs=[roulette_table_output, spins_display, last_spin_count],
+                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+            )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -4766,7 +4773,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
         .roulette-button:hover { opacity: 0.8; }
         .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; position: relative; }
         .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
         .roulette-table { 
             display: flex !important; 
@@ -4964,6 +4971,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes flip {
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(360deg); }
+        }
+        
+        /* New: Shine animation for Roulette Table buttons */
+        .shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 10%, transparent 40%);
+            animation: shine 0.4s ease-in-out;
+        }
+        @keyframes shine {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
         }
     
         /* Spin Counter Styling */
