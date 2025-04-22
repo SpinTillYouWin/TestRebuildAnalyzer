@@ -747,7 +747,7 @@ def render_sides_of_zero_display():
             }});
         }});
 
-# Lines before (context from render_sides_of_zero_display)
+        # Lines before (context from render_sides_of_zero_display)
         // Remove bounce class after animation
         document.querySelectorAll('.bounce').forEach(element => {{
             setTimeout(() => {{
@@ -758,7 +758,7 @@ def render_sides_of_zero_display():
     """
 # End of context before
 
-# New function (Lines 1 to 92)
+# Corrected function (Lines 1 to 92)
 def render_roulette_wheel():
     """Render an interactive roulette wheel with spinning animation."""
     wheel_numbers = [
@@ -828,7 +828,7 @@ def render_roulette_wheel():
             if (spinning) return;
             spinning = true;
             const targetIndex = numbers.indexOf(parseInt(targetNum));
-            const targetAngle = - (targetIndex * (2 * Math.PI / numbers.length)) + (Math.random() * 0.1 - 0.05);
+            const targetAngle = -(targetIndex * (2 * Math.PI / numbers.length)) + (Math.random() * 0.1 - 0.05);
             const spinDuration = 2000;
             const startTime = Date.now();
 
@@ -841,7 +841,7 @@ def render_roulette_wheel():
                     requestAnimationFrame(animate);
                 }} else {{
                     spinning = false;
-                    document.getElementById('spinResult').textContent = `Result: ${targetNum}`;
+                    document.getElementById('spinResult').textContent = 'Result: ' + targetNum;
                 }}
             }}
             requestAnimationFrame(animate);
@@ -4073,6 +4073,7 @@ def clear_last_spins_display():
 
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
+    # Lines before (context)
     # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
@@ -4125,7 +4126,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes="long-slider"
     )
 
-# New Row 2 (Lines 1 to 42)
     # 2. Row 2: Interactive Roulette Wheel Simulation
     with gr.Group():
         gr.Markdown("### Interactive Roulette Wheel Simulation")
@@ -4163,7 +4163,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 _js=f"() => {{ spinWheel('{num}'); return []; }}"
                             )
 
-# Lines after (context from Row 3)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
