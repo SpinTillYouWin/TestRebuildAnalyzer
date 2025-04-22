@@ -699,7 +699,11 @@ def render_sides_of_zero_display():
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
         .number-list {{
- was: nowrap;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 3px;
+            justify-content: center;
+            margin-top: 10px;
             overflow-x: auto;
             width: 100%;
             padding: 5px 0;
@@ -1009,7 +1013,7 @@ def render_sides_of_zero_display():
         // Function to save the state of a specific <details> element
         function saveDetailsState(id, isOpen) {{
             window.detailsState[id] = isOpen;
-            console.log(`Saved state for ${id}: ${isOpen}`);
+            console.log("Saved state for " + id + ": " + isOpen);
         }}
 
         // Function to apply the saved state to all <details> elements
@@ -1019,10 +1023,10 @@ def render_sides_of_zero_display():
                 const id = detail.id;
                 if (window.detailsState[id] === true) {{
                     detail.setAttribute('open', '');
-                    console.log(`Restored state for ${id}: open`);
+                    console.log("Restored state for " + id + ": open");
                 }} else {{
                     detail.removeAttribute('open');
-                    console.log(`Restored state for ${id}: closed`);
+                    console.log("Restored state for " + id + ": closed");
                 }}
                 // Re-attach event listener for toggle
                 detail.removeEventListener('toggle', handleDetailsToggle); // Avoid duplicate listeners
@@ -1050,7 +1054,7 @@ def render_sides_of_zero_display():
         // Observe DOM changes to re-apply state if the betting sections are re-rendered
         const observer = new MutationObserver((mutations) => {{
             mutations.forEach(mutation => {{
-                if (mutation.target.classList.contains('betting-sections-container')) {{
+                if (mutation.target.classList && mutation.target.classList.contains('betting-sections-container')) {{
                     console.log('Betting sections container updated, re-applying state');
                     applyDetailsState();
                 }}
@@ -1077,7 +1081,7 @@ def render_sides_of_zero_display():
                 'right-progress': '#f4511e'
             }};
             const color = colors[id] || '#d3d3d3';
-            element.style.background = `conic-gradient(${{color}} ${{progress}}%, #d3d3d3 ${{progress}}% 100%)`;
+            element.style.background = `conic-gradient(${color} ${progress}%, #d3d3d3 ${progress}% 100%)`;
             element.querySelector('span').textContent = element.querySelector('span').textContent;
         }}
         updateCircularProgress('left-progress', {left_progress});
@@ -1089,7 +1093,7 @@ def render_sides_of_zero_display():
             element.addEventListener('mouseover', (e) => {{
                 const hits = element.getAttribute('data-hits');
                 const num = element.getAttribute('data-number');
-                const tooltipText = `Number ${{num}}: ${{hits}} hits`;
+                const tooltipText = `Number ${num}: ${hits} hits`;
                 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
@@ -1099,8 +1103,8 @@ def render_sides_of_zero_display():
                 
                 const rect = element.getBoundingClientRect();
                 const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
                 tooltip.style.opacity = '1';
             }});
             
@@ -1120,7 +1124,7 @@ def render_sides_of_zero_display():
                 const neighbors = {json.dumps(dict(current_neighbors))};
                 const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
                 const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
-                const tooltipText = `Number ${{num}}: ${{hits}} hits\\nLeft Neighbor: ${{leftNeighbor}}\\nRight Neighbor: ${{rightNeighbor}}`;
+                const tooltipText = `Number ${num}: ${hits} hits\\nLeft Neighbor: ${leftNeighbor}\\nRight Neighbor: ${rightNeighbor}`;
                 
                 // Remove any existing tooltips
                 const existingTooltip = document.querySelector('.tooltip');
@@ -1134,8 +1138,8 @@ def render_sides_of_zero_display():
                 
                 const rect = segment.getBoundingClientRect();
                 const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - tooltipRect.height - 5}px`;
                 tooltip.style.opacity = '1';
                 
                 // Remove tooltip after 3 seconds or on click
@@ -1164,7 +1168,7 @@ def render_sides_of_zero_display():
 
         // JavaScript animation function
         function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
-            console.log(`animateElement called for element: ${{element.id}}, startAngle: ${{startAngle}}, endAngle: ${{endAngle}}, duration: ${{duration}}, isBall: ${{isBall}}`);
+            console.log(`animateElement called for element: ${element.id}, startAngle: ${startAngle}, endAngle: ${endAngle}, duration: ${duration}, isBall: ${isBall}`);
             const startTime = performance.now();
             const radius = isBall ? 135 : 0;
             
@@ -1175,16 +1179,16 @@ def render_sides_of_zero_display():
                 const currentAngle = startAngle + (endAngle - startAngle) * easeOut;
                 
                 if (isBall) {{
-                    element.style.transform = `rotate(${{currentAngle}}deg) translateX(${{radius}}px)`;
+                    element.style.transform = `rotate(${currentAngle}deg) translateX(${radius}px)`;
                 }} else {{
-                    element.style.transform = `rotate(${{currentAngle}}deg)`;
+                    element.style.transform = `rotate(${currentAngle}deg)`;
                 }}
-                console.log(`Animation step - element: ${{element.id}}, progress: ${{progress.toFixed(2)}}, currentAngle: ${{currentAngle.toFixed(2)}}`);
+                console.log(`Animation step - element: ${element.id}, progress: ${progress.toFixed(2)}, currentAngle: ${currentAngle.toFixed(2)}`);
                 
                 if (progress < 1) {{
                     requestAnimationFrame(step);
                 }} else {{
-                    console.log(`Animation completed for element: ${{element.id}}`);
+                    console.log(`Animation completed for element: ${element.id}`);
                 }}
             }}
             
