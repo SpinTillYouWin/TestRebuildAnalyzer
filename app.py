@@ -480,7 +480,19 @@ def render_sides_of_zero_display():
     right_side = original_order[19:]  # 32 to 10 (18 numbers)
     wheel_order = left_side + zero + right_side
     
-    # Determine the winning section
+    # Define betting sections
+    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
+    voisins_du_zero = [22, 9, 31, 14, 20, 1, 33, 16, 24, 0, 32, 15, 19, 4, 21, 2, 25]
+    orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
+    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+    
+    # Calculate hit counts for each betting section
+    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
+    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
+    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
+    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
+    
+    # Determine the winning section for Left/Right Side
     winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
     
     # Get the latest spin for bounce effect and wheel rotation
@@ -515,17 +527,16 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel with section highlights
+    # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
     # Add background arcs for Left Side and Right Side
-    # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
     left_start_angle = 0
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
     left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 170 + 145 * math.cos(left_start_rad)  # Center at 170
+    left_x1 = 170 + 145 * math.cos(left_start_rad)
     left_y1 = 170 + 145 * math.sin(left_start_rad)
     left_x2 = 170 + 145 * math.cos(left_end_rad)
     left_y2 = 170 + 145 * math.sin(left_end_rad)
@@ -534,7 +545,6 @@ def render_sides_of_zero_display():
     left_stroke = "#4A148C" if winning_section == "Left Side" else "#808080"
     wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="{left_stroke}" stroke-width="3"/>'
     
-    # Right Side arc (from 180 to 360 degrees, corresponding to 18 numbers)
     right_start_angle = 180
     right_end_angle = 360
     right_start_rad = right_start_angle * (3.14159 / 180)
@@ -557,14 +567,11 @@ def render_sides_of_zero_display():
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
         hits = state.scores.get(num, 0)
-        # Scale stroke width and opacity based on hits
-        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
-        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
-        stroke_color = "#FF00FF" if hits > 0 else "#FFF"  # Changed to magenta (#FF00FF)
-        # Determine if this segment is in the winning section
+        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2
+        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5
+        stroke_color = "#FF00FF" if hits > 0 else "#FFF"
         is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
-        # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
         x1 = 170 + 135 * math.cos(rad)
@@ -577,19 +584,52 @@ def render_sides_of_zero_display():
         y4 = 170 + 105 * math.sin(rad)
         path_d = f"M 170,170 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
         wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
-        # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
         text_x = 170 + 120 * math.cos(text_rad)
         text_y = 170 + 120 * math.sin(text_rad)
         wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
-        # Add hit count text
         hit_text_x = 170 + 90 * math.cos(text_rad)
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     
-    # Add labels for Left Side and Right Side with hit counts, outside the wheel
-    # Left Side label at 90 degrees
+    # Add transparent arcs for betting sections
+    def add_betting_arc(section_name, numbers, fill_color, hits):
+        # Find the start and end indices of the numbers in the wheel order
+        indices = [original_order.index(num) for num in numbers if num in original_order]
+        if not indices:
+            return ""
+        start_idx = min(indices)
+        end_idx = max(indices)
+        # Calculate angles
+        start_angle = start_idx * angle_per_number
+        end_angle = (end_idx + 1) * angle_per_number
+        if end_angle <= start_angle:
+            end_angle += 360
+        start_rad = start_angle * (3.14159 / 180)
+        end_rad = end_angle * (3.14159 / 180)
+        # Define the arc path (slightly outside the wheel)
+        outer_radius = 145  # Just outside the wheel
+        inner_radius = 135  # Edge of the wheel
+        x1 = 170 + outer_radius * math.cos(start_rad)
+        y1 = 170 + outer_radius * math.sin(start_rad)
+        x2 = 170 + outer_radius * math.cos(end_rad)
+        y2 = 170 + outer_radius * math.sin(end_rad)
+        x3 = 170 + inner_radius * math.cos(end_rad)
+        y3 = 170 + inner_radius * math.sin(end_rad)
+        x4 = 170 + inner_radius * math.cos(start_rad)
+        y4 = 170 + inner_radius * math.sin(start_rad)
+        large_arc_flag = 1 if (end_angle - start_angle) > 180 else 0
+        path_d = f"M {x1},{y1} A {outer_radius},{outer_radius} 0 {large_arc_flag},1 {x2},{y2} L {x3},{y3} A {inner_radius},{inner_radius} 0 {large_arc_flag},0 {x4},{y4} Z"
+        return f'<path class="betting-arc" data-section="{section_name}" data-hits="{hits}" d="{path_d}" fill="{fill_color}" stroke="none" style="cursor: pointer;"/>'
+    
+    # Add arcs for each betting section
+    wheel_svg += add_betting_arc("Jeu 0", jeu_0, "rgba(34, 139, 34, 0.3)", jeu_0_hits)
+    wheel_svg += add_betting_arc("Voisins du Zero", voisins_du_zero, "rgba(0, 128, 128, 0.3)", voisins_du_zero_hits)
+    wheel_svg += add_betting_arc("Orphelins", orphelins, "rgba(128, 0, 128, 0.3)", orphelins_hits)
+    wheel_svg += add_betting_arc("Tiers du Cylindre", tiers_du_cylindre, "rgba(255, 165, 0, 0.3)", tiers_du_cylindre_hits)
+    
+    # Add labels for Left Side and Right Side
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
     left_label_x = 170 + 155 * math.cos(left_label_rad)
@@ -597,7 +637,6 @@ def render_sides_of_zero_display():
     wheel_svg += f'<rect x="{left_label_x - 25}" y="{left_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#6A1B9A" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" dy="3">Left: {left_hits}</text>'
     
-    # Right Side label at 270 degrees
     right_label_angle = 270
     right_label_rad = right_label_angle * (3.14159 / 180)
     right_label_x = 170 + 155 * math.cos(right_label_rad)
@@ -724,7 +763,7 @@ def render_sides_of_zero_display():
             opacity: 0;
             transition: opacity 0.2s ease;
             white-space: pre-wrap;
-            border: 1px solid #FF00FF;  /* Updated to match new pulsing color */
+            border: 1px solid #FF00FF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }}
         .tracker-column {{
@@ -753,6 +792,9 @@ def render_sides_of_zero_display():
             align-items: center;
         }}
         .wheel-segment:hover {{
+            filter: brightness(1.2);
+        }}
+        .betting-arc:hover {{
             filter: brightness(1.2);
         }}
         .pulse {{
@@ -939,6 +981,34 @@ def render_sides_of_zero_display():
                 const tooltip = document.querySelector('.tooltip');
                 if (tooltip) {{
                     tooltip.style.opacity = '0';
+                }}
+            }});
+        }});
+
+        // Tooltip functionality for betting arcs
+        document.querySelectorAll('.betting-arc').forEach(arc => {{
+            arc.addEventListener('mouseover', (e) => {{
+                const section = arc.getAttribute('data-section');
+                const hits = arc.getAttribute('data-hits');
+                const tooltipText = `${{section}}: ${{hits}} hits`;
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = arc.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.opacity = '1';
+            }});
+            
+            arc.addEventListener('mouseout', () => {{
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) {{
+                    tooltip.remove();
                 }}
             }});
         }});
