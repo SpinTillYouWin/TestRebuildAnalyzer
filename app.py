@@ -480,7 +480,22 @@ def render_sides_of_zero_display():
     right_side = original_order[19:]  # 32 to 10 (18 numbers)
     wheel_order = left_side + zero + right_side
     
-    # Determine the winning section
+    # Define betting sections
+    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
+    voisins_du_zero = [22, 9, 31, 14, 20, 1, 33, 16, 24, 0, 32, 15, 19, 4, 21, 2, 25]
+    orphelins = [1, 20, 14, 31, 9, 17, 34, 6]
+    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+    
+    # Calculate hit counts for each betting section
+    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
+    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
+    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
+    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
+    
+    # Calculate maximum hits across betting sections for scaling
+    max_section_hits = max(jeu_0_hits, voisins_du_zero_hits, orphelins_hits, tiers_du_cylindre_hits, 1)
+    
+    # Determine the winning section for Left/Right Side
     winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
     
     # Get the latest spin for bounce effect and wheel rotation
@@ -520,12 +535,11 @@ def render_sides_of_zero_display():
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
     # Add background arcs for Left Side and Right Side
-    # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
     left_start_angle = 0
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
     left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 170 + 145 * math.cos(left_start_rad)  # Center at 170
+    left_x1 = 170 + 145 * math.cos(left_start_rad)
     left_y1 = 170 + 145 * math.sin(left_start_rad)
     left_x2 = 170 + 145 * math.cos(left_end_rad)
     left_y2 = 170 + 145 * math.sin(left_end_rad)
@@ -534,7 +548,6 @@ def render_sides_of_zero_display():
     left_stroke = "#4A148C" if winning_section == "Left Side" else "#808080"
     wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="{left_stroke}" stroke-width="3"/>'
     
-    # Right Side arc (from 180 to 360 degrees, corresponding to 18 numbers)
     right_start_angle = 180
     right_end_angle = 360
     right_start_rad = right_start_angle * (3.14159 / 180)
@@ -551,16 +564,26 @@ def render_sides_of_zero_display():
     # Add the wheel background
     wheel_svg += '<circle cx="170" cy="170" r="135" fill="#2e7d32"/>'
     
-    # Draw the wheel segments
+    # Draw the wheel segments with glows for betting sections
     angle_per_number = 360 / 37
     for i, num in enumerate(original_order):
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
         hits = state.scores.get(num, 0)
-        # Scale stroke width and opacity based on hits
-        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
-        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
-        stroke_color = "#FF00FF" if hits > 0 else "#FFF"  # Changed to magenta (#FF00FF)
+        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2
+        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5
+        stroke_color = "#FF00FF" if hits > 0 else "#FFF"
+        # Determine glows for betting sections
+        glow_styles = []
+        if num in jeu_0:
+            glow_styles.append("drop-shadow(0 0 5px #228B22)")
+        if num in voisins_du_zero:
+            glow_styles.append("drop-shadow(0 0 5px #008080)")
+        if num in orphelins:
+            glow_styles.append("drop-shadow(0 0 5px #696969)")
+        if num in tiers_du_cylindre:
+            glow_styles.append("drop-shadow(0 0 5px #B8860B)")
+        glow_style = " ".join(glow_styles) if glow_styles else ""
         # Determine if this segment is in the winning section
         is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
@@ -576,7 +599,7 @@ def render_sides_of_zero_display():
         x4 = 170 + 105 * math.cos(rad)
         y4 = 170 + 105 * math.sin(rad)
         path_d = f"M 170,170 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
-        wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
+        wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer; filter: {glow_style};"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
@@ -588,8 +611,7 @@ def render_sides_of_zero_display():
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     
-    # Add labels for Left Side and Right Side with hit counts, outside the wheel
-    # Left Side label at 90 degrees
+    # Add labels for Left Side and Right Side
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
     left_label_x = 170 + 155 * math.cos(left_label_rad)
@@ -597,7 +619,6 @@ def render_sides_of_zero_display():
     wheel_svg += f'<rect x="{left_label_x - 25}" y="{left_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#6A1B9A" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" dy="3">Left: {left_hits}</text>'
     
-    # Right Side label at 270 degrees
     right_label_angle = 270
     right_label_rad = right_label_angle * (3.14159 / 180)
     right_label_x = 170 + 155 * math.cos(right_label_rad)
@@ -610,6 +631,29 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: -10px; left: 168.5px; width: 3px; height: 170px; background-color: #00695C; transform-origin: bottom center;"></div>'
     wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
+    
+    # Add legend for betting sections
+    wheel_svg += '''
+    <div class="betting-sections-legend" style="display: flex; justify-content: center; gap: 15px; margin-top: 10px; font-family: Arial, sans-serif;">
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="display: inline-block; width: 12px; height: 12px; background-color: #228B22; border-radius: 50%;"></span>
+            <span style="font-size: 12px; color: #228B22;">Jeu 0: {}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="display: inline-block; width: 12px; height: 12px; background-color: #008080; border-radius: 50%;"></span>
+            <span style="font-size: 12px; color: #008080;">Voisins du Zero: {}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="display: inline-block; width: 12px; height: 12px; background-color: #696969; border-radius: 50%;"></span>
+            <span style="font-size: 12px; color: #696969;">Orphelins: {}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="display: inline-block; width: 12px; height: 12px; background-color: #B8860B; border-radius: 50%;"></span>
+            <span style="font-size: 12px; color: #B8860B;">Tiers du Cylindre: {}</span>
+        </div>
+    </div>
+    '''.format(jeu_0_hits, voisins_du_zero_hits, orphelins_hits, tiers_du_cylindre_hits)
+    
     wheel_svg += '</div>'
     
     # Convert Python boolean to JavaScript lowercase boolean
@@ -724,7 +768,7 @@ def render_sides_of_zero_display():
             opacity: 0;
             transition: opacity 0.2s ease;
             white-space: pre-wrap;
-            border: 1px solid #FF00FF;  /* Updated to match new pulsing color */
+            border: 1px solid #FF00FF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }}
         .tracker-column {{
