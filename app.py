@@ -638,7 +638,7 @@ def render_sides_of_zero_display():
         
         # Create the accordion section with state preservation
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
-        # Use JavaScript to determine if the section should be open (we'll set this via script)
+        # Check the state from JavaScript to determine if the section should be open
         betting_sections_html += f'''
         <details id="{section_id}" class="betting-section-accordion">
             <summary class="betting-section-header" style="background-color: {color};">
@@ -699,11 +699,7 @@ def render_sides_of_zero_display():
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
         .number-list {{
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 3px;
-            justify-content: center;
-            margin-top: 10px;
+ was: nowrap;
             overflow-x: auto;
             width: 100%;
             padding: 5px 0;
@@ -1013,6 +1009,7 @@ def render_sides_of_zero_display():
         // Function to save the state of a specific <details> element
         function saveDetailsState(id, isOpen) {{
             window.detailsState[id] = isOpen;
+            console.log(`Saved state for ${id}: ${isOpen}`);
         }}
 
         // Function to apply the saved state to all <details> elements
@@ -1020,10 +1017,12 @@ def render_sides_of_zero_display():
             const detailsElements = document.querySelectorAll('.betting-section-accordion');
             detailsElements.forEach(detail => {{
                 const id = detail.id;
-                if (window.detailsState[id]) {{
+                if (window.detailsState[id] === true) {{
                     detail.setAttribute('open', '');
+                    console.log(`Restored state for ${id}: open`);
                 }} else {{
                     detail.removeAttribute('open');
+                    console.log(`Restored state for ${id}: closed`);
                 }}
                 // Re-attach event listener for toggle
                 detail.removeEventListener('toggle', handleDetailsToggle); // Avoid duplicate listeners
@@ -1038,10 +1037,33 @@ def render_sides_of_zero_display():
             saveDetailsState(id, detail.open);
         }}
 
-        // Apply the state after DOM is updated
+        // Apply the state immediately after DOM update
+        document.addEventListener('DOMContentLoaded', () => {{
+            applyDetailsState();
+        }});
+
+        // Re-apply state after any DOM update (e.g., table clicks)
         setTimeout(() => {{
             applyDetailsState();
         }}, 0);
+
+        // Observe DOM changes to re-apply state if the betting sections are re-rendered
+        const observer = new MutationObserver((mutations) => {{
+            mutations.forEach(mutation => {{
+                if (mutation.target.classList.contains('betting-sections-container')) {{
+                    console.log('Betting sections container updated, re-applying state');
+                    applyDetailsState();
+                }}
+            }});
+        }});
+
+        // Start observing the betting sections container
+        document.addEventListener('DOMContentLoaded', () => {{
+            const targetNode = document.querySelector('.betting-sections-container');
+            if (targetNode) {{
+                observer.observe(targetNode, {{ childList: true, subtree: true }});
+            }}
+        }});
 
         function updateCircularProgress(id, progress) {{
             const element = document.getElementById(id);
