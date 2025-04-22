@@ -489,10 +489,14 @@ def render_sides_of_zero_display():
     # Get the latest spin for bounce effect and wheel rotation
     latest_spin = int(state.last_spins[-1]) if state.last_spins else None
     latest_spin_angle = 0
+    has_latest_spin = latest_spin is not None  # Boolean for JavaScript
     if latest_spin is not None:
         # Calculate the angle for the latest spin (each number occupies 360/37 degrees)
         index = original_order.index(latest_spin) if latest_spin in original_order else 0
         latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom (90 degrees clockwise)
+    
+    # Debug print to verify latest spin
+    print(f"render_sides_of_zero_display: latest_spin={latest_spin}, latest_spin_angle={latest_spin_angle}, has_latest_spin={has_latest_spin}")
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
@@ -849,22 +853,40 @@ def render_sides_of_zero_display():
             }}, 400);
         }});
 
-        // Trigger wheel and ball spin animations
-        const wheel = document.getElementById('roulette-wheel');
-        const ball = document.getElementById('spinning-ball');
-        if (wheel && ball && {latest_spin is not None}) {{
-            wheel.classList.remove('spinning');
-            ball.classList.remove('spinning');
-            void wheel.offsetWidth; // Force reflow
-            wheel.classList.add('spinning');
-            ball.classList.add('spinning');
-            setTimeout(() => {{
+        // Trigger wheel and ball spin animations with delay to ensure DOM readiness
+        setTimeout(() => {{
+            console.log('Attempting to trigger animations...');
+            const wheel = document.getElementById('roulette-wheel');
+            const ball = document.getElementById('spinning-ball');
+            const hasSpin = {has_latest_spin};
+            console.log('Wheel element:', wheel);
+            console.log('Ball element:', ball);
+            console.log('Has latest spin:', hasSpin);
+            console.log('Latest spin angle:', {latest_spin_angle});
+            if (wheel && ball && hasSpin) {{
+                console.log('Starting animations for wheel and ball...');
                 wheel.classList.remove('spinning');
                 ball.classList.remove('spinning');
-                wheel.style.transform = `rotate({latest_spin_angle}deg)`;
-                ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
-            }}, 2000);
-        }}
+                void wheel.offsetWidth; // Force reflow
+                void ball.offsetWidth; // Force reflow
+                wheel.classList.add('spinning');
+                ball.classList.add('spinning');
+                console.log('Animation classes added');
+                setTimeout(() => {{
+                    console.log('Finalizing animation positions...');
+                    wheel.classList.remove('spinning');
+                    ball.classList.remove('spinning');
+                    wheel.style.transform = `rotate({latest_spin_angle}deg)`;
+                    ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
+                    console.log('Animation completed');
+                }}, 2000);
+            }} else {{
+                console.warn('Animation not triggered: Elements or latest spin missing');
+                if (!wheel) console.warn('Wheel element not found');
+                if (!ball) console.warn('Ball element not found');
+                if (!hasSpin) console.warn('No latest spin to animate');
+            }}
+        }}, 500); // 500ms delay to ensure DOM readiness
     </script>
     """
 def validate_spins_input(spins_input):
