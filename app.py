@@ -517,7 +517,7 @@ def render_sides_of_zero_display():
     
     # Generate SVG for the roulette wheel with section highlights
     wheel_svg = '<div class="roulette-wheel-container">'
-    wheel_svg += '<svg id="roulette-wheel" width="300" height="300" viewBox="0 0 300 300" style="transform: rotate(90deg);">'
+    wheel_svg += '<svg id="roulette-wheel" width="320" height="320" viewBox="0 0 320 320" style="transform: rotate(90deg);">'  # Increased size to accommodate labels
     
     # Add background arcs for Left Side and Right Side
     # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
@@ -525,29 +525,31 @@ def render_sides_of_zero_display():
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
     left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 150 + 140 * math.cos(left_start_rad)
-    left_y1 = 150 + 140 * math.sin(left_start_rad)
-    left_x2 = 150 + 140 * math.cos(left_end_rad)
-    left_y2 = 150 + 140 * math.sin(left_end_rad)
-    left_path_d = f"M 150,150 L {left_x1},{left_y1} A 140,140 0 0,1 {left_x2},{left_y2} L 150,150 Z"
-    left_fill = "rgba(106, 27, 154, 0.3)" if winning_section == "Left Side" else "rgba(128, 128, 128, 0.2)"  # Purple for winning, gray for losing
-    wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="none"/>'
+    left_x1 = 160 + 145 * math.cos(left_start_rad)  # Adjusted center to 160 due to larger SVG
+    left_y1 = 160 + 145 * math.sin(left_start_rad)
+    left_x2 = 160 + 145 * math.cos(left_end_rad)
+    left_y2 = 160 + 145 * math.sin(left_end_rad)
+    left_path_d = f"M 160,160 L {left_x1},{left_y1} A 145,145 0 0,1 {left_x2},{left_y2} L 160,160 Z"
+    left_fill = "rgba(106, 27, 154, 0.5)" if winning_section == "Left Side" else "rgba(128, 128, 128, 0.3)"  # Increased opacity
+    left_stroke = "#4A148C" if winning_section == "Left Side" else "#808080"  # Darker purple or gray
+    wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="{left_stroke}" stroke-width="3"/>'
     
     # Right Side arc (from 180 to 360 degrees, corresponding to 18 numbers)
     right_start_angle = 180
     right_end_angle = 360
     right_start_rad = right_start_angle * (3.14159 / 180)
     right_end_rad = right_end_angle * (3.14159 / 180)
-    right_x1 = 150 + 140 * math.cos(right_start_rad)
-    right_y1 = 150 + 140 * math.sin(right_start_rad)
-    right_x2 = 150 + 140 * math.cos(right_end_rad)
-    right_y2 = 150 + 140 * math.sin(right_end_rad)
-    right_path_d = f"M 150,150 L {right_x1},{right_y1} A 140,140 0 0,1 {right_x2},{right_y2} L 150,150 Z"
-    right_fill = "rgba(244, 81, 30, 0.3)" if winning_section == "Right Side" else "rgba(128, 128, 128, 0.2)"  # Orange for winning, gray for losing
-    wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="none"/>'
+    right_x1 = 160 + 145 * math.cos(right_start_rad)
+    right_y1 = 160 + 145 * math.sin(right_start_rad)
+    right_x2 = 160 + 145 * math.cos(right_end_rad)
+    right_y2 = 160 + 145 * math.sin(right_end_rad)
+    right_path_d = f"M 160,160 L {right_x1},{right_y1} A 145,145 0 0,1 {right_x2},{right_y2} L 160,160 Z"
+    right_fill = "rgba(244, 81, 30, 0.5)" if winning_section == "Right Side" else "rgba(128, 128, 128, 0.3)"  # Increased opacity
+    right_stroke = "#D84315" if winning_section == "Right Side" else "#808080"  # Darker orange or gray
+    wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="{right_stroke}" stroke-width="3"/>'
     
     # Add the wheel background
-    wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'
+    wheel_svg += '<circle cx="160" cy="160" r="135" fill="#2e7d32"/>'
     
     # Draw the wheel segments
     angle_per_number = 360 / 37
@@ -565,45 +567,45 @@ def render_sides_of_zero_display():
         # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
-        x1 = 150 + 135 * math.cos(rad)
-        y1 = 150 + 135 * math.sin(rad)
-        x2 = 150 + 135 * math.cos(next_rad)
-        y2 = 150 + 135 * math.sin(next_rad)
-        x3 = 150 + 105 * math.cos(next_rad)
-        y3 = 150 + 105 * math.sin(next_rad)
-        x4 = 150 + 105 * math.cos(rad)
-        y4 = 150 + 105 * math.sin(rad)
-        path_d = f"M 150,150 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
+        x1 = 160 + 135 * math.cos(rad)
+        y1 = 160 + 135 * math.sin(rad)
+        x2 = 160 + 135 * math.cos(next_rad)
+        y2 = 160 + 135 * math.sin(next_rad)
+        x3 = 160 + 105 * math.cos(next_rad)
+        y3 = 160 + 105 * math.sin(next_rad)
+        x4 = 160 + 105 * math.cos(rad)
+        y4 = 160 + 105 * math.sin(rad)
+        path_d = f"M 160,160 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
         wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
-        text_x = 150 + 120 * math.cos(text_rad)
-        text_y = 150 + 120 * math.sin(text_rad)
+        text_x = 160 + 120 * math.cos(text_rad)
+        text_y = 160 + 120 * math.sin(text_rad)
         wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
         # Add hit count text
-        hit_text_x = 150 + 90 * math.cos(text_rad)
-        hit_text_y = 150 + 90 * math.sin(text_rad)
+        hit_text_x = 160 + 90 * math.cos(text_rad)
+        hit_text_y = 160 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     
     # Add labels for Left Side and Right Side with hit counts
     # Left Side label at 90 degrees (middle of the left arc)
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
-    left_label_x = 150 + 145 * math.cos(left_label_rad)
-    left_label_y = 150 + 145 * math.sin(left_label_rad)
-    wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" transform="rotate({left_label_angle + 90} {left_label_x},{left_label_y})">Left: {left_hits}</text>'
+    left_label_x = 160 + 135 * math.cos(left_label_rad)  # Moved inward to radius 135
+    left_label_y = 160 + 135 * math.sin(left_label_rad)
+    wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" transform="rotate(0 {left_label_x},{left_label_y})">Left: {left_hits}</text>'
     
     # Right Side label at 270 degrees (middle of the right arc)
     right_label_angle = 270
     right_label_rad = right_label_angle * (3.14159 / 180)
-    right_label_x = 150 + 145 * math.cos(right_label_rad)
-    right_label_y = 150 + 145 * math.sin(right_label_rad)
-    wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" transform="rotate({right_label_angle + 90} {right_label_x},{right_label_y})">Right: {right_hits}</text>'
+    right_label_x = 160 + 135 * math.cos(right_label_rad)
+    right_label_y = 160 + 135 * math.sin(right_label_rad)
+    wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" transform="rotate(0 {right_label_x},{right_label_y})">Right: {right_hits}</text>'
     
-    wheel_svg += '<circle cx="150" cy="150" r="15" fill="#FFD700"/>'  # Gold center
+    wheel_svg += '<circle cx="160" cy="160" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
-    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 145.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'
+    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 155.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'  # Adjusted position
     wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
@@ -741,8 +743,8 @@ def render_sides_of_zero_display():
         }}
         .roulette-wheel-container {{
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 320px;
+            height: 320px;
             margin: 20px auto;
             display: flex;
             justify-content: center;
@@ -760,7 +762,7 @@ def render_sides_of_zero_display():
             100% {{ stroke-opacity: 1; }}
         }}
         .winning-segment {{
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+            filter: drop-shadow(0 0 5px rgba(255, 255, 250, 0.8));
         }}
         #wheel-pointer {{
             z-index: 3;
@@ -803,16 +805,16 @@ def render_sides_of_zero_display():
                 right: -6px;
             }}
             .roulette-wheel-container {{
-                width: 250px;
-                height: 250px;
+                width: 270px;
+                height: 270px;
             }}
             #roulette-wheel {{
-                width: 250px;
-                height: 250px;
+                width: 270px;
+                height: 270px;
             }}
             #wheel-pointer {{
                 top: 12.5px;
-                left: 120.75px;
+                left: 130.75px;
                 width: 7.5px;
                 height: 25px;
             }}
