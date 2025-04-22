@@ -555,6 +555,9 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
+    # Convert Python boolean to JavaScript lowercase boolean
+    js_has_latest_spin = "true" if has_latest_spin else "false"
+    
     # HTML output with JavaScript to handle animations
     return f"""
     <style>
@@ -689,22 +692,6 @@ def render_sides_of_zero_display():
             justify-content: center;
             align-items: center;
         }}
-        #roulette-wheel.spinning {{
-            animation: spinWheel 2s ease-out forwards;
-        }}
-        @keyframes spinWheel {{
-            0% {{ transform: rotate(90deg); }}
-            80% {{ transform: rotate({720 + latest_spin_angle}deg); }}
-            100% {{ transform: rotate({latest_spin_angle}deg); }}
-        }}
-        #spinning-ball.spinning {{
-            animation: spinBall 2s ease-out forwards;
-        }}
-        @keyframes spinBall {{
-            0% {{ transform: rotate(0deg) translateX(135px); }}
-            80% {{ transform: rotate({-720 - latest_spin_angle}deg) translateX(135px); }}
-            100% {{ transform: rotate({-latest_spin_angle}deg) translateX(135px); }}
-        }}
         #wheel-pointer {{
             z-index: 3;
         }}
@@ -763,17 +750,9 @@ def render_sides_of_zero_display():
                 width: 10px;
                 height: 10px;
             }}
-            #spinning-ball.spinning {{
-                animation: spinBallMobile 2s ease-out forwards;
-            }}
-            @keyframes spinBallMobile {{
-                0% {{ transform: rotate(0deg) translateX(112.5px); }}
-                80% {{ transform: rotate({-720 - latest_spin_angle}deg) translateX(112.5px); }}
-                100% {{ transform: rotate({-latest_spin_angle}deg) translateX(112.5px); }}
-            }}
         }}
     </style>
-    <div style="background-color: #f5c6cb;กับborder: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
+    <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
         <div class="tracker-container">
             <div class="tracker-column">
@@ -853,8 +832,9 @@ def render_sides_of_zero_display():
             }}, 400);
         }});
 
-        // JavaScript fallback animation function
+        // JavaScript animation function
         function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
+            console.log(`animateElement called for element: ${{element.id}}, startAngle: ${{startAngle}}, endAngle: ${{endAngle}}, duration: ${{duration}}, isBall: ${{isBall}}`);
             const startTime = performance.now();
             const radius = isBall ? 135 : 0; // Ball moves along a radius, wheel rotates in place
             
@@ -869,28 +849,31 @@ def render_sides_of_zero_display():
                 }} else {{
                     element.style.transform = `rotate(${{currentAngle}}deg)`;
                 }}
+                console.log(`Animation step - element: ${{element.id}}, progress: ${{progress.toFixed(2)}}, currentAngle: ${{currentAngle.toFixed(2)}}`);
                 
                 if (progress < 1) {{
                     requestAnimationFrame(step);
+                }} else {{
+                    console.log(`Animation completed for element: ${{element.id}}`);
                 }}
             }}
             
             requestAnimationFrame(step);
         }}
 
-        // Trigger wheel and ball spin animations with enhanced logic
+        // Trigger wheel and ball spin animations with JavaScript
         setTimeout(() => {{
             console.log('Attempting to trigger animations...');
             const wheel = document.getElementById('roulette-wheel');
             const ball = document.getElementById('spinning-ball');
-            const hasSpin = {has_latest_spin};
+            const hasSpin = {js_has_latest_spin};
             console.log('Wheel element:', wheel);
             console.log('Ball element:', ball);
             console.log('Has latest spin:', hasSpin);
             console.log('Latest spin angle:', {latest_spin_angle});
             
             if (wheel && ball && hasSpin) {{
-                console.log('Starting animations for wheel and ball...');
+                console.log('Starting animations for wheel and ball using JavaScript...');
                 
                 // Force visibility toggle to ensure rendering
                 wheel.style.visibility = 'hidden';
@@ -898,42 +881,19 @@ def render_sides_of_zero_display():
                 setTimeout(() => {{
                     wheel.style.visibility = 'visible';
                     ball.style.visibility = 'visible';
+                    console.log('Visibility toggled to visible for wheel and ball');
                     
-                    // Attempt CSS animation
-                    wheel.classList.remove('spinning');
-                    ball.classList.remove('spinning');
-                    void wheel.offsetWidth; // Force reflow
-                    void ball.offsetWidth; // Force reflow
-                    wheel.classList.add('spinning');
-                    ball.classList.add('spinning');
-                    console.log('CSS animation classes added');
-                    
-                    // Check if CSS animation started by testing computed style
-                    setTimeout(() => {{
-                        const wheelStyle = window.getComputedStyle(wheel);
-                        const ballStyle = window.getComputedStyle(ball);
-                        const wheelAnimation = wheelStyle.animationName;
-                        const ballAnimation = ballStyle.animationName;
-                        console.log('Wheel animation name:', wheelAnimation);
-                        console.log('Ball animation name:', ballAnimation);
-                        
-                        if (wheelAnimation !== 'spinWheel' || ballAnimation !== 'spinBall') {{
-                            console.warn('CSS animations failed to start, falling back to JavaScript animation');
-                            // Fallback to JavaScript animation
-                            animateElement(wheel, 90, {latest_spin_angle}, 2000);
-                            animateElement(ball, 0, {-latest_spin_angle}, 2000, true);
-                            console.log('JavaScript fallback animation triggered');
-                        }}
-                    }}, 100);
+                    // Directly use JavaScript animation
+                    animateElement(wheel, 90, {latest_spin_angle}, 2000);
+                    animateElement(ball, 0, {-latest_spin_angle}, 2000, true);
+                    console.log('JavaScript animations triggered for wheel and ball');
                     
                     // Finalize position after animation
                     setTimeout(() => {{
                         console.log('Finalizing animation positions...');
-                        wheel.classList.remove('spinning');
-                        ball.classList.remove('spinning');
                         wheel.style.transform = `rotate({latest_spin_angle}deg)`;
                         ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
-                        console.log('Animation completed');
+                        console.log('Animation positions finalized');
                     }}, 2000);
                 }}, 10);
             }} else {{
@@ -942,7 +902,7 @@ def render_sides_of_zero_display():
                 if (!ball) console.warn('Ball element not found');
                 if (!hasSpin) console.warn('No latest spin to animate');
             }}
-        }}, 1000); // Increased delay to 1000ms for DOM readiness
+        }}, 1500); // Increased delay to 1500ms for DOM readiness
     </script>
     """
 def validate_spins_input(spins_input):
