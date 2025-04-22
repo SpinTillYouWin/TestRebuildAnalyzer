@@ -484,8 +484,7 @@ def render_sides_of_zero_display():
     left_side = original_order[:18]  # 26 to 5
     zero = [0]
     right_side = original_order[19:]  # 32 to 10
-    left_side_reversed = left_side[::-1]
-    wheel_order = left_side_reversed + zero + right_side
+    wheel_order = left_side + zero + right_side
     
     # Get the latest spin for bounce effect and wheel rotation
     latest_spin = int(state.last_spins[-1]) if state.last_spins else None
@@ -520,19 +519,6 @@ def render_sides_of_zero_display():
     # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="300" height="300" viewBox="0 0 300 300" style="transform: rotate(90deg);">'
-    # Add glow filter for highlight
-    wheel_svg += '''
-    <defs>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 1  0 1 0 0 1  0 0 1 0 1  0 0 0 0.7 0" result="coloredBlur"/>
-            <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
-    '''
     wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'  # Green felt background
     angle_per_number = 360 / 37
     for i, num in enumerate(original_order):
@@ -550,7 +536,7 @@ def render_sides_of_zero_display():
         x4 = 150 + 105 * math.cos(rad)
         y4 = 150 + 105 * math.sin(rad)
         path_d = f"M 150,150 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
-        class_name = "wheel-segment" + (" latest-spin" if num == latest_spin else "")
+        class_name = "wheel-segment"
         wheel_svg += f'<path class="{class_name}" d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.75"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
@@ -561,6 +547,7 @@ def render_sides_of_zero_display():
     wheel_svg += '<circle cx="150" cy="150" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
     wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 145.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'
+    wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
@@ -706,11 +693,16 @@ def render_sides_of_zero_display():
             80% {{ transform: rotate({720 + latest_spin_angle}deg); }}
             100% {{ transform: rotate({latest_spin_angle}deg); }}
         }}
+        #spinning-ball.spinning {{
+            animation: spinBall 2s ease-out forwards;
+        }}
+        @keyframes spinBall {{
+            0% {{ transform: rotate(0deg) translateX(135px); }}
+            80% {{ transform: rotate({-720 - latest_spin_angle}deg) translateX(135px); }}
+            100% {{ transform: rotate({-latest_spin_angle}deg) translateX(135px); }}
+        }}
         #wheel-pointer {{
             z-index: 3;
-        }}
-        .wheel-segment.latest-spin {{
-            filter: url(#glow);
         }}
         @media (max-width: 600px) {{
             .tracker-container {{
@@ -762,6 +754,18 @@ def render_sides_of_zero_display():
                 left: 120.75px;
                 width: 7.5px;
                 height: 25px;
+            }}
+            #spinning-ball {{
+                width: 10px;
+                height: 10px;
+            }}
+            #spinning-ball.spinning {{
+                animation: spinBallMobile 2s ease-out forwards;
+            }}
+            @keyframes spinBallMobile {{
+                0% {{ transform: rotate(0deg) translateX(112.5px); }}
+                80% {{ transform: rotate({-720 - latest_spin_angle}deg) translateX(112.5px); }}
+                100% {{ transform: rotate({-latest_spin_angle}deg) translateX(112.5px); }}
             }}
         }}
     </style>
@@ -845,15 +849,20 @@ def render_sides_of_zero_display():
             }}, 400);
         }});
 
-        // Trigger wheel spin animation
+        // Trigger wheel and ball spin animations
         const wheel = document.getElementById('roulette-wheel');
-        if (wheel && {latest_spin is not None}) {{
-            wheel.classList.remove('spinning'); // Ensure no existing animation
+        const ball = document.getElementById('spinning-ball');
+        if (wheel && ball && {latest_spin is not None}) {{
+            wheel.classList.remove('spinning');
+            ball.classList.remove('spinning');
             void wheel.offsetWidth; // Force reflow
             wheel.classList.add('spinning');
+            ball.classList.add('spinning');
             setTimeout(() => {{
                 wheel.classList.remove('spinning');
+                ball.classList.remove('spinning');
                 wheel.style.transform = `rotate({latest_spin_angle}deg)`;
+                ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
             }}, 2000);
         }}
     </script>
