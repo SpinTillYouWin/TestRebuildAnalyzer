@@ -4173,40 +4173,39 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes="long-slider"
     )
 
-    # 2. Row 2: European Roulette Table
+# 2. Row 2: European Roulette Table  # Line 1 (context before)
     with gr.Group():
-        gr.Markdown("### European Roulette Table")
-            table_layout = [
-                ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-                ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-                ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-            ]
-            with gr.Column(elem_classes="roulette-table"):
-                for row in table_layout:  # Line 1 (search term lands here)
-                    with gr.Row(elem_classes="table-row"):
-                        for num in row:
-                            if num == "":
-                                gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                            else:
-                                color = colors.get(str(num), "black")
-                                is_selected = int(num) in state.selected_numbers
-                                btn_classes = [f"roulette-button", color]
-                                if is_selected:
-                                    btn_classes.append("selected")
-                                btn = gr.Button(  # Line 2 (modified)
-                                    value=num,
-                                    min_width=40,
-                                    elem_classes=btn_classes,
-                                    title=f"Spin number {num}"  # Added for accessibility
-                                )
-                                # Attach the click event directly
-                                btn.click(
-                                    fn=add_spin,
-                                    inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                    outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                                )
-# Lines after (unchanged)
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+        gr.Markdown("### European Roulette Table")  # Line 2 (search term lands here)
+        table_layout = [  # Line 3 (corrected indentation)
+            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+        ]
+        with gr.Column(elem_classes="roulette-table"):  # Line 4 (corrected indentation)
+            for row in table_layout:
+                with gr.Row(elem_classes="table-row"):
+                    for num in row:
+                        if num == "":
+                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                        else:
+                            color = colors.get(str(num), "black")
+                            is_selected = int(num) in state.selected_numbers
+                            btn_classes = [f"roulette-button", color]
+                            if is_selected:
+                                btn_classes.append("selected")
+                            btn = gr.Button(
+                                value=num,
+                                min_width=40,
+                                elem_classes=btn_classes,
+                                title=f"Spin number {num}"  # Added for accessibility
+                            )
+                            # Attach the click event directly
+                            btn.click(
+                                fn=add_spin,
+                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                            )
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider  # Line 5 (context after)
     with gr.Row():
         with gr.Column():
             last_spin_display
@@ -5664,22 +5663,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       });
     </script>
     """)
-    # New script to set lang attribute
+# Lines before (unchanged)
     gr.HTML("""
     <script>
-      document.documentElement.setAttribute('lang', 'en');  # Line 1 (search term lands here)
+      document.documentElement.setAttribute('lang', 'en');
     </script>
     """)
-    # New script to modify viewport meta tag  # Line 2 (inserted here)
+    # New script to modify viewport meta tag
     gr.HTML("""
     <script>
-      let viewport = document.querySelector('meta[name="viewport"]');
+      let viewport = document.querySelector('meta[name="viewport"]');  # Line 1 (search term lands here)
       if (viewport) {
         viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
       } else {
         let meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, initial-scale=1.0';
+        document.head.appendChild(meta);
+      }
+    </script>
+    """)
+    # New script to set charset meta tag  # Line 2 (inserted here)
+    gr.HTML("""
+    <script>
+      let charsetMeta = document.querySelector('meta[charset]');
+      if (!charsetMeta) {
+        let meta = document.createElement('meta');
+        meta.setAttribute('charset', 'utf-8');
         document.head.appendChild(meta);
       }
     </script>
