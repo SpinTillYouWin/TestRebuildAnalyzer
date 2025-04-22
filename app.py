@@ -464,9 +464,6 @@ def render_sides_of_zero_display():
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
     
-    # Debug print to verify hit counts
-    print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
-    
     # Calculate the maximum hit count for scaling
     max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     
@@ -474,9 +471,6 @@ def render_sides_of_zero_display():
     left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
     zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
     right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
-    
-    # Debug print to verify calculated progress
-    print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
     # Define the order of numbers for the European roulette wheel
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
@@ -493,9 +487,6 @@ def render_sides_of_zero_display():
         # Calculate the angle for the latest spin (each number occupies 360/37 degrees)
         index = original_order.index(latest_spin) if latest_spin in original_order else 0
         latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom (90 degrees clockwise)
-    
-    # Debug print to verify latest spin
-    print(f"render_sides_of_zero_display: latest_spin={latest_spin}, latest_spin_angle={latest_spin_angle}, has_latest_spin={has_latest_spin}")
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
@@ -517,9 +508,9 @@ def render_sides_of_zero_display():
         
         return f'<div class="number-list">{"".join(number_html)}</div>'
     
-    number_list = generate_number_list(wheel_numbers)
+    number_list = generate_number_list(wheel_numbers)  
     
-    # Generate SVG for the roulette wheel
+        # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="300" height="300" viewBox="0 0 300 300" style="transform: rotate(90deg);">'
     wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'  # Green felt background
@@ -4004,7 +3995,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 value=num,
                                 min_width=40,
                                 elem_classes=btn_classes,
-                                _js=f"() => {{ document.querySelector('.roulette-button[value=\"{num}\"]').setAttribute('aria-label', 'Spin number {num}'); }}"  # Use aria-label for accessibility
+                                elem_id=f"roulette-btn-{num}"  # Add unique elem_id for each button
+                            )
+                            # Attach the click event directly
+                            btn.click(
+                                fn=add_spin,
+                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             )
                             # Attach the click event directly
                             btn.click(
@@ -5019,6 +5016,197 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 height: 200px !important;
             }
         }
+        /* Inlined CSS from render_sides_of_zero_display */
+        .circular-progress {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            background: conic-gradient(#d3d3d3 0% 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.5s ease;
+        }
+        .circular-progress::before {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .circular-progress span {
+            position: relative;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        #left-progress {
+            background: conic-gradient(#6a1b9a 0%, #d3d3d3 0% 100%);
+        }
+        #zero-progress {
+            background: conic-gradient(#00695c 0%, #d3d3d3 0% 100%);
+        }
+        #right-progress {
+            background: conic-gradient(#f4511e 0%, #d3d3d3 0% 100%);
+        }
+        .circular-progress:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .number-list {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 3px;
+            justify-content: center;
+            margin-top: 10px;
+            overflow-x: auto;
+            width: 100%;
+            padding: 5px 0;
+        }
+        .number-item {
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 10px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .number-item.zero-number {
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            font-size: 30px;
+        }
+        .hit-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+            font-size: 8px;
+            width: 12px;
+            height: 12px;
+            line-height: 12px;
+            border-radius: 50%;
+            z-index: 2;
+        }
+        .number-item.zero-number .hit-badge {
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            font-size: 10px;
+        }
+        .tooltip {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }
+        .tracker-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .tracker-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }
+        .roulette-wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #wheel-pointer {
+            z-index: 3;
+        }
+        @media (max-width: 600px) {
+            .tracker-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .number-list {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+            .number-item {
+                width: 16px;
+                height: 16px;
+                line-height: 16px;
+                font-size: 8px;
+            }
+            .number-item.zero-number {
+                width: 64px;
+                height: 64px;
+                line-height: 64px;
+                font-size: 32px;
+            }
+            .hit-badge {
+                width: 10px;
+                height: 10px;
+                line-height: 10px;
+                font-size: 6px;
+                top: -3px;
+                right: -3px;
+            }
+            .number-item.zero-number .hit-badge {
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
+            }
+            .roulette-wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            #roulette-wheel {
+                width: 250px;
+                height: 250px;
+            }
+            #wheel-pointer {
+                top: 12.5px;
+                left: 120.75px;
+                width: 7.5px;
+                height: 25px;
+            }
+            #spinning-ball {
+                width: 10px;
+                height: 10px;
+            }
+        }
     </style>
     """)
     print("CSS Updated")
@@ -5076,6 +5264,418 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           }
         });
       }
+
+      // Step 1: Header
+      tour.addStep({
+        id: 'part1',
+        title: 'Your Roulette Adventure Begins!',
+        text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#header-row', on: 'bottom' },
+        buttons: [
+          { text: 'Next', action: logStep('Part 1', 'Part 2') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 2: Roulette Table
+      tour.addStep({
+        id: 'part2',
+        title: 'Spin the Wheel, Start the Thrill!',
+        text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '.roulette-table', on: 'right' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 2', 'Part 3') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 3: Last Spins Display
+      tour.addStep({
+        id: 'part3',
+        title: 'Peek at Your Spin Streak!',
+        text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '.last-spins-container', on: 'bottom' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 3', 'Part 4') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 4: Spin Controls
+      tour.addStep({
+        id: 'part4',
+        title: 'Master Your Spin Moves!',
+        text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#undo-spins-btn', on: 'bottom' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 4', 'Part 5') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 5: Selected Spins Textbox
+      tour.addStep({
+        id: 'part5',
+        title: 'Jot Spins, Count Wins!',
+        text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#selected-spins', on: 'bottom' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 5', 'Part 6') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 6: Analyze Button
+      tour.addStep({
+        id: 'part6',
+        title: 'Analyze and Reset Like a Pro!',
+        text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '.green-btn', on: 'bottom' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 6', 'Part 7') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 7: Dynamic Table
+      tour.addStep({
+        id: 'part7',
+        title: 'Light Up Your Lucky Spots!',
+        text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 7', 'Part 8') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 8: Betting Progression Tracker
+      tour.addStep({
+        id: 'part8',
+        title: 'Bet Smart, Track the Art!',
+        text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '.betting-progression', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('.betting-progression');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 8', 'Part 9') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 9: Color Code Key
+      tour.addStep({
+        id: 'part9',
+        title: 'Paint Your Winning Hue!',
+        text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#color-code-key', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#color-code-key');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 9', 'Part 10') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 10: Color Code Key (Continued)
+      tour.addStep({
+        id: 'part10',
+        title: 'Decode the Color Clue!',
+        text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#color-code-key', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#color-code-key');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 10', 'Part 11') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 11: Spin Analysis
+      tour.addStep({
+        id: 'part11',
+        title: 'Unleash the Spin Secrets!',
+        text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#spin-analysis', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#spin-analysis');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 11', 'Part 12') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 12: Save/Load Session
+      tour.addStep({
+        id: 'part12',
+        title: 'Save Your Spin Glory!',
+        text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#save-load-session', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#save-load-session');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 12', 'Part 13') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 13: Strategy Selection
+      tour.addStep({
+        id: 'part13',
+        title: 'Pick Your Strategy Groove!',
+        text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#select-category', on: 'left' },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 13', 'Part 14') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 14: Casino Data Insights
+      tour.addStep({
+        id: 'part14',
+        title: 'Boost Wins with Casino Intel!',
+        text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#casino-data-insights', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#casino-data-insights');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 14', 'Part 15') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 15: Dealer’s Spin Tracker
+      tour.addStep({
+        id: 'part15',
+        title: 'Spot the Dealer’s Bias!',
+        text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#sides-of-zero-accordion');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 15', 'Part 16a') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 16a: Create Dozen/Even Bet Triggers - Dozen Triggers
+      tour.addStep({
+        id: 'part16a',
+        title: 'Trigger Dozen Wins!',
+        text: 'Set up Dozen Triggers to catch hot streaks and patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iYfhd8_C1IM?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#dozen-tracker');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 16a', 'Part 16a1') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 16a1: Create Dozen/Even Bet Triggers - Dozen Triggers: Alert on Consecutive Dozen Hits
+      tour.addStep({
+        id: 'part16a1',
+        title: 'Catch Dozen Streaks!',
+        text: 'Enable alerts for consecutive Dozen hits to spot trends fast.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/e6KAOAoImNQ?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#dozen-tracker');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 16a1', 'Part 16a2') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 16a2: Create Dozen/Even Bet Triggers - Dozen Triggers: Sequence Length to Match (X), Follow-Up Spins to Track (Y)
+      tour.addStep({
+        id: 'part16a2',
+        title: 'Match Dozen Sequences!',
+        text: 'Track sequences and follow-ups to predict Dozen patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/X4mFSMMc21g?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#dozen-tracker');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 16a2', 'Part 16b') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 16b: Create Dozen/Even Bet Triggers - Even Money Bet Triggers
+      tour.addStep({
+        id: 'part16b',
+        title: 'Trigger Even Money Magic!',
+        text: 'Set Even Money Triggers to catch winning streaks and traits.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/5z7TjjwpTs0?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#dozen-tracker');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 16b', 'Part 16b1') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 16b1: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Alert on Consecutive Even Money Hits (And/Or)
+      tour.addStep({
+        id: 'part16b1',
+        title: 'Even Money Streaks On!',
+        text: 'Get alerts for consecutive Even Money hits with And/Or logic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/gjQcOdNDGKc?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#dozen-tracker');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 16b1', 'Part 16b2') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 16b2: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Track Consecutive Identical Traits
+      tour.addStep({
+        id: 'part16b2',
+        title: 'Track Even Money Traits!',
+        text: 'Spot consecutive identical traits to refine your Even Money bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iRz_y8DeqCU?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#dozen-tracker');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 16b2', 'Part 17') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 17: Top Strategies with Roulette Spin Analyzer
+      tour.addStep({
+        id: 'part17',
+        title: 'Learn Top Strategies!',
+        text: 'Explore winning strategies with video tutorials to level up your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/t_5gvje0SKI?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#top-strategies', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#top-strategies');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 17', 'Part 18') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
+
+      // Step 18: Feedback & Suggestions
+      tour.addStep({
+        id: 'part18',
+        title: 'Share Your Winning Ideas!',
+        text: 'Submit feedback or suggest new strategies to enhance the app.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/9MgXNg2oDvk?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#feedback-section', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#feedback-section');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+        ]
+      });
+
+      function startTour() {
+        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
+        if (typeof Shepherd === 'undefined') {
+          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
+          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
+          return;
+        }
+        setTimeout(() => {
+          console.log('Checking DOM elements for tour...');
+          const criticalElements = [
+            '#header-row',
+            '.roulette-table',
+            '#selected-spins',
+            '#undo-spins-btn',
+            '.last-spins-container',
+            '.green-btn',
+            '#dynamic-table-heading',
+            '.betting-progression',
+            '#color-code-key',
+            '#spin-analysis',
+            '#save-load-session',
+            '#select-category',
+            '#casino-data-insights',
+            '#sides-of-zero-accordion',
+            '#dozen-tracker',
+            '#top-strategies',
+            '#feedback-section'
+          ];
+          const missingElements = criticalElements.filter(el => !document.querySelector(el));
+          if (missingElements.length > 0) {
+            console.error('Missing critical elements for tour:', missingElements);
+            alert('Tour unavailable: Some elements are missing. Please ensure the page is fully loaded or refresh the page.');
+            return;
+          }
+          console.log('All critical elements found. Starting tour...');
+          tour.start();
+        }, 1500); // Delay to ensure DOM is fully loaded
+      }
+
+      // Auto-start the tour on page load after a delay
+      setTimeout(() => {
+        console.log('Attempting to auto-start tour...');
+        const hasSeenTour = localStorage.getItem('hasSeenTour');
+        if (!hasSeenTour) {
+          console.log('User has not seen tour. Auto-starting...');
+          startTour();
+          localStorage.setItem('hasSeenTour', 'true');
+        } else {
+          console.log('User has already seen the tour. Skipping auto-start.');
+        }
+      }, 2000);
+
+      // Set aria-label for roulette buttons
+      setTimeout(() => {
+        console.log('Setting aria-label for roulette buttons...');
+        const buttons = document.querySelectorAll('[id^="roulette-btn-"]');
+        buttons.forEach(button => {
+          const num = button.id.replace('roulette-btn-', '');
+          button.setAttribute('aria-label', `Spin number ${num}`);
+          console.log(`Set aria-label for button ${num}: Spin number ${num}`);
+        });
+        if (buttons.length === 0) {
+          console.warn('No roulette buttons found to set aria-label.');
+        }
+      }, 1500); // Delay to ensure DOM is fully loaded
+    </script>
+    """)
+
+    print("Tour Script Updated")
 
       // Step 1: Header
       tour.addStep({
