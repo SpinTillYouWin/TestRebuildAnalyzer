@@ -480,7 +480,19 @@ def render_sides_of_zero_display():
     right_side = original_order[19:]  # 32 to 10 (18 numbers)
     wheel_order = left_side + zero + right_side
     
-    # Determine the winning section
+    # Define betting sections
+    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
+    voisins_du_zero = [22, 9, 31, 14, 20, 1, 33, 16, 24, 0, 32, 15, 19, 4, 21, 2, 25]
+    orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
+    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+    
+    # Calculate hit counts for each betting section
+    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
+    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
+    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
+    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
+    
+    # Determine the winning section for Left/Right Side
     winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
     
     # Get the latest spin for bounce effect and wheel rotation
@@ -515,17 +527,16 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel with section highlights
+    # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
     # Add background arcs for Left Side and Right Side
-    # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
     left_start_angle = 0
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
     left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 170 + 145 * math.cos(left_start_rad)  # Center at 170
+    left_x1 = 170 + 145 * math.cos(left_start_rad)
     left_y1 = 170 + 145 * math.sin(left_start_rad)
     left_x2 = 170 + 145 * math.cos(left_end_rad)
     left_y2 = 170 + 145 * math.sin(left_end_rad)
@@ -534,7 +545,6 @@ def render_sides_of_zero_display():
     left_stroke = "#4A148C" if winning_section == "Left Side" else "#808080"
     wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="{left_stroke}" stroke-width="3"/>'
     
-    # Right Side arc (from 180 to 360 degrees, corresponding to 18 numbers)
     right_start_angle = 180
     right_end_angle = 360
     right_start_rad = right_start_angle * (3.14159 / 180)
@@ -557,14 +567,11 @@ def render_sides_of_zero_display():
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
         hits = state.scores.get(num, 0)
-        # Scale stroke width and opacity based on hits
-        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
-        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
-        stroke_color = "#FF00FF" if hits > 0 else "#FFF"  # Changed to magenta (#FF00FF)
-        # Determine if this segment is in the winning section
+        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2
+        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5
+        stroke_color = "#FF00FF" if hits > 0 else "#FFF"
         is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
-        # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
         x1 = 170 + 135 * math.cos(rad)
@@ -577,19 +584,16 @@ def render_sides_of_zero_display():
         y4 = 170 + 105 * math.sin(rad)
         path_d = f"M 170,170 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
         wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
-        # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
         text_x = 170 + 120 * math.cos(text_rad)
         text_y = 170 + 120 * math.sin(text_rad)
         wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
-        # Add hit count text
         hit_text_x = 170 + 90 * math.cos(text_rad)
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     
-    # Add labels for Left Side and Right Side with hit counts, outside the wheel
-    # Left Side label at 90 degrees
+    # Add labels for Left Side and Right Side
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
     left_label_x = 170 + 155 * math.cos(left_label_rad)
@@ -597,7 +601,6 @@ def render_sides_of_zero_display():
     wheel_svg += f'<rect x="{left_label_x - 25}" y="{left_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#6A1B9A" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" dy="3">Left: {left_hits}</text>'
     
-    # Right Side label at 270 degrees
     right_label_angle = 270
     right_label_rad = right_label_angle * (3.14159 / 180)
     right_label_x = 170 + 155 * math.cos(right_label_rad)
@@ -611,6 +614,35 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
+    
+    # New: Add betting sections display below the wheel
+    betting_sections_html = '<div class="betting-sections-container">'
+    sections = [
+        ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
+        ("Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
+        ("Orphelins", orphelins, "#800080", orphelins_hits),
+        ("Tiers du Cylindre", tiers_du_cylindre, "#FFA500", tiers_du_cylindre_hits)
+    ]
+    
+    for section_name, numbers, color, hits in sections:
+        # Generate the numbers list with colors
+        numbers_html = []
+        for num in numbers:
+            num_color = colors.get(str(num), "black")
+            numbers_html.append(f'<span style="background-color: {num_color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px;">{num}</span>')
+        numbers_display = "".join(numbers_html)
+        
+        # Create the card
+        badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
+        card_class = "betting-section-card" + (" has-hits" if hits > 0 else "")
+        betting_sections_html += f'''
+        <div class="{card_class}">
+            <div class="betting-section-header" style="background-color: {color};">{section_name}{badge}</div>
+            <div class="betting-section-numbers">{numbers_display}</div>
+        </div>
+        '''
+    
+    betting_sections_html += '</div>'
     
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
@@ -724,7 +756,7 @@ def render_sides_of_zero_display():
             opacity: 0;
             transition: opacity 0.2s ease;
             white-space: pre-wrap;
-            border: 1px solid #FF00FF;  /* Updated to match new pulsing color */
+            border: 1px solid #FF00FF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }}
         .tracker-column {{
@@ -826,6 +858,58 @@ def render_sides_of_zero_display():
                 height: 10px;
             }}
         }}
+        /* New styles for betting sections cards */
+        .betting-sections-container {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 10px;
+        }}
+        .betting-section-card {{
+            background-color: #fff;
+            border: 1px solid #d3d3d3;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 200px;
+            padding: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }}
+        .betting-section-card:hover {{
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }}
+        .betting-section-header {{
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            font-size: 14px;
+            position: relative;
+        }}
+        .betting-section-numbers {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 10px 5px;
+            justify-content: center;
+        }}
+        .betting-section-hits {{
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            top: -10px;
+            right: -10px;
+        }}
+        .betting-section-card.has-hits .betting-section-header {{
+            animation: pulse-header 1.5s infinite ease-in-out;
+        }}
+        @keyframes pulse-header {{
+            0% {{ opacity: 1; }}
+            50% {{ opacity: 0.7; }}
+            100% {{ opacity: 1; }}
+        }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
@@ -851,6 +935,7 @@ def render_sides_of_zero_display():
         </div>
         {number_list}
         {wheel_svg}
+        {betting_sections_html}
     </div>
     <script>
         function updateCircularProgress(id, progress) {{
