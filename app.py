@@ -4613,7 +4613,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
 
-    # 12. Row 12: Feedback Section
+# 12. Row 12: Feedback Section
+# Lines before (context)
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
@@ -4636,36 +4637,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     </form>
                     <div id="form-message" style="margin-top: 10px; text-align: center; font-family: Arial, sans-serif;"></div>
                 </div>
-                <script>
-                    document.getElementById("feedback-form").addEventListener("submit", function(event) {
-                        event.preventDefault();
-                        const form = event.target;
-                        const formData = new FormData(form);
-                        const messageDiv = document.getElementById("form-message");
-                        messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
-                        fetch("https://formspree.io/f/mnnpllqq", {
-                            method: "POST",
-                            body: formData,
-                            headers: {
-                                "Accept": "application/json"
-                            }
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                messageDiv.innerHTML = '<p style="color: green; font-weight: bold;">Thank you for your feedback!</p>';
-                                form.reset();
-                            } else {
-                                messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Form submission error:", error);
-                            messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
-                        });
-                    });
-                </script>
-                """)
-    # CSS
+                < zetten voor de <style> sectie -->
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
@@ -4688,53 +4660,90 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     </script>
     <style>
         /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-        .gr-column { margin: 0 !important; padding: 5px !important; }
-        .gr-box { border-radius: 5px !important; }
-        
+        body {
+            background-color: #1a1a1a !important; /* Dark background for premium feel */
+            color: #e0e0e0 !important; /* Light text for contrast */
+            font-family: 'Roboto', sans-serif !important; /* Modern font */
+        }
+        .gr-row {
+            margin: 0 !important;
+            padding: 10px 0 !important;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a) !important; /* Subtle gradient */
+        }
+        .gr-column {
+            margin: 0 !important;
+            padding: 10px !important;
+            background: none !important;
+        }
+        .gr-box {
+            border-radius: 8px !important;
+            background-color: #2a2a2a !important; /* Darker container */
+            border: 1px solid #FFD700 !important; /* Gold border */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important; /* Soft shadow */
+        }
+
         /* Style for Dealer’s Spin Tracker accordion */
         #sides-of-zero-accordion {
-            background-color: #f5c6cb !important;
-            padding: 10px !important;
+            background: linear-gradient(135deg, #3a3a3a, #2a2a2a) !important;
+            padding: 15px !important;
+            border: 2px solid #FFD700 !important;
+            border-radius: 8px !important;
         }
         #sides-of-zero-accordion > div {
-            background-color: #f5c6cb !important;
+            background: none !important;
         }
         #sides-of-zero-accordion summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important; /* Gold gradient */
+            color: #1a1a1a !important;
+            padding: 12px !important;
+            border-radius: 6px !important;
+            font-weight: bold !important;
+            transition: transform 0.2s ease !important;
         }
-        
+        #sides-of-zero-accordion summary:hover {
+            transform: scale(1.02) !important;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important; /* Gold glow */
+        }
+
         /* Style for Feedback Section accordion */
         #feedback-section summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            padding: 12px !important;
+            border-radius: 6px !important;
+            font-weight: bold !important;
         }
-        
+        #feedback-section summary:hover {
+            transform: scale(1.02) !important;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
+        }
+
         /* Hide stray labels in the Sides of Zero section */
         .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
             display: none !important;
         }
-        
+
         /* Header Styling */
         #header-row {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             flex-wrap: wrap !important;
-            background-color: white !important;
-            padding: 10px 0 !important;
-            width: 100% !important; /* Ensure the header spans the full width */
-            margin: 0 auto !important; /* Center the row horizontally */
-            margin-bottom: 20px !important; /* Add spacing below the header */
+            background: linear-gradient(135deg, #3a3a3a, #2a2a2a) !important;
+            padding: 15px 0 !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            margin-bottom: 25px !important;
+            border-bottom: 2px solid #FFD700 !important;
         }
-        
-        .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
-        
+        .header-title {
+            text-align: center !important;
+            font-size: 2.8em !important;
+            margin: 0 !important;
+            color: #FFD700 !important; /* Gold text */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+        }
+
         /* Fix Selected Spins Label Cutoff */
         #selected-spins-row {
             width: 100% !important;
@@ -4747,175 +4756,310 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             height: auto !important;
             overflow: visible !important;
             display: block !important;
-            background-color: #87CEEB;
-            color: black;
-            padding: 10px 5px !important; /* Increased top/bottom padding */
-            border-radius: 3px;
-            line-height: 1.5em !important; /* Increased for better spacing */
-            font-size: 14px !important; /* Reduced font size */
-            margin-top: 5px !important; /* Added to shift text downward */
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            padding: 12px 8px !important;
+            border-radius: 6px !important;
+            line-height: 1.6em !important;
+            font-size: 15px !important;
+            margin-top: 8px !important;
         }
         #selected-spins {
             width: 100% !important;
             min-width: 800px !important;
+            background-color: #3a3a3a !important;
+            border: 1px solid #FFD700 !important;
+            color: #e0e0e0 !important;
         }
-    
+
         /* Roulette Table */
-        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button:hover { opacity: 0.8; }
-        .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .roulette-table { 
-            display: flex !important; 
-            flex-direction: column !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 5px !important; 
-            background-color: #2e7d32 !important; /* Green felt background */
-            border: 2px solid #d3d3d3 !important; 
-            border-radius: 5px !important; 
-            width: 100% !important; 
-            max-width: 600px !important; 
-            margin: 0 auto !important; 
-            overflow-x: auto !important; /* Enable horizontal scrolling */
-            overflow-y: hidden !important; /* Prevent vertical scrolling */
+        .roulette-button.green {
+            background-color: #2e7d32 !important;
+            color: white !important;
+            border: 2px solid #FFD700 !important;
+            text-align: center !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
         }
-        .table-row { 
-            display: flex !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            flex-wrap: nowrap !important; 
-            line-height: 0 !important; 
-            min-width: 580px !important; /* Ensure the row is wide enough for all buttons */
-            white-space: nowrap !important; /* Prevent buttons from wrapping */
+        .roulette-button.red {
+            background-color: #d32f2f !important;
+            color: white !important;
+            border: 2px solid #FFD700 !important;
+            text-align: center !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
         }
-        
+        .roulette-button.black {
+            background-color: #212121 !important;
+            color: white !important;
+            border: 2px solid #FFD700 !important;
+            text-align: center !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
+        }
+        .roulette-button:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 10px #FFD700 !important; /* Gold glow */
+            opacity: 1 !important;
+        }
+        .roulette-button.selected {
+            border: 3px solid #FFD700 !important;
+            box-shadow: 0 0 12px #FFD700 !important;
+            transform: scale(1.05) !important;
+        }
+        .roulette-button {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 50% !important; /* Circular buttons */
+            box-sizing: border-box !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+        }
+        .empty-button {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 48px !important;
+            height: 48px !important;
+            border: 2px solid #FFD700 !important;
+            box-sizing: border-box !important;
+            background: transparent !important;
+        }
+        .roulette-table {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0 !important;
+            margin: 0 auto !important;
+            padding: 10px !important;
+            background: url('https://www.transparenttextures.com/patterns/green-felt.png'), #2e7d32 !important; /* Luxurious felt texture */
+            border: 3px solid #FFD700 !important;
+            border-radius: 8px !important;
+            width: 100% !important;
+            max-width: 800px !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+        }
+        .table-row {
+            display: flex !important;
+            gap: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-wrap: nowrap !important;
+            line-height: 0 !important;
+            min-width: 754px !important;
+            white-space: nowrap !important;
+        }
+
         /* Responsive adjustments for desktop */
         @media (min-width: 768px) {
             .roulette-table {
-                max-width: 800px !important; /* Larger max-width on desktop */
+                max-width: 900px !important;
             }
             .table-row {
-                min-width: 754px !important; /* Adjusted for larger buttons: 13 × 48px + 12 × 5px = 684px + 60px = 744px */
+                min-width: 754px !important;
             }
             .roulette-button, .empty-button {
-                width: 48px !important; /* Slightly larger buttons on desktop */
-                height: 48px !important;
-                font-size: 16px !important; /* Larger font size for better readability */
+                width: 52px !important;
+                height: 52px !important;
+                font-size: 18px !important;
             }
         }
-        
-        /* Buttons */    
-        .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-        button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
-        button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
-        
-        /* Remove display: inline-block to match container width */
-        button.green-btn {
-            background-color: #28a745 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            padding: 8px 16px !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+
+        /* Buttons */
+        .action-button {
+            min-width: 140px !important;
+            padding: 8px 12px !important;
+            font-size: 15px !important;
+            width: 100% !important;
             box-sizing: border-box !important;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            border: none !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+        }
+        .action-button:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 0 12px #FFD700 !important;
+            background: linear-gradient(135deg, #D4A017, #FFD700) !important;
+        }
+        button.green-btn {
+            background: linear-gradient(135deg, #28a745, #1b5e20) !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 18px !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
         }
         button.green-btn:hover {
-            background-color: #218838 !important;
             transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 0 12px #28a745 !important;
+            background: linear-gradient(135deg, #1b5e20, #28a745) !important;
         }
-        
         button.clear-spins-btn {
-            background-color: #ff4444 !important;
+            background: linear-gradient(135deg, #ff4444, #b71c1c) !important;
             color: white !important;
-            border: 1px solid #000 !important;
-            box-sizing: border-box !important;
-            display: inline-block !important;
+            border: none !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
         }
         button.clear-spins-btn:hover {
-            background-color: #cc0000 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 0 12px #ff4444 !important;
+            background: linear-gradient(135deg, #b71c1c, #ff4444) !important;
         }
-        button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-        button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-        
+        button.generate-spins-btn {
+            background: linear-gradient(135deg, #007bff, #003f7f) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+        }
+        button.generate-spins-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 0 12px #007bff !important;
+            background: linear-gradient(135deg, #003f7f, #007bff) !important;
+        }
+
         /* Ensure columns have appropriate spacing */
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        
+        .gr-column {
+            margin: 0 !important;
+            padding: 10px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+
         /* Compact Components */
-        .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .long-slider .gr-box { width: 100% !important; }
-        
+        .long-slider {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #3a3a3a !important;
+            border-radius: 6px !important;
+        }
+        .long-slider .gr-box {
+            width: 100% !important;
+            background: none !important;
+        }
+
         /* Target the Accordion and its children */
-        .gr-accordion { background-color: #ffffff !important; }
-        .gr-accordion * { background-color: #ffffff !important; }
-        .gr-accordion .gr-column { background-color: #ffffff !important; }
-        .gr-accordion .gr-row { background-color: #ffffff !important; }
-    
+        .gr-accordion {
+            background: linear-gradient(135deg, #3a3a3a, #2a2a2a) !important;
+            border-radius: 8px !important;
+        }
+        .gr-accordion * {
+            background: none !important;
+        }
+        .gr-accordion .gr-column, .gr-accordion .gr-row {
+            background: none !important;
+        }
+
         /* Section Labels */
-        #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-        #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        
+        #selected-spins label {
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+        #spin-analysis label {
+            background: linear-gradient(135deg, #90EE90, #66BB6A) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+        #strongest-numbers-table label {
+            background: linear-gradient(135deg, #E6E6FA, #B0BEC5) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+        #number-of-random-spins label {
+            background: linear-gradient(135deg, #FFDAB9, #FFAB91) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+        #aggregated-scores label {
+            background: linear-gradient(135deg, #FFB6C1, #F06292) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+        #select-category label {
+            background: linear-gradient(135deg, #FFFFE0, #FFF9C4) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+
         /* Compact dropdown styling for Select Category and Select Strategy */
         #select-category select, #strategy-dropdown select {
-            max-height: 150px !important;
+            max-height: 160px !important;
             overflow-y: auto !important;
             scrollbar-width: thin !important;
-            font-size: 14px;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            font-size: 15px;
+            padding: 8px;
+            background-color: #3a3a3a !important;
+            border: 1px solid #FFD700 !important;
+            border-radius: 6px !important;
+            color: #e0e0e0 !important;
         }
         #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
         #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 3px;
+            background-color: #FFD700 !important;
+            border-radius: 4px;
         }
-        
+
         /* Scrollable Tables */
-        .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-    
+        .scrollable-table {
+            max-height: 320px;
+            overflow-y: auto;
+            display: block;
+            width: 100%;
+            background-color: #2a2a2a !important;
+            border-radius: 6px !important;
+            padding: 5px !important;
+        }
+
         /* Spin Counter Styling */
         .spin-counter {
             font-size: 16px !important;
             font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-            padding: 8px 12px !important;
-            border: 2px solid #3498DB !important;
+            color: #1a1a1a !important;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            padding: 10px 14px !important;
+            border: 2px solid #FFD700 !important;
             border-radius: 8px !important;
             margin-top: 0 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
         }
         .spin-counter:hover {
             transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 0 12px #FFD700 !important;
         }
-    
+
         /* Last Spins Container */
         .last-spins-container {
-            background-color: #f5f5f5 !important; /* Light gray background */
-            border: 1px solid #d3d3d3 !important; /* Subtle gray border */
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+            background-color: #2a2a2a !important;
+            border: 2px solid #FFD700 !important;
+            padding: 12px !important;
+            border-radius: 8px !important;
+            margin-top: 12px !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
         }
-        
+
         /* Fade-in animation for Last Spins */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -4924,7 +5068,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
+
         /* Flash animation for new spins */
         .flash.red {
             animation: flashRed 0.3s ease-in-out;
@@ -4936,18 +5080,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             animation: flashBlack 0.3s ease-in-out;
         }
         @keyframes flashRed {
-            0%, 100% { background-color: red; }
+            0%, 100% { background-color: #d32f2f; }
             50% { background-color: #ff3333; }
         }
         @keyframes flashGreen {
-            0%, 100% { background-color: green; }
+            0%, 100% { background-color: #2e7d32; }
             50% { background-color: #33cc33; }
         }
         @keyframes flashBlack {
-            0%, 100% { background-color: black; }
+            0%, 100% { background-color: #212121; }
             50% { background-color: #333333; }
         }
-        
+
         /* Bounce animation for Dealer's Spin Tracker numbers */
         .bounce {
             animation: bounce 0.4s ease-in-out;
@@ -4956,8 +5100,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
         }
-        
-        /* New: Flip animation for Last Spins new numbers */
+
+        /* Flip animation for Last Spins new numbers */
         .flip {
             animation: flip 0.5s ease-in-out;
         }
@@ -4965,106 +5109,129 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(360deg); }
         }
-    
-        /* Spin Counter Styling */
-        .spin-counter {
-            font-size: 14px !important; /* Reduced from 16px */
-            font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-            padding: 4px 8px !important; /* Reduced from 8px 12px */
-            border: 2px solid #3498DB !important; /* Darker blue border */
-            border-radius: 6px !important; /* Reduced from 8px */
-            margin-top: 0 !important; /* Align with textbox */
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
-        }
-    
+
+        /* Sides of Zero Container */
         .sides-of-zero-container {
-            background-color: #ffffff !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin: 10px 0 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            background-color: #2a2a2a !important;
+            border: 2px solid #FFD700 !important;
+            padding: 12px !important;
+            border-radius: 8px !important;
+            margin: 12px 0 !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
         }
-    
+
         /* Responsive Design */
         @media (max-width: 600px) {
-            .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-            td, th { padding: 5px; font-size: 12px; }
-            .gr-textbox { font-size: 12px; }
-            .scrollable-table { max-height: 200px; }
-            .long-slider { width: 100% !important; }
-            .header-title { font-size: 1.8em !important; }
+            .roulette-button {
+                min-width: 36px;
+                font-size: 14px;
+                padding: 6px;
+                width: 36px !important;
+                height: 36px !important;
+            }
+            td, th {
+                padding: 6px;
+                font-size: 13px;
+            }
+            .gr-textbox {
+                font-size: 13px;
+            }
+            .scrollable-table {
+                max-height: 240px;
+            }
+            .long-slider {
+                width: 100% !important;
+            }
+            .header-title {
+                font-size: 2em !important;
+            }
         }
-    
+
         #strongest-numbers-dropdown select {
             -webkit-appearance: menulist !important;
             -moz-appearance: menulist !important;
             appearance: menulist !important;
+            background-color: #3a3a3a !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #FFD700 !important;
         }
         #strategy-dropdown select {
-            font-size: 14px;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            font-size: 15px;
+            padding: 8px;
+            background-color: #3a3a3a !important;
+            border: 1px solid #FFD700 !important;
+            border-radius: 6px !important;
+            color: #e0e0e0 !important;
         }
         #strategy-dropdown select option:checked {
             font-weight: bold;
-            background-color: #e0e0ff; /* Light blue to indicate selection */
-            color: #000;
+            background-color: #FFD700 !important;
+            color: #1a1a1a !important;
         }
-        .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
-        .betting-progression .gr-button { width: 100px; margin: 5px; }
-        .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
-    
+        .betting-progression .gr-textbox {
+            width: 100%;
+            margin: 6px 0;
+            background-color: #3a3a3a !important;
+            border: 1px solid #FFD700 !important;
+            color: #e0e0e0 !important;
+        }
+        .betting-progression .gr-button {
+            width: 120px;
+            margin: 6px;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            border-radius: 6px !important;
+        }
+        .betting-progression .gr-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
         /* Top Strategies Accordion */
         #top-strategies summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            padding: 12px !important;
+            border-radius: 6px !important;
         }
-    
+
         /* Video Section */
         #top-strategies .gr-box {
-            background-color: #f5c6cb !important;
-            padding: 15px !important;
-            border-radius: 5px !important;
+            background: linear-gradient(135deg, #3a3a3a, #2a2a2a) !important;
+            padding: 20px !important;
+            border-radius: 8px !important;
+            border: 2px solid #FFD700 !important;
         }
         #video-category-dropdown label, #video-dropdown label {
-            background-color: #87CEEB !important;
-            color: black !important;
-            padding: 5px !important;
-            border-radius: 3px !important;
+            background: linear-gradient(135deg, #FFD700, #D4A017) !important;
+            color: #1a1a1a !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
         }
         #video-output {
-            margin-top: 15px !important;
+            margin-top: 20px !important;
             width: 100% !important;
             display: flex !important;
             justify-content: center !important;
         }
         #video-output iframe {
             max-width: 100% !important;
-            border-radius: 5px !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
         }
-    
+
         /* Responsive Design for Video */
         @media (max-width: 600px) {
             #video-output iframe {
-                height: 200px !important;
+                height: 220px !important;
             }
         }
     </style>
     """)
     print("CSS Updated")
 
+# Lines after (context)
     # Shepherd.js Tour Script
     gr.HTML("""
     <script>
