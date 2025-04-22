@@ -1,7 +1,7 @@
 import gradio as gr
+import math
 import pandas as pd
 import json
-import math
 from itertools import combinations
 import random
 from roulette_data import (
@@ -493,7 +493,7 @@ def render_sides_of_zero_display():
     if latest_spin is not None:
         # Calculate the angle for the latest spin (each number occupies 360/37 degrees)
         index = original_order.index(latest_spin) if latest_spin in original_order else 0
-        latest_spin_angle = (index * (360 / 37))  # Angle in degrees
+        latest_spin_angle = (index * (360 / 37)) - 90  # Adjust for zero at top (90 degrees counterclockwise)
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
@@ -519,7 +519,7 @@ def render_sides_of_zero_display():
     
     # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
-    wheel_svg += '<svg id="roulette-wheel" width="200" height="200" viewBox="0 0 200 200" style="transform: rotate(0deg);">'
+    wheel_svg += f'<svg id="roulette-wheel" width="200" height="200" viewBox="0 0 200 200" style="transform: rotate(-90deg);">'
     wheel_svg += '<circle cx="100" cy="100" r="90" fill="#2e7d32"/>'  # Green felt background
     angle_per_number = 360 / 37
     for i, num in enumerate(original_order):
@@ -537,7 +537,8 @@ def render_sides_of_zero_display():
         x4 = 100 + 70 * math.cos(rad)
         y4 = 100 + 70 * math.sin(rad)
         path_d = f"M 100,100 L {x1},{y1} A 90,90 0 0,1 {x2},{y2} L {x3},{y3} A 70,70 0 0,0 {x4},{y4} Z"
-        wheel_svg += f'<path d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.5"/>'
+        class_name = "wheel-segment" + (" latest-spin" if num == latest_spin else "")
+        wheel_svg += f'<path class="{class_name}" d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.5"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
@@ -688,12 +689,15 @@ def render_sides_of_zero_display():
             animation: spinWheel 2s ease-out forwards;
         }}
         @keyframes spinWheel {{
-            0% {{ transform: rotate(0deg); }}
+            0% {{ transform: rotate(-90deg); }}
             80% {{ transform: rotate({720 + latest_spin_angle}deg); }}
             100% {{ transform: rotate({latest_spin_angle}deg); }}
         }}
         #wheel-pointer {{
             z-index: 3;
+        }}
+        .wheel-segment.latest-spin {{
+            filter: url(#glow);
         }}
         @media (max-width: 600px) {{
             .tracker-container {{
@@ -749,19 +753,19 @@ def render_sides_of_zero_display():
                 <div class="circular-progress" id="left-progress">
                     <span>{left_hits}</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px;">Left Side</span>
+                <span style="display: block; font-weight: bold; font-size: 10px; background-color: #6a1b9a; color: white; padding: 2px 5px; border-radius: 3px;">Left Side</span>
             </div>
             <div class="tracker-column">
                 <div class="circular-progress" id="zero-progress">
                     <span>{zero_hits}</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;">Zero</span>
+                <span style="display: block; font-weight: bold; font-size: 10px; background-color: #00695c; color: white; padding: 2px 5px; border-radius: 3px;">Zero</span>
             </div>
             <div class="tracker-column">
                 <div class="circular-progress" id="right-progress">
                     <span>{right_hits}</span>
                 </div>
-                <span style="display: block; font-weight: bold; font-size: 12px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px;">Right Side</span>
+                <span style="display: block; font-weight: bold; font-size: 10px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px;">Right Side</span>
             </div>
         </div>
         {number_list}
@@ -825,6 +829,8 @@ def render_sides_of_zero_display():
         // Trigger wheel spin animation
         const wheel = document.getElementById('roulette-wheel');
         if (wheel && {latest_spin is not None}) {{
+            wheel.classList.remove('spinning'); // Ensure no existing animation
+            void wheel.offsetWidth; // Force reflow
             wheel.classList.add('spinning');
             setTimeout(() => {{
                 wheel.classList.remove('spinning');
@@ -944,7 +950,7 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
         
 # Function to clear spins
 def clear_spins():
