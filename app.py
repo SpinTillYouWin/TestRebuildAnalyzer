@@ -519,8 +519,21 @@ def render_sides_of_zero_display():
     
     # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
-    wheel_svg += f'<svg id="roulette-wheel" width="200" height="200" viewBox="0 0 200 200" style="transform: rotate(90deg);">'
-    wheel_svg += '<circle cx="100" cy="100" r="90" fill="#2e7d32"/>'  # Green felt background
+    wheel_svg += '<svg id="roulette-wheel" width="300" height="300" viewBox="0 0 300 300" style="transform: rotate(90deg);">'
+    # Add glow filter for highlight
+    wheel_svg += '''
+    <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 1  0 1 0 0 1  0 0 1 0 1  0 0 0 0.7 0" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    '''
+    wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'  # Green felt background
     angle_per_number = 360 / 37
     for i, num in enumerate(original_order):
         angle = i * angle_per_number
@@ -528,26 +541,26 @@ def render_sides_of_zero_display():
         # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
-        x1 = 100 + 90 * math.cos(rad)
-        y1 = 100 + 90 * math.sin(rad)
-        x2 = 100 + 90 * math.cos(next_rad)
-        y2 = 100 + 90 * math.sin(next_rad)
-        x3 = 100 + 70 * math.cos(next_rad)
-        y3 = 100 + 70 * math.sin(next_rad)
-        x4 = 100 + 70 * math.cos(rad)
-        y4 = 100 + 70 * math.sin(rad)
-        path_d = f"M 100,100 L {x1},{y1} A 90,90 0 0,1 {x2},{y2} L {x3},{y3} A 70,70 0 0,0 {x4},{y4} Z"
+        x1 = 150 + 135 * math.cos(rad)
+        y1 = 150 + 135 * math.sin(rad)
+        x2 = 150 + 135 * math.cos(next_rad)
+        y2 = 150 + 135 * math.sin(next_rad)
+        x3 = 150 + 105 * math.cos(next_rad)
+        y3 = 150 + 105 * math.sin(next_rad)
+        x4 = 150 + 105 * math.cos(rad)
+        y4 = 150 + 105 * math.sin(rad)
+        path_d = f"M 150,150 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
         class_name = "wheel-segment" + (" latest-spin" if num == latest_spin else "")
-        wheel_svg += f'<path class="{class_name}" d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.5"/>'
+        wheel_svg += f'<path class="{class_name}" d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.75"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
-        text_x = 100 + 80 * math.cos(text_rad)
-        text_y = 100 + 80 * math.sin(text_rad)
-        wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="6" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
-    wheel_svg += '<circle cx="100" cy="100" r="10" fill="#FFD700"/>'  # Gold center
+        text_x = 150 + 120 * math.cos(text_rad)
+        text_y = 150 + 120 * math.sin(text_rad)
+        wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
+    wheel_svg += '<circle cx="150" cy="150" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
-    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 10px; left: 97px; width: 6px; height: 20px; background-color: #FFD700; transform-origin: bottom center;"></div>'
+    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 145.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
@@ -678,8 +691,8 @@ def render_sides_of_zero_display():
         }}
         .roulette-wheel-container {{
             position: relative;
-            width: 200px;
-            height: 200px;
+            width: 300px;
+            height: 300px;
             margin: 20px auto;
             display: flex;
             justify-content: center;
@@ -737,12 +750,18 @@ def render_sides_of_zero_display():
                 right: -6px;
             }}
             .roulette-wheel-container {{
-                width: 150px;
-                height: 150px;
+                width: 250px;
+                height: 250px;
             }}
             #roulette-wheel {{
-                width: 150px;
-                height: 150px;
+                width: 250px;
+                height: 250px;
+            }}
+            #wheel-pointer {{
+                top: 12.5px;
+                left: 120.75px;
+                width: 7.5px;
+                height: 25px;
             }}
         }}
     </style>
