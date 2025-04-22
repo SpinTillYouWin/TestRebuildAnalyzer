@@ -475,9 +475,9 @@ def render_sides_of_zero_display():
     
     # Define the order of numbers for the European roulette wheel
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    left_side = original_order[:18]  # 26 to 5 (18 numbers)
+    left_side = original_order[:18][::-1]  # Reversed: 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
     zero = [0]
-    right_side = original_order[19:]  # 32 to 10 (18 numbers)
+    right_side = original_order[19:]  # 32 to 10
     wheel_order = left_side + zero + right_side
     
     # Define betting sections
@@ -615,16 +615,16 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # New: Add collapsible betting sections display below the wheel
+    # Add collapsible betting sections display below the wheel
     betting_sections_html = '<div class="betting-sections-container">'
     sections = [
-        ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
-        ("Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
-        ("Orphelins", orphelins, "#800080", orphelins_hits),
-        ("Tiers du Cylindre", tiers_du_cylindre, "#FFA500", tiers_du_cylindre_hits)
+        ("jeu_0", "Jeu 0", jeu_0, "#228B22", jeu_0_hits),
+        ("voisins_du_zero", "Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
+        ("orphelins", "Orphelins", orphelins, "#800080", orphelins_hits),
+        ("tiers_du_cylindre", "Tiers du Cylindre", tiers_du_cylindre, "#FFA500", tiers_du_cylindre_hits)
     ]
     
-    for section_name, numbers, color, hits in sections:
+    for section_id, section_name, numbers, color, hits in sections:
         # Generate the numbers list with colors
         numbers_html = []
         for num in numbers:
@@ -632,10 +632,10 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span style="background-color: {num_color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px;">{num}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create the accordion section
+        # Create the accordion section with an ID for state tracking
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
         betting_sections_html += f'''
-        <details class="betting-section-accordion">
+        <details id="{section_id}" class="betting-section-accordion">
             <summary class="betting-section-header" style="background-color: {color};">
                 {section_name}{badge}
             </summary>
@@ -648,7 +648,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity
+    # HTML output with JavaScript to handle animations, interactivity, and state persistence
     return f"""
     <style>
         .circular-progress {{
@@ -965,6 +965,75 @@ def render_sides_of_zero_display():
         {betting_sections_html}
     </div>
     <script>
+        // Initialize global state object for details elements if it doesn't exist
+        if (typeof window.detailsState === 'undefined') {{
+            window.detailsState = {{
+                'jeu_0': false,
+                'voisins_du_zero': false,
+                'orphelins': false,
+                'tiers_du_cylindre': false
+            }};
+        }}
+
+        // Function to save the state of a specific <details> element
+        function saveDetailsState(id, isOpen) {{
+            window.detailsState[id] = isOpen;
+            console.log("Saved state for " + id + ": " + isOpen);
+        }}
+
+        // Function to apply the saved state to all <details> elements
+        function applyDetailsState() {{
+            const detailsElements = document.querySelectorAll('.betting-section-accordion');
+            detailsElements.forEach(detail => {{
+                const id = detail.id;
+                if (window.detailsState[id] === true) {{
+                    detail.setAttribute('open', '');
+                    console.log("Restored state for " + id + ": open");
+                }} else {{
+                    detail.removeAttribute('open');
+                    console.log("Restored state for " + id + ": closed");
+                }}
+                // Re-attach event listener for toggle
+                detail.removeEventListener('toggle', handleDetailsToggle); // Avoid duplicate listeners
+                detail.addEventListener('toggle', handleDetailsToggle);
+            }});
+        }}
+
+        // Event handler for toggle events
+        function handleDetailsToggle(e) {{
+            const detail = e.target;
+            const id = detail.id;
+            saveDetailsState(id, detail.open);
+        }}
+
+        // Apply the state immediately after DOM update
+        document.addEventListener('DOMContentLoaded', () => {{
+            applyDetailsState();
+        }});
+
+        // Re-apply state after any DOM update (e.g., table clicks)
+        setTimeout(() => {{
+            applyDetailsState();
+        }}, 0);
+
+        // Observe DOM changes to re-apply state if the betting sections are re-rendered
+        const observer = new MutationObserver((mutations) => {{
+            mutations.forEach(mutation => {{
+                if (mutation.target.classList && mutation.target.classList.contains('betting-sections-container')) {{
+                    console.log('Betting sections container updated, re-applying state');
+                    applyDetailsState();
+                }}
+            }});
+        }});
+
+        // Start observing the betting sections container
+        document.addEventListener('DOMContentLoaded', () => {{
+            const targetNode = document.querySelector('.betting-sections-container');
+            if (targetNode) {{
+                observer.observe(targetNode, {{ childList: true, subtree: true }});
+            }}
+        }});
+
         function updateCircularProgress(id, progress) {{
             const element = document.getElementById(id);
             if (!element) {{
@@ -977,7 +1046,7 @@ def render_sides_of_zero_display():
                 'right-progress': '#f4511e'
             }};
             const color = colors[id] || '#d3d3d3';
-            element.style.background = `conic-gradient(${{color}} ${{progress}}%, #d3d3d3 ${{progress}}% 100%)`;
+            element.style.background = "conic-gradient(" + color + " " + progress + "%, #d3d3d3 " + progress + "% 100%)";
             element.querySelector('span').textContent = element.querySelector('span').textContent;
         }}
         updateCircularProgress('left-progress', {left_progress});
@@ -989,7 +1058,7 @@ def render_sides_of_zero_display():
             element.addEventListener('mouseover', (e) => {{
                 const hits = element.getAttribute('data-hits');
                 const num = element.getAttribute('data-number');
-                const tooltipText = `Number ${{num}}: ${{hits}} hits`;
+                const tooltipText = "Number " + num + ": " + hits + " hits";
                 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
@@ -999,8 +1068,8 @@ def render_sides_of_zero_display():
                 
                 const rect = element.getBoundingClientRect();
                 const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
+                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
                 tooltip.style.opacity = '1';
             }});
             
@@ -1020,7 +1089,7 @@ def render_sides_of_zero_display():
                 const neighbors = {json.dumps(dict(current_neighbors))};
                 const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
                 const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
-                const tooltipText = `Number ${{num}}: ${{hits}} hits\\nLeft Neighbor: ${{leftNeighbor}}\\nRight Neighbor: ${{rightNeighbor}}`;
+                const tooltipText = "Number " + num + ": " + hits + " hits\\nLeft Neighbor: " + leftNeighbor + "\\nRight Neighbor: " + rightNeighbor;
                 
                 // Remove any existing tooltips
                 const existingTooltip = document.querySelector('.tooltip');
@@ -1034,8 +1103,8 @@ def render_sides_of_zero_display():
                 
                 const rect = segment.getBoundingClientRect();
                 const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
+                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
                 tooltip.style.opacity = '1';
                 
                 // Remove tooltip after 3 seconds or on click
@@ -1064,7 +1133,7 @@ def render_sides_of_zero_display():
 
         // JavaScript animation function
         function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
-            console.log(`animateElement called for element: ${{element.id}}, startAngle: ${{startAngle}}, endAngle: ${{endAngle}}, duration: ${{duration}}, isBall: ${{isBall}}`);
+            console.log("animateElement called for element: " + element.id + ", startAngle: " + startAngle + ", endAngle: " + endAngle + ", duration: " + duration + ", isBall: " + isBall);
             const startTime = performance.now();
             const radius = isBall ? 135 : 0;
             
@@ -1075,16 +1144,16 @@ def render_sides_of_zero_display():
                 const currentAngle = startAngle + (endAngle - startAngle) * easeOut;
                 
                 if (isBall) {{
-                    element.style.transform = `rotate(${{currentAngle}}deg) translateX(${{radius}}px)`;
+                    element.style.transform = "rotate(" + currentAngle + "deg) translateX(" + radius + "px)";
                 }} else {{
-                    element.style.transform = `rotate(${{currentAngle}}deg)`;
+                    element.style.transform = "rotate(" + currentAngle + "deg)";
                 }}
-                console.log(`Animation step - element: ${{element.id}}, progress: ${{progress.toFixed(2)}}, currentAngle: ${{currentAngle.toFixed(2)}}`);
+                console.log("Animation step - element: " + element.id + ", progress: " + progress.toFixed(2) + ", currentAngle: " + currentAngle.toFixed(2));
                 
                 if (progress < 1) {{
                     requestAnimationFrame(step);
                 }} else {{
-                    console.log(`Animation completed for element: ${{element.id}}`);
+                    console.log("Animation completed for element: " + element.id);
                 }}
             }}
             
@@ -1121,8 +1190,8 @@ def render_sides_of_zero_display():
                     // Finalize position after animation
                     setTimeout(() => {{
                         console.log('Finalizing animation positions...');
-                        wheel.style.transform = `rotate({latest_spin_angle}deg)`;
-                        ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
+                        wheel.style.transform = "rotate(" + {latest_spin_angle} + "deg)";
+                        ball.style.transform = "rotate(" + {-latest_spin_angle} + "deg) translateX(135px)";
                         console.log('Animation positions finalized');
                     }}, 2000);
                 }}, 10);
