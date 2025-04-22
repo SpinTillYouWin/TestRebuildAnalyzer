@@ -773,7 +773,7 @@ def render_sides_of_zero_display():
             }}
         }}
     </style>
-    <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
+    <div style="background-color: #f5c6cb;กับborder: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
         <div class="tracker-container">
             <div class="tracker-column">
@@ -853,7 +853,32 @@ def render_sides_of_zero_display():
             }}, 400);
         }});
 
-        // Trigger wheel and ball spin animations with delay to ensure DOM readiness
+        // JavaScript fallback animation function
+        function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
+            const startTime = performance.now();
+            const radius = isBall ? 135 : 0; // Ball moves along a radius, wheel rotates in place
+            
+            function step(currentTime) {{
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3); // Ease-out effect
+                const currentAngle = startAngle + (endAngle - startAngle) * easeOut;
+                
+                if (isBall) {{
+                    element.style.transform = `rotate(${{currentAngle}}deg) translateX(${{radius}}px)`;
+                }} else {{
+                    element.style.transform = `rotate(${{currentAngle}}deg)`;
+                }}
+                
+                if (progress < 1) {{
+                    requestAnimationFrame(step);
+                }}
+            }}
+            
+            requestAnimationFrame(step);
+        }}
+
+        // Trigger wheel and ball spin animations with enhanced logic
         setTimeout(() => {{
             console.log('Attempting to trigger animations...');
             const wheel = document.getElementById('roulette-wheel');
@@ -863,30 +888,61 @@ def render_sides_of_zero_display():
             console.log('Ball element:', ball);
             console.log('Has latest spin:', hasSpin);
             console.log('Latest spin angle:', {latest_spin_angle});
+            
             if (wheel && ball && hasSpin) {{
                 console.log('Starting animations for wheel and ball...');
-                wheel.classList.remove('spinning');
-                ball.classList.remove('spinning');
-                void wheel.offsetWidth; // Force reflow
-                void ball.offsetWidth; // Force reflow
-                wheel.classList.add('spinning');
-                ball.classList.add('spinning');
-                console.log('Animation classes added');
+                
+                // Force visibility toggle to ensure rendering
+                wheel.style.visibility = 'hidden';
+                ball.style.visibility = 'hidden';
                 setTimeout(() => {{
-                    console.log('Finalizing animation positions...');
+                    wheel.style.visibility = 'visible';
+                    ball.style.visibility = 'visible';
+                    
+                    // Attempt CSS animation
                     wheel.classList.remove('spinning');
                     ball.classList.remove('spinning');
-                    wheel.style.transform = `rotate({latest_spin_angle}deg)`;
-                    ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
-                    console.log('Animation completed');
-                }}, 2000);
+                    void wheel.offsetWidth; // Force reflow
+                    void ball.offsetWidth; // Force reflow
+                    wheel.classList.add('spinning');
+                    ball.classList.add('spinning');
+                    console.log('CSS animation classes added');
+                    
+                    // Check if CSS animation started by testing computed style
+                    setTimeout(() => {{
+                        const wheelStyle = window.getComputedStyle(wheel);
+                        const ballStyle = window.getComputedStyle(ball);
+                        const wheelAnimation = wheelStyle.animationName;
+                        const ballAnimation = ballStyle.animationName;
+                        console.log('Wheel animation name:', wheelAnimation);
+                        console.log('Ball animation name:', ballAnimation);
+                        
+                        if (wheelAnimation !== 'spinWheel' || ballAnimation !== 'spinBall') {{
+                            console.warn('CSS animations failed to start, falling back to JavaScript animation');
+                            // Fallback to JavaScript animation
+                            animateElement(wheel, 90, {latest_spin_angle}, 2000);
+                            animateElement(ball, 0, {-latest_spin_angle}, 2000, true);
+                            console.log('JavaScript fallback animation triggered');
+                        }}
+                    }}, 100);
+                    
+                    // Finalize position after animation
+                    setTimeout(() => {{
+                        console.log('Finalizing animation positions...');
+                        wheel.classList.remove('spinning');
+                        ball.classList.remove('spinning');
+                        wheel.style.transform = `rotate({latest_spin_angle}deg)`;
+                        ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
+                        console.log('Animation completed');
+                    }}, 2000);
+                }}, 10);
             }} else {{
                 console.warn('Animation not triggered: Elements or latest spin missing');
                 if (!wheel) console.warn('Wheel element not found');
                 if (!ball) console.warn('Ball element not found');
                 if (!hasSpin) console.warn('No latest spin to animate');
             }}
-        }}, 500); // 500ms delay to ensure DOM readiness
+        }}, 1000); // Increased delay to 1000ms for DOM readiness
     </script>
     """
 def validate_spins_input(spins_input):
