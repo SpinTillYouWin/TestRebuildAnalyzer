@@ -911,11 +911,16 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
     else:
+        # Lines before (context)
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
+
+# Updated return statement (Lines 1 to 2)
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display(), render_hot_cold_numbers()
+
+# Lines after (context)
         
 # Function to clear spins
 def clear_spins():
@@ -4497,6 +4502,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         even_money_tracker_odd_checkbox = gr.Checkbox(label="Odd", value=False, interactive=True)
                         even_money_tracker_low_checkbox = gr.Checkbox(label="Low", value=False, interactive=True)
                         even_money_tracker_high_checkbox = gr.Checkbox(label="High", value=False, interactive=True)
+                    # Lines before (context from Dozen Tracker)
                     even_money_tracker_alert_checkbox = gr.Checkbox(
                         label="Enable Even Money Hits Alert",
                         value=False,
@@ -4509,6 +4515,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
+# New accordion (Lines 1 to 13)
+    # 7.2. Row 7.2: Hot & Cold Numbers Tracker
+    with gr.Row():
+        with gr.Column(scale=3):
+            with gr.Accordion("Hot & Cold Numbers Tracker", open=False, elem_id="hot-cold-tracker"):
+                hot_cold_output = gr.HTML(
+                    label="Hot & Cold Numbers",
+                    value=render_hot_cold_numbers(),
+                    elem_classes=["hot-cold-container"]
+                )
+        with gr.Column(scale=2):
+            pass  # Empty column to maintain layout balance
+
+# Lines after (context from Betting Progression Tracker)
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -5619,7 +5639,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, hot_cold_output
             ]
         ).then(
             fn=update_spin_counter,
@@ -5666,7 +5686,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, hot_cold_output]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -5676,23 +5696,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=clear_all,
             inputs=[],
             outputs=[
-                spins_display,
-                spins_textbox,
-                spin_analysis_output,
-                last_spin_display,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                spin_counter,
-                sides_of_zero_display  # Added missing output
+                spins_display, spins_textbox, spin_analysis_output, last_spin_display,
+                even_money_output, dozens_output, columns_output, streets_output,
+                corners_output, six_lines_output, splits_output, sides_output,
+                straight_up_html, top_18_html, strongest_numbers_output, spin_counter,
+                sides_of_zero_display, hot_cold_output
             ]
         ).then(
             fn=clear_outputs,
@@ -5733,7 +5741,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         generate_spins_button.click(
             fn=generate_random_spins,
             inputs=[gr.State(value="5"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
+            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display, hot_cold_output]
         ).then(
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
@@ -5859,22 +5867,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=load_session,
             inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
-                spins_display,
-                spins_textbox,
-                spin_analysis_output,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                dynamic_table_output,
-                strategy_output
+                spins_display, spins_textbox, spin_analysis_output, even_money_output,
+                dozens_output, columns_output, streets_output, corners_output,
+                six_lines_output, splits_output, sides_output, straight_up_html,
+                top_18_html, strongest_numbers_output, dynamic_table_output,
+                strategy_output, hot_cold_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -5924,25 +5921,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=undo_last_spin,
             inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
-                spin_analysis_output,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                spins_textbox,
-                spins_display,
-                dynamic_table_output,
-                strategy_output,
-                color_code_output,
-                spin_counter,
-                sides_of_zero_display  # Added missing output
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                spins_textbox, spins_display, dynamic_table_output, strategy_output,
+                color_code_output, spin_counter, sides_of_zero_display, hot_cold_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
