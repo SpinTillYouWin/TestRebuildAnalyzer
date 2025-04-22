@@ -615,7 +615,7 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # New: Add collapsible betting sections display below the wheel
+    # Add collapsible betting sections display below the wheel
     betting_sections_html = '<div class="betting-sections-container">'
     sections = [
         ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
@@ -625,11 +625,15 @@ def render_sides_of_zero_display():
     ]
     
     for section_name, numbers, color, hits in sections:
-        # Generate the numbers list with colors
+        # Generate the numbers list with colors and highlight hot numbers
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
-            numbers_html.append(f'<span style="background-color: {num_color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px;">{num}</span>')
+            hit_count = state.scores.get(num, 0)
+            is_hot = hit_count > 0
+            class_name = "section-number" + (" hot-number" if is_hot else "")
+            badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
+            numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
         # Create the accordion section
@@ -909,21 +913,51 @@ def render_sides_of_zero_display():
             border-top: 1px solid #d3d3d3;
             border-radius: 0 0 5px 5px;
         }}
-        .betting-section-hits {{
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            font-size: 10px;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
+        .section-number {{
+            padding: 2px 5px;
+            margin: 2px;
+            border-radius: 3px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }}
+        .hot-number {{
+            border: 2px solid #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #FFD700;
+            position: relative;
+        }}
+        .number-hit-badge {{
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #ff4444;
+            font-size: 8px;
+            width: 16px;
+            height: 16px;
+            line-height: 16px;
             border-radius: 50%;
             z-index: 3;
             display: flex;
             align-items: center;
             justify-content: center;
-            top: -10px;
-            right: -10px;
+        }}
+        .betting-section-hits {{
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px solid #ff4444;
+            font-size: 12px;
+            font-weight: bold;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            border-radius: 50%;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: -14px;
+            right: -14px;
         }}
         details[open] .betting-section-hits {{
             top: 0;
