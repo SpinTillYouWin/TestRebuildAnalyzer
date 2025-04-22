@@ -475,10 +475,13 @@ def render_sides_of_zero_display():
     
     # Define the order of numbers for the European roulette wheel
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    left_side = original_order[:18]  # 26 to 5
+    left_side = original_order[:18]  # 26 to 5 (18 numbers)
     zero = [0]
-    right_side = original_order[19:]  # 32 to 10
+    right_side = original_order[19:]  # 32 to 10 (18 numbers)
     wheel_order = left_side + zero + right_side
+    
+    # Determine the winning section
+    winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
     
     # Get the latest spin for bounce effect and wheel rotation
     latest_spin = int(state.last_spins[-1]) if state.last_spins else None
@@ -512,10 +515,41 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel with highlights and hit counts
+    # Generate SVG for the roulette wheel with section highlights
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="300" height="300" viewBox="0 0 300 300" style="transform: rotate(90deg);">'
-    wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'  # Green felt background
+    
+    # Add background arcs for Left Side and Right Side
+    # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
+    left_start_angle = 0
+    left_end_angle = 180
+    left_start_rad = left_start_angle * (3.14159 / 180)
+    left_end_rad = left_end_angle * (3.14159 / 180)
+    left_x1 = 150 + 140 * math.cos(left_start_rad)
+    left_y1 = 150 + 140 * math.sin(left_start_rad)
+    left_x2 = 150 + 140 * math.cos(left_end_rad)
+    left_y2 = 150 + 140 * math.sin(left_end_rad)
+    left_path_d = f"M 150,150 L {left_x1},{left_y1} A 140,140 0 0,1 {left_x2},{left_y2} L 150,150 Z"
+    left_fill = "rgba(106, 27, 154, 0.3)" if winning_section == "Left Side" else "rgba(128, 128, 128, 0.2)"  # Purple for winning, gray for losing
+    wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="none"/>'
+    
+    # Right Side arc (from 180 to 360 degrees, corresponding to 18 numbers)
+    right_start_angle = 180
+    right_end_angle = 360
+    right_start_rad = right_start_angle * (3.14159 / 180)
+    right_end_rad = right_end_angle * (3.14159 / 180)
+    right_x1 = 150 + 140 * math.cos(right_start_rad)
+    right_y1 = 150 + 140 * math.sin(right_start_rad)
+    right_x2 = 150 + 140 * math.cos(right_end_rad)
+    right_y2 = 150 + 140 * math.sin(right_end_rad)
+    right_path_d = f"M 150,150 L {right_x1},{right_y1} A 140,140 0 0,1 {right_x2},{right_y2} L 150,150 Z"
+    right_fill = "rgba(244, 81, 30, 0.3)" if winning_section == "Right Side" else "rgba(128, 128, 128, 0.2)"  # Orange for winning, gray for losing
+    wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="none"/>'
+    
+    # Add the wheel background
+    wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'
+    
+    # Draw the wheel segments
     angle_per_number = 360 / 37
     for i, num in enumerate(original_order):
         angle = i * angle_per_number
@@ -525,7 +559,9 @@ def render_sides_of_zero_display():
         stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
         opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
         stroke_color = "#FF4500" if hits > 0 else "#FFF"  # OrangeRed for hits, white for no hits
-        class_name = "wheel-segment" + (" pulse" if hits > 0 else "")  # Add pulse class for segments with hits
+        # Determine if this segment is in the winning section
+        is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
+        class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
         # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
@@ -549,6 +585,22 @@ def render_sides_of_zero_display():
         hit_text_x = 150 + 90 * math.cos(text_rad)
         hit_text_y = 150 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
+    
+    # Add labels for Left Side and Right Side with hit counts
+    # Left Side label at 90 degrees (middle of the left arc)
+    left_label_angle = 90
+    left_label_rad = left_label_angle * (3.14159 / 180)
+    left_label_x = 150 + 145 * math.cos(left_label_rad)
+    left_label_y = 150 + 145 * math.sin(left_label_rad)
+    wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" transform="rotate({left_label_angle + 90} {left_label_x},{left_label_y})">Left: {left_hits}</text>'
+    
+    # Right Side label at 270 degrees (middle of the right arc)
+    right_label_angle = 270
+    right_label_rad = right_label_angle * (3.14159 / 180)
+    right_label_x = 150 + 145 * math.cos(right_label_rad)
+    right_label_y = 150 + 145 * math.sin(right_label_rad)
+    wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" transform="rotate({right_label_angle + 90} {right_label_x},{right_label_y})">Right: {right_hits}</text>'
+    
     wheel_svg += '<circle cx="150" cy="150" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
     wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 145.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'
@@ -706,6 +758,9 @@ def render_sides_of_zero_display():
             0% {{ stroke-opacity: 1; }}
             50% {{ stroke-opacity: 0.5; }}
             100% {{ stroke-opacity: 1; }}
+        }}
+        .winning-segment {{
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
         }}
         #wheel-pointer {{
             z-index: 3;
