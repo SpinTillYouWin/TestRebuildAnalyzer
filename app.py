@@ -524,6 +524,8 @@ def render_sides_of_zero_display():
         # Scale stroke width and opacity based on hits
         stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
         opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
+        stroke_color = "#FF4500" if hits > 0 else "#FFF"  # OrangeRed for hits, white for no hits
+        class_name = "wheel-segment" + (" pulse" if hits > 0 else "")  # Add pulse class for segments with hits
         # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
@@ -536,15 +538,14 @@ def render_sides_of_zero_display():
         x4 = 150 + 105 * math.cos(rad)
         y4 = 150 + 105 * math.sin(rad)
         path_d = f"M 150,150 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
-        class_name = "wheel-segment"
-        wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="#FFD700" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
+        wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
         text_x = 150 + 120 * math.cos(text_rad)
         text_y = 150 + 120 * math.sin(text_rad)
         wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
-        # Add hit count text (smaller and positioned closer to the center)
+        # Add hit count text
         hit_text_x = 150 + 90 * math.cos(text_rad)
         hit_text_y = 150 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
@@ -656,16 +657,19 @@ def render_sides_of_zero_display():
         }}
         .tooltip {{
             position: absolute;
-            background: #333;
+            background: #000;
             color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
             z-index: 10;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s ease;
-            white-space: nowrap;
+            white-space: pre-wrap;
+            border: 1px solid #FF4500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }}
         .tracker-column {{
             display: flex;
@@ -694,6 +698,14 @@ def render_sides_of_zero_display():
         }}
         .wheel-segment:hover {{
             filter: brightness(1.2);
+        }}
+        .pulse {{
+            animation: pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes pulse {{
+            0% {{ stroke-opacity: 1; }}
+            50% {{ stroke-opacity: 0.5; }}
+            100% {{ stroke-opacity: 1; }}
         }}
         #wheel-pointer {{
             z-index: 3;
@@ -948,7 +960,7 @@ def render_sides_of_zero_display():
                 if (!ball) console.warn('Ball element not found');
                 if (!hasSpin) console.warn('No latest spin to animate');
             }}
-        }}, 2000); // Increased delay to ensure DOM readiness
+        }}, 2000);
     </script>
     """
 def validate_spins_input(spins_input):
