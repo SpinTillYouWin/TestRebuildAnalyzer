@@ -4637,7 +4637,35 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     </form>
                     <div id="form-message" style="margin-top: 10px; text-align: center; font-family: Arial, sans-serif;"></div>
                 </div>
-                < zetten voor de <style> sectie -->
+                <script>
+                    document.getElementById("feedback-form").addEventListener("submit", function(event) {
+                        event.preventDefault();
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        const messageDiv = document.getElementById("form-message");
+                        messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
+                        fetch("https://formspree.io/f/mnnpllqq", {
+                            method: "POST",
+                            body: formData,
+                            headers: {
+                                "Accept": "application/json"
+                            }
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                messageDiv.innerHTML = '<p style="color: green; font-weight: bold;">Thank you for your feedback!</p>';
+                                form.reset();
+                            } else {
+                                messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Form submission error:", error);
+                            messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
+                        });
+                    });
+                </script>
+                """)
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
