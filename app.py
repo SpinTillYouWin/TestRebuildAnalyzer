@@ -493,7 +493,7 @@ def render_sides_of_zero_display():
     if latest_spin is not None:
         # Calculate the angle for the latest spin (each number occupies 360/37 degrees)
         index = original_order.index(latest_spin) if latest_spin in original_order else 0
-        latest_spin_angle = (index * (360 / 37)) - 90  # Adjust for zero at top (90 degrees counterclockwise)
+        latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom (90 degrees clockwise)
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
@@ -519,7 +519,7 @@ def render_sides_of_zero_display():
     
     # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
-    wheel_svg += f'<svg id="roulette-wheel" width="200" height="200" viewBox="0 0 200 200" style="transform: rotate(-90deg);">'
+    wheel_svg += f'<svg id="roulette-wheel" width="200" height="200" viewBox="0 0 200 200" style="transform: rotate(90deg);">'
     wheel_svg += '<circle cx="100" cy="100" r="90" fill="#2e7d32"/>'  # Green felt background
     angle_per_number = 360 / 37
     for i, num in enumerate(original_order):
@@ -689,7 +689,7 @@ def render_sides_of_zero_display():
             animation: spinWheel 2s ease-out forwards;
         }}
         @keyframes spinWheel {{
-            0% {{ transform: rotate(-90deg); }}
+            0% {{ transform: rotate(90deg); }}
             80% {{ transform: rotate({720 + latest_spin_angle}deg); }}
             100% {{ transform: rotate({latest_spin_angle}deg); }}
         }}
