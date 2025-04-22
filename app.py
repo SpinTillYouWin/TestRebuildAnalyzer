@@ -475,9 +475,11 @@ def render_sides_of_zero_display():
     
     # Define the order of numbers for the European roulette wheel
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    left_side = original_order[:18]  # 26 to 5 (18 numbers)
+    # *** This is the section where the number order is defined ***
+    # Left Side: Numbers before 0 (originally 26 to 5), now reversed to 5 to 26 as requested
+    left_side = original_order[:18][::-1]  # Reversed: 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
     zero = [0]
-    right_side = original_order[19:]  # 32 to 10 (18 numbers)
+    right_side = original_order[19:]  # 32 to 10 (remains unchanged)
     wheel_order = left_side + zero + right_side
     
     # Define betting sections
@@ -509,7 +511,7 @@ def render_sides_of_zero_display():
     # Calculate maximum hits for scaling highlights
     max_segment_hits = max(state.scores.values(), default=1)
     
-    # Generate HTML for the number list
+    # Generate HTML for the number list (this is the list above the wheel)
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -618,13 +620,13 @@ def render_sides_of_zero_display():
     # Add collapsible betting sections display below the wheel
     betting_sections_html = '<div class="betting-sections-container">'
     sections = [
-        ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
-        ("Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
-        ("Orphelins", orphelins, "#800080", orphelins_hits),
-        ("Tiers du Cylindre", tiers_du_cylindre, "#FFA500", tiers_du_cylindre_hits)
+        ("jeu_0", "Jeu 0", jeu_0, "#228B22", jeu_0_hits),
+        ("voisins_du_zero", "Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
+        ("orphelins", "Orphelins", orphelins, "#800080", orphelins_hits),
+        ("tiers_du_cylindre", "Tiers du Cylindre", tiers_du_cylindre, "#FFA500", tiers_du_cylindre_hits)
     ]
     
-    for section_name, numbers, color, hits in sections:
+    for section_id, section_name, numbers, color, hits in sections:
         # Generate the numbers list with colors and highlight hot numbers
         numbers_html = []
         for num in numbers:
@@ -636,10 +638,10 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create the accordion section
+        # Create the accordion section with an ID for state persistence
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
         betting_sections_html += f'''
-        <details class="betting-section-accordion">
+        <details id="{section_id}" class="betting-section-accordion">
             <summary class="betting-section-header" style="background-color: {color};">
                 {section_name}{badge}
             </summary>
@@ -652,7 +654,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity
+    # HTML output with JavaScript to handle animations, interactivity, and state persistence
     return f"""
     <style>
         .circular-progress {{
@@ -863,7 +865,7 @@ def render_sides_of_zero_display():
                 height: 10px;
             }}
         }}
-        /* Updated styles for collapsible betting sections */
+        /* Styles for collapsible betting sections */
         .betting-sections-container {{
             display: flex;
             flex-direction: column;
@@ -999,6 +1001,33 @@ def render_sides_of_zero_display():
         {betting_sections_html}
     </div>
     <script>
+        // Function to save the state of all <details> elements
+        function saveDetailsState() {{
+            const detailsElements = document.querySelectorAll('.betting-section-accordion');
+            detailsElements.forEach((detail, index) => {{
+                localStorage.setItem(`detailsState${{detail.id}}`, detail.open);
+            }});
+        }}
+
+        // Function to restore the state of all <details> elements
+        function restoreDetailsState() {{
+            const detailsElements = document.querySelectorAll('.betting-section-accordion');
+            detailsElements.forEach((detail, index) => {{
+                const isOpen = localStorage.getItem(`detailsState${{detail.id}}`) === 'true';
+                detail.open = isOpen;
+            }});
+        }}
+
+        // Add event listeners to save state on toggle
+        document.addEventListener('DOMContentLoaded', () => {{
+            const detailsElements = document.querySelectorAll('.betting-section-accordion');
+            detailsElements.forEach(detail => {{
+                detail.addEventListener('toggle', saveDetailsState);
+            }});
+            // Restore state after DOM is loaded
+            restoreDetailsState();
+        }});
+
         function updateCircularProgress(id, progress) {{
             const element = document.getElementById(id);
             if (!element) {{
