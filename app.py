@@ -1,6 +1,7 @@
 import gradio as gr
 import pandas as pd
 import json
+import math
 from itertools import combinations
 import random
 from roulette_data import (
@@ -486,8 +487,13 @@ def render_sides_of_zero_display():
     left_side_reversed = left_side[::-1]
     wheel_order = left_side_reversed + zero + right_side
     
-    # Get the latest spin for bounce effect
+    # Get the latest spin for bounce effect and wheel rotation
     latest_spin = int(state.last_spins[-1]) if state.last_spins else None
+    latest_spin_angle = 0
+    if latest_spin is not None:
+        # Calculate the angle for the latest spin (each number occupies 360/37 degrees)
+        index = original_order.index(latest_spin) if latest_spin in original_order else 0
+        latest_spin_angle = (index * (360 / 37))  # Angle in degrees
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
@@ -511,7 +517,40 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # HTML output with JavaScript to remove bounce class
+    # Generate SVG for the roulette wheel
+    wheel_svg = '<div class="roulette-wheel-container">'
+    wheel_svg += '<svg id="roulette-wheel" width="200" height="200" viewBox="0 0 200 200" style="transform: rotate(0deg);">'
+    wheel_svg += '<circle cx="100" cy="100" r="90" fill="#2e7d32"/>'  # Green felt background
+    angle_per_number = 360 / 37
+    for i, num in enumerate(original_order):
+        angle = i * angle_per_number
+        color = colors.get(str(num), "black")
+        # Draw each segment as a path
+        rad = angle * (3.14159 / 180)
+        next_rad = (angle + angle_per_number) * (3.14159 / 180)
+        x1 = 100 + 90 * math.cos(rad)
+        y1 = 100 + 90 * math.sin(rad)
+        x2 = 100 + 90 * math.cos(next_rad)
+        y2 = 100 + 90 * math.sin(next_rad)
+        x3 = 100 + 70 * math.cos(next_rad)
+        y3 = 100 + 70 * math.sin(next_rad)
+        x4 = 100 + 70 * math.cos(rad)
+        y4 = 100 + 70 * math.sin(rad)
+        path_d = f"M 100,100 L {x1},{y1} A 90,90 0 0,1 {x2},{y2} L {x3},{y3} A 70,70 0 0,0 {x4},{y4} Z"
+        wheel_svg += f'<path d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.5"/>'
+        # Add number text
+        text_angle = angle + (angle_per_number / 2)
+        text_rad = text_angle * (3.14159 / 180)
+        text_x = 100 + 80 * math.cos(text_rad)
+        text_y = 100 + 80 * math.sin(text_rad)
+        wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="6" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
+    wheel_svg += '<circle cx="100" cy="100" r="10" fill="#FFD700"/>'  # Gold center
+    wheel_svg += '</svg>'
+    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 10px; left: 97px; width: 6px; height: 20px; background-color: #FFD700; transform-origin: bottom center;"></div>'
+    wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
+    wheel_svg += '</div>'
+    
+    # HTML output with JavaScript to handle animations
     return f"""
     <style>
         .circular-progress {{
@@ -636,6 +675,26 @@ def render_sides_of_zero_display():
             margin: 0 auto;
             font-family: Arial, sans-serif;
         }}
+        .roulette-wheel-container {{
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }}
+        #roulette-wheel.spinning {{
+            animation: spinWheel 2s ease-out forwards;
+        }}
+        @keyframes spinWheel {{
+            0% {{ transform: rotate(0deg); }}
+            80% {{ transform: rotate({720 + latest_spin_angle}deg); }}
+            100% {{ transform: rotate({latest_spin_angle}deg); }}
+        }}
+        #wheel-pointer {{
+            z-index: 3;
+        }}
         @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
@@ -673,6 +732,14 @@ def render_sides_of_zero_display():
                 top: -6px;
                 right: -6px;
             }}
+            .roulette-wheel-container {{
+                width: 150px;
+                height: 150px;
+            }}
+            #roulette-wheel {{
+                width: 150px;
+                height: 150px;
+            }}
         }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
@@ -698,6 +765,7 @@ def render_sides_of_zero_display():
             </div>
         </div>
         {number_list}
+        {wheel_svg}
     </div>
     <script>
         function updateCircularProgress(id, progress) {{
@@ -753,6 +821,16 @@ def render_sides_of_zero_display():
                 element.classList.remove('bounce');
             }}, 400);
         }});
+
+        // Trigger wheel spin animation
+        const wheel = document.getElementById('roulette-wheel');
+        if (wheel && {latest_spin is not None}) {{
+            wheel.classList.add('spinning');
+            setTimeout(() => {{
+                wheel.classList.remove('spinning');
+                wheel.style.transform = `rotate({latest_spin_angle}deg)`;
+            }}, 2000);
+        }}
     </script>
     """
 def validate_spins_input(spins_input):
