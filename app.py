@@ -3873,6 +3873,95 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
 
     return "\n".join(recommendations), html_output
 
+# Line 1: Start of new function (insertion point)
+def generate_smart_bet_suggestions(spins_to_analyze, selected_strategy):
+    """Generate smart betting suggestions based on recent spins and selected strategy."""
+    if not state.last_spins:
+        return "<p>No spins recorded yet. Add spins to get betting suggestions.</p>"
+
+    # Determine the number of spins to analyze (default to last 36 if not specified)
+    spins_to_analyze = int(spins_to_analyze) if spins_to_analyze else 36
+    recent_spins = state.last_spins[-spins_to_analyze:] if len(state.last_spins) >= spins_to_analyze else state.last_spins
+    
+    # Calculate hot zones (top 3 even-money, top 2 dozens/columns)
+    even_money_sorted = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+    dozens_sorted = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)[:2]
+    columns_sorted = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)[:2]
+    
+    # Calculate cold zones (bottom 3 even-money, bottom 2 dozens/columns)
+    even_money_cold = sorted(state.even_money_scores.items(), key=lambda x: x[1])[:3]
+    dozens_cold = sorted(state.dozen_scores.items(), key=lambda x: x[1])[:2]
+    columns_cold = sorted(state.column_scores.items(), key=lambda x: x[1])[:2]
+    
+    # Initialize suggestions
+    suggestions = []
+    
+    # Base suggestions on hot zones (following your "stick with what's winning" approach)
+    if selected_strategy in ["Fibonacci To Fortune", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers"]:
+        # Prioritize even-money and dozens for Fibonacci To Fortune
+        for name, score in even_money_sorted:
+            if score > 0:
+                suggestions.append({
+                    "bet": name,
+                    "type": "Even Money",
+                    "confidence": "High",
+                    "color": "rgba(255, 255, 0, 0.5)",  # Yellow
+                    "rationale": f"Hot even-money bet with {score} hits in last {len(recent_spins)} spins."
+                })
+        for name, score in dozens_sorted:
+            if score > 0:
+                suggestions.append({
+                    "bet": name,
+                    "type": "Dozen",
+                    "confidence": "High",
+                    "color": "rgba(255, 255, 0, 0.5)",  # Yellow
+                    "rationale": f"Hot dozen with {score} hits in last {len(recent_spins)} spins."
+                })
+    elif selected_strategy == "Romanowksy Missing Dozen":
+        # Focus on the weakest dozen and suggest betting on the other two
+        weakest_dozen = min(state.dozen_scores.items(), key=lambda x: x[1])[0]
+        other_dozens = [d for d, _ in dozens_sorted if d != weakest_dozen][:2]
+        for name in other_dozens:
+            score = state.dozen_scores[name]
+            if score > 0:
+                suggestions.append({
+                    "bet": name,
+                    "type": "Dozen",
+                    "confidence": "Moderate",
+                    "color": "rgba(0, 255, 255, 0.5)",  # Cyan
+                    "rationale": f"Bet on {name} (score: {score}) as {weakest_dozen} is cold."
+                })
+    else:
+        # Default: Suggest top even-money and dozens
+        for name, score in even_money_sorted:
+            if score > 0:
+                suggestions.append({
+                    "bet": name,
+                    "type": "Even Money",
+                    "confidence": "High",
+                    "color": "rgba(255, 255, 0, 0.5)",
+                    "rationale": f"Hot even-money bet with {score} hits."
+                })
+        for name, score in dozens_sorted:
+            if score > 0:
+                suggestions.append({
+                    "bet": name,
+                    "type": "Dozen",
+                    "confidence": "Moderate",
+                    "color": "rgba(0, 255, 255, 0.5)",
+                    "rationale": f"Hot dozen with {score} hits."
+                })
+
+    # Format the suggestions as HTML
+    if not suggestions:
+        return "<p>No betting suggestions available. Add more spins or adjust your strategy.</p>"
+
+    html_output = '<h4 style="color: #333;">Smart Bet Suggestions</h4><ul style="list-style-type: none; padding-left: 0;">'
+    for suggestion in suggestions[:3]:  # Limit to top 3 suggestions
+        html_output += f'<li style="margin-bottom: 10px;"><span style="background-color: {suggestion["color"]}; padding: 2px 5px; border-radius: 3px;">{suggestion["type"]}: {suggestion["bet"]}</span> - {suggestion["confidence"]} Confidence<br><small>{suggestion["rationale"]}</small></li>'
+    html_output += '</ul>'
+    return html_output
+
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -4342,27 +4431,43 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 allow_custom_value=False
             )
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
+                neighbours_count_slider = gr.Slider(
+                    label="Number of Neighbors (Left + Right)",
+                    minimum=1,
+                    maximum=5,
+                    step=1,
+                    value=1,
+                    interactive=True,
+                    visible=False,
+                    elem_classes="long-slider"
+                )
+                strong_numbers_count_slider = gr.Slider(
+                    label="Strong Numbers to Highlight (Neighbours Strategy)",
+                    minimum=1,
+                    maximum=18,
+                    step=1,
+                    value=1,
+                    interactive=True,
+                    visible=False,
+                    elem_classes="long-slider"
+                )
+                reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+
+    # 7.0. Row 7.0: Smart Bet Suggestion Panel
+    with gr.Row():
+        with gr.Column(scale=3):
+            gr.Markdown("### Smart Bet Suggestions", elem_id="smart-bet-suggestions-heading")
+            smart_bet_suggestions_output = gr.HTML(
+                label="Smart Bet Suggestions",
+                value="<p>Add spins to get smart betting suggestions.</p>"
             )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
+        with gr.Column(scale=2):
+            smart_bet_spins_dropdown = gr.Dropdown(
+                label="Spins to Analyze",
+                choices=["10", "20", "36", "50", "100"],
+                value="36",
+                interactive=True
             )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
 
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -5553,9 +5658,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        # Line 1: Start of the .then() chain update
+        ).then(
+            fn=generate_smart_bet_suggestions,
+            inputs=[smart_bet_spins_dropdown, strategy_dropdown],
+            outputs=[smart_bet_suggestions_output]
+        # Line 2: End of the .then() chain update
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
+    try:
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in spins_display.change handler: {str(e)}")
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -5951,7 +6074,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in middle_color_picker.change handler: {str(e)}")
-
     try:
         lower_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -5960,8 +6082,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
-        
-# Dozen Tracker Event Handlers
+    try:
+        smart_bet_spins_dropdown.change(
+            fn=generate_smart_bet_suggestions,
+            inputs=[smart_bet_spins_dropdown, strategy_dropdown],
+            outputs=[smart_bet_suggestions_output]
+        )
+    except Exception as e:
+        print(f"Error in smart_bet_spins_dropdown.change handler: {str(e)}")
+    # Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
