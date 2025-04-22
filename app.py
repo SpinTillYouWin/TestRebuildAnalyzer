@@ -604,6 +604,9 @@ def render_sides_of_zero_display():
         # Calculate angles
         start_angle = start_idx * angle_per_number
         end_angle = (end_idx + 1) * angle_per_number
+        # Adjust for the 90-degree rotation of the wheel
+        start_angle = (start_angle - 90) % 360
+        end_angle = (end_angle - 90) % 360
         if end_angle <= start_angle:
             end_angle += 360
         start_rad = start_angle * (3.14159 / 180)
@@ -914,104 +917,126 @@ def render_sides_of_zero_display():
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
 
-        // Tooltip functionality for numbers
-        document.querySelectorAll('.number-item').forEach(element => {{
-            element.addEventListener('mouseover', (e) => {{
-                const hits = element.getAttribute('data-hits');
-                const num = element.getAttribute('data-number');
-                const tooltipText = `Number ${{num}}: ${{hits}} hits`;
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = element.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
-                tooltip.style.opacity = '1';
+        // Function to attach tooltip event listeners
+        function attachTooltipListeners() {{
+            // Tooltip functionality for numbers
+            document.querySelectorAll('.number-item').forEach(element => {{
+                element.removeEventListener('mouseover', handleNumberMouseOver);
+                element.removeEventListener('mouseout', handleNumberMouseOut);
+                element.addEventListener('mouseover', handleNumberMouseOver);
+                element.addEventListener('mouseout', handleNumberMouseOut);
             }});
-            
-            element.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.remove();
-                }}
-            }});
-        }});
 
-        // Tooltip functionality for wheel segments
-        document.querySelectorAll('.wheel-segment').forEach(segment => {{
-            segment.addEventListener('click', (e) => {{
-                const hits = segment.getAttribute('data-hits');
-                const num = segment.getAttribute('data-number');
-                const neighbors = {json.dumps(dict(current_neighbors))};
-                const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
-                const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
-                const tooltipText = `Number ${{num}}: ${{hits}} hits\\nLeft Neighbor: ${{leftNeighbor}}\\nRight Neighbor: ${{rightNeighbor}}`;
-                
-                // Remove any existing tooltips
-                const existingTooltip = document.querySelector('.tooltip');
-                if (existingTooltip) existingTooltip.remove();
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = segment.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
-                tooltip.style.opacity = '1';
-                
-                // Remove tooltip after 3 seconds or on click
-                setTimeout(() => {{
-                    tooltip.remove();
-                }}, 3000);
-                segment.addEventListener('click', () => {{
-                    tooltip.remove();
-                }}, {{ once: true }});
+            // Tooltip functionality for wheel segments
+            document.querySelectorAll('.wheel-segment').forEach(segment => {{
+                segment.removeEventListener('click', handleSegmentClick);
+                segment.removeEventListener('mouseout', handleSegmentMouseOut);
+                segment.addEventListener('click', handleSegmentClick);
+                segment.addEventListener('mouseout', handleSegmentMouseOut);
             }});
-            
-            segment.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.style.opacity = '0';
-                }}
-            }});
-        }});
 
-        // Tooltip functionality for betting arcs
-        document.querySelectorAll('.betting-arc').forEach(arc => {{
-            arc.addEventListener('mouseover', (e) => {{
-                const section = arc.getAttribute('data-section');
-                const hits = arc.getAttribute('data-hits');
-                const tooltipText = `${{section}}: ${{hits}} hits`;
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = arc.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
-                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
-                tooltip.style.opacity = '1';
+            // Tooltip functionality for betting arcs
+            document.querySelectorAll('.betting-arc').forEach(arc => {{
+                arc.removeEventListener('mouseover', handleArcMouseOver);
+                arc.removeEventListener('mouseout', handleArcMouseOut);
+                arc.addEventListener('mouseover', handleArcMouseOver);
+                arc.addEventListener('mouseout', handleArcMouseOut);
             }});
+        }}
+
+        // Event handler functions
+        function handleNumberMouseOver(e) {{
+            const hits = this.getAttribute('data-hits');
+            const num = this.getAttribute('data-number');
+            const tooltipText = `Number ${{num}}: ${{hits}} hits`;
             
-            arc.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.remove();
-                }}
-            }});
-        }});
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = tooltipText;
+            
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+            tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+            tooltip.style.opacity = '1';
+        }}
+
+        function handleNumberMouseOut() {{
+            const tooltip = document.querySelector('.tooltip');
+            if (tooltip) {{
+                tooltip.remove();
+            }}
+        }}
+
+        function handleSegmentClick(e) {{
+            const hits = this.getAttribute('data-hits');
+            const num = this.getAttribute('data-number');
+            const neighbors = {json.dumps(dict(current_neighbors))};
+            const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
+            const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
+            const tooltipText = `Number ${{num}}: ${{hits}} hits\\nLeft Neighbor: ${{leftNeighbor}}\\nRight Neighbor: ${{rightNeighbor}}`;
+            
+            // Remove any existing tooltips
+            const existingTooltip = document.querySelector('.tooltip');
+            if (existingTooltip) existingTooltip.remove();
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = tooltipText;
+            
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+            tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+            tooltip.style.opacity = '1';
+            
+            // Remove tooltip after 3 seconds or on click
+            setTimeout(() => {{
+                tooltip.remove();
+            }}, 3000);
+            this.addEventListener('click', () => {{
+                tooltip.remove();
+            }}, {{ once: true }});
+        }}
+
+        function handleSegmentMouseOut() {{
+            const tooltip = document.querySelector('.tooltip');
+            if (tooltip) {{
+                tooltip.style.opacity = '0';
+            }}
+        }}
+
+        function handleArcMouseOver(e) {{
+            const section = this.getAttribute('data-section');
+            const hits = this.getAttribute('data-hits');
+            const tooltipText = `${{section}}: ${{hits}} hits`;
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = tooltipText;
+            
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+            tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+            tooltip.style.opacity = '1';
+        }}
+
+        function handleArcMouseOut() {{
+            const tooltip = document.querySelector('.tooltip');
+            if (tooltip) {{
+                tooltip.remove();
+            }}
+        }}
+
+        // Initial attachment of event listeners
+        attachTooltipListeners();
 
         // Remove bounce class after animation
         document.querySelectorAll('.bounce').forEach(element => {{
@@ -1043,6 +1068,8 @@ def render_sides_of_zero_display():
                     requestAnimationFrame(step);
                 }} else {{
                     console.log(`Animation completed for element: ${{element.id}}`);
+                    // Re-attach event listeners after animation
+                    attachTooltipListeners();
                 }}
             }}
             
@@ -1082,6 +1109,8 @@ def render_sides_of_zero_display():
                         wheel.style.transform = `rotate({latest_spin_angle}deg)`;
                         ball.style.transform = `rotate({-latest_spin_angle}deg) translateX(135px)`;
                         console.log('Animation positions finalized');
+                        // Ensure event listeners are re-attached
+                        attachTooltipListeners();
                     }}, 2000);
                 }}, 10);
             }} else {{
