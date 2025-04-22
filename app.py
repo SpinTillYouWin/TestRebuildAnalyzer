@@ -747,6 +747,7 @@ def render_sides_of_zero_display():
             }});
         }});
 
+# Lines before (context from render_sides_of_zero_display)
         // Remove bounce class after animation
         document.querySelectorAll('.bounce').forEach(element => {{
             setTimeout(() => {{
@@ -755,6 +756,102 @@ def render_sides_of_zero_display():
         }});
     </script>
     """
+# End of context before
+
+# New function (Lines 1 to 92)
+def render_roulette_wheel():
+    """Render an interactive roulette wheel with spinning animation."""
+    wheel_numbers = [
+        0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
+        10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+    ]
+    colors_map = {
+        "0": "green",
+        "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red",
+        "14": "red", "16": "red", "18": "red", "19": "red", "21": "red", "23": "red",
+        "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
+        "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black",
+        "13": "black", "15": "black", "17": "black", "20": "black", "22": "black", "24": "black",
+        "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
+    }
+    return f"""
+    <div class="roulette-sim-container">
+        <canvas id="rouletteWheel" width="300" height="300"></canvas>
+        <div id="spinResult" style="text-align: center; color: white; font-weight: bold;"></div>
+    </div>
+    <script>
+        const canvas = document.getElementById('rouletteWheel');
+        const ctx = canvas.getContext('2d');
+        const numbers = {wheel_numbers};
+        const colors = {colors_map};
+        let angle = 0;
+        let spinning = false;
+
+        function drawWheel() {{
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 10;
+            const slotAngle = 2 * Math.PI / numbers.length;
+
+            numbers.forEach((num, i) => {{
+                const startAngle = angle + i * slotAngle;
+                const endAngle = startAngle + slotAngle;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.lineTo(centerX, centerY);
+                ctx.fillStyle = colors[num.toString()];
+                ctx.fill();
+                ctx.strokeStyle = 'gold';
+                ctx.stroke();
+
+                // Draw number
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + slotAngle / 2);
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.fillText(num.toString(), radius - 20, 0);
+                ctx.restore();
+            }});
+
+            // Draw ball
+            if (spinning) {{
+                ctx.beginPath();
+                ctx.arc(centerX + (radius - 10) * Math.cos(angle), centerY + (radius - 10) * Math.sin(angle), 5, 0, 2 * Math.PI);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+            }}
+        }}
+
+        function spinWheel(targetNum) {{
+            if (spinning) return;
+            spinning = true;
+            const targetIndex = numbers.indexOf(parseInt(targetNum));
+            const targetAngle = - (targetIndex * (2 * Math.PI / numbers.length)) + (Math.random() * 0.1 - 0.05);
+            const spinDuration = 2000;
+            const startTime = Date.now();
+
+            function animate() {{
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                angle = progress * (targetAngle + 4 * Math.PI) % (2 * Math.PI);
+                drawWheel();
+                if (progress < 1) {{
+                    requestAnimationFrame(animate);
+                }} else {{
+                    spinning = false;
+                    document.getElementById('spinResult').textContent = `Result: ${targetNum}`;
+                }}
+            }}
+            requestAnimationFrame(animate);
+        }}
+
+        drawWheel();
+    </script>
+    """
+
+# Lines after (context from validate_spins_input)
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -862,11 +959,16 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
     else:
+       # Lines before (context)
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()   
+
+# Updated return statement (Lines 1 to 2)
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display(), render_roulette_wheel()
+
+# Lines after (context)
         
 # Function to clear spins
 def clear_spins():
@@ -4023,15 +4125,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes="long-slider"
     )
 
-    # 2. Row 2: European Roulette Table
+# New Row 2 (Lines 1 to 42)
+    # 2. Row 2: Interactive Roulette Wheel Simulation
     with gr.Group():
-        gr.Markdown("### European Roulette Table")
-        table_layout = [
-            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-        ]
+        gr.Markdown("### Interactive Roulette Wheel Simulation")
+        wheel_output = gr.HTML(
+            label="Roulette Wheel",
+            value=render_roulette_wheel(),
+            elem_classes=["roulette-sim-container"]
+        )
         with gr.Column(elem_classes="roulette-table"):
+            table_layout = [
+                ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+                ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+                ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+            ]
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
                     for num in row:
@@ -4040,7 +4148,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         else:
                             color = colors.get(str(num), "black")
                             is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
+                            btn_classes = ["roulette-button", color]
                             if is_selected:
                                 btn_classes.append("selected")
                             btn = gr.Button(
@@ -4048,13 +4156,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
-                            # Attach the click event directly
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, wheel_output],
+                                _js=f"() => {{ spinWheel('{num}'); return []; }}"
                             )
 
+# Lines after (context from Row 3)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
