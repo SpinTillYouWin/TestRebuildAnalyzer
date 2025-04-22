@@ -475,11 +475,9 @@ def render_sides_of_zero_display():
     
     # Define the order of numbers for the European roulette wheel
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    # *** This is the section where the number order is defined ***
-    # Left Side: Numbers before 0 (originally 26 to 5), now reversed to 5 to 26 as requested
     left_side = original_order[:18][::-1]  # Reversed: 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
     zero = [0]
-    right_side = original_order[19:]  # 32 to 10 (remains unchanged)
+    right_side = original_order[19:]  # 32 to 10
     wheel_order = left_side + zero + right_side
     
     # Define betting sections
@@ -511,7 +509,7 @@ def render_sides_of_zero_display():
     # Calculate maximum hits for scaling highlights
     max_segment_hits = max(state.scores.values(), default=1)
     
-    # Generate HTML for the number list (this is the list above the wheel)
+    # Generate HTML for the number list
     def generate_number_list(numbers):
         if not numbers:
             return '<div class="number-list">No numbers</div>'
@@ -638,8 +636,9 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create the accordion section with an ID for state persistence
+        # Create the accordion section with state preservation
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
+        # Use JavaScript to determine if the section should be open (we'll set this via script)
         betting_sections_html += f'''
         <details id="{section_id}" class="betting-section-accordion">
             <summary class="betting-section-header" style="background-color: {color};">
@@ -1001,32 +1000,48 @@ def render_sides_of_zero_display():
         {betting_sections_html}
     </div>
     <script>
-        // Function to save the state of all <details> elements
-        function saveDetailsState() {{
-            const detailsElements = document.querySelectorAll('.betting-section-accordion');
-            detailsElements.forEach((detail, index) => {{
-                localStorage.setItem(`detailsState${{detail.id}}`, detail.open);
-            }});
+        // Initialize global state object for details elements if it doesn't exist
+        if (typeof window.detailsState === 'undefined') {{
+            window.detailsState = {{
+                'jeu_0': false,
+                'voisins_du_zero': false,
+                'orphelins': false,
+                'tiers_du_cylindre': false
+            }};
         }}
 
-        // Function to restore the state of all <details> elements
-        function restoreDetailsState() {{
-            const detailsElements = document.querySelectorAll('.betting-section-accordion');
-            detailsElements.forEach((detail, index) => {{
-                const isOpen = localStorage.getItem(`detailsState${{detail.id}}`) === 'true';
-                detail.open = isOpen;
-            }});
+        // Function to save the state of a specific <details> element
+        function saveDetailsState(id, isOpen) {{
+            window.detailsState[id] = isOpen;
         }}
 
-        // Add event listeners to save state on toggle
-        document.addEventListener('DOMContentLoaded', () => {{
+        // Function to apply the saved state to all <details> elements
+        function applyDetailsState() {{
             const detailsElements = document.querySelectorAll('.betting-section-accordion');
             detailsElements.forEach(detail => {{
-                detail.addEventListener('toggle', saveDetailsState);
+                const id = detail.id;
+                if (window.detailsState[id]) {{
+                    detail.setAttribute('open', '');
+                }} else {{
+                    detail.removeAttribute('open');
+                }}
+                // Re-attach event listener for toggle
+                detail.removeEventListener('toggle', handleDetailsToggle); // Avoid duplicate listeners
+                detail.addEventListener('toggle', handleDetailsToggle);
             }});
-            // Restore state after DOM is loaded
-            restoreDetailsState();
-        }});
+        }}
+
+        // Event handler for toggle events
+        function handleDetailsToggle(e) {{
+            const detail = e.target;
+            const id = detail.id;
+            saveDetailsState(id, detail.open);
+        }}
+
+        // Apply the state after DOM is updated
+        setTimeout(() => {{
+            applyDetailsState();
+        }}, 0);
 
         function updateCircularProgress(id, progress) {{
             const element = document.getElementById(id);
