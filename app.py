@@ -4306,6 +4306,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
     # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -4431,27 +4432,29 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 allow_custom_value=False
             )
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-                neighbours_count_slider = gr.Slider(
-                    label="Number of Neighbors (Left + Right)",
-                    minimum=1,
-                    maximum=5,
-                    step=1,
-                    value=1,
-                    interactive=True,
-                    visible=False,
-                    elem_classes="long-slider"
-                )
-                strong_numbers_count_slider = gr.Slider(
-                    label="Strong Numbers to Highlight (Neighbours Strategy)",
-                    minimum=1,
-                    maximum=18,
-                    step=1,
-                    value=1,
-                    interactive=True,
-                    visible=False,
-                    elem_classes="long-slider"
-                )
-                reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+            # Line 1: Start of corrected section
+            neighbours_count_slider = gr.Slider(
+                label="Number of Neighbors (Left + Right)",
+                minimum=1,
+                maximum=5,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            strong_numbers_count_slider = gr.Slider(
+                label="Strong Numbers to Highlight (Neighbours Strategy)",
+                minimum=1,
+                maximum=18,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+            # Line 2: End of corrected section
 
     # 7.0. Row 7.0: Smart Bet Suggestion Panel
     with gr.Row():
