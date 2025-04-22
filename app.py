@@ -404,7 +404,6 @@ colors = {
     "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
 }
 
-
 # Lines before (context)
 def format_spins_as_html(spins, num_to_show):
     if not spins:
@@ -558,200 +557,8 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations
+    # HTML output with JavaScript to handle animations (CSS removed, now inlined above)
     return f"""
-    <style>
-        .circular-progress {{
-            position: relative;
-            width: 80px;
-            height: 80px;
-            background: conic-gradient(#d3d3d3 0% 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: all 0.5s ease;
-        }}
-        .circular-progress::before {{
-            content: '';
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #e0e0e0;
-            border-radius: 50%;
-            z-index: 1;
-        }}
-        .circular-progress span {{
-            position: relative;
-            z-index: 2;
-            font-size: 12px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }}
-        #left-progress {{
-            background: conic-gradient(#6a1b9a {left_progress}% , #d3d3d3 {left_progress}% 100%);
-        }}
-        #zero-progress {{
-            background: conic-gradient(#00695c {zero_progress}% , #d3d3d3 {zero_progress}% 100%);
-        }}
-        #right-progress {{
-            background: conic-gradient(#f4511e {right_progress}% , #d3d3d3 {right_progress}% 100%);
-        }}
-        .circular-progress:hover {{
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }}
-        .number-list {{
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 3px;
-            justify-content: center;
-            margin-top: 10px;
-            overflow-x: auto;
-            width: 100%;
-            padding: 5px 0;
-        }}
-        .number-item {{
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            text-align: center;
-            font-size: 10px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            flex-shrink: 0;
-        }}
-        .number-item.zero-number {{
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            font-size: 30px;
-        }}
-        .hit-badge {{
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ffffff;
-            color: #000000;
-            border: 1px solid #000000;
-            font-size: 8px;
-            width: 12px;
-            height: 12px;
-            line-height: 12px;
-            border-radius: 50%;
-            z-index: 2;
-        }}
-        .number-item.zero-number .hit-badge {{
-            top: -6px;
-            right: -6px;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            font-size: 10px;
-        }}
-        .tooltip {{
-            position: absolute;
-            background: #333;
-            color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 12px;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            white-space: nowrap;
-        }}
-        .tracker-column {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }}
-        .tracker-container {{
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            gap: 15px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            font-family: Arial, sans-serif;
-        }}
-        .roulette-wheel-container {{
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }}
-        #wheel-pointer {{
-            z-index: 3;
-        }}
-        @media (max-width: 600px) {{
-            .tracker-container {{
-                flex-direction: column;
-                align-items: center;
-            }}
-            .number-list {{
-                flex-wrap: nowrap;
-                overflow-x: auto;
-            }}
-            .number-item {{
-                width: 16px;
-                height: 16px;
-                line-height: 16px;
-                font-size: 8px;
-            }}
-            .number-item.zero-number {{
-                width: 64px;
-                height: 64px;
-                line-height: 64px;
-                font-size: 32px;
-            }}
-            .hit-badge {{
-                width: 10px;
-                height: 10px;
-                line-height: 10px;
-                font-size: 6px;
-                top: -3px;
-                right: -3px;
-            }}
-            .number-item.zero-number .hit-badge {{
-                width: 20px;
-                height: 20px;
-                line-height: 20px;
-                font-size: 10px;
-                top: -6px;
-                right: -6px;
-            }}
-            .roulette-wheel-container {{
-                width: 250px;
-                height: 250px;
-            }}
-            #roulette-wheel {{
-                width: 250px;
-                height: 250px;
-            }}
-            #wheel-pointer {{
-                top: 12.5px;
-                left: 120.75px;
-                width: 7.5px;
-                height: 25px;
-            }}
-            #spinning-ball {{
-                width: 10px;
-                height: 10px;
-            }}
-        }}
-    </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
         <div class="tracker-container">
@@ -4128,7 +3935,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
                 <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" title="View the Roulette Spin Analyzer Guide" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>  # Line 1 (search term lands here)
+                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" title="View the Roulette Spin Analyzer Guide" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
             </div>
             <style>
                 #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
@@ -4139,7 +3946,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections  # Line 2 (unchanged)
+    # Define state and components used across sections
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -4173,15 +3980,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes="long-slider"
     )
 
-# 2. Row 2: European Roulette Table  # Line 1 (context before)
+    # 2. Row 2: European Roulette Table
     with gr.Group():
-        gr.Markdown("### European Roulette Table")  # Line 2 (search term lands here)
-        table_layout = [  # Line 3 (corrected indentation)
+        gr.Markdown("### European Roulette Table")
+        table_layout = [
             ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-        with gr.Column(elem_classes="roulette-table"):  # Line 4 (corrected indentation)
+        with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
                     for num in row:
@@ -4197,7 +4004,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 value=num,
                                 min_width=40,
                                 elem_classes=btn_classes,
-                                title=f"Spin number {num}"  # Added for accessibility
+                                _js=f"() => {{ document.querySelector('.roulette-button[value=\"{num}\"]').setAttribute('aria-label', 'Spin number {num}'); }}"  # Use aria-label for accessibility
                             )
                             # Attach the click event directly
                             btn.click(
@@ -4763,6 +4570,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
 
+    # 12. Row 12: Feedback Section
     # 12. Row 12: Feedback Section
     with gr.Row():
         with gr.Column():
@@ -5641,29 +5449,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           ];
           const missingElements = criticalElements.filter(el => !document.querySelector(el));
           if (missingElements.length > 0) {
-            console.error(`Cannot start tour: Missing elements: ${missingElements.join(', ')}`);
-            alert(`Tour unavailable: Missing components (${missingElements.join(', ')}). Please refresh the page or contact support.`);
+            console.error('Missing critical elements for tour:', missingElements);
+            alert('Tour unavailable: Some elements are missing. Please ensure the page is fully loaded or refresh the page.');
             return;
           }
-          console.log('All critical elements found. Starting tour.');
-          try {
-            tour.start();
-            console.log('Tour started successfully.');
-          } catch (error) {
-            console.error('Error starting tour:', error);
-            alert('Tour failed to start due to an unexpected error. Please check the console for details.');
-          }
-        }, 2000); // Increased delay to ensure Gradio rendering
+          console.log('All critical elements found. Starting tour...');
+          tour.start();
+        }, 1500); // Delay to ensure DOM is fully loaded
       }
 
-# Lines before (unchanged)
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
-      });
+      // Auto-start the tour on page load after a delay
+      setTimeout(() => {
+        console.log('Attempting to auto-start tour...');
+        const hasSeenTour = localStorage.getItem('hasSeenTour');
+        if (!hasSeenTour) {
+          console.log('User has not seen tour. Auto-starting...');
+          startTour();
+          localStorage.setItem('hasSeenTour', 'true');
+        } else {
+          console.log('User has already seen the tour. Skipping auto-start.');
+        }
+      }, 2000);
     </script>
     """)
+
+    print("Tour Script Updated")
 # Lines before (unchanged)
+
     gr.HTML("""
     <script>
       document.documentElement.setAttribute('lang', 'en');
