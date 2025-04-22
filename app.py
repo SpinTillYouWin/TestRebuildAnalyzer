@@ -758,6 +758,55 @@ def render_sides_of_zero_display():
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
+# End of context before
+
+# New function (Lines 1 to 48)
+def render_hot_cold_numbers():
+    """Render a widget showing the top 5 hot and cold numbers with animations."""
+    # Calculate hot numbers (top 5 most frequent)
+    sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    hot_numbers = [(num, count) for num, count in sorted_scores if count > 0][:5]
+    # Calculate cold numbers (top 5 least frequent, including unhit)
+    cold_numbers = [(num, count) for num, count in sorted_scores if count == 0][:5]
+    if not cold_numbers:  # If there are hits, take least frequent non-zero
+        cold_numbers = sorted_scores[-5:][::-1] if len(sorted_scores) >= 5 else sorted_scores[::-1]
+
+    # Generate HTML for hot and cold number cards
+    def generate_number_card(numbers, title, card_class):
+        if not numbers:
+            return f'<div class="{card_class}"><h4>{title}</h4><p>No data yet.</p></div>'
+        html = f'<div class="{card_class} fade-in"><h4>{title}</h4><ul>'
+        for num, count in numbers:
+            color = colors.get(str(num), "black")
+            html += f'<li style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; margin: 2px 0;">{num}: {count} hits</li>'
+        html += '</ul></div>'
+        return html
+
+    hot_card = generate_number_card(hot_numbers, "Hot Numbers (Top 5)", "hot-card")
+    cold_card = generate_number_card(cold_numbers, "Cold Numbers (Top 5)", "cold-card")
+
+    # Combine cards in a container with animation script
+    return f"""
+    <div class="hot-cold-container">
+        <h3 style="text-align: center; margin-bottom: 10px;">Hot & Cold Numbers Tracker</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+            {hot_card}
+            {cold_card}
+        </div>
+        <script>
+            document.querySelectorAll('.fade-in').forEach(element => {{
+                setTimeout(() => {{
+                    element.classList.remove('fade-in');
+                }}, 500);
+            }});
+        </script>
+    </div>
+    """
+
+# Lines after (context from validate_spins_input)
+def validate_spins_input(spins_input):
+    """Validate manually entered spins and update state."""
+    import gradio as gr
     print(f"validate_spins_input: spins_input='{spins_input}'")
     if not spins_input or not spins_input.strip():
         print("validate_spins_input: No spins input provided.")
@@ -5061,6 +5110,50 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 height: 200px !important;
             }
         }
+# End of context before
+
+# New CSS styles (Lines 1 to 36)
+        /* Hot and Cold Numbers Tracker */
+        .hot-cold-container {
+            background-color: #1a1a1a !important; /* Dark casino background */
+            padding: 15px !important;
+            border-radius: 5px !important;
+            font-family: 'Montserrat', Arial, sans-serif !important;
+            color: #ffffff !important;
+        }
+        .hot-card, .cold-card {
+            background: linear-gradient(135deg, #ff0000, #8b0000) !important; /* Red gradient for hot */
+            padding: 10px !important;
+            border-radius: 5px !important;
+            width: 200px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+            transition: transform 0.2s ease !important;
+        }
+        .cold-card {
+            background: linear-gradient(135deg, #000000, #333333) !important; /* Black gradient for cold */
+        }
+        .hot-card:hover, .cold-card:hover {
+            transform: scale(1.05) !important;
+        }
+        .hot-card h4, .cold-card h4 {
+            margin: 0 0 10px 0 !important;
+            font-size: 16px !important;
+            text-align: center !important;
+        }
+        .hot-card ul, .cold-card ul {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .fade-in {
+            animation: fadeInHotCold 0.5s ease-in !important;
+        }
+        @keyframes fadeInHotCold {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+# Lines after (context)
     </style>
     """)
     print("CSS Updated")
