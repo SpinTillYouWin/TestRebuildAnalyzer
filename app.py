@@ -481,10 +481,10 @@ def render_sides_of_zero_display():
     wheel_order = left_side + zero + right_side
     
     # Define betting sections
-    jeu_0 = [12, 35, 3, 26, 0, 32, 15]  # Jeu 0
-    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]  # Voisins du Zero
-    orphelins = [1, 20, 14, 31, 9, 17, 34, 6]  # Orphelins
-    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]  # Tiers du Cylindre
+    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
+    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]
+    orphelins = [1, 20, 14, 31, 9, 17, 34, 6]
+    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
     
     # Calculate hit counts for each betting section
     jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
@@ -534,10 +534,9 @@ def render_sides_of_zero_display():
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
-    # Helper function to draw an arc for a list of numbers
-    def draw_section_arc(section_numbers, section_name, fill_color, hits):
+    # Helper function to draw an arc for a list of numbers at a specified radius
+    def draw_section_arc(section_numbers, fill_color, hits, radius=145, stroke_width=2):
         arcs = []
-        # Find contiguous groups of numbers in the section
         indices = sorted([original_order.index(num) for num in section_numbers])
         current_group = []
         groups = []
@@ -549,7 +548,6 @@ def render_sides_of_zero_display():
                 current_group = [idx]
             if i == len(indices) - 1:
                 groups.append(current_group)
-        # Handle wrap-around (e.g., if section crosses the 0 index)
         if indices[0] == 0 and indices[-1] == len(original_order) - 1:
             groups[0] = groups[-1] + groups[0]
             groups.pop(-1)
@@ -562,27 +560,66 @@ def render_sides_of_zero_display():
             end_angle = (end_idx + 1) * angle_per_number
             start_rad = start_angle * (3.14159 / 180)
             end_rad = end_angle * (3.14159 / 180)
-            x1 = 170 + 145 * math.cos(start_rad)
-            y1 = 170 + 145 * math.sin(start_rad)
-            x2 = 170 + 145 * math.cos(end_rad)
-            y2 = 170 + 145 * math.sin(end_rad)
+            x1 = 170 + radius * math.cos(start_rad)
+            y1 = 170 + radius * math.sin(start_rad)
+            x2 = 170 + radius * math.cos(end_rad)
+            y2 = 170 + radius * math.sin(end_rad)
             large_arc_flag = 1 if (end_angle - start_angle) > 180 else 0
-            path_d = f"M 170,170 L {x1},{y1} A 145,145 0 {large_arc_flag},1 {x2},{y2} L 170,170 Z"
+            path_d = f"M 170,170 L {x1},{y1} A {radius},{radius} 0 {large_arc_flag},1 {x2},{y2} L 170,170 Z"
             opacity = 0.3 + (hits / max_section_hits * 0.5) if max_section_hits > 0 else 0.3
             class_name = "section-arc pulse" if hits > 0 else "section-arc"
-            arcs.append(f'<path class="{class_name}" d="{path_d}" fill="{fill_color}" fill-opacity="{opacity}" stroke="{fill_color}" stroke-width="2"/>')
+            arcs.append(f'<path class="{class_name}" d="{path_d}" fill="{fill_color}" fill-opacity="{opacity}" stroke="{fill_color}" stroke-width="{stroke_width}"/>')
         return arcs
     
-    # Draw arcs for betting sections
-    jeu_0_arcs = draw_section_arc(jeu_0, "Jeu 0", "#90EE90", jeu_0_hits)
-    voisins_du_zero_arcs = draw_section_arc(voisins_du_zero, "Voisins du Zero", "#32CD32", voisins_du_zero_hits)
-    orphelins_arcs = draw_section_arc(orphelins, "Orphelins", "#D3D3D3", orphelins_hits)
-    tiers_du_cylindre_arcs = draw_section_arc(tiers_du_cylindre, "Tiers du Cylindre", "#F5F5DC", tiers_du_cylindre_hits)
+    # Helper function to create an arc-shaped label
+    def create_arc_label(section_numbers, label_text, text_color, hits, radius=165):
+        # Find the midpoint of the section for label placement
+        indices = sorted([original_order.index(num) for num in section_numbers])
+        current_group = []
+        groups = []
+        for i, idx in enumerate(indices):
+            if not current_group or idx == current_group[-1] + 1:
+                current_group.append(idx)
+            else:
+                groups.append(current_group)
+                current_group = [idx]
+            if i == len(indices) - 1:
+                groups.append(current_group)
+        if indices[0] == 0 and indices[-1] == len(original_order) - 1:
+            groups[0] = groups[-1] + groups[0]
+            groups.pop(-1)
+        
+        angle_per_number = 360 / 37
+        # Use the largest group for the label
+        largest_group = max(groups, key=len)
+        start_idx = largest_group[0]
+        end_idx = largest_group[-1]
+        mid_angle = (start_idx + (end_idx - start_idx) / 2) * angle_per_number
+        mid_rad = mid_angle * (3.14159 / 180)
+        
+        # Create a path for the text to follow
+        start_angle = (start_idx - 0.5) * angle_per_number
+        end_angle = (end_idx + 0.5) * angle_per_number
+        start_rad = start_angle * (3.14159 / 180)
+        end_rad = end_angle * (3.14159 / 180)
+        x1 = 170 + radius * math.cos(start_rad)
+        y1 = 170 + radius * math.sin(start_rad)
+        x2 = 170 + radius * math.cos(end_rad)
+        y2 = 170 + radius * math.sin(end_rad)
+        large_arc_flag = 1 if (end_angle - start_angle) > 180 else 0
+        path_d = f"M {x1},{y1} A {radius},{radius} 0 {large_arc_flag},1 {x2},{y2}"
+        
+        # Background arc for the label
+        bg_path_d = f"M {x1},{y1} A {radius},{radius} 0 {large_arc_flag},1 {x2},{y2}"
+        bg_arc = f'<path id="bg-{label_text.replace(" ", "-")}" d="{bg_path_d}" fill="none"/>'
+        bg_arc += f'<path d="{bg_path_d}" fill="#FFF" fill-opacity="0.8" stroke="{text_color}" stroke-width="1"/>'
+        
+        # Text along the path
+        text_path = f'<path id="{label_text.replace(" ", "-")}" d="{path_d}" fill="none"/>'
+        text = f'<text font-size="10" fill="{text_color}"><textPath href="#{label_text.replace(" ", "-")}" startOffset="50%" text-anchor="middle">{label_text}: {hits}</textPath></text>'
+        return bg_arc + text_path + text
     
-    for arc in jeu_0_arcs + voisins_du_zero_arcs + orphelins_arcs + tiers_du_cylindre_arcs:
-        wheel_svg += arc
-    
-    # Add Left Side and Right Side arcs (below betting sections for layering)
+    # Draw inner arcs for Left Side and Right Side
     left_start_angle = 0
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
@@ -609,6 +646,15 @@ def render_sides_of_zero_display():
     right_stroke = "#D84315" if winning_section == "Right Side" else "#808080"
     wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="{right_stroke}" stroke-width="3"/>'
     
+    # Draw outer arcs for betting sections
+    jeu_0_arcs = draw_section_arc(jeu_0, "#228B22", jeu_0_hits, radius=155, stroke_width=4)
+    voisins_du_zero_arcs = draw_section_arc(voisins_du_zero, "#008080", voisins_du_zero_hits, radius=155, stroke_width=4)
+    orphelins_arcs = draw_section_arc(orphelins, "#696969", orphelins_hits, radius=155, stroke_width=4)
+    tiers_du_cylindre_arcs = draw_section_arc(tiers_du_cylindre, "#B8860B", tiers_du_cylindre_hits, radius=155, stroke_width=4)
+    
+    for arc in jeu_0_arcs + voisins_du_zero_arcs + orphelins_arcs + tiers_du_cylindre_arcs:
+        wheel_svg += arc
+    
     # Add the wheel background
     wheel_svg += '<circle cx="170" cy="170" r="135" fill="#2e7d32"/>'
     
@@ -618,9 +664,9 @@ def render_sides_of_zero_display():
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
         hits = state.scores.get(num, 0)
-        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
-        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to.ConcurrentLinkedQueue 1
-        stroke_color = "#FF00FF" if hits > 0 else "#FFF"  # Magenta pulsing
+        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2
+        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5
+        stroke_color = "#FF00FF" if hits > 0 else "#FFF"
         is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
         rad = angle * (3.14159 / 180)
@@ -635,18 +681,22 @@ def render_sides_of_zero_display():
         y4 = 170 + 105 * math.sin(rad)
         path_d = f"M 170,170 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
         wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
-        # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
         text_x = 170 + 120 * math.cos(text_rad)
         text_y = 170 + 120 * math.sin(text_rad)
         wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
-        # Add hit count text
         hit_text_x = 170 + 90 * math.cos(text_rad)
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     
-    # Add labels for Left Side and Right Side
+    # Add arc-shaped labels for betting sections
+    wheel_svg += create_arc_label(jeu_0, "Jeu 0", "#228B22", jeu_0_hits, radius=165)
+    wheel_svg += create_arc_label(voisins_du_zero, "Voisins du Zero", "#008080", voisins_du_zero_hits, radius=165)
+    wheel_svg += create_arc_label(orphelins, "Orphelins", "#696969", orphelins_hits, radius=165)
+    wheel_svg += create_arc_label(tiers_du_cylindre, "Tiers du Cylindre", "#B8860B", tiers_du_cylindre_hits, radius=165)
+    
+    # Add vertical labels for Left Side and Right Side
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
     left_label_x = 170 + 155 * math.cos(left_label_rad)
@@ -660,39 +710,6 @@ def render_sides_of_zero_display():
     right_label_y = 170 + 155 * math.sin(right_label_rad)
     wheel_svg += f'<rect x="{right_label_x - 25}" y="{right_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#F4511E" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" dy="3">Right: {right_hits}</text>'
-    
-    # Add labels for betting sections
-    # Jeu 0 (midpoint around 0, roughly at 90 degrees after rotation)
-    jeu_0_label_angle = 90
-    jeu_0_label_rad = jeu_0_label_angle * (3.14159 / 180)
-    jeu_0_label_x = 170 + 165 * math.cos(jeu_0_label_rad)
-    jeu_0_label_y = 170 + 165 * math.sin(jeu_0_label_rad)
-    wheel_svg += f'<rect x="{jeu_0_label_x - 30}" y="{jeu_0_label_y - 8}" width="60" height="16" fill="#FFF" stroke="#90EE90" stroke-width="1" rx="3"/>'
-    wheel_svg += f'<text x="{jeu_0_label_x}" y="{jeu_0_label_y}" font-size="10" fill="#90EE90" text-anchor="middle" dy="3">Jeu 0: {jeu_0_hits}</text>'
-    
-    # Voisins du Zero (midpoint around 25, roughly at 60 degrees after rotation)
-    voisins_label_angle = 60
-    voisins_label_rad = voisins_label_angle * (3.14159 / 180)
-    voisins_label_x = 170 + 165 * math.cos(voisins_label_rad)
-    voisins_label_y = 170 + 165 * math.sin(voisins_label_rad)
-    wheel_svg += f'<rect x="{voisins_label_x - 40}" y="{voisins_label_y - 8}" width="80" height="16" fill="#FFF" stroke="#32CD32" stroke-width="1" rx="3"/>'
-    wheel_svg += f'<text x="{voisins_label_x}" y="{voisins_label_y}" font-size="10" fill="#32CD32" text-anchor="middle" dy="3">Voisins: {voisins_du_zero_hits}</text>'
-    
-    # Orphelins (midpoint between two groups, roughly at 135 and 315 degrees, we’ll use 135)
-    orphelins_label_angle = 135
-    orphelins_label_rad = orphelins_label_angle * (3.14159 / 180)
-    orphelins_label_x = 170 + 165 * math.cos(orphelins_label_rad)
-    orphelins_label_y = 170 + 165 * math.sin(orphelins_label_rad)
-    wheel_svg += f'<rect x="{orphelins_label_x - 35}" y="{orphelins_label_y - 8}" width="70" height="16" fill="#FFF" stroke="#D3D3D3" stroke-width="1" rx="3"/>'
-    wheel_svg += f'<text x="{orphelins_label_x}" y="{orphelins_label_y}" font-size="10" fill="#D3D3D3" text-anchor="middle" dy="3">Orphelins: {orphelins_hits}</text>'
-    
-    # Tiers du Cylindre (midpoint around 33, roughly at 300 degrees after rotation)
-    tiers_label_angle = 300
-    tiers_label_rad = tiers_label_angle * (3.14159 / 180)
-    tiers_label_x = 170 + 165 * math.cos(tiers_label_rad)
-    tiers_label_y = 170 + 165 * math.sin(tiers_label_rad)
-    wheel_svg += f'<rect x="{tiers_label_x - 40}" y="{tiers_label_y - 8}" width="80" height="16" fill="#FFF" stroke="#F5F5DC" stroke-width="1" rx="3"/>'
-    wheel_svg += f'<text x="{tiers_label_x}" y="{tiers_label_y}" font-size="10" fill="#F5F5DC" text-anchor="middle" dy="3">Tiers: {tiers_du_cylindre_hits}</text>'
     
     wheel_svg += '<circle cx="170" cy="170" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
