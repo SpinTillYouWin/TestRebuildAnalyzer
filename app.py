@@ -4708,6 +4708,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: #2a2a2a !important; /* Darker container */
             border: 1px solid #FFD700 !important; /* Gold border */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important; /* Soft shadow */
+            color: #e0e0e0 !important; /* Ensure text inside containers is light */
+        }
+        /* Ensure all text within Gradio components is light-colored */
+        .gr-textbox, .gr-dropdown, .gr-checkbox, .gr-slider, .gr-html, .gr-markdown {
+            color: #e0e0e0 !important;
+        }
+        .gr-textbox input, .gr-dropdown select, .gr-checkbox label, .gr-slider label, .gr-html p, .gr-html h1, .gr-html h2, .gr-html h3, .gr-html h4, .gr-html li {
+            color: #e0e0e0 !important;
+        }
+        /* Override default Gradio input placeholder color */
+        .gr-textbox input::placeholder {
+            color: #b0b0b0 !important;
+            opacity: 1 !important;
         }
 
         /* Style for Dealer’s Spin Tracker accordion */
@@ -4882,6 +4895,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             min-width: 754px !important;
             white-space: nowrap !important;
         }
+        /* Ensure text in the Dynamic Roulette Table is visible */
+        .roulette-table td, .roulette-table th {
+            color: #e0e0e0 !important; /* Light text for table cells */
+        }
 
         /* Responsive adjustments for desktop */
         @media (min-width: 768px) {
@@ -4908,7 +4925,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background: linear-gradient(135deg, #FFD700, #D4A017) !important;
             color: #1a1a1a !important;
             border: none !important;
-            border-radius: 6px !important;
+           чиво border-radius: 6px !important;
             transition: all 0.3s ease !important;
         }
         .action-button:hover {
@@ -4983,6 +5000,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .gr-accordion * {
             background: none !important;
+            color: #e0e0e0 !important; /* Ensure text in accordions is light */
         }
         .gr-accordion .gr-column, .gr-accordion .gr-row {
             background: none !important;
@@ -5056,6 +5074,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 6px !important;
             padding: 5px !important;
         }
+        .scrollable-table table, .scrollable-table td, .scrollable-table th {
+            color: #e0e0e0 !important; /* Ensure table text is light */
+        }
 
         /* Spin Counter Styling */
         .spin-counter {
@@ -5086,6 +5107,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 8px !important;
             margin-top: 12px !important;
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+        .last-spins-container h4, .last-spins-container p, .last-spins-container div {
+            color: #e0e0e0 !important; /* Ensure Last Spins text is light */
         }
 
         /* Fade-in animation for Last Spins */
@@ -5146,6 +5170,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 8px !important;
             margin: 12px 0 !important;
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+        .sides-of-zero-container h4, .sides-of-zero-container p, .sides-of-zero-container span {
+            color: #e0e0e0 !important; /* Ensure Sides of Zero text is light */
         }
 
         /* Responsive Design */
@@ -5254,6 +5281,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             #video-output iframe {
                 height: 220px !important;
             }
+        }
+
+        /* Strategy Recommendations */
+        #strategy-recommendations {
+            color: #e0e0e0 !important; /* Ensure strategy recommendations text is light */
+        }
+        #strategy-recommendations h3, #strategy-recommendations p {
+            color: #e0e0e0 !important;
         }
     </style>
     """)
