@@ -480,7 +480,22 @@ def render_sides_of_zero_display():
     right_side = original_order[19:]  # 32 to 10 (18 numbers)
     wheel_order = left_side + zero + right_side
     
-    # Determine the winning section
+    # Define betting sections
+    jeu_0 = [12, 35, 3, 26, 0, 32, 15]  # Jeu 0
+    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]  # Voisins du Zero
+    orphelins = [1, 20, 14, 31, 9, 17, 34, 6]  # Orphelins
+    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]  # Tiers du Cylindre
+    
+    # Calculate hit counts for each betting section
+    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
+    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
+    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
+    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
+    
+    # Calculate maximum hits across betting sections for scaling
+    max_section_hits = max(jeu_0_hits, voisins_du_zero_hits, orphelins_hits, tiers_du_cylindre_hits, 1)
+    
+    # Determine the winning section for Left/Right Side
     winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
     
     # Get the latest spin for bounce effect and wheel rotation
@@ -519,13 +534,60 @@ def render_sides_of_zero_display():
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
-    # Add background arcs for Left Side and Right Side
-    # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
+    # Helper function to draw an arc for a list of numbers
+    def draw_section_arc(section_numbers, section_name, fill_color, hits):
+        arcs = []
+        # Find contiguous groups of numbers in the section
+        indices = sorted([original_order.index(num) for num in section_numbers])
+        current_group = []
+        groups = []
+        for i, idx in enumerate(indices):
+            if not current_group or idx == current_group[-1] + 1:
+                current_group.append(idx)
+            else:
+                groups.append(current_group)
+                current_group = [idx]
+            if i == len(indices) - 1:
+                groups.append(current_group)
+        # Handle wrap-around (e.g., if section crosses the 0 index)
+        if indices[0] == 0 and indices[-1] == len(original_order) - 1:
+            groups[0] = groups[-1] + groups[0]
+            groups.pop(-1)
+        
+        angle_per_number = 360 / 37
+        for group in groups:
+            start_idx = group[0]
+            end_idx = group[-1]
+            start_angle = start_idx * angle_per_number
+            end_angle = (end_idx + 1) * angle_per_number
+            start_rad = start_angle * (3.14159 / 180)
+            end_rad = end_angle * (3.14159 / 180)
+            x1 = 170 + 145 * math.cos(start_rad)
+            y1 = 170 + 145 * math.sin(start_rad)
+            x2 = 170 + 145 * math.cos(end_rad)
+            y2 = 170 + 145 * math.sin(end_rad)
+            large_arc_flag = 1 if (end_angle - start_angle) > 180 else 0
+            path_d = f"M 170,170 L {x1},{y1} A 145,145 0 {large_arc_flag},1 {x2},{y2} L 170,170 Z"
+            opacity = 0.3 + (hits / max_section_hits * 0.5) if max_section_hits > 0 else 0.3
+            class_name = "section-arc pulse" if hits > 0 else "section-arc"
+            arcs.append(f'<path class="{class_name}" d="{path_d}" fill="{fill_color}" fill-opacity="{opacity}" stroke="{fill_color}" stroke-width="2"/>')
+        return arcs
+    
+    # Draw arcs for betting sections
+    jeu_0_arcs = draw_section_arc(jeu_0, "Jeu 0", "#90EE90", jeu_0_hits)
+    voisins_du_zero_arcs = draw_section_arc(voisins_du_zero, "Voisins du Zero", "#32CD32", voisins_du_zero_hits)
+    orphelins_arcs = draw_section_arc(orphelins, "Orphelins", "#D3D3D3", orphelins_hits)
+    tiers_du_cylindre_arcs = draw_section_arc(tiers_du_cylindre, "Tiers du Cylindre", "#F5F5DC", tiers_du_cylindre_hits)
+    
+    for arc in jeu_0_arcs + voisins_du_zero_arcs + orphelins_arcs + tiers_du_cylindre_arcs:
+        wheel_svg += arc
+    
+    # Add Left Side and Right Side arcs (below betting sections for layering)
     left_start_angle = 0
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
     left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 170 + 145 * math.cos(left_start_rad)  # Center at 170
+    left_x1 = 170 + 145 * math.cos(left_start_rad)
     left_y1 = 170 + 145 * math.sin(left_start_rad)
     left_x2 = 170 + 145 * math.cos(left_end_rad)
     left_y2 = 170 + 145 * math.sin(left_end_rad)
@@ -534,7 +596,6 @@ def render_sides_of_zero_display():
     left_stroke = "#4A148C" if winning_section == "Left Side" else "#808080"
     wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="{left_stroke}" stroke-width="3"/>'
     
-    # Right Side arc (from 180 to 360 degrees, corresponding to 18 numbers)
     right_start_angle = 180
     right_end_angle = 360
     right_start_rad = right_start_angle * (3.14159 / 180)
@@ -557,14 +618,11 @@ def render_sides_of_zero_display():
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
         hits = state.scores.get(num, 0)
-        # Scale stroke width and opacity based on hits
         stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
-        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
-        stroke_color = "#FF00FF" if hits > 0 else "#FFF"  # Changed to magenta (#FF00FF)
-        # Determine if this segment is in the winning section
+        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to.ConcurrentLinkedQueue 1
+        stroke_color = "#FF00FF" if hits > 0 else "#FFF"  # Magenta pulsing
         is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
-        # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
         x1 = 170 + 135 * math.cos(rad)
@@ -588,8 +646,7 @@ def render_sides_of_zero_display():
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     
-    # Add labels for Left Side and Right Side with hit counts, outside the wheel
-    # Left Side label at 90 degrees
+    # Add labels for Left Side and Right Side
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
     left_label_x = 170 + 155 * math.cos(left_label_rad)
@@ -597,13 +654,45 @@ def render_sides_of_zero_display():
     wheel_svg += f'<rect x="{left_label_x - 25}" y="{left_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#6A1B9A" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" dy="3">Left: {left_hits}</text>'
     
-    # Right Side label at 270 degrees
     right_label_angle = 270
     right_label_rad = right_label_angle * (3.14159 / 180)
     right_label_x = 170 + 155 * math.cos(right_label_rad)
     right_label_y = 170 + 155 * math.sin(right_label_rad)
     wheel_svg += f'<rect x="{right_label_x - 25}" y="{right_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#F4511E" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" dy="3">Right: {right_hits}</text>'
+    
+    # Add labels for betting sections
+    # Jeu 0 (midpoint around 0, roughly at 90 degrees after rotation)
+    jeu_0_label_angle = 90
+    jeu_0_label_rad = jeu_0_label_angle * (3.14159 / 180)
+    jeu_0_label_x = 170 + 165 * math.cos(jeu_0_label_rad)
+    jeu_0_label_y = 170 + 165 * math.sin(jeu_0_label_rad)
+    wheel_svg += f'<rect x="{jeu_0_label_x - 30}" y="{jeu_0_label_y - 8}" width="60" height="16" fill="#FFF" stroke="#90EE90" stroke-width="1" rx="3"/>'
+    wheel_svg += f'<text x="{jeu_0_label_x}" y="{jeu_0_label_y}" font-size="10" fill="#90EE90" text-anchor="middle" dy="3">Jeu 0: {jeu_0_hits}</text>'
+    
+    # Voisins du Zero (midpoint around 25, roughly at 60 degrees after rotation)
+    voisins_label_angle = 60
+    voisins_label_rad = voisins_label_angle * (3.14159 / 180)
+    voisins_label_x = 170 + 165 * math.cos(voisins_label_rad)
+    voisins_label_y = 170 + 165 * math.sin(voisins_label_rad)
+    wheel_svg += f'<rect x="{voisins_label_x - 40}" y="{voisins_label_y - 8}" width="80" height="16" fill="#FFF" stroke="#32CD32" stroke-width="1" rx="3"/>'
+    wheel_svg += f'<text x="{voisins_label_x}" y="{voisins_label_y}" font-size="10" fill="#32CD32" text-anchor="middle" dy="3">Voisins: {voisins_du_zero_hits}</text>'
+    
+    # Orphelins (midpoint between two groups, roughly at 135 and 315 degrees, we’ll use 135)
+    orphelins_label_angle = 135
+    orphelins_label_rad = orphelins_label_angle * (3.14159 / 180)
+    orphelins_label_x = 170 + 165 * math.cos(orphelins_label_rad)
+    orphelins_label_y = 170 + 165 * math.sin(orphelins_label_rad)
+    wheel_svg += f'<rect x="{orphelins_label_x - 35}" y="{orphelins_label_y - 8}" width="70" height="16" fill="#FFF" stroke="#D3D3D3" stroke-width="1" rx="3"/>'
+    wheel_svg += f'<text x="{orphelins_label_x}" y="{orphelins_label_y}" font-size="10" fill="#D3D3D3" text-anchor="middle" dy="3">Orphelins: {orphelins_hits}</text>'
+    
+    # Tiers du Cylindre (midpoint around 33, roughly at 300 degrees after rotation)
+    tiers_label_angle = 300
+    tiers_label_rad = tiers_label_angle * (3.14159 / 180)
+    tiers_label_x = 170 + 165 * math.cos(tiers_label_rad)
+    tiers_label_y = 170 + 165 * math.sin(tiers_label_rad)
+    wheel_svg += f'<rect x="{tiers_label_x - 40}" y="{tiers_label_y - 8}" width="80" height="16" fill="#FFF" stroke="#F5F5DC" stroke-width="1" rx="3"/>'
+    wheel_svg += f'<text x="{tiers_label_x}" y="{tiers_label_y}" font-size="10" fill="#F5F5DC" text-anchor="middle" dy="3">Tiers: {tiers_du_cylindre_hits}</text>'
     
     wheel_svg += '<circle cx="170" cy="170" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
@@ -724,7 +813,7 @@ def render_sides_of_zero_display():
             opacity: 0;
             transition: opacity 0.2s ease;
             white-space: pre-wrap;
-            border: 1px solid #FF00FF;  /* Updated to match new pulsing color */
+            border: 1px solid #FF00FF;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }}
         .tracker-column {{
@@ -755,13 +844,16 @@ def render_sides_of_zero_display():
         .wheel-segment:hover {{
             filter: brightness(1.2);
         }}
+        .section-arc.pulse {{
+            animation: pulse 1.5s infinite ease-in-out;
+        }}
         .pulse {{
             animation: pulse 1.5s infinite ease-in-out;
         }}
         @keyframes pulse {{
-            0% {{ stroke-opacity: 1; }}
-            50% {{ stroke-opacity: 0.5; }}
-            100% {{ stroke-opacity: 1; }}
+            0% {{ stroke-opacity: 1; fill-opacity: 1; }}
+            50% {{ stroke-opacity: 0.5; fill-opacity: 0.5; }}
+            100% {{ stroke-opacity: 1; fill-opacity: 1; }}
         }}
         .winning-segment {{
             filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
