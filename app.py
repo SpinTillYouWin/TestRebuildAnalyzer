@@ -465,9 +465,6 @@ def render_sides_of_zero_display():
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
     
-    # Debug print to verify hit counts
-    print(f"render_sides_of_zero_display: left_hits={left_hits}, zero_hits={zero_hits}, right_hits={right_hits}")
-    
     # Calculate the maximum hit count for scaling
     max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     
@@ -475,9 +472,6 @@ def render_sides_of_zero_display():
     left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
     zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
     right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
-    
-    # Debug print to verify calculated progress
-    print(f"render_sides_of_zero_display: left_progress={left_progress}%, zero_progress={zero_progress}%, right_progress={right_progress}%")
     
     # Define the order of numbers for the European roulette wheel
     original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
@@ -489,17 +483,16 @@ def render_sides_of_zero_display():
     # Get the latest spin for bounce effect and wheel rotation
     latest_spin = int(state.last_spins[-1]) if state.last_spins else None
     latest_spin_angle = 0
-    has_latest_spin = latest_spin is not None  # Boolean for JavaScript
+    has_latest_spin = latest_spin is not None
     if latest_spin is not None:
-        # Calculate the angle for the latest spin (each number occupies 360/37 degrees)
         index = original_order.index(latest_spin) if latest_spin in original_order else 0
-        latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom (90 degrees clockwise)
-    
-    # Debug print to verify latest spin
-    print(f"render_sides_of_zero_display: latest_spin={latest_spin}, latest_spin_angle={latest_spin_angle}, has_latest_spin={has_latest_spin}")
+        latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
+    
+    # Calculate maximum hits for scaling highlights
+    max_segment_hits = max(state.scores.values(), default=1)
     
     # Generate HTML for the number list
     def generate_number_list(numbers):
@@ -510,7 +503,6 @@ def render_sides_of_zero_display():
         for num, hits in numbers:
             color = colors.get(str(num), "black")
             badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
-            # Apply bounce class to the latest spin
             class_name = "number-item" + (" zero-number" if num == 0 else "") + (" bounce" if num == latest_spin else "")
             number_html.append(
                 f'<span class="{class_name}" style="background-color: {color}; color: white;" data-hits="{hits}" data-number="{num}">{num}{badge}</span>'
@@ -520,7 +512,7 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel
+    # Generate SVG for the roulette wheel with highlights and hit counts
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="300" height="300" viewBox="0 0 300 300" style="transform: rotate(90deg);">'
     wheel_svg += '<circle cx="150" cy="150" r="135" fill="#2e7d32"/>'  # Green felt background
@@ -528,6 +520,10 @@ def render_sides_of_zero_display():
     for i, num in enumerate(original_order):
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
+        hits = state.scores.get(num, 0)
+        # Scale stroke width and opacity based on hits
+        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
+        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
         # Draw each segment as a path
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
@@ -541,13 +537,17 @@ def render_sides_of_zero_display():
         y4 = 150 + 105 * math.sin(rad)
         path_d = f"M 150,150 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
         class_name = "wheel-segment"
-        wheel_svg += f'<path class="{class_name}" d="{path_d}" fill="{color}" stroke="#fff" stroke-width="0.75"/>'
+        wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="#FFD700" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
         # Add number text
         text_angle = angle + (angle_per_number / 2)
         text_rad = text_angle * (3.14159 / 180)
         text_x = 150 + 120 * math.cos(text_rad)
         text_y = 150 + 120 * math.sin(text_rad)
         wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
+        # Add hit count text (smaller and positioned closer to the center)
+        hit_text_x = 150 + 90 * math.cos(text_rad)
+        hit_text_y = 150 + 90 * math.sin(text_rad)
+        wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
     wheel_svg += '<circle cx="150" cy="150" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
     wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 145.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'
@@ -558,7 +558,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations
+    # HTML output with JavaScript to handle animations and interactivity
     return f"""
     <style>
         .circular-progress {{
@@ -691,6 +691,9 @@ def render_sides_of_zero_display():
             display: flex;
             justify-content: center;
             align-items: center;
+        }}
+        .wheel-segment:hover {{
+            filter: brightness(1.2);
         }}
         #wheel-pointer {{
             z-index: 3;
@@ -825,6 +828,49 @@ def render_sides_of_zero_display():
             }});
         }});
 
+        // Tooltip functionality for wheel segments
+        document.querySelectorAll('.wheel-segment').forEach(segment => {{
+            segment.addEventListener('click', (e) => {{
+                const hits = segment.getAttribute('data-hits');
+                const num = segment.getAttribute('data-number');
+                const neighbors = {json.dumps(dict(current_neighbors))};
+                const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
+                const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
+                const tooltipText = `Number ${{num}}: ${{hits}} hits\\nLeft Neighbor: ${{leftNeighbor}}\\nRight Neighbor: ${{rightNeighbor}}`;
+                
+                // Remove any existing tooltips
+                const existingTooltip = document.querySelector('.tooltip');
+                if (existingTooltip) existingTooltip.remove();
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = segment.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)}}px`;
+                tooltip.style.top = `${{rect.top + window.scrollY - tooltipRect.height - 5}}px`;
+                tooltip.style.opacity = '1';
+                
+                // Remove tooltip after 3 seconds or on click
+                setTimeout(() => {{
+                    tooltip.remove();
+                }}, 3000);
+                segment.addEventListener('click', () => {{
+                    tooltip.remove();
+                }}, {{ once: true }});
+            }});
+            
+            segment.addEventListener('mouseout', () => {{
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) {{
+                    tooltip.style.opacity = '0';
+                }}
+            }});
+        }});
+
         // Remove bounce class after animation
         document.querySelectorAll('.bounce').forEach(element => {{
             setTimeout(() => {{
@@ -836,12 +882,12 @@ def render_sides_of_zero_display():
         function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
             console.log(`animateElement called for element: ${{element.id}}, startAngle: ${{startAngle}}, endAngle: ${{endAngle}}, duration: ${{duration}}, isBall: ${{isBall}}`);
             const startTime = performance.now();
-            const radius = isBall ? 135 : 0; // Ball moves along a radius, wheel rotates in place
+            const radius = isBall ? 135 : 0;
             
             function step(currentTime) {{
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                const easeOut = 1 - Math.pow(1 - progress, 3); // Ease-out effect
+                const easeOut = 1 - Math.pow(1 - progress, 3);
                 const currentAngle = startAngle + (endAngle - startAngle) * easeOut;
                 
                 if (isBall) {{
@@ -902,7 +948,7 @@ def render_sides_of_zero_display():
                 if (!ball) console.warn('Ball element not found');
                 if (!hasSpin) console.warn('No latest spin to animate');
             }}
-        }}, 1500); // Increased delay to 1500ms for DOM readiness
+        }}, 2000); // Increased delay to ensure DOM readiness
     </script>
     """
 def validate_spins_input(spins_input):
