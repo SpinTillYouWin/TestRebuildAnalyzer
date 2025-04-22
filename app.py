@@ -4128,7 +4128,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
                 <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" title="View the Roulette Spin Analyzer Guide" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>  # Line 1 (search term lands here)
             </div>
             <style>
                 #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
@@ -4139,7 +4139,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections
+    # Define state and components used across sections  # Line 2 (unchanged)
     spins_display = gr.State(value="")
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -4176,35 +4176,36 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
-        table_layout = [
-            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
-            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
-            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
-        ]
-        with gr.Column(elem_classes="roulette-table"):
-            for row in table_layout:
-                with gr.Row(elem_classes="table-row"):
-                    for num in row:
-                        if num == "":
-                            gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
-                        else:
-                            color = colors.get(str(num), "black")
-                            is_selected = int(num) in state.selected_numbers
-                            btn_classes = [f"roulette-button", color]
-                            if is_selected:
-                                btn_classes.append("selected")
-                            btn = gr.Button(
-                                value=num,
-                                min_width=40,
-                                elem_classes=btn_classes
-                            )
-                            # Attach the click event directly
-                            btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            )
-
+            table_layout = [
+                ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+                ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+                ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+            ]
+            with gr.Column(elem_classes="roulette-table"):
+                for row in table_layout:  # Line 1 (search term lands here)
+                    with gr.Row(elem_classes="table-row"):
+                        for num in row:
+                            if num == "":
+                                gr.Button(value=" ", interactive=False, min_width=40, elem_classes="empty-button")
+                            else:
+                                color = colors.get(str(num), "black")
+                                is_selected = int(num) in state.selected_numbers
+                                btn_classes = [f"roulette-button", color]
+                                if is_selected:
+                                    btn_classes.append("selected")
+                                btn = gr.Button(  # Line 2 (modified)
+                                    value=num,
+                                    min_width=40,
+                                    elem_classes=btn_classes,
+                                    title=f"Spin number {num}"  # Added for accessibility
+                                )
+                                # Attach the click event directly
+                                btn.click(
+                                    fn=add_spin,
+                                    inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                    outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                )
+# Lines after (unchanged)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
@@ -5656,14 +5657,35 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }, 2000); // Increased delay to ensure Gradio rendering
       }
 
+# Lines before (unchanged)
       document.addEventListener("DOMContentLoaded", () => {
         console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
         console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
       });
     </script>
     """)
+    # New script to set lang attribute
+    gr.HTML("""
+    <script>
+      document.documentElement.setAttribute('lang', 'en');  # Line 1 (search term lands here)
+    </script>
+    """)
+    # New script to modify viewport meta tag  # Line 2 (inserted here)
+    gr.HTML("""
+    <script>
+      let viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      } else {
+        let meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, initial-scale=1.0';
+        document.head.appendChild(meta);
+      }
+    </script>
+    """)
 
-    # Event Handlers (moved to the end)
+    # Event Handlers (moved to the end)  # Line 3 (unchanged)
     try:
         spins_textbox.change(
             fn=validate_spins_input,
@@ -5706,6 +5728,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
+# Lines after (unchanged)
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -5718,7 +5741,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
-
     try:
         clear_spins_button.click(
             fn=clear_spins,
