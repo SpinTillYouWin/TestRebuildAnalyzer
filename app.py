@@ -517,7 +517,7 @@ def render_sides_of_zero_display():
     
     # Generate SVG for the roulette wheel with section highlights
     wheel_svg = '<div class="roulette-wheel-container">'
-    wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Increased size to accommodate labels
+    wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
     # Add background arcs for Left Side and Right Side
     # Left Side arc (from 0 to 180 degrees, corresponding to 18 numbers)
@@ -525,7 +525,7 @@ def render_sides_of_zero_display():
     left_end_angle = 180
     left_start_rad = left_start_angle * (3.14159 / 180)
     left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 170 + 145 * math.cos(left_start_rad)  # Adjusted center to 170 due to larger SVG
+    left_x1 = 170 + 145 * math.cos(left_start_rad)  # Center at 170
     left_y1 = 170 + 145 * math.sin(left_start_rad)
     left_x2 = 170 + 145 * math.cos(left_end_rad)
     left_y2 = 170 + 145 * math.sin(left_end_rad)
@@ -592,7 +592,7 @@ def render_sides_of_zero_display():
     # Left Side label at 90 degrees
     left_label_angle = 90
     left_label_rad = left_label_angle * (3.14159 / 180)
-    left_label_x = 170 + 155 * math.cos(left_label_rad)  # Moved to radius 155 (outside the wheel)
+    left_label_x = 170 + 155 * math.cos(left_label_rad)
     left_label_y = 170 + 155 * math.sin(left_label_rad)
     wheel_svg += f'<rect x="{left_label_x - 25}" y="{left_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#6A1B9A" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" dy="3">Left: {left_hits}</text>'
@@ -607,7 +607,7 @@ def render_sides_of_zero_display():
     
     wheel_svg += '<circle cx="170" cy="170" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
-    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 15px; left: 165.5px; width: 9px; height: 30px; background-color: #FFD700; transform-origin: bottom center;"></div>'  # Adjusted position
+    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 0px; left: 168.5px; width: 3px; height: 150px; background-color: #FFD700; transform-origin: bottom center;"></div>'  # Adjusted dimensions and position
     wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
@@ -815,10 +815,10 @@ def render_sides_of_zero_display():
                 height: 290px;
             }}
             #wheel-pointer {{
-                top: 12.5px;
-                left: 140.75px;
-                width: 7.5px;
-                height: 25px;
+                top: 0px;
+                left: 143.5px;
+                width: 3px;
+                height: 130px;
             }}
             #spinning-ball {{
                 width: 10px;
@@ -903,7 +903,7 @@ def render_sides_of_zero_display():
         document.querySelectorAll('.wheel-segment').forEach(segment => {{
             segment.addEventListener('click', (e) => {{
                 const hits = segment.getAttribute('data-hits');
-                const num = segment.getAttribute('data-number');
+                const num = element.getAttribute('data-number');
                 const neighbors = {json.dumps(dict(current_neighbors))};
                 const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
                 const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
