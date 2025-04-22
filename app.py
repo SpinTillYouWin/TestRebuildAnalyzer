@@ -560,7 +560,7 @@ def render_sides_of_zero_display():
         # Scale stroke width and opacity based on hits
         stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2  # 2 to 5
         opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5  # 0.5 to 1
-        stroke_color = "#FF4500" if hits > 0 else "#FFF"  # OrangeRed for hits, white for no hits
+        stroke_color = "#1E90FF" if hits > 0 else "#FFF"  # Changed from #FF4500 to blue (#1E90FF)
         # Determine if this segment is in the winning section
         is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
@@ -607,7 +607,7 @@ def render_sides_of_zero_display():
     
     wheel_svg += '<circle cx="170" cy="170" r="15" fill="#FFD700"/>'  # Gold center
     wheel_svg += '</svg>'
-    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: 0px; left: 168.5px; width: 3px; height: 150px; background-color: #FFD700; transform-origin: bottom center;"></div>'  # Adjusted dimensions and position
+    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: -10px; left: 168.5px; width: 3px; height: 170px; background-color: #00695C; transform-origin: bottom center;"></div>'  # Extended height, changed color to green
     wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
@@ -724,7 +724,7 @@ def render_sides_of_zero_display():
             opacity: 0;
             transition: opacity 0.2s ease;
             white-space: pre-wrap;
-            border: 1px solid #FF4500;
+            border: 1px solid #1E90FF;  /* Updated to match new pulsing color */
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }}
         .tracker-column {{
@@ -815,10 +815,11 @@ def render_sides_of_zero_display():
                 height: 290px;
             }}
             #wheel-pointer {{
-                top: 0px;
+                top: -10px;
                 left: 143.5px;
                 width: 3px;
-                height: 130px;
+                height: 150px;  /* Adjusted for smaller layout */
+                background-color: #00695C;
             }}
             #spinning-ball {{
                 width: 10px;
@@ -903,7 +904,7 @@ def render_sides_of_zero_display():
         document.querySelectorAll('.wheel-segment').forEach(segment => {{
             segment.addEventListener('click', (e) => {{
                 const hits = segment.getAttribute('data-hits');
-                const num = element.getAttribute('data-number');
+                const num = segment.getAttribute('data-number');
                 const neighbors = {json.dumps(dict(current_neighbors))};
                 const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
                 const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
