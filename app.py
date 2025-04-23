@@ -26,6 +26,7 @@ async def set_spin_direction(request: Request):
 def update_scores_batch(spins):
     """Update scores for a batch of spins and return actions for undoevet."""
     action_log = []
+    # Lines 29-31 (context before the change)
     for spin in spins:
         spin_value = int(spin)
         action = {"spin": spin_value, "increments": {}}
@@ -33,6 +34,8 @@ def update_scores_batch(spins):
         # Update even money scores
         for name, numbers in EVEN_MONEY.items():
             if spin_value in numbers:
+                state.even_money_scores[name] += 1
+                action["increments"].setdefault("even_money_scores", {})[name] = 1
 
         # Lines 29-34 (Spin Direction State logic, already correct)
         # Append the spin to last_spins
