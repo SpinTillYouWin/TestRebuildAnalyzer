@@ -625,7 +625,7 @@ def render_sides_of_zero_display():
     ]
     
     for section_name, numbers, color, hits in sections:
-        # Generate the numbers list with colors and glowing effect for numbers with hits
+        # Generate the numbers list with colors and enhanced effects for numbers with hits
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
@@ -633,7 +633,7 @@ def render_sides_of_zero_display():
             is_hot = hit_count > 0
             class_name = "section-number" + (" hot-number" if is_hot else "")
             badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
-            numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}">{num}{badge}</span>')
+            numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
         # Create a static card-like section
@@ -895,33 +895,81 @@ def render_sides_of_zero_display():
         .betting-section-numbers {{
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 8px;
             padding: 10px;
             justify-content: center;
             background-color: #f9f9f9;
             border-radius: 0 0 5px 5px;
         }}
         .section-number {{
-            padding: 2px 5px;
+            padding: 0;
             margin: 2px;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
             text-align: center;
             font-size: 12px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }}
+        .section-number:not(.hot-number) {{
+            margin-left: 4px;
+            margin-right: 4px;
         }}
         .hot-number {{
-            border: 2px solid #FFD700;
-            box-shadow: 0 0 8px #FFD700;
-            animation: glow 1.5s infinite ease-in-out;
+            width: 34px;
+            height: 34px;
+            line-height: 34px;
+            font-size: 16px;
+            border: 2px solid #FF00FF;
+            box-shadow: 0 0 8px #FF00FF;
+            text-shadow: 0 0 5px #FF00FF;
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
         }}
         @keyframes glow {{
-            0% {{ box-shadow: 0 0 8px #FFD700; }}
-            50% {{ box-shadow: 0 0 12px #FFD700; }}
-            100% {{ box-shadow: 0 0 8px #FFD700; }}
+            0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
+            50% {{ box-shadow: 0 0 12px #FF00FF; text-shadow: 0 0 8px #FF00FF; }}
+            100% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
+        }}
+        @keyframes border-flash {{
+            0% {{ border-color: #FF00FF; }}
+            50% {{ border-color: #FFFFFF; }}
+            100% {{ border-color: #FF00FF; }}
+        }}
+        @keyframes bounce {{
+            0%, 100% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.2); }}
+        }}
+        /* Dynamic color pulse for red numbers */
+        .hot-number[style*="background-color: red"] {{
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, red-pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes red-pulse {{
+            0% {{ background-color: red; }}
+            50% {{ background-color: #ff3333; }}
+            100% {{ background-color: red; }}
+        }}
+        /* Dynamic color pulse for black numbers */
+        .hot-number[style*="background-color: black"] {{
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, black-pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes black-pulse {{
+            0% {{ background-color: black; }}
+            50% {{ background-color: #333333; }}
+            100% {{ background-color: black; }}
+        }}
+        /* Dynamic color pulse for green numbers */
+        .hot-number[style*="background-color: green"] {{
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, green-pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes green-pulse {{
+            0% {{ background-color: green; }}
+            50% {{ background-color: #33cc33; }}
+            100% {{ background-color: green; }}
         }}
         .number-hit-badge {{
             position: absolute;
@@ -1150,6 +1198,34 @@ def render_sides_of_zero_display():
                 if (!hasSpin) console.warn('No latest spin to animate');
             }}
         }}, 2000);
+
+        // Add tooltips to section numbers
+        document.querySelectorAll('.section-number').forEach(element => {{
+            element.addEventListener('mouseover', (e) => {{
+                const hits = element.getAttribute('data-hits');
+                const num = element.getAttribute('data-number');
+                const tooltipText = "Number " + num + ": " + hits + " hits";
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = element.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
+                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
+                tooltip.style.opacity = '1';
+            }});
+            
+            element.addEventListener('mouseout', () => {{
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) {{
+                    tooltip.remove();
+                }}
+            }});
+        }});
     </script>
     """
 def validate_spins_input(spins_input):
