@@ -1309,7 +1309,7 @@ def validate_spins_input(spins_input):
     print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
     return spins_display_value, formatted_html
 
-def add_spin(number, current_spins, num_to_show):
+def add_spin(number, current_spins, num_to_show, betting_sections_visible):
     import time
     start_time = time.time()
     print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
@@ -1322,7 +1322,7 @@ def add_spin(number, current_spins, num_to_show):
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         print("add_spin: No valid numbers provided.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
     errors = []
     valid_spins = []
@@ -1341,7 +1341,7 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -1370,13 +1370,22 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
     else:
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
+
+# Define the toggle function
+def toggle_betting_sections(betting_sections_visible):
+    new_visibility = not betting_sections_visible
+    return (
+        render_sides_of_zero_display(new_visibility),
+        new_visibility,
+        "Hide Betting Sections" if new_visibility else "Show Betting Sections"
+    )
         
 # Function to clear spins
 def clear_spins():
@@ -2203,12 +2212,12 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
+def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, betting_sections_visible, *checkbox_args):
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
-            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -2228,11 +2237,11 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
         if not spins:
             print("analyze_spins: No valid spins found.")
-            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
         if reset_scores:
             state.reset()
@@ -2341,13 +2350,32 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
-        return (spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
+        return (
+            spin_analysis_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            dynamic_table_html,
+            strategy_output,
+            render_sides_of_zero_display(betting_sections_visible),
+            betting_sections_visible  # Pass through the state unchanged
+        )
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
-
+        return (
+            f"Unexpected error while analyzing spins: {str(e)}. Please try again.",
+            "", "", "", "", "", "", "", "", "", "", "", "", "",
+            render_sides_of_zero_display(betting_sections_visible),
+            betting_sections_visible
+        )
 # Function to reset scores
 def reset_scores():
     state.reset()
@@ -4501,7 +4529,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
-    spins_textbox = gr.Textbox(
+    betting_sections_visible_state = gr.State(value=False)  # New state to track visibility
+    spins_text
+    
+    box = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
         interactive=True,
@@ -4515,8 +4546,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
-            value=render_sides_of_zero_display(),
+            value=render_sides_of_zero_display(False),  # Pass initial visibility state
             elem_classes=["sides-of-zero-container"]
+        )
+        toggle_betting_sections_btn = gr.Button(
+            "Show Betting Sections",
+            elem_id="toggle-betting-sections-btn",
+            visible=False  # Hidden, triggered by the HTML button
         )
     last_spin_display = gr.HTML(
         label="Last Spins",
@@ -4561,8 +4597,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             # Attach the click event directly
                             btn.click(
                                 fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                inputs=[gr.State(value=num), spins_display, last_spin_count, betting_sections_visible_state],
+                                outputs=[
+                                    spins_display,
+                                    spins_textbox,
+                                    last_spin_display,
+                                    spin_counter,
+                                    sides_of_zero_display,
+                                    betting_sections_visible_state
+                                ]
                             )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -6024,6 +6067,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     """)
 
     # Event Handlers
+    # Attach the toggle event
+    toggle_betting_sections_btn.click(
+        fn=toggle_betting_sections,
+        inputs=[betting_sections_visible_state],
+        outputs=[sides_of_zero_display, betting_sections_visible_state, toggle_betting_sections_btn]
+    )
+    
     try:
         spins_textbox.change(
             fn=validate_spins_input,
@@ -6031,12 +6081,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[spins_display, last_spin_display]
         ).then(
             fn=analyze_spins,
-            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, betting_sections_visible_state],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                sides_of_zero_display,
+                betting_sections_visible_state  # Add this to preserve the state
             ]
         ).then(
             fn=update_spin_counter,
@@ -6044,7 +6106,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[spin_counter]
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox
+            ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=even_money_tracker,
@@ -6165,6 +6234,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=lambda betting_sections_visible: betting_sections_visible,
+            inputs=[betting_sections_visible_state],
+            outputs=[betting_sections_visible_state]
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
