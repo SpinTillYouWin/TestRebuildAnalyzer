@@ -460,7 +460,7 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
-def render_sides_of_zero_display():
+def render_sides_of_zero_display(betting_sections_visible):
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
@@ -649,8 +649,12 @@ def render_sides_of_zero_display():
     
     betting_sections_html += '</div>'
     
+
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
+    # Set initial display based on the betting_sections_visible parameter
+    initial_display = "flex" if betting_sections_visible else "none"
+    initial_button_text = "Hide Betting Sections" if betting_sections_visible else "Show Betting Sections"
     
     # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
     return f"""
@@ -1388,13 +1392,13 @@ def toggle_betting_sections(betting_sections_visible):
     )
         
 # Function to clear spins
-def clear_spins():
+def clear_spins(betting_sections_visible):
     state.selected_numbers.clear()
     state.last_spins = []
     state.spin_history = []  # Clear spin history as well
     state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
-    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
+    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
 # Function to save the session
 def save_session():
@@ -1418,10 +1422,10 @@ def save_session():
     return "session.json"
 
 # Function to load the session
-def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
+def load_session(file, strategy_name, neighbours_count, strong_numbers_count, betting_sections_visible, *checkbox_args):
     try:
         if file is None:
-            return ("", "", "Please upload a session file to load.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
+            return ("", "", "Please upload a session file to load.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
 
         with open(file.name, "r") as f:
             session_data = json.load(f)
@@ -1487,15 +1491,32 @@ def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *c
         dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count)
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *checkbox_args)
 
-        return (new_spins, new_spins, spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
+        return (
+            new_spins,
+            new_spins,
+            spin_analysis_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            dynamic_table_html,
+            strategy_output,
+            render_sides_of_zero_display(betting_sections_visible),
+            betting_sections_visible
+        )
     except FileNotFoundError:
-        return ("", "", f"Error: The file '{file.name if file else 'unknown'}' was not found.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
+        return ("", "", f"Error: The file '{file.name if file else 'unknown'}' was not found.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
     except json.JSONDecodeError:
-        return ("", "", "Error: The session file is corrupted or not valid JSON. Please upload a valid file.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
+        return ("", "", "Error: The session file is corrupted or not valid JSON. Please upload a valid file.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
     except Exception as e:
-        return ("", "", f"Unexpected error loading session: {str(e)}. Please try again or check the file.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
+        return ("", "", f"Unexpected error loading session: {str(e)}. Please try again or check the file.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
 
 # Function to calculate statistical insights
 def statistical_insights():
@@ -2381,14 +2402,14 @@ def reset_scores():
     state.reset()
     return "Scores reset!"
 
-def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
+def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, betting_sections_visible, *checkbox_args):
     if not state.spin_history:
-        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
+        return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
 
     try:
         undo_count = int(undo_count)
         if undo_count <= 0:
-            return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
+            return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
         undo_count = min(undo_count, len(state.spin_history))  # Don't exceed history length
 
         # Undo the specified number of spins
@@ -2448,20 +2469,39 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         print(f"undo_last_spin: Generating strategy recommendations for {strategy_name}")
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *checkbox_args)
 
-        return (spin_analysis_output, even_money_output, dozens_output, columns_output,
-            streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
-            dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
+        return (
+            spin_analysis_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            spins_input,
+            spins_input,
+            dynamic_table_html,
+            strategy_output,
+            create_color_code_table(),
+            update_spin_counter(),
+            render_sides_of_zero_display(betting_sections_visible),
+            betting_sections_visible
+        )
     except ValueError:
-        return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
+        return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
     except Exception as e:
         print(f"undo_last_spin: Unexpected error: {str(e)}")
-        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
-def clear_all():
+        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_ color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
+
+def clear_all(betting_sections_visible):
     state.selected_numbers.clear()
     state.last_spins = []
     state.reset()
-    return "", "", "All spins and scores cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter(), render_sides_of_zero_display()
+    return "", "", "All spins and scores cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
 def reset_strategy_dropdowns():
     default_category = "Even Money Strategies"
@@ -2469,11 +2509,11 @@ def reset_strategy_dropdowns():
     strategy_choices = strategy_categories[default_category]
     return default_category, default_strategy, strategy_choices
 
-def generate_random_spins(num_spins, current_spins_display, last_spin_count):
+def generate_random_spins(num_spins, current_spins_display, last_spin_count, betting_sections_visible):
     try:
         num_spins = int(num_spins)
         if num_spins <= 0:
-            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter(), render_sides_of_zero_display()
+            return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
         # Update scores for the new spins
@@ -2489,13 +2529,13 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
         state.last_spins = updated_spins  # Replace the list entirely
         spins_text = ", ".join(updated_spins)
         print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
-        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_sides_of_zero_display()
+        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
     except ValueError:
         print("generate_random_spins: Invalid number of spins entered.")
-        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
     except Exception as e:
         print(f"generate_random_spins: Unexpected error: {str(e)}")
-        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins_display, current_spins_display, f"Error generating spins: {str(e)}", update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible
 
 # Strategy functions
 def best_even_money_bets():
@@ -4501,11 +4541,10 @@ def reset_colors():
     default_lower = "rgba(0, 255, 0, 0.5)"  # Green
     return default_top, default_middle, default_lower
 
-def clear_last_spins_display():
+def clear_last_spins_display(betting_sections_visible):
     """Clear the Last Spins HTML display without affecting spins data."""
-    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
+    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter(), betting_sections_visible
 
-# ... (previous imports, function definitions, and state setup remain unchanged) ...
 
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -6150,8 +6189,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         clear_spins_button.click(
             fn=clear_spins,
-            inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
+            inputs=[betting_sections_visible_state],
+            outputs=[
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                last_spin_display,
+                spin_counter,
+                sides_of_zero_display,
+                betting_sections_visible_state  # Add this to preserve the state
+            ]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -6159,7 +6206,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         clear_all_button.click(
             fn=clear_all,
-            inputs=[],
+            inputs=[betting_sections_visible_state],
             outputs=[
                 spins_display,
                 spins_textbox,
@@ -6177,7 +6224,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display,
+                betting_sections_visible_state  # Add this to preserve the state
             ]
         ).then(
             fn=clear_outputs,
@@ -6217,8 +6265,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         generate_spins_button.click(
             fn=generate_random_spins,
-            inputs=[gr.State(value="5"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
+            inputs=[gr.State(value="5"), spins_display, last_spin_count, betting_sections_visible_state],
+            outputs=[
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                spin_counter,
+                sides_of_zero_display,
+                betting_sections_visible_state  # Add this to preserve the state
+            ]
         ).then(
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
@@ -6346,7 +6401,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         load_input.change(
             fn=load_session,
-            inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[
+                load_input,
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                betting_sections_visible_state
+            ],
             outputs=[
                 spins_display,
                 spins_textbox,
@@ -6363,7 +6424,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output,
+                sides_of_zero_display,
+                betting_sections_visible_state
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6411,7 +6474,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         undo_button.click(
             fn=undo_last_spin,
-            inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[
+                spins_display,
+                gr.State(value=1),
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                betting_sections_visible_state
+            ],
             outputs=[
                 spin_analysis_output,
                 even_money_output,
@@ -6431,7 +6501,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display,
+                betting_sections_visible_state
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6467,6 +6538,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
+
     
     try:
         neighbours_count_slider.change(
@@ -6510,8 +6582,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         clear_last_spins_button.click(
             fn=clear_last_spins_display,
-            inputs=[],
-            outputs=[last_spin_display, spin_counter]
+            inputs=[betting_sections_visible_state],
+            outputs=[last_spin_display, spin_counter, betting_sections_visible_state]
         )
     except Exception as e:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
