@@ -6048,19 +6048,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=render_sides_of_zero_display,
+            inputs=[],
+            outputs=[sides_of_zero_display, betting_sections_display]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
-
     try:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display, betting_sections_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
-
     try:
         clear_all_button.click(
             fn=clear_all,
@@ -6082,7 +6084,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Added missing output
+                sides_of_zero_display,
+                betting_sections_display
             ]
         ).then(
             fn=clear_outputs,
@@ -6112,13 +6115,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown,
                 dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+                dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
-
     try:
         generate_spins_button.click(
             fn=generate_random_spins,
