@@ -467,8 +467,6 @@ def render_sides_of_zero_display():
     
     # Calculate the maximum hit count for scaling
     max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
-# Lines before (context)
-    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     
     # Calculate progress percentages (0 to 100)
     left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
@@ -476,15 +474,15 @@ def render_sides_of_zero_display():
     right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
     
     # Define the order of numbers for the European roulette wheel
-    original_order = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    left_side = original_order[:18][::-1]  # Reversed: 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+    original_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    left_side = original_order[:18]  # 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
     zero = [0]
-    right_side = original_order[19:]  # 32 to 10
-    wheel_order = left_side + zero + right_side
+    right_side = original_order[19:]  # 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10
+    wheel_order = left_side + zero + right_side  # Used for wheel SVG, now 5, ..., 26, 0, 32, ..., 10
     
     # Define betting sections
     jeu_0 = [12, 35, 3, 26, 0, 32, 15]
-    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]  # Updated: Correct order
+    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]
     orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
     tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
     
@@ -517,7 +515,12 @@ def render_sides_of_zero_display():
             return '<div class="number-list">No numbers</div>'
         
         number_html = []
-        for num, hits in numbers:
+        # Use left_side as is for display
+        display_left_side = left_side  # Already 5, 24, 16, ..., 26
+        display_wheel_order = display_left_side + zero + right_side  # 5, ..., 26, 0, 32, ..., 10
+        display_numbers = [(num, state.scores.get(num, 0)) for num in display_wheel_order]
+        
+        for num, hits in display_numbers:
             color = colors.get(str(num), "black")
             badge = f'<span class="hit-badge">{hits}</span>' if hits > 0 else ''
             class_name = "number-item" + (" zero-number" if num == 0 else "") + (" bounce" if num == latest_spin else "")
