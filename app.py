@@ -615,9 +615,8 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # Add collapsible betting sections display below the wheel
-    betting_sections_html = '<div class="betting-sections-container">'
-    betting_sections_html += '<h4 style="color: #00695C; margin-bottom: 10px;">Betting Sections Breakdown</h4>'
+    # Add betting sections display below the wheel, wrapped in a single collapsible accordion
+    betting_sections_inner_html = '<div class="betting-sections-container">'
     sections = [
         ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
         ("Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
@@ -637,18 +636,28 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create a collapsible section using <details> and <summary>
+        # Create a static card-like section (reverted to original)
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
-        betting_sections_html += f'''
-        <details class="betting-section-collapse" style="margin-bottom: 10px;">
-            <summary class="betting-section-header" style="background-color: {color}; cursor: pointer;">
+        betting_sections_inner_html += f'''
+        <div class="betting-section-card">
+            <div class="betting-section-header" style="background-color: {color};">
                 {section_name}{badge}
-            </summary>
+            </div>
             <div class="betting-section-numbers">{numbers_display}</div>
-        </details>
+        </div>
         '''
     
-    betting_sections_html += '</div>'
+    betting_sections_inner_html += '</div>'
+    
+    # Wrap the betting sections in a single collapsible accordion
+    betting_sections_html = f'''
+    <details class="betting-sections-collapse">
+        <summary class="betting-sections-header" style="background-color: #dc3545; color: white; padding: 8px 12px; border-radius: 5px; font-weight: bold; font-size: 14px; cursor: pointer;">
+            Betting Sections Breakdown
+        </summary>
+        {betting_sections_inner_html}
+    </details>
+    '''
     
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
@@ -864,22 +873,22 @@ def render_sides_of_zero_display():
                 height: 10px;
             }}
         }}
-        /* Styles for collapsible betting sections */
+        /* Styles for static betting sections */
         .betting-sections-container {{
             display: flex;
             flex-direction: column;
-            gap: 0px;
+            gap: 10px;
             margin-top: 20px;
             padding: 10px;
         }}
-        .betting-section-collapse {{
+        .betting-section-card {{
             background-color: #fff;
             border: 1px solid #d3d3d3;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s ease;
         }}
-        .betting-section-collapse:hover {{
+        .betting-section-card:hover {{
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }}
         .betting-section-header {{
@@ -1002,6 +1011,19 @@ def render_sides_of_zero_display():
             display: flex;
             align-items: center;
             justify-content: center;
+        }}
+        /* Styles for the single betting sections accordion */
+        .betting-sections-collapse {{
+            margin-top: 20px;
+        }}
+        .betting-sections-header {{
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
         }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
