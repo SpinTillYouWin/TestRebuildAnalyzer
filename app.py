@@ -806,6 +806,7 @@ def render_sides_of_zero_display():
         #wheel-pointer {{
             z-index: 3;
         }}
+        # Lines before the change (for context)
         @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
@@ -871,13 +872,13 @@ def render_sides_of_zero_display():
             margin-top: 20px;
             padding: 10px;
         }}
-        .betting-section {{
+        .betting-sections-container .betting-section {{ /* Increased specificity */
             background-color: #fff;
             border: 1px solid #d3d3d3;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s ease;
-            max-height: 120px; /* Added: Limit the height of each section */
+            max-height: 120px !important; /* Forced with !important for debugging */
         }}
         .betting-section:hover {{
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -893,7 +894,7 @@ def render_sides_of_zero_display():
             align-items: center;
             justify-content: space-between;
         }}
-        .betting-section-numbers {{
+        .betting-sections-container .betting-section .betting-section-numbers {{ /* Increased specificity */
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
@@ -902,8 +903,9 @@ def render_sides_of_zero_display():
             background-color: #f9f9f9;
             border-top: 1px solid #d3d3d3;
             border-radius: 0 0 5px 5px;
-            overflow-y: auto; /* Added: Enable vertical scrolling */
-            max-height: 80px; /* Added: Limit the height of the numbers area, accounting for header */
+            overflow-y: auto !important; /* Forced with !important for debugging */
+            max-height: 60px !important; /* Reduced to force scrollbar for testing */
+            border: 1px dashed red; /* Added: Debugging border to visualize container */
         }}
         .section-number {{
             padding: 0;
@@ -934,6 +936,7 @@ def render_sides_of_zero_display():
             text-shadow: 0 0 5px #FF00FF;
             animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
         }}
+# Lines after the change (for context)
         @keyframes glow {{
             0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
             50% {{ box-shadow: 0 0 12px #FF00FF; text-shadow: 0 0 8px #FF00FF; }}
