@@ -895,17 +895,17 @@ def render_sides_of_zero_display():
             justify-content: space-between;
         }}
         .betting-sections-container .betting-section .betting-section-numbers {{ /* Increased specificity */
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            padding: 10px;
-            justify-content: center;
-            background-color: #f9f9f9;
-            border-top: 1px solid #d3d3d3;
-            border-radius: 0 0 5px 5px;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 5px !important;
+            padding: 10px !important;
+            justify-content: center !important;
+            background-color: #FFFF00 !important; /* Bright yellow for debugging */
+            border-top: 1px solid #d3d3d3 !important;
+            border-radius: 0 0 5px 5px !important;
             overflow-y: auto !important; /* Forced with !important for debugging */
             max-height: 60px !important; /* Reduced to force scrollbar for testing */
-            border: 1px dashed red; /* Added: Debugging border to visualize container */
+            border: 2px solid red !important; /* Thicker red border for visibility */
         }}
         .section-number {{
             padding: 0;
