@@ -9,6 +9,20 @@ from roulette_data import (
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
 
+from fastapi import FastAPI, Request
+app = FastAPI()
+
+@app.post("/set_spin_direction")
+async def set_spin_direction(request: Request):
+    data = await request.json()
+    direction = data.get("direction")
+    state.dealer_spin_direction = direction
+    # Update spin_directions to match last_spins if needed
+    if len(state.spin_directions) < len(state.last_spins):
+        state.spin_directions.extend([direction] * (len(state.last_spins) - len(state.spin_directions)))
+    return {"status": "success"}
+
+# Line 22 (start of next section, unchanged)
 def update_scores_batch(spins):
     """Update scores for a batch of spins and return actions for undoevet."""
     action_log = []
@@ -128,9 +142,14 @@ class RouletteState:
         self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
         self.split_scores = {name: 0 for name in SPLITS.keys()}
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        # Lines 186-188 (unchanged context before the change)
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
+
+        # Lines 189-190 (new lines for spin direction state)
+        self.dealer_spin_direction = "CW"  # Default to clockwise
+        self.spin_directions = []  # List to store direction of each spin
 
         # Casino data storage
         self.casino_data = {
@@ -527,7 +546,7 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel
+    # Generate SVG for the roulette wheel with yellow chip in the center
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
@@ -608,7 +627,25 @@ def render_sides_of_zero_display():
     wheel_svg += f'<rect x="{right_label_x - 25}" y="{right_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#F4511E" stroke-width="1" rx="3"/>'
     wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" dy="3">Right: {right_hits}</text>'
     
-    wheel_svg += '<circle cx="170" cy="170" r="15" fill="#FFD700"/>'  # Gold center
+    # Add the yellow chip with the last hitting number in the center
+    last_number = str(latest_spin) if latest_spin is not None else "?"
+    last_number_color = colors.get(str(latest_spin), "black") if latest_spin is not None else "black"
+    dealer_spin_direction = getattr(state, 'dealer_spin_direction', None)
+    spin_direction_class = "clockwise" if dealer_spin_direction == "CW" else "counterclockwise" if dealer_spin_direction == "CCW" else ""
+    
+    wheel_svg += f'''
+    <g id="center-chip" class="center-chip {spin_direction_class}">
+        <circle cx="170" cy="170" r="15" fill="url(#chipGradient)" stroke="#000" stroke-width="1"/>
+        <text x="170" y="175" font-size="14" font-weight="bold" fill="{last_number_color}" text-anchor="middle">{last_number}</text>
+    </g>
+    <defs>
+        <radialGradient id="chipGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" style="stop-color:#FFFFE0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
+        </radialGradient>
+    </defs>
+    '''
+    
     wheel_svg += '</svg>'
     wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: -10px; left: 168.5px; width: 3px; height: 170px; background-color: #00695C; transform-origin: bottom center;"></div>'
     wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
@@ -625,7 +662,6 @@ def render_sides_of_zero_display():
     ]
     
     for section_name, numbers, color, hits in sections:
-        # Generate the numbers list with colors and enhanced effects for numbers with hits
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
@@ -636,7 +672,6 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create a static card-like section
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
         betting_sections_html += f'''
         <div class="betting-section-card">
@@ -648,6 +683,14 @@ def render_sides_of_zero_display():
         '''
     
     betting_sections_html += '</div>'
+    
+    # Spin Direction Toggle Buttons
+    toggle_buttons_html = '''
+    <div class="spin-direction-toggle">
+        <button onclick="setSpinDirection('CW')">Dealer Spins Clockwise</button>
+        <button onclick="setSpinDirection('CCW')">Dealer Spins Counterclockwise</button>
+    </div>
+    '''
     
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
@@ -1002,6 +1045,51 @@ def render_sides_of_zero_display():
             align-items: center;
             justify-content: center;
         }}
+        /* Styles for the center chip animation */
+        .center-chip.clockwise {{
+            animation: spin-clockwise 3s linear infinite;
+        }}
+        .center-chip.counterclockwise {{
+            animation: spin-counterclockwise 3s linear infinite;
+        }}
+        @keyframes spin-clockwise {{
+            from {{ transform: rotate(0deg); }}
+            to {{ transform: rotate(360deg); }}
+        }}
+        @keyframes spin-counterclockwise {{
+            from {{ transform: rotate(0deg); }}
+            to {{ transform: rotate(-360deg); }}
+        }}
+        /* Keep the text upright while the chip rotates */
+        .center-chip text {{
+            animation: counter-spin 3s linear infinite;
+        }}
+        @keyframes counter-spin {{
+            from {{ transform: rotate(0deg); }}
+            to {{ transform: rotate(-360deg); }}
+        }}
+        /* Styles for the spin direction toggle buttons */
+        .spin-direction-toggle {{
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }}
+        .spin-direction-toggle button {{
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: #f0f0f0;
+            border: 1px solid #d3d3d3;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }}
+        .spin-direction-toggle button:hover {{
+            background-color: #e0e0e0;
+        }}
+        .spin-direction-toggle button:active {{
+            background-color: #d0d0d0;
+        }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
@@ -1026,6 +1114,7 @@ def render_sides_of_zero_display():
             </div>
         </div>
         {number_list}
+        {toggle_buttons_html}
         {wheel_svg}
         {betting_sections_html}
     </div>
@@ -1087,7 +1176,6 @@ def render_sides_of_zero_display():
                 const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
                 const tooltipText = "Number " + num + ": " + hits + " hits\\nLeft Neighbor: " + leftNeighbor + "\\nRight Neighbor: " + rightNeighbor;
                 
-                // Remove any existing tooltips
                 const existingTooltip = document.querySelector('.tooltip');
                 if (existingTooltip) existingTooltip.remove();
                 
@@ -1103,7 +1191,6 @@ def render_sides_of_zero_display():
                 tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
                 tooltip.style.opacity = '1';
                 
-                // Remove tooltip after 3 seconds or on click
                 setTimeout(() => {{
                     tooltip.remove();
                 }}, 3000);
@@ -1126,6 +1213,21 @@ def render_sides_of_zero_display():
                 element.classList.remove('bounce');
             }}, 400);
         }});
+
+        // Function to set the spin direction
+        function setSpinDirection(direction) {{
+            // This would ideally update the state in your app; for now, we'll simulate it with a page reload
+            // In a real app, you'd update state.dealer_spin_direction and re-render
+            fetch('/set_spin_direction', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{ direction: direction }})
+            }}).then(() => {{
+                const chip = document.getElementById('center-chip');
+                chip.classList.remove('clockwise', 'counterclockwise');
+                chip.classList.add(direction === 'CW' ? 'clockwise' : 'counterclockwise');
+            }});
+        }}
 
         // JavaScript animation function
         function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
@@ -1156,7 +1258,7 @@ def render_sides_of_zero_display():
             requestAnimationFrame(step);
         }}
 
-        // Trigger wheel and ball spin animations with JavaScript
+        // Trigger wheel and ball animations
         setTimeout(() => {{
             console.log('Attempting to trigger animations...');
             const wheel = document.getElementById('roulette-wheel');
@@ -1168,9 +1270,8 @@ def render_sides_of_zero_display():
             console.log('Latest spin angle:', {latest_spin_angle});
             
             if (wheel && ball && hasSpin) {{
-                console.log('Starting animations for wheel and ball using JavaScript...');
+                console.log('Starting animations for wheel and ball...');
                 
-                // Force visibility toggle to ensure rendering
                 wheel.style.visibility = 'hidden';
                 ball.style.visibility = 'hidden';
                 setTimeout(() => {{
@@ -1178,12 +1279,10 @@ def render_sides_of_zero_display():
                     ball.style.visibility = 'visible';
                     console.log('Visibility toggled to visible for wheel and ball');
                     
-                    // Directly use JavaScript animation
                     animateElement(wheel, 90, {latest_spin_angle}, 2000);
                     animateElement(ball, 0, {-latest_spin_angle}, 2000, true);
-                    console.log('JavaScript animations triggered for wheel and ball');
+                    console.log('Animations triggered for wheel and ball');
                     
-                    // Finalize position after animation
                     setTimeout(() => {{
                         console.log('Finalizing animation positions...');
                         wheel.style.transform = "rotate(" + {latest_spin_angle} + "deg)";
@@ -4174,8 +4273,33 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         spin_categories = []
         for name, numbers in EVEN_MONEY.items():
             if spin_value in numbers:
-                spin_categories.append(name)
-                category_counts[name] += 1
+
+        # Update dozens scores
+        for name, numbers in EVEN_MONEY.items():
+            if spin_value in numbers:
+
+        # Lines 29-34 (new lines for spin tracking and direction)
+        # Append the spin to last_spins
+        state.last_spins.append(spin_value)
+        # Append the current dealer spin direction to spin_directions
+        if hasattr(state, 'dealer_spin_direction'):
+            state.spin_directions.append(state.dealer_spin_direction)
+        else:
+            # Fallback if dealer_spin_direction isn't set
+            state.dealer_spin_direction = "CW"  # Default to clockwise
+            state.spin_directions.append(state.dealer_spin_direction)
+        # Ensure spin_directions matches last_spins length
+        if len(state.spin_directions) > len(state.last_spins):
+            state.spin_directions.pop(0)
+
+        # Update dozens scores
+        for name, numbers in DOZENS.items():
+            if spin_value in numbers:
+                state.dozen_scores[name] += 1
+                action["increments"].setdefault("dozen_scores", {})[name] = 1
+
+        # Update columns scores
+        for name, numbers in COLUMNS.items():
 
         # Determine if the spin matches the tracked combination
         if combination_mode == "And":
