@@ -527,7 +527,7 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel (unchanged)
+    # Generate SVG for the roulette wheel
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
@@ -555,7 +555,7 @@ def render_sides_of_zero_display():
     right_y2 = 170 + 145 * math.sin(right_end_rad)
     right_path_d = f"M 170,170 L {right_x1},{right_y1} A 145,145 0 0,1 {right_x2},{right_y2} L 170,170 Z"
     right_fill = "rgba(244, 81, 30, 0.5)" if winning_section == "Right Side" else "rgba(128, 128, 128, 0.3)"
-    right_stroke = "#D84315" if winning_section == "Right Side" else "#808080"
+    right_stroke = získani "#D84315" if winning_section == "Right Side" else "#808080"
     wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="{right_stroke}" stroke-width="3"/>'
     
     # Add the wheel background
@@ -588,7 +588,7 @@ def render_sides_of_zero_display():
         text_rad = text_angle * (3.14159 / 180)
         text_x = 170 + 120 * math.cos(text_rad)
         text_y = 170 + 120 * math.sin(text_rad)
-        wheel_svg Sole += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
+        wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
         hit_text_x = 170 + 90 * math.cos(text_rad)
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
@@ -629,7 +629,7 @@ def render_sides_of_zero_display():
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
-            hit_count = state.scores.get(num, 0)  # Fixed syntax error here
+            hit_count = state.scores.get(num, 0)
             is_hot = hit_count > 0
             class_name = "section-number" + (" hot-number" if is_hot else "")
             badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
