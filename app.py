@@ -527,7 +527,7 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel
+    # Generate SVG for the roulette wheel (unchanged)
     wheel_svg = '<div class="roulette-wheel-container">'
     wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
     
@@ -615,8 +615,9 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # Add static betting sections display below the wheel (no collapsing)
+    # Add collapsible betting sections display below the wheel
     betting_sections_html = '<div class="betting-sections-container">'
+    betting_sections_html += '<h4 style="color: #00695C; margin-bottom: 10px;">Betting Sections Breakdown</h4>'
     sections = [
         ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
         ("Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
@@ -636,15 +637,15 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create a static card-like section
+        # Create a collapsible section using <details> and <summary>
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
         betting_sections_html += f'''
-        <div class="betting-section-card">
-            <div class="betting-section-header" style="background-color: {color};">
+        <details class="betting-section-collapse" style="margin-bottom: 10px;">
+            <summary class="betting-section-header" style="background-color: {color}; cursor: pointer;">
                 {section_name}{badge}
-            </div>
+            </summary>
             <div class="betting-section-numbers">{numbers_display}</div>
-        </div>
+        </details>
         '''
     
     betting_sections_html += '</div>'
@@ -863,22 +864,22 @@ def render_sides_of_zero_display():
                 height: 10px;
             }}
         }}
-        /* Styles for static betting sections */
+        /* Styles for collapsible betting sections */
         .betting-sections-container {{
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 0px;
             margin-top: 20px;
             padding: 10px;
         }}
-        .betting-section-card {{
+        .betting-section-collapse {{
             background-color: #fff;
             border: 1px solid #d3d3d3;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s ease;
         }}
-        .betting-section-card:hover {{
+        .betting-section-collapse:hover {{
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }}
         .betting-section-header {{
