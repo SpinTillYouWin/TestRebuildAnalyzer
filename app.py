@@ -615,7 +615,7 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # Add collapsible betting sections display below the wheel
+    # Add collapsible betting sections display below the wheel with enhanced effects
     betting_sections_html = '<div class="betting-sections-container">'
     sections = [
         ("jeu_0", "Jeu 0", jeu_0, "#228B22", jeu_0_hits),
@@ -625,11 +625,15 @@ def render_sides_of_zero_display():
     ]
     
     for section_id, section_name, numbers, color, hits in sections:
-        # Generate the numbers list with colors
+        # Generate the numbers list with colors and enhanced effects for numbers with hits
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
-            numbers_html.append(f'<span style="background-color: {num_color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px;">{num}</span>')
+            hit_count = state.scores.get(num, 0)
+            is_hot = hit_count > 0
+            class_name = "section-number" + (" hot-number" if is_hot else "")
+            badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
+            numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
         # Create the accordion section with an ID for state tracking
@@ -848,7 +852,7 @@ def render_sides_of_zero_display():
                 height: 290px;
             }}
             #wheel-pointer {{
-                top: -10px;
+                top: -24px;
                 left: 143.5px;
                 width: 3px;
                 height: 150px;
@@ -859,7 +863,7 @@ def render_sides_of_zero_display():
                 height: 10px;
             }}
         }}
-        /* Updated styles for collapsible betting sections */
+        /* Updated styles for collapsible betting sections with enhanced effects */
         .betting-sections-container {{
             display: flex;
             flex-direction: column;
@@ -909,6 +913,93 @@ def render_sides_of_zero_display():
             border-top: 1px solid #d3d3d3;
             border-radius: 0 0 5px 5px;
         }}
+        .section-number {{
+            padding: 0;
+            margin: 2px;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }}
+        .section-number:not(.hot-number) {{
+            margin-left: 4px;
+            margin-right: 4px;
+        }}
+        .hot-number {{
+            width: 34px;
+            height: 34px;
+            line-height: 34px;
+            font-size: 16px;
+            border: 2px solid #FF00FF;
+            box-shadow: 0 0 8px #FF00FF;
+            text-shadow: 0 0 5px #FF00FF;
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
+        }}
+        @keyframes glow {{
+            0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
+            50% {{ box-shadow: 0 0 12px #FF00FF; text-shadow: 0 0 8px #FF00FF; }}
+            100% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
+        }}
+        @keyframes border-flash {{
+            0% {{ border-color: #FF00FF; }}
+            50% {{ border-color: #FFFFFF; }}
+            100% {{ border-color: #FF00FF; }}
+        }}
+        @keyframes bounce {{
+            0%, 100% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.2); }}
+        }}
+        /* Dynamic color pulse for red numbers */
+        .hot-number[style*="background-color: red"] {{
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, red-pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes red-pulse {{
+            0% {{ background-color: red; }}
+            50% {{ background-color: #ff3333; }}
+            100% {{ background-color: red; }}
+        }}
+        /* Dynamic color pulse for black numbers */
+        .hot-number[style*="background-color: black"] {{
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, black-pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes black-pulse {{
+            0% {{ background-color: black; }}
+            50% {{ background-color: #333333; }}
+            100% {{ background-color: black; }}
+        }}
+        /* Dynamic color pulse for green numbers */
+        .hot-number[style*="background-color: green"] {{
+            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, green-pulse 1.5s infinite ease-in-out;
+        }}
+        @keyframes green-pulse {{
+            0% {{ background-color: green; }}
+            50% {{ background-color: #33cc33; }}
+            100% {{ background-color: green; }}
+        }}
+        .number-hit-badge {{
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #ff4444;
+            font-size: 8px;
+            width: 16px;
+            height: 16px;
+            line-height: 16px;
+            border-radius: 50%;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
         .betting-section-hits {{
             background-color: #ff4444;
             color: white;
@@ -922,8 +1013,6 @@ def render_sides_of_zero_display():
             display: flex;
             align-items: center;
             justify-content: center;
-            top: -10px;
-            right: -10px;
         }}
         details[open] .betting-section-hits {{
             top: 0;
@@ -1202,6 +1291,34 @@ def render_sides_of_zero_display():
                 if (!hasSpin) console.warn('No latest spin to animate');
             }}
         }}, 2000);
+
+        // Add tooltips to section numbers
+        document.querySelectorAll('.section-number').forEach(element => {{
+            element.addEventListener('mouseover', (e) => {{
+                const hits = element.getAttribute('data-hits');
+                const num = element.getAttribute('data-number');
+                const tooltipText = "Number " + num + ": " + hits + " hits";
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = element.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
+                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
+                tooltip.style.opacity = '1';
+            }});
+            
+            element.addEventListener('mouseout', () => {{
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) {{
+                    tooltip.remove();
+                }}
+            }});
+        }});
     </script>
     """
 def validate_spins_input(spins_input):
@@ -4471,7 +4588,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-
+    
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5962,7 +6079,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     </script>
     """)
 
-    # Event Handlers (moved to the end)
+    # Event Handlers
     try:
         spins_textbox.change(
             fn=validate_spins_input,
@@ -5975,7 +6092,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
             ]
         ).then(
             fn=update_spin_counter,
@@ -6005,6 +6122,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
+    
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -6017,16 +6135,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
-
+    
     try:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter]
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
-
+    
     try:
         clear_all_button.click(
             fn=clear_all,
@@ -6048,7 +6166,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Added missing output
+                sides_of_zero_display  # Removed betting_sections_display
             ]
         ).then(
             fn=clear_outputs,
@@ -6078,13 +6196,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown,
                 dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+                dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
-
+    
     try:
         generate_spins_button.click(
             fn=generate_random_spins,
@@ -6097,7 +6215,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
-
+    
     try:
         last_spin_count.change(
             fn=format_spins_as_html,
@@ -6106,12 +6224,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
-
+    
     def update_strategy_dropdown(category):
         if category == "None":
             return gr.update(choices=["None"], value="None")
         return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
-
+    
     try:
         category_dropdown.change(
             fn=update_strategy_dropdown,
@@ -6120,7 +6238,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in category_dropdown.change handler: {str(e)}")
-
+    
     try:
         reset_strategy_button.click(
             fn=reset_strategy_dropdowns,
@@ -6133,14 +6251,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_strategy_button.click handler: {str(e)}")
-
+    
     def toggle_neighbours_slider(strategy_name):
         is_visible = strategy_name == "Neighbours of Strong Number"
         return (
             gr.update(visible=is_visible),
             gr.update(visible=is_visible)
         )
-
+    
     try:
         strategy_dropdown.change(
             fn=toggle_neighbours_slider,
@@ -6157,7 +6275,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
-
+    
     try:
         analyze_button.click(
             fn=analyze_spins,
@@ -6166,7 +6284,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6200,7 +6318,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
-
+    
     try:
         save_button.click(
             fn=save_session,
@@ -6209,7 +6327,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in save_button.click handler: {str(e)}")
-
+    
     try:
         load_input.change(
             fn=load_session,
@@ -6230,7 +6348,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output
+                strategy_output  # Removed betting_sections_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6268,13 +6386,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown,
                 dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+                dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
-
+    
     try:
         undo_button.click(
             fn=undo_last_spin,
@@ -6298,7 +6416,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Added missing output
+                sides_of_zero_display  # Removed betting_sections_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6328,13 +6446,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown,
                 dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox  # Corrected from kbox
+                dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
-
+    
     try:
         neighbours_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6347,7 +6465,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in neighbours_count_slider.change handler: {str(e)}")
-
+    
     try:
         strong_numbers_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6360,7 +6478,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strong_numbers_count_slider.change handler: {str(e)}")
-
+    
     try:
         reset_colors_button.click(
             fn=reset_colors,
@@ -6373,7 +6491,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_colors_button.click handler: {str(e)}")
-
+    
     try:
         clear_last_spins_button.click(
             fn=clear_last_spins_display,
@@ -6382,7 +6500,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
-
+    
     try:
         top_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6391,7 +6509,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in top_color_picker.change handler: {str(e)}")
-
+    
     try:
         middle_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6400,7 +6518,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in middle_color_picker.change handler: {str(e)}")
-
+    
     try:
         lower_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6409,8 +6527,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
-        
-# Dozen Tracker Event Handlers
+    
+    # Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
@@ -6421,7 +6539,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-
+    except Exception as e:
+        print(f"Error in dozen_tracker_spins_dropdown.change handler: {str(e)}")
+    
+    try:
         dozen_tracker_consecutive_hits_dropdown.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -6431,7 +6552,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-
+    except Exception as e:
+        print(f"Error in dozen_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
+    
+    try:
         dozen_tracker_alert_checkbox.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -6441,7 +6565,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-
+    except Exception as e:
+        print(f"Error in dozen_tracker_alert_checkbox.change handler: {str(e)}")
+    
+    try:
         dozen_tracker_sequence_length_dropdown.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -6451,7 +6578,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-
+    except Exception as e:
+        print(f"Error in dozen_tracker_sequence_length_dropdown.change handler: {str(e)}")
+    
+    try:
         dozen_tracker_follow_up_spins_dropdown.change(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -6461,7 +6591,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
-
+    except Exception as e:
+        print(f"Error in dozen_tracker_follow_up_spins_dropdown.change handler: {str(e)}")
+    
+    try:
         dozen_tracker_sequence_alert_checkbox.change(
             fn=dozen_tracker,
             inputs=[
@@ -6487,7 +6620,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_dropdown,
                 neighbours_count_slider,
                 strong_numbers_count_slider,
-                dozen_tracker_spins_dropdown,  # Corrected from dozen_tracker_spins
+                dozen_tracker_spins_dropdown,
                 top_color_picker,
                 middle_color_picker,
                 lower_color_picker
@@ -6496,169 +6629,228 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
-
+    
     # Even Money Tracker Event Handlers
-    even_money_tracker_spins_dropdown.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_consecutive_hits_dropdown.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_combination_mode_dropdown.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_red_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_black_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_even_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_odd_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_low_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_high_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-    even_money_tracker_alert_checkbox.change(
-        fn=even_money_tracker,
-        inputs=[
-            even_money_tracker_spins_dropdown,
-            even_money_tracker_consecutive_hits_dropdown,
-            even_money_tracker_alert_checkbox,
-            even_money_tracker_combination_mode_dropdown,
-            even_money_tracker_red_checkbox,
-            even_money_tracker_black_checkbox,
-            even_money_tracker_even_checkbox,
-            even_money_tracker_odd_checkbox,
-            even_money_tracker_low_checkbox,
-            even_money_tracker_high_checkbox
-        ],
-        outputs=[gr.State(), even_money_tracker_output]
-    )
-
+    try:
+        even_money_tracker_spins_dropdown.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_spins_dropdown.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_consecutive_hits_dropdown.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_combination_mode_dropdown.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_combination_mode_dropdown.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_red_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_red_checkbox.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_black_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_black_checkbox.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_even_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_even_checkbox.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_odd_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_odd_checkbox.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_low_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_low_checkbox.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_high_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_high_checkbox.change handler: {str(e)}")
+    
+    try:
+        even_money_tracker_alert_checkbox.change(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in even_money_tracker_alert_checkbox.change handler: {str(e)}")
+    
     # Casino data event handlers
     inputs_list = [
         spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -6673,7 +6865,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_count_dropdown.change handler: {str(e)}")
-
+    
     try:
         even_percent.change(
             fn=update_casino_data,
@@ -6682,7 +6874,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_percent.change handler: {str(e)}")
-
+    
     try:
         odd_percent.change(
             fn=update_casino_data,
@@ -6691,7 +6883,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in odd_percent.change handler: {str(e)}")
-
+    
     try:
         red_percent.change(
             fn=update_casino_data,
@@ -6700,7 +6892,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in red_percent.change handler: {str(e)}")
-
+    
     try:
         black_percent.change(
             fn=update_casino_data,
@@ -6709,7 +6901,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in black_percent.change handler: {str(e)}")
-
+    
     try:
         low_percent.change(
             fn=update_casino_data,
@@ -6718,7 +6910,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in low_percent.change handler: {str(e)}")
-
+    
     try:
         high_percent.change(
             fn=update_casino_data,
@@ -6727,7 +6919,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in high_percent.change handler: {str(e)}")
-
+    
     try:
         dozen1_percent.change(
             fn=update_casino_data,
@@ -6736,7 +6928,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen1_percent.change handler: {str(e)}")
-
+    
     try:
         dozen2_percent.change(
             fn=update_casino_data,
@@ -6745,7 +6937,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen2_percent.change handler: {str(e)}")
-
+    
     try:
         dozen3_percent.change(
             fn=update_casino_data,
@@ -6754,7 +6946,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen3_percent.change handler: {str(e)}")
-
+    
     try:
         col1_percent.change(
             fn=update_casino_data,
@@ -6763,7 +6955,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in col1_percent.change handler: {str(e)}")
-
+    
     try:
         col2_percent.change(
             fn=update_casino_data,
@@ -6772,7 +6964,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in col2_percent.change handler: {str(e)}")
-
+    
     try:
         col3_percent.change(
             fn=update_casino_data,
@@ -6781,7 +6973,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in col3_percent.change handler: {str(e)}")
-
+    
     try:
         use_winners_checkbox.change(
             fn=update_casino_data,
@@ -6794,7 +6986,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in use_winners_checkbox.change handler: {str(e)}")
-
+    
     try:
         reset_casino_data_button.click(
             fn=lambda: (
@@ -6814,7 +7006,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
-
+    
     # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
         state.bankroll = bankroll
@@ -6850,7 +7042,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
-
+    
     try:
         bankroll_input.change(
             fn=update_config,
@@ -6859,7 +7051,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in bankroll_input.change handler: {str(e)}")
-
+    
     try:
         base_unit_input.change(
             fn=update_config,
@@ -6868,7 +7060,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in base_unit_input.change handler: {str(e)}")
-
+    
     try:
         stop_loss_input.change(
             fn=update_config,
@@ -6877,7 +7069,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in stop_loss_input.change handler: {str(e)}")
-
+    
     try:
         stop_win_input.change(
             fn=update_config,
@@ -6886,7 +7078,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in stop_win_input.change handler: {str(e)}")
-
+    
     try:
         bet_type_dropdown.change(
             fn=update_config,
@@ -6895,7 +7087,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in bet_type_dropdown.change handler: {str(e)}")
-
+    
     try:
         progression_dropdown.change(
             fn=update_config,
@@ -6908,7 +7100,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
-
+    
     try:
         labouchere_sequence.change(
             fn=update_config,
@@ -6917,7 +7109,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in labouchere_sequence.change handler: {str(e)}")
-
+    
     try:
         win_button.click(
             fn=lambda: state.update_progression(True),
@@ -6926,7 +7118,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in win_button.click handler: {str(e)}")
-
+    
     try:
         lose_button.click(
             fn=lambda: state.update_progression(False),
@@ -6935,7 +7127,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in lose_button.click handler: {str(e)}")
-
+    
     try:
         reset_progression_button.click(
             fn=lambda: state.reset_progression(),
@@ -6944,7 +7136,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
-
+    
     # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
         videos = video_categories.get(category, [])
@@ -6954,7 +7146,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gr.update(choices=choices, value=default_value),
             gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
         )
-
+    
     def update_video_display(video_title, category):
         videos = video_categories.get(category, [])
         selected_video = next((video for video in videos if video["title"] == video_title), None)
@@ -6962,7 +7154,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             video_id = selected_video["link"].split("/")[-1]
             return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
         return "<p>Please select a video to watch.</p>"
-
+    
     try:
         video_category_dropdown.change(
             fn=update_video_dropdown,
@@ -6971,6 +7163,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in video_category_dropdown.change handler: {str(e)}")
+    
+    try:
+        video_dropdown.change(
+            fn=update_video_display,
+            inputs=[video_dropdown, video_category_dropdown],
+            outputs=[video_output]
+        )
+    except Exception as e:
+        print(f"Error in video_dropdown.change handler: {str(e)}")
 
     try:
         video_dropdown.change(
