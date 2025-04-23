@@ -482,7 +482,7 @@ def render_sides_of_zero_display():
     
     # Define betting sections
     jeu_0 = [12, 35, 3, 26, 0, 32, 15]
-    voisins_du_zero = [22, 9, 31, 14, 20, 1, 33, 16, 24, 0, 32, 15, 19, 4, 21, 2, 25]
+    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]
     orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
     tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
     
