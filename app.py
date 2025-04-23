@@ -2495,7 +2495,7 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
         return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
     except Exception as e:
         print(f"undo_last_spin: Unexpected error: {str(e)}")
-        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_ color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
+        return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display(betting_sections_visible), betting_sections_visible)
 
 def clear_all(betting_sections_visible):
     state.selected_numbers.clear()
