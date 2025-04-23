@@ -934,7 +934,6 @@ def render_sides_of_zero_display():
             text-shadow: 0 0 5px #FF00FF;
             animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
         }}
-# Lines after the change (for context)
         @keyframes glow {{
             0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
             50% {{ box-shadow: 0 0 12px #FF00FF; text-shadow: 0 0 8px #FF00FF; }}
