@@ -2112,7 +2112,11 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
     sorted_sections = calculate_trending_sections()
     
-    # If no spins yet, initialize with default even money focus
+    # If no spins yet, return a simple message regardless of strategy
+    if sorted_sections is None:
+        return "<p>No spins yet. Please add spins to see the dynamic table.</p>"
+    
+    # If no spins yet and strategy is "Best Even Money Bets", initialize with default even money focus
     if sorted_sections is None and strategy_name == "Best Even Money Bets":
         trending_even_money = "Red"  # Default to "Red" as an example
         second_even_money = "Black"
@@ -2133,7 +2137,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
     return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
-    
+ 
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
@@ -4728,6 +4732,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=f'<div class="strategy-recommendations-container">{initial_strategy_value}</div>',
                     elem_classes=["strategy-recommendations-container"]
                 )
+            except Exception as e:
+                print(f"Error initializing Strategy Recommendations: {str(e)}")
+                strategy_output = gr.HTML(
+                    label="Strategy Recommendations",
+                    value='<div class="strategy-recommendations-container"><p>Initializing recommendations... Please add spins to see strategies.</p></div>',
+                    elem_classes=["strategy-recommendations-container"]
+                )
+
             except Exception as e:
                 print(f"Error initializing Strategy Recommendations: {str(e)}")
                 strategy_output = gr.HTML(
