@@ -33,8 +33,20 @@ def update_scores_batch(spins):
         # Update even money scores
         for name, numbers in EVEN_MONEY.items():
             if spin_value in numbers:
-                state.even_money_scores[name] += 1
-                action["increments"].setdefault("even_money_scores", {})[name] = 1
+
+        # Lines 29-34 (Spin Direction State logic, already correct)
+        # Append the spin to last_spins
+        state.last_spins.append(spin_value)
+        # Append the current dealer spin direction to spin_directions
+        if hasattr(state, 'dealer_spin_direction'):
+            state.spin_directions.append(state.dealer_spin_direction)
+        else:
+            # Fallback if dealer_spin_direction isn't set
+            state.dealer_spin_direction = "CW"  # Default to clockwise
+            state.spin_directions.append(state.dealer_spin_direction)
+        # Ensure spin_directions matches last_spins length
+        if len(state.spin_directions) > len(state.last_spins):
+            state.spin_directions.pop(0)
 
         # Update dozens scores
         for name, numbers in DOZENS.items():
@@ -4264,7 +4276,7 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     if not categories_to_track:
         categories_to_track = ["Red", "Black", "Even", "Odd", "Low", "High"]
 
-    # Map spins to even money categories and track full trait combinations
+# Map spins to even money categories and track full trait combinations
     pattern = []
     category_counts = {name: 0 for name in EVEN_MONEY.keys()}
     trait_combinations = []  # Store the full trait combination for each spin (e.g., "Red, Odd, Low")
@@ -4273,34 +4285,8 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         spin_categories = []
         for name, numbers in EVEN_MONEY.items():
             if spin_value in numbers:
-
-        # Update dozens scores
-        for name, numbers in EVEN_MONEY.items():
-            if spin_value in numbers:
-
-        # Lines 29-34 (new lines for spin tracking and direction)
-        # Append the spin to last_spins
-        state.last_spins.append(spin_value)
-        # Append the current dealer spin direction to spin_directions
-        if hasattr(state, 'dealer_spin_direction'):
-            state.spin_directions.append(state.dealer_spin_direction)
-        else:
-            # Fallback if dealer_spin_direction isn't set
-            state.dealer_spin_direction = "CW"  # Default to clockwise
-            state.spin_directions.append(state.dealer_spin_direction)
-        # Ensure spin_directions matches last_spins length
-        if len(state.spin_directions) > len(state.last_spins):
-            state.spin_directions.pop(0)
-
-        # Update dozens scores
-        for name, numbers in DOZENS.items():
-            if spin_value in numbers:
-                state.dozen_scores[name] += 1
-                action["increments"].setdefault("dozen_scores", {})[name] = 1
-
-        # Update columns scores
-        for name, numbers in COLUMNS.items():
-
+                spin_categories.append(name)
+                category_counts[name] += 1
         # Determine if the spin matches the tracked combination
         if combination_mode == "And":
             if all(cat in spin_categories for cat in categories_to_track):
@@ -4312,7 +4298,6 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
                 pattern.append("Hit")
             else:
                 pattern.append("Miss")
-
         # Build the full trait combination for this spin (Color, Parity, Range)
         color = "Red" if "Red" in spin_categories else ("Black" if "Black" in spin_categories else "None")
         parity = "Even" if "Even" in spin_categories else ("Odd" if "Odd" in spin_categories else "None")
