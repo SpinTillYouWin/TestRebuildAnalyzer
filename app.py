@@ -588,7 +588,7 @@ def render_sides_of_zero_display():
         text_rad = text_angle * (3.14159 / 180)
         text_x = 170 + 120 * math.cos(text_rad)
         text_y = 170 + 120 * math.sin(text_rad)
-        wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
+        wheel_svg Sole += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
         hit_text_x = 170 + 90 * math.cos(text_rad)
         hit_text_y = 170 + 90 * math.sin(text_rad)
         wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
@@ -629,7 +629,7 @@ def render_sides_of_zero_display():
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
-            hit_count = state.scores.get(num, 0)
+            hit_count = state.scores.get(num, 0)  # Fixed syntax error here
             is_hot = hit_count > 0
             class_name = "section-number" + (" hot-number" if is_hot else "")
             badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
