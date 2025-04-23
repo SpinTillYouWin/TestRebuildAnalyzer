@@ -615,8 +615,8 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # Add static betting sections display below the wheel (no collapsing)
-    betting_sections_html = '<div class="betting-sections-container">'
+        # Add static betting sections display below the wheel (no collapsing)
+    betting_sections_html = '<div class="betting-sections-container">'  # Line 1 (modified comment)
     sections = [
         ("Jeu 0", jeu_0, "#228B22", jeu_0_hits),
         ("Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
@@ -647,13 +647,13 @@ def render_sides_of_zero_display():
         </div>
         '''
     
-    betting_sections_html += '</div>'
+    betting_sections_html += '</div>'  # Line 2 (removed the <details> wrapper)
     
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity
-    return f"""
+    # HTML output with JavaScript to handle animations and interactivity (removed accordion state persistence)
+    main_display = f"""
     <style>
         .circular-progress {{
             position: relative;
@@ -1027,7 +1027,6 @@ def render_sides_of_zero_display():
         </div>
         {number_list}
         {wheel_svg}
-        {betting_sections_html}
     </div>
     <script>
         function updateCircularProgress(id, progress) {{
@@ -1228,6 +1227,10 @@ def render_sides_of_zero_display():
         }});
     </script>
     """
+    
+    # Return both the main display and the betting sections HTML
+    return main_display, betting_sections_html
+    
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -4476,11 +4479,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["spin-counter"]
     )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+        main_display, betting_sections_html = render_sides_of_zero_display()
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
-            value=render_sides_of_zero_display(),
+            value=main_display,
             elem_classes=["sides-of-zero-container"]
         )
+        with gr.Accordion("Betting Sections Breakdown", open=False, elem_id="betting-sections-accordion"):
+            betting_sections_display = gr.HTML(
+                label="Betting Sections",
+                value=betting_sections_html,
+                elem_classes=["betting-sections-container"]
+            )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -5987,7 +5997,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     """)
 
     # Event Handlers (moved to the end)
-    try:
+        try:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
@@ -5999,7 +6009,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, betting_sections_display
             ]
         ).then(
             fn=update_spin_counter,
