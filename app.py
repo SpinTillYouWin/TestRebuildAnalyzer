@@ -636,7 +636,7 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create a static card-like section (reverted to original)
+        # Create a static card-like section
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
         betting_sections_inner_html += f'''
         <div class="betting-section-card">
@@ -649,9 +649,9 @@ def render_sides_of_zero_display():
     
     betting_sections_inner_html += '</div>'
     
-    # Wrap the betting sections in a single collapsible accordion
+    # Wrap the betting sections in a single collapsible accordion with an ID
     betting_sections_html = f'''
-    <details class="betting-sections-collapse">
+    <details id="betting-sections-accordion" class="betting-sections-collapse">
         <summary class="betting-sections-header" style="background-color: #dc3545; color: white; padding: 8px 12px; border-radius: 5px; font-weight: bold; font-size: 14px; cursor: pointer;">
             Betting Sections Breakdown
         </summary>
@@ -662,7 +662,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity
+    # HTML output with JavaScript to handle animations, interactivity, and accordion state persistence
     return f"""
     <style>
         .circular-progress {{
@@ -1249,6 +1249,35 @@ def render_sides_of_zero_display():
                 }}
             }});
         }});
+
+        // Persist the state of the Betting Sections Breakdown accordion
+        document.addEventListener('DOMContentLoaded', () => {{
+            const accordion = document.getElementById('betting-sections-accordion');
+            if (accordion) {{
+                // Restore the state from localStorage
+                const isOpen = localStorage.getItem('bettingSectionsAccordionState') === 'open';
+                accordion.open = isOpen;
+
+                // Add event listener to save the state when toggled
+                accordion.addEventListener('toggle', () => {{
+                    localStorage.setItem('bettingSectionsAccordionState', accordion.open ? 'open' : 'closed');
+                }});
+            }}
+        }});
+
+        // Ensure state is restored after any re-render
+        setTimeout(() => {{
+            const accordion = document.getElementById('betting-sections-accordion');
+            if (accordion) {{
+                const isOpen = localStorage.getItem('bettingSectionsAccordionState') === 'open';
+                accordion.open = isOpen;
+
+                // Re-attach the event listener in case the DOM was updated
+                accordion.addEventListener('toggle', () => {{
+                    localStorage.setItem('bettingSectionsAccordionState', accordion.open ? 'open' : 'closed');
+                }});
+            }}
+        }}, 100);
     </script>
     """
 def validate_spins_input(spins_input):
