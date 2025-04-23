@@ -4703,16 +4703,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-            dynamic_table_output = gr.HTML(
-                label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")
-            )
+            try:
+                initial_table_value = create_dynamic_table(strategy_name="Best Even Money Bets")
+                print(f"Initial Dynamic Table Value: {initial_table_value}")
+                dynamic_table_output = gr.HTML(
+                    label="Dynamic Table",
+                    value=f'<div class="dynamic-table-container">{initial_table_value}</div>',
+                    elem_classes=["dynamic-table-container"]
+                )
+            except Exception as e:
+                print(f"Error initializing Dynamic Table: {str(e)}")
+                dynamic_table_output = gr.HTML(
+                    label="Dynamic Table",
+                    value='<div class="dynamic-table-container"><p>Initializing table... Please add spins to see highlights.</p></div>',
+                    elem_classes=["dynamic-table-container"]
+                )
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(
-                label="Strategy Recommendations",
-                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-            )
+            try:
+                initial_strategy_value = show_strategy_recommendations("Best Even Money Bets", 2, 1)
+                print(f"Initial Strategy Recommendations Value: {initial_strategy_value}")
+                strategy_output = gr.HTML(
+                    label="Strategy Recommendations",
+                    value=f'<div class="strategy-recommendations-container">{initial_strategy_value}</div>',
+                    elem_classes=["strategy-recommendations-container"]
+                )
+            except Exception as e:
+                print(f"Error initializing Strategy Recommendations: {str(e)}")
+                strategy_output = gr.HTML(
+                    label="Strategy Recommendations",
+                    value='<div class="strategy-recommendations-container"><p>Initializing recommendations... Please add spins to see strategies.</p></div>',
+                    elem_classes=["strategy-recommendations-container"]
+                )
             with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
                     label="Past Spins Count",
@@ -5162,7 +5184,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
         };
         document.head.appendChild(script);
-
+    
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
@@ -5473,6 +5495,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }
+    
+        /* Containers for Dynamic Table and Strategy Recommendations */
+        .dynamic-table-container, .strategy-recommendations-container {
+            background-color: #f5f5f5 !important;
+            border: 1px solid #d3d3d3 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            min-height: 100px !important;
+            font-family: Arial, sans-serif !important;
+            color: #333 !important;
+        }
+        .dynamic-table-container p, .strategy-recommendations-container p {
+            margin: 0 !important;
+            padding: 5px 0 !important;
+            font-size: 14px !important;
         }
     
         /* Responsive Design */
