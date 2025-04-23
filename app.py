@@ -615,7 +615,7 @@ def render_sides_of_zero_display():
     wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
     wheel_svg += '</div>'
     
-    # Add collapsible betting sections display below the wheel with enhanced effects
+    # Add static betting sections display below the wheel with enhanced effects
     betting_sections_html = '<div class="betting-sections-container">'
     sections = [
         ("jeu_0", "Jeu 0", jeu_0, "#228B22", jeu_0_hits),
@@ -636,15 +636,15 @@ def render_sides_of_zero_display():
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
-        # Create the accordion section with an ID for state tracking
+        # Create a static section instead of an accordion
         badge = f'<span class="hit-badge betting-section-hits">{hits}</span>' if hits > 0 else ''
         betting_sections_html += f'''
-        <details id="{section_id}" class="betting-section-accordion">
-            <summary class="betting-section-header" style="background-color: {color};">
+        <div class="betting-section">
+            <div class="betting-section-header" style="background-color: {color};">
                 {section_name}{badge}
-            </summary>
+            </div>
             <div class="betting-section-numbers">{numbers_display}</div>
-        </details>
+        </div>
         '''
     
     betting_sections_html += '</div>'
@@ -652,7 +652,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations, interactivity, and state persistence
+    # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
     return f"""
     <style>
         .circular-progress {{
@@ -863,7 +863,7 @@ def render_sides_of_zero_display():
                 height: 10px;
             }}
         }}
-        /* Updated styles for collapsible betting sections with enhanced effects */
+        /* Updated styles for static betting sections with enhanced effects */
         .betting-sections-container {{
             display: flex;
             flex-direction: column;
@@ -871,37 +871,26 @@ def render_sides_of_zero_display():
             margin-top: 20px;
             padding: 10px;
         }}
-        .betting-section-accordion {{
+        .betting-section {{
             background-color: #fff;
             border: 1px solid #d3d3d3;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s ease;
         }}
-        .betting-section-accordion:hover {{
+        .betting-section:hover {{
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }}
         .betting-section-header {{
             color: white;
             padding: 8px 12px;
-            border-radius: 5px;
+            border-radius: 5px 5px 0 0; /* Adjusted for static section */
             font-weight: bold;
             font-size: 14px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }}
-        .betting-section-header::-webkit-details-marker {{
-            display: none;
-        }}
-        .betting-section-header::after {{
-            content: '▼';
-            font-size: 12px;
-            transition: transform 0.2s ease;
-        }}
-        details[open] .betting-section-header::after {{
-            transform: rotate(180deg);
         }}
         .betting-section-numbers {{
             display: flex;
@@ -1014,18 +1003,6 @@ def render_sides_of_zero_display():
             align-items: center;
             justify-content: center;
         }}
-        details[open] .betting-section-hits {{
-            top: 0;
-            right: 0;
-        }}
-        .betting-section-accordion[open] .betting-section-header {{
-            animation: pulse-header 1.5s infinite ease-in-out;
-        }}
-        @keyframes pulse-header {{
-            0% {{ opacity: 1; }}
-            50% {{ opacity: 0.7; }}
-            100% {{ opacity: 1; }}
-        }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
@@ -1054,75 +1031,6 @@ def render_sides_of_zero_display():
         {betting_sections_html}
     </div>
     <script>
-        // Initialize global state object for details elements if it doesn't exist
-        if (typeof window.detailsState === 'undefined') {{
-            window.detailsState = {{
-                'jeu_0': false,
-                'voisins_du_zero': false,
-                'orphelins': false,
-                'tiers_du_cylindre': false
-            }};
-        }}
-
-        // Function to save the state of a specific <details> element
-        function saveDetailsState(id, isOpen) {{
-            window.detailsState[id] = isOpen;
-            console.log("Saved state for " + id + ": " + isOpen);
-        }}
-
-        // Function to apply the saved state to all <details> elements
-        function applyDetailsState() {{
-            const detailsElements = document.querySelectorAll('.betting-section-accordion');
-            detailsElements.forEach(detail => {{
-                const id = detail.id;
-                if (window.detailsState[id] === true) {{
-                    detail.setAttribute('open', '');
-                    console.log("Restored state for " + id + ": open");
-                }} else {{
-                    detail.removeAttribute('open');
-                    console.log("Restored state for " + id + ": closed");
-                }}
-                // Re-attach event listener for toggle
-                detail.removeEventListener('toggle', handleDetailsToggle); // Avoid duplicate listeners
-                detail.addEventListener('toggle', handleDetailsToggle);
-            }});
-        }}
-
-        // Event handler for toggle events
-        function handleDetailsToggle(e) {{
-            const detail = e.target;
-            const id = detail.id;
-            saveDetailsState(id, detail.open);
-        }}
-
-        // Apply the state immediately after DOM update
-        document.addEventListener('DOMContentLoaded', () => {{
-            applyDetailsState();
-        }});
-
-        // Re-apply state after any DOM update (e.g., table clicks)
-        setTimeout(() => {{
-            applyDetailsState();
-        }}, 0);
-
-        // Observe DOM changes to re-apply state if the betting sections are re-rendered
-        const observer = new MutationObserver((mutations) => {{
-            mutations.forEach(mutation => {{
-                if (mutation.target.classList && mutation.target.classList.contains('betting-sections-container')) {{
-                    console.log('Betting sections container updated, re-applying state');
-                    applyDetailsState();
-                }}
-            }});
-        }});
-
-        // Start observing the betting sections container
-        document.addEventListener('DOMContentLoaded', () => {{
-            const targetNode = document.querySelector('.betting-sections-container');
-            if (targetNode) {{
-                observer.observe(targetNode, {{ childList: true, subtree: true }});
-            }}
-        }});
-
         function updateCircularProgress(id, progress) {{
             const element = document.getElementById(id);
             if (!element) {{
