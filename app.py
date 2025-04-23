@@ -616,7 +616,7 @@ def render_sides_of_zero_display():
     wheel_svg += '</div>'
     
     # Add static betting sections display below the wheel with enhanced effects
-    betting_sections_html = '<div class="betting-sections-container">'
+    betting_sections_html = '<div class="betting-sections-container" id="betting-sections">'
     sections = [
         ("jeu_0", "Jeu 0", jeu_0, "#228B22", jeu_0_hits),
         ("voisins_du_zero", "Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
@@ -806,7 +806,6 @@ def render_sides_of_zero_display():
         #wheel-pointer {{
             z-index: 3;
         }}
-        # Lines before the change (for context)
         @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
@@ -871,6 +870,7 @@ def render_sides_of_zero_display():
             gap: 10px;
             margin-top: 20px;
             padding: 10px;
+            display: none; /* Hidden by default */
         }}
         .betting-sections-container .betting-section {{ /* Increased specificity */
             background-color: #fff;
@@ -900,12 +900,12 @@ def render_sides_of_zero_display():
             gap: 5px !important;
             padding: 10px !important;
             justify-content: center !important;
-            background-color: #FFFF00 !important; /* Bright yellow for debugging */
+            background-color: #f9f9f9 !important;
             border-top: 1px solid #d3d3d3 !important;
             border-radius: 0 0 5px 5px !important;
             overflow-y: auto !important; /* Forced with !important for debugging */
             max-height: 60px !important; /* Reduced to force scrollbar for testing */
-            border: 2px solid red !important; /* Thicker red border for visibility */
+            border: 1px dashed red !important; /* Added: Debugging border to visualize container */
         }}
         .section-number {{
             padding: 0;
@@ -936,7 +936,6 @@ def render_sides_of_zero_display():
             text-shadow: 0 0 5px #FF00FF;
             animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
         }}
-# Lines after the change (for context)
         @keyframes glow {{
             0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
             50% {{ box-shadow: 0 0 12px #FF00FF; text-shadow: 0 0 8px #FF00FF; }}
@@ -1009,6 +1008,23 @@ def render_sides_of_zero_display():
             align-items: center;
             justify-content: center;
         }}
+        /* Style for the toggle button */
+        .toggle-button {{
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px auto;
+            display: block;
+            transition: background-color 0.3s ease;
+        }}
+        .toggle-button:hover {{
+            background-color: #0056b3;
+        }}
     </style>
     <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px;">
         <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Dealer’s Spin Tracker (Can you spot Bias???) 🔍</h4>
@@ -1034,6 +1050,7 @@ def render_sides_of_zero_display():
         </div>
         {number_list}
         {wheel_svg}
+        <button class="toggle-button" onclick="toggleBettingSections()">Show Betting Sections</button>
         {betting_sections_html}
     </div>
     <script>
@@ -1233,6 +1250,19 @@ def render_sides_of_zero_display():
                 }}
             }});
         }});
+
+        // Function to toggle the visibility of betting sections
+        function toggleBettingSections() {{
+            const bettingSections = document.getElementById('betting-sections');
+            const button = document.querySelector('.toggle-button');
+            if (bettingSections.style.display === 'none') {{
+                bettingSections.style.display = 'flex';
+                button.textContent = 'Hide Betting Sections';
+            }} else {{
+                bettingSections.style.display = 'none';
+                button.textContent = 'Show Betting Sections';
+            }}
+        }}
     </script>
     """
 def validate_spins_input(spins_input):
