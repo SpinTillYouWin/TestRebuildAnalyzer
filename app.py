@@ -4481,7 +4481,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    clear_spins_message = gr.HTML(label="Clear Spins Confirmation", value="")  # Add this line
+    clear_spins_message = gr.HTML(
+        label="Clear Spins Confirmation",
+        value='<div style="color: #888; font-style: italic;">No spins cleared yet.</div>'  # Initial placeholder
+    )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
@@ -4502,7 +4505,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-     
+    
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5153,6 +5156,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     });
                 </script>
                 """)
+
     # CSS
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -5548,6 +5552,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             #video-output iframe {
                 height: 200px !important;
             }
+        }
+        
+        /* Ensure Clear Spins Message Styling */
+        .clear-spins-message {
+            margin: 10px 0 !important;
+            padding: 8px !important;
+            background-color: #e0ffe0 !important;
+            border: 1px solid #d3d3d3 !important;
+            border-radius: 5px !important;
+            text-align: center !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 12px !important;
+            color: #2e7d32 !important;
         }
     </style>
     """)
@@ -6014,7 +6031,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             fn=update_spin_counter,
@@ -6059,12 +6076,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in spins_display.change handler: {str(e)}")
     
     try:
-        clear_spins_button.click(  # Line 1: Start of event handler
-            fn=lambda: clear_spins() + (f'<div style="margin: 10px 0; padding: 8px; background-color: #e0ffe0; border: 1px solid #d3d3d3; border-radius: 5px; text-align: center; font-family: Arial, sans-serif; font-size: 12px; color: #2e7d32;">Spins cleared successfully!</div>',),
+        clear_spins_button.click(
+            fn=lambda: (print("Clear Spins Button Clicked"), clear_spins() + (f'<div class="clear-spins-message" style="margin: 10px 0; padding: 8px; background-color: #e0ffe0; border: 1px solid #d3d3d3; border-radius: 5px; text-align: center; font-family: Arial, sans-serif; font-size: 12px; color: #2e7d32;">Spins cleared successfully!</div>',))[1],
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display, clear_spins_message]  # Removed betting_sections_display
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display, clear_spins_message]
         )
-    except Exception as e:  # Line 3: End of event handler
+    except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
     
     try:
@@ -6088,7 +6105,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=clear_outputs,
