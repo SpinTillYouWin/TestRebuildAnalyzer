@@ -73,7 +73,118 @@ def update_scores_batch(spins):
         action_log.append(action)
     return action_log
 
-    
+from datetime import datetime  # For timestamping user actions
+
+def chatbot_response(user_input, chat_history, state):
+    """Process user input, generate response based on app state, and update chat history."""
+    if not user_input or not user_input.strip():
+        response = "Oops, looks like you didn't ask anything! 😊 Try asking about 'hot bets,' 'strategies,' or your 'bankroll.'"
+        chat_history.append({"user": user_input, "assistant": response})
+        return chat_history, f"<p><b>You:</b> {user_input}<br><b>Bot:</b> {response}</p>"
+
+    user_input = user_input.lower().strip()
+    response = "Let’s dive into that! 🕵️ "
+
+    # Keyword-to-intent mapping
+    keyword_intents = {
+        "double streets|6 lines|six lines": {
+            "data": "six_line_scores",
+            "response": "The hottest double street is <b>{top_six_line}</b> with <b>{hits}</b> hits (numbers {numbers}). Bet there for a 5:1 payout. Want to set up a progression? 💰"
+        },
+        "hot|best|strongest": {
+            "modifier": "max",
+            "response": "Hottest {category}: <b>{top_item}</b> (hits: {hits})."
+        },
+        "martingale|fibonacci|victory vortex": {
+            "data": "strategy",
+            "response": "{strategy_details} Want to apply it in the Betting Progression tab?"
+        },
+        "bankroll|money": {
+            "data": "bankroll",
+            "response": "Your bankroll is <b>${bankroll}</b>. Next bet: <b>${next_bet}</b> on <b>{bet_type}</b>. Need tips to optimize? 💰"
+        },
+        "left side|right side": {
+            "data": "side_scores",
+            "response": "The <b>{side}</b> has <b>{hits}</b> hits, {status} than the other side. Bet there? 🕵️"
+        }
+    }
+
+    # Strategy dictionary (simplified from April 16 chat)
+    strategy_dictionary = {
+        "Victory Vortex": {
+            "description": "Targets the hottest dozen with progressive betting.",
+            "category": "Dozen Strategies",
+            "youtube": "https://youtube.com/victory_vortex"
+        },
+        "Martingale": {
+            "description": "Doubles bet after a loss to recover losses.",
+            "category": "Progression",
+            "youtube": None
+        },
+        "Fibonacci": {
+            "description": "Uses Fibonacci sequence for bet sizing.",
+            "category": "Progression",
+            "youtube": None
+        }
+    }
+
+    # Process input
+    matched_intent = None
+    for pattern, intent in keyword_intents.items():
+        if any(keyword in user_input for keyword in pattern.split("|")):
+            matched_intent = intent
+            break
+
+    if matched_intent:
+        data_type = matched_intent["data"]
+        if data_type == "six_line_scores":
+            top_six_line = max(state.six_line_scores.items(), key=lambda x: x[1], default=("None", 0))
+            numbers = SIX_LINES.get(top_six_line[0], [])
+            response += matched_intent["response"].format(
+                top_six_line=top_six_line[0], hits=top_six_line[1], numbers=", ".join(map(str, numbers))
+            )
+        elif data_type == "bankroll":
+            response += matched_intent["response"].format(
+                bankroll=state.bankroll, next_bet=state.next_bet, bet_type=state.bet_type
+            )
+        elif data_type == "side_scores":
+            left_hits = state.side_scores["Left Side of Zero"]
+            right_hits = state.side_scores["Right Side of Zero"]
+            side = "Left Side of Zero" if "left" in user_input else "Right Side of Zero"
+            hits = left_hits if side == "Left Side of Zero" else right_hits
+            status = "hotter" if (left_hits > right_hits and side == "Left Side of Zero") or (right_hits > left_hits and side == "Right Side of Zero") else "cooler"
+            response += matched_intent["response"].format(side=side, hits=hits, status=status)
+        elif data_type == "strategy":
+            strategy_name = next((s for s in strategy_dictionary if s.lower() in user_input), None)
+            if strategy_name:
+                details = strategy_dictionary[strategy_name]["description"]
+                if state.user_actions and strategy_name.lower() in state.user_actions[-1].get("value", "").lower():
+                    response += f"You’re already exploring {strategy_name}! {details}"
+                else:
+                    response += f"{strategy_name}: {details}"
+            else:
+                response += "I see you’re curious about strategies! Try 'Victory Vortex' for hot dozens or 'Martingale' for progressive betting."
+    else:
+        # Check recent actions for context
+        if state.user_actions:
+            last_action = state.user_actions[-1]
+            if last_action["action"] == "select_strategy":
+                response += f"You selected <b>{last_action['value']}</b>. Want tips on using it with the current hot numbers like <b>{max(state.scores.items(), key=lambda x: x[1])[0]}</b>? 💰"
+            elif last_action["action"] in ["win", "lose"]:
+                outcome = last_action["action"]
+                response += f"Your last bet {outcome}! Your bankroll is now <b>${state.bankroll}</b>. Keep going with <b>{state.bet_type}</b> or try a new strategy? 💰"
+        else:
+            response = "I’m not sure what you mean. 😊 Ask about ‘hot double streets,’ ‘strategies,’ or your ‘bankroll’ to get Spin Logic Reactor insights!"
+
+    # Update chat history (limit to 5 entries)
+    chat_history.append({"user": user_input, "assistant": response})
+    if len(chat_history) > 5:
+        chat_history = chat_history[-5:]
+
+    # Format output for display
+    formatted_output = "".join(f"<p><b>You:</b> {entry['user']}<br><b>Bot:</b> {entry['assistant']}</p>" for entry in chat_history)
+    return chat_history, formatted_output
+
 def validate_roulette_data():
     """Validate that all required constants from roulette_data.py are present and correctly formatted."""
     required_dicts = {
@@ -131,6 +242,8 @@ class RouletteState:
         self.selected_numbers = set()
         self.last_spins = []
         self.spin_history = []  # Tracks each spin's effects for undoing
+        self.user_actions = []  # Tracks user interactions (e.g., strategy selections, bets)
+        self.chat_history = []  # Structured conversation history [{"user": str, "assistant": str}]
 
         # Casino data storage
         self.casino_data = {
@@ -7383,18 +7496,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in video_dropdown.change handler: {str(e)}")
     
     try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
-    
-    try:
         chatbot_input.submit(
             fn=chatbot_response,
-            inputs=[chatbot_input, chat_history],
+            inputs=[chatbot_input, chat_history, gr.State(value=state)],
             outputs=[chat_history, chatbot_output]
         ).then(
             fn=lambda: "",  # Clear the input box after submission
@@ -7412,9 +7516,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_chat_button.click handler: {str(e)}")
-
-    # --- NEW CODE END (Updated) ---
-
+    
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -7432,7 +7534,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -7458,7 +7560,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=clear_outputs,
@@ -7553,7 +7655,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         strategy_dropdown.change(
-            fn=toggle_neighbours_slider,
+            fn=lambda strategy: (state.user_actions.append({"action": "select_strategy", "value": strategy, "timestamp": datetime.now()}), toggle_neighbours_slider(strategy))[-1],
             inputs=[strategy_dropdown],
             outputs=[neighbours_count_slider, strong_numbers_count_slider]
         ).then(
@@ -7576,7 +7678,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -7640,7 +7742,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -7708,7 +7810,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -7820,7 +7922,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
     
-    # Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
@@ -7922,7 +8023,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
     
-    # Even Money Tracker Event Handlers
     try:
         even_money_tracker_spins_dropdown.change(
             fn=even_money_tracker,
@@ -8143,12 +8243,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in even_money_tracker_alert_checkbox.change handler: {str(e)}")
     
-    # Casino data event handlers
-    inputs_list = [
-        spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
-        low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
-        col1_percent, col2_percent, col3_percent, use_winners_checkbox
-    ]
     try:
         spins_count_dropdown.change(
             fn=update_casino_data,
@@ -8299,7 +8393,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
     
-    # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
@@ -8404,7 +8497,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         win_button.click(
-            fn=lambda: state.update_progression(True),
+            fn=lambda: (state.user_actions.append({"action": "win", "value": state.bet_type, "timestamp": datetime.now()}), state.update_progression(True))[-1],
             inputs=[],
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
@@ -8413,7 +8506,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         lose_button.click(
-            fn=lambda: state.update_progression(False),
+            fn=lambda: (state.user_actions.append({"action": "lose", "value": state.bet_type, "timestamp": datetime.now()}), state.update_progression(False))[-1],
             inputs=[],
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
@@ -8429,53 +8522,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
     
-    # Video Category and Video Selection Event Handlers
-    def update_video_dropdown(category):
-        videos = video_categories.get(category, [])
-        choices = [video["title"] for video in videos]
-        default_value = choices[0] if choices else None
-        return (
-            gr.update(choices=choices, value=default_value),
-            gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
-        )
-    
-    def update_video_display(video_title, category):
-        videos = video_categories.get(category, [])
-        selected_video = next((video for video in videos if video["title"] == video_title), None)
-        if selected_video:
-            video_id = selected_video["link"].split("/")[-1]
-            return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
-        return "<p>Please select a video to watch.</p>"
-    
-    try:
-        video_category_dropdown.change(
-            fn=update_video_dropdown,
-            inputs=[video_category_dropdown],
-            outputs=[video_dropdown, video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_category_dropdown.change handler: {str(e)}")
-    
-    try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
-
-    try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
-
-
-# Launch the interface
-print("Starting Gradio launch...")
-demo.launch()
-print("Gradio launch completed.")
+    # Launch the interface
+    print("Starting Gradio launch...")
+    demo.launch()
+    print("Gradio launch completed.")
