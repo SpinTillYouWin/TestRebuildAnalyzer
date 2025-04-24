@@ -87,9 +87,9 @@ def chatbot_response(user_input, chat_history, state):
 
     # Keyword-to-intent mapping
     keyword_intents = {
-        "double streets|6 lines|six lines": {
+        "streets|double streets|6 lines|six lines": {
             "data": "six_line_scores",
-            "response": "The hottest double street is <b>{top_six_line}</b> with <b>{hits}</b> hits (numbers {numbers}). Bet there for a 5:1 payout. Want to set up a progression? 💰"
+            "response": "The hottest street is <b>{top_six_line}</b> with <b>{hits}</b> hits (numbers {numbers}). Bet there for a 5:1 payout. Want to set up a progression? 💰"
         },
         "hot|best|strongest": {
             "modifier": "max",
@@ -7497,9 +7497,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         chatbot_input.submit(
-            fn=chatbot_response,
-            inputs=[chatbot_input, chat_history, gr.State(value=state)],
-            outputs=[chat_history, chatbot_output]
+            fn=lambda user_input, chat_hist: chatbot_response(user_input, chat_hist, state),
+            inputs=[chatbot_input, chat_history],
+            outputs=[chat_history, chatbot_output],
+            _js="() => { console.log('Chatbot input submitted:', document.querySelector('[data-testid=\"chatbot-input\"]').value); return [document.querySelector('[data-testid=\"chatbot-input\"]').value, window.chatHistory || []]; }"
         ).then(
             fn=lambda: "",  # Clear the input box after submission
             inputs=[],
@@ -7507,6 +7508,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in chatbot_input.submit handler: {str(e)}")
+        print(f"Input: {locals().get('user_input', 'unknown')}")
+        print(f"Chat history: {locals().get('chat_history', 'unknown')}")
+        import traceback
+        traceback.print_exc()
     
     try:
         clear_chat_button.click(
