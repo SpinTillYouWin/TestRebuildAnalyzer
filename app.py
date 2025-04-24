@@ -7499,8 +7499,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         chatbot_input.submit(
             fn=lambda user_input, chat_hist: chatbot_response(user_input, chat_hist, state),
             inputs=[chatbot_input, chat_history],
-            outputs=[chat_history, chatbot_output],
-            _js="() => { console.log('Chatbot input submitted:', document.querySelector('[data-testid=\"chatbot-input\"]').value); return [document.querySelector('[data-testid=\"chatbot-input\"]').value, window.chatHistory || []]; }"
+            outputs=[chat_history, chatbot_output]
         ).then(
             fn=lambda: "",  # Clear the input box after submission
             inputs=[],
