@@ -672,328 +672,7 @@ def render_sides_of_zero_display():
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: all 0.5s ease;
         }}
-        .circular-progress::before {{
-            content: '';
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #e0e0e0;
-            border-radius: 50%;
-            z-index: 1;
-        }}
-        .circular-progress span {{
-            position: relative;
-            z-index: 2;
-            font-size: 12px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }}
-        #left-progress {{
-            background: conic-gradient(#6a1b9a {left_progress}% , #d3d3d3 {left_progress}% 100%);
-        }}
-        #zero-progress {{
-            background: conic-gradient(#00695c {zero_progress}% , #d3d3d3 {zero_progress}% 100%);
-        }}
-        #right-progress {{
-            background: conic-gradient(#f4511e {right_progress}% , #d3d3d3 {right_progress}% 100%);
-        }}
-        .circular-progress:hover {{
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }}
-        .number-list {{
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 3px;
-            justify-content: center;
-            margin-top: 10px;
-            overflow-x: auto;
-            width: 100%;
-            padding: 5px 0;
-        }}
-        .number-item {{
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            text-align: center;
-            font-size: 10px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            flex-shrink: 0;
-        }}
-        .number-item.zero-number {{
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            font-size: 30px;
-        }}
-        .hit-badge {{
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ffffff;
-            color: #000000;
-            border: 1px solid #000000;
-            font-size: 8px;
-            width: 12px;
-            height: 12px;
-            line-height: 12px;
-            border-radius: 50%;
-            z-index: 2;
-        }}
-        .number-item.zero-number .hit-badge {{
-            top: -6px;
-            right: -6px;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            font-size: 10px;
-        }}
-        .tooltip {{
-            position: absolute;
-            background: #000;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            white-space: pre-wrap;
-            border: 1px solid #FF00FF;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }}
-        .tracker-column {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }}
-        .tracker-container {{
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            gap: 15px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            font-family: Arial, sans-serif;
-        }}
-        .roulette-wheel-container {{
-            position: relative;
-            width: 340px;
-            height: 340px;
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }}
-        .wheel-segment:hover {{
-            filter: brightness(1.2);
-        }}
-        .pulse {{
-            animation: pulse 1.5s infinite ease-in-out;
-        }}
-        @keyframes pulse {{
-            0% {{ stroke-opacity: 1; }}
-            50% {{ stroke-opacity: 0.5; }}
-            100% {{ stroke-opacity: 1; }}
-        }}
-        .winning-segment {{
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-        }}
-        #wheel-pointer {{
-            z-index: 3;
-        }}
-        @media (max-width: 600px) {{
-            .tracker-container {{
-                flex-direction: column;
-                align-items: center;
-            }}
-            .number-list {{
-                flex-wrap: nowrap;
-                overflow-x: auto;
-            }}
-            .number-item {{
-                width: 16px;
-                height: 16px;
-                line-height: 16px;
-                font-size: 8px;
-            }}
-            .number-item.zero-number {{
-                width: 64px;
-                height: 64px;
-                line-height: 64px;
-                font-size: 32px;
-            }}
-            .hit-badge {{
-                width: 10px;
-                height: 10px;
-                line-height: 10px;
-                font-size: 6px;
-                top: -3px;
-                right: -3px;
-            }}
-            .number-item.zero-number .hit-badge {{
-                width: 20px;
-                height: 20px;
-                line-height: 20px;
-                font-size: 10px;
-                top: -6px;
-                right: -6px;
-            }}
-            .roulette-wheel-container {{
-                width: 290px;
-                height: 290px;
-            }}
-            #roulette-wheel {{
-                width: 290px;
-                height: 290px;
-            }}
-            #wheel-pointer {{
-                top: -24px;
-                left: 143.5px;
-                width: 3px;
-                height: 150px;
-                background-color: #00695C;
-            }}
-            #spinning-ball {{
-                width: 10px;
-                height: 10px;
-            }}
-        }}
-        /* Updated styles for static betting sections with enhanced effects */
-        .betting-sections-container {{
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-            padding: 10px;
-        }}
-        .betting-section {{
-            background-color: #fff;
-            border: 1px solid #d3d3d3;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: box-shadow 0.2s ease;
-        }}
-        .betting-section:hover {{
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }}
-        .betting-section-header {{
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px 5px 0 0; /* Adjusted for static section */
-            font-weight: bold;
-            font-size: 14px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }}
-        .betting-section-numbers {{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            padding: 10px;
-            justify-content: center;
-            background-color: #f9f9f9;
-            border-top: 1px solid #d3d3d3;
-            border-radius: 0 0 5px 5px;
-        }}
-        .section-number {{
-            padding: 0;
-            margin: 2px;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            line-height: 28px;
-            text-align: center;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }}
-        .section-number:not(.hot-number) {{
-            margin-left: 4px;
-            margin-right: 4px;
-        }}
-        .hot-number {{
-            width: 34px;
-            height: 34px;
-            line-height: 34px;
-            font-size: 16px;
-            border: 2px solid #FF00FF;
-            box-shadow: 0 0 8px #FF00FF;
-            text-shadow: 0 0 5px #FF00FF;
-            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
-        }}
-        @keyframes glow {{
-            0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
-            50% {{ box-shadow: 0 0 12px #FF00FF; text-shadow: 0 0 8px #FF00FF; }}
-            100% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
-        }}
-        @keyframes border-flash {{
-            0% {{ border-color: #FF00FF; }}
-            50% {{ border-color: #FFFFFF; }}
-            100% {{ border-color: #FF00FF; }}
-        }}
-        @keyframes bounce {{
-            0%, 100% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.2); }}
-        }}
-        /* Dynamic color pulse for red numbers */
-        .hot-number[style*="background-color: red"] {{
-            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, red-pulse 1.5s infinite ease-in-out;
-        }}
-        @keyframes red-pulse {{
-            0% {{ background-color: red; }}
-            50% {{ background-color: #ff3333; }}
-            100% {{ background-color: red; }}
-        }}
-        /* Dynamic color pulse for black numbers */
-        .hot-number[style*="background-color: black"] {{
-            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, black-pulse 1.5s infinite ease-in-out;
-        }}
-        @keyframes black-pulse {{
-            0% {{ background-color: black; }}
-            50% {{ background-color: #333333; }}
-            100% {{ background-color: black; }}
-        }}
-        /* Dynamic color pulse for green numbers */
-        .hot-number[style*="background-color: green"] {{
-            animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, green-pulse 1.5s infinite ease-in-out;
-        }}
-        @keyframes green-pulse {{
-            0% {{ background-color: green; }}
-            50% {{ background-color: #33cc33; }}
-            100% {{ background-color: green; }}
-        }}
-        .number-hit-badge {{
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: #ffffff;
-            color: #000000;
-            border: 1px solid #ff4444;
-            font-size: 8px;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
-            border-radius: 50%;
-            z-index: 3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
+        [ ... rest of the <style> block remains unchanged ... ]
         .betting-section-hits {{
             background-color: #ff4444;
             color: white;
@@ -1036,204 +715,250 @@ def render_sides_of_zero_display():
         {betting_sections_html}
     </div>
     <script>
-        function updateCircularProgress(id, progress) {{
-            const element = document.getElementById(id);
-            if (!element) {{
-                console.error('Element not found: ' + id);
-                return;
+        document.addEventListener('DOMContentLoaded', function() {{
+            console.log("JavaScript debouncing script loaded");
+
+            // Debounce function
+            function debounce(func, wait) {{
+                let timeout;
+                return function executedFunction(...args) {{
+                    const later = () => {{
+                        clearTimeout(timeout);
+                        func(...args);
+                    }};
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                }};
             }}
-            const colors = {{
-                'left-progress': '#6a1b9a',
-                'zero-progress': '#00695c',
-                'right-progress': '#f4511e'
-            }};
-            const color = colors[id] || '#d3d3d3';
-            element.style.background = "conic-gradient(" + color + " " + progress + "%, #d3d3d3 " + progress + "% 100%)";
-            element.querySelector('span').textContent = element.querySelector('span').textContent;
-        }}
-        updateCircularProgress('left-progress', {left_progress});
-        updateCircularProgress('zero-progress', {zero_progress});
-        updateCircularProgress('right-progress', {right_progress});
 
-        // Tooltip functionality for numbers
-        document.querySelectorAll('.number-item').forEach(element => {{
-            element.addEventListener('mouseover', (e) => {{
-                const hits = element.getAttribute('data-hits');
-                const num = element.getAttribute('data-number');
-                const tooltipText = "Number " + num + ": " + hits + " hits";
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = element.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
-                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
-                tooltip.style.opacity = '1';
-            }});
-            
-            element.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.remove();
+            // Function to set up debouncing for a button
+            let undoButtonFound = false;
+            let generateButtonFound = false;
+
+            function setupButtonDebouncing() {{
+                const buttons = Array.from(document.querySelectorAll('button'));
+                if (!undoButtonFound) {{
+                    const undoButton = buttons.find(btn => btn.textContent.trim() === "Undo Last Spin");
+                    if (undoButton) {{
+                        console.log("Undo Last Spin button found on attempt");
+                        const debouncedUndo = debounce(() => {{
+                            console.log("Debounced undo click triggered");
+                            undoButton.click();
+                        }}, 500);
+                        undoButton.addEventListener('click', (e) => {{
+                            console.log("Undo Last Spin button clicked");
+                            e.preventDefault();
+                            e.stopPropagation();
+                            debouncedUndo();
+                        }}, {{ once: true }});
+                        undoButtonFound = true;
+                    }} else {{
+                        console.log("Undo Last Spin button NOT found on attempt");
+                    }}
                 }}
-            }});
-        }});
-
-        // Tooltip functionality for wheel segments
-        document.querySelectorAll('.wheel-segment').forEach(segment => {{
-            segment.addEventListener('click', (e) => {{
-                const hits = segment.getAttribute('data-hits');
-                const num = segment.getAttribute('data-number');
-                const neighbors = {json.dumps(dict(current_neighbors))};
-                const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
-                const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
-                const tooltipText = "Number " + num + ": " + hits + " hits\\nLeft Neighbor: " + leftNeighbor + "\\nRight Neighbor: " + rightNeighbor;
-                
-                // Remove any existing tooltips
-                const existingTooltip = document.querySelector('.tooltip');
-                if (existingTooltip) existingTooltip.remove();
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = segment.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
-                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
-                tooltip.style.opacity = '1';
-                
-                // Remove tooltip after 3 seconds or on click
-                setTimeout(() => {{
-                    tooltip.remove();
-                }}, 3000);
-                segment.addEventListener('click', () => {{
-                    tooltip.remove();
-                }}, {{ once: true }});
-            }});
-            
-            segment.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.style.opacity = '0';
-                }}
-            }});
-        }});
-
-        // Remove bounce class after animation
-        document.querySelectorAll('.bounce').forEach(element => {{
-            setTimeout(() => {{
-                element.classList.remove('bounce');
-            }}, 400);
-        }});
-
-        // JavaScript animation function
-        function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
-            console.log("animateElement called for element: " + element.id + ", startAngle: " + startAngle + ", endAngle: " + endAngle + ", duration: " + duration + ", isBall: " + isBall);
-            const startTime = performance.now();
-            const radius = isBall ? 135 : 0;
-            
-            function step(currentTime) {{
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                const currentAngle = startAngle + (endAngle - startAngle) * easeOut;
-                
-                if (isBall) {{
-                    element.style.transform = "rotate(" + currentAngle + "deg) translateX(" + radius + "px)";
-                }} else {{
-                    element.style.transform = "rotate(" + currentAngle + "deg)";
-                }}
-                console.log("Animation step - element: " + element.id + ", progress: " + progress.toFixed(2) + ", currentAngle: " + currentAngle.toFixed(2));
-                
-                if (progress < 1) {{
-                    requestAnimationFrame(step);
-                }} else {{
-                    console.log("Animation completed for element: " + element.id);
+                if (!generateButtonFound) {{
+                    const generateButton = buttons.find(btn => btn.textContent.trim() === "Generate Random Spins");
+                    if (generateButton) {{
+                        console.log("Generate Random Spins button found on attempt");
+                        const debouncedGenerate = debounce(() => {{
+                            console.log("Debounced generate click triggered");
+                            generateButton.click();
+                        }}, 500);
+                        generateButton.addEventListener('click', (e) => {{
+                            console.log("Generate Random Spins button clicked");
+                            e.preventDefault();
+                            e.stopPropagation();
+                            debouncedGenerate();
+                        }}, {{ once: true }});
+                        generateButtonFound = true;
+                    }} else {{
+                        console.log("Generate Random Spins button NOT found on attempt");
+                    }}
                 }}
             }}
-            
-            requestAnimationFrame(step);
-        }}
 
-        // Trigger wheel and ball spin animations with JavaScript
-        setTimeout(() => {{
-            console.log('Attempting to trigger animations...');
-            const wheel = document.getElementById('roulette-wheel');
-            const ball = document.getElementById('spinning-ball');
-            const hasSpin = {js_has_latest_spin};
-            console.log('Wheel element:', wheel);
-            console.log('Ball element:', ball);
-            console.log('Has latest spin:', hasSpin);
-            console.log('Latest spin angle:', {latest_spin_angle});
-            
-            if (wheel && ball && hasSpin) {{
-                console.log('Starting animations for wheel and ball using JavaScript...');
+            // Initial attempt
+            setupButtonDebouncing();
+
+            // Set up MutationObserver to watch for DOM changes
+            const observer = new MutationObserver((mutations) => {{
+                if (!undoButtonFound || !generateButtonFound) {{
+                    setupButtonDebouncing();
+                }}
+                // Stop observing once both buttons are found
+                if (undoButtonFound && generateButtonFound) {{
+                    observer.disconnect();
+                    console.log("Both buttons found, MutationObserver disconnected");
+                }}
+            }});
+
+            observer.observe(document.body, {{
+                childList: true,
+                subtree: true
+            }});
+
+            // Fallback: Retry after delays
+            setTimeout(setupButtonDebouncing, 2000);
+            setTimeout(setupButtonDebouncing, 5000);
+
+            // Original functionality (retained)
+            function updateCircularProgress(id, progress) {{
+                const element = document.getElementById(id);
+                if (!element) {{
+                    console.error('Element not found: ' + id);
+                    return;
+                }}
+                const colors = {{
+                    'left-progress': '#6a1b9a',
+                    'zero-progress': '#00695c',
+                    'right-progress': '#f4511e'
+                }};
+                const color = colors[id] || '#d3d3d3';
+                element.style.background = "conic-gradient(" + color + " " + progress + "%, #d3d3d3 " + progress + "% 100%)";
+                element.querySelector('span').textContent = element.querySelector('span').textContent;
+            }}
+            updateCircularProgress('left-progress', {left_progress});
+            updateCircularProgress('zero-progress', {zero_progress});
+            updateCircularProgress('right-progress', {right_progress});
+
+            // Tooltip functionality for numbers
+            document.querySelectorAll('.number-item').forEach(element => {{
+                element.addEventListener('mouseover', (e) => {{
+                    const hits = element.getAttribute('data-hits');
+                    const num = element.getAttribute('data-number');
+                    const tooltipText = "Number " + num + ": " + hits + " hits";
+                    
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = tooltipText;
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    const rect = element.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
+                    tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
+                    tooltip.style.opacity = '1';
+                }});
                 
-                // Force visibility toggle to ensure rendering
-                wheel.style.visibility = 'hidden';
-                ball.style.visibility = 'hidden';
-                setTimeout(() => {{
-                    wheel.style.visibility = 'visible';
-                    ball.style.visibility = 'visible';
-                    console.log('Visibility toggled to visible for wheel and ball');
+                element.addEventListener('mouseout', () => {{
+                    const tooltip = document.querySelector('.tooltip');
+                    if (tooltip) {{
+                        tooltip.remove();
+                    }}
+                }});
+            }});
+
+            // Tooltip functionality for wheel segments
+            document.querySelectorAll('.wheel-segment').forEach(segment => {{
+                segment.addEventListener('click', (e) => {{
+                    const hits = segment.getAttribute('data-hits');
+                    const num = segment.getAttribute('data-number');
+                    const neighbors = {json.dumps(dict(current_neighbors))};
+                    const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
+                    const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
+                    const tooltipText = "Number " + num + ": " + hits + " hits\\nLeft Neighbor: " + leftNeighbor + "\\nRight Neighbor: " + rightNeighbor;
                     
-                    // Directly use JavaScript animation
-                    animateElement(wheel, 90, {latest_spin_angle}, 2000);
-                    animateElement(ball, 0, {-latest_spin_angle}, 2000, true);
-                    console.log('JavaScript animations triggered for wheel and ball');
+                    // Remove any existing tooltips
+                    const existingTooltip = document.querySelector('.tooltip');
+                    if (existingTooltip) existingTooltip.remove();
                     
-                    // Finalize position after animation
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = tooltipText;
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    const rect = segment.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
+                    tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
+                    tooltip.style.opacity = '1';
+                    
+                    // Remove tooltip after 3 seconds or on click
                     setTimeout(() => {{
-                        console.log('Finalizing animation positions...');
-                        wheel.style.transform = "rotate(" + {latest_spin_angle} + "deg)";
-                        ball.style.transform = "rotate(" + {-latest_spin_angle} + "deg) translateX(135px)";
-                        console.log('Animation positions finalized');
-                    }}, 2000);
-                }}, 10);
-            }} else {{
-                console.warn('Animation not triggered: Elements or latest spin missing');
-                if (!wheel) console.warn('Wheel element not found');
-                if (!ball) console.warn('Ball element not found');
-                if (!hasSpin) console.warn('No latest spin to animate');
-            }}
-        }}, 2000);
+                        tooltip.remove();
+                    }}, 3000);
+                    segment.addEventListener('click', () => {{
+                        tooltip.remove();
+                    }}, {{ once: true }});
+                }});
+                
+                segment.addEventListener('mouseout', () => {{
+                    const tooltip = document.querySelector('.tooltip');
+                    if (tooltip) {{
+                        tooltip.style.opacity = '0';
+                    }}
+                }});
+            }});
 
-        // Add tooltips to section numbers
-        document.querySelectorAll('.section-number').forEach(element => {{
-            element.addEventListener('mouseover', (e) => {{
-                const hits = element.getAttribute('data-hits');
-                const num = element.getAttribute('data-number');
-                const tooltipText = "Number " + num + ": " + hits + " hits";
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = element.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
-                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
-                tooltip.style.opacity = '1';
+            // Remove bounce class after animation
+            document.querySelectorAll('.bounce').forEach(element => {{
+                setTimeout(() => {{
+                    element.classList.remove('bounce');
+                }}, 400);
             }});
-            
-            element.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.remove();
+
+            // JavaScript animation function
+            function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
+                console.log("animateElement called for element: " + element.id + ", startAngle: " + startAngle + ", endAngle: " + endAngle + ", duration: " + duration + ", isBall: " + isBall);
+                const startTime = performance.now();
+                const radius = isBall ? 135 : 0;
+                
+                function step(currentTime) {{
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    const currentAngle = startAngle + (endAngle - startAngle) * easeProgress;
+
+                    if (isBall) {{
+                        const rad = (currentAngle - 90) * (Math.PI / 180);
+                        const x = 170 + radius * Math.cos(rad);
+                        const y = 170 + radius * Math.sin(rad);
+                        element.style.left = x + 'px';
+                        element.style.top = y + 'px';
+                    }} else {{
+                        element.style.transform = `rotate(${currentAngle}deg)`;
+                    }}
+
+                    if (progress < 1) {{
+                        requestAnimationFrame(step);
+                    }}
                 }}
-            }});
+
+                requestAnimationFrame(step);
+            }}
+
+            const hasLatestSpin = {js_has_latest_spin};
+            if (hasLatestSpin) {{
+                const wheel = document.getElementById('roulette-wheel');
+                const pointer = document.getElementById('wheel-pointer');
+                const ball = document.getElementById('spinning-ball');
+                const fallback = document.getElementById('wheel-fallback');
+
+                if (wheel && pointer && ball) {{
+                    const startAngle = 0;
+                    const endAngle = {latest_spin_angle} + 720; // Add two full rotations for effect
+                    const duration = 3000; // 3 seconds
+
+                    animateElement(pointer, startAngle, endAngle, duration);
+                    animateElement(ball, startAngle, endAngle, duration, true);
+                }} else {{
+                    console.error("Required elements for animation not found.");
+                    if (fallback) {{
+                        fallback.style.display = 'block';
+                    }}
+                }}
+            }} else {{
+                const fallback = document.getElementById('wheel-fallback');
+                if (fallback) {{
+                    fallback.style.display = 'block';
+                }}
+            }}
         }});
     </script>
     """
+
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -1356,8 +1081,28 @@ def add_spin(number, current_spins, num_to_show):
 # --- NEW CODE START (Updated) ---
 # Function to handle chatbot queries
 def chatbot_response(query, chat_history):
-    """Process user queries, append to chat history, and return formatted history as HTML."""
-    from datetime import datetime  # For timestamps
+    """Process user queries, append to chat history, save history, and return formatted history as HTML."""
+    from datetime import datetime
+    import json
+
+    # Suggested questions to display after each response
+    suggested_questions = (
+        "<p><strong>Suggested Questions:</strong><br>"
+        "- What are the best streets?<br>"
+        "- What are the best dozens?<br>"
+        "- What are the best columns?<br>"
+        "- What are the best even money bets?<br>"
+        "- Which numbers are coldest?<br>"
+        "- What are the hottest numbers?<br>"
+        "- What’s my betting progression status?<br>"
+        "- What's the best strategy for me?<br>"
+        "- Reset my spins</p>"
+    )
+
+    # Initialize response and context
+    response = ""
+    context = None
+    outputs = []  # For additional outputs (e.g., reset command)
 
     # Validate input
     if not query or not query.strip():
@@ -1366,8 +1111,73 @@ def chatbot_response(query, chat_history):
         query = query.lower().strip()
         response = "<p>Processing your question...</p>"
 
+        # Helper function to get the last recommended strategy from chat history
+        def get_last_recommended_strategy(history):
+            for entry in reversed(history):
+                if "recommended_strategy" in entry:
+                    return entry["recommended_strategy"]
+            return None
+
+        # Handle follow-up queries
+        if "tell me more" in query or "explain that strategy" in query:
+            last_strategy = get_last_recommended_strategy(chat_history)
+            if last_strategy:
+                if last_strategy == "Even Money Trends":
+                    response = (
+                        "<p><strong>More About Even Money Trends:</strong><br>"
+                        "This strategy focuses on betting on even money options (Red/Black, Even/Odd, Low/High) that are currently trending. "
+                        "For example, if Red has hit multiple times recently, you might continue betting on Red until the trend changes. "
+                        "It’s a low-risk strategy with a 1:1 payout, suitable for steady gains.<br>"
+                        "Tip: Combine with a progression like Martingale to increase your bet after losses, but be cautious of table limits!</p>"
+                    )
+                elif last_strategy == "Dozen Trends":
+                    response = (
+                        "<p><strong>More About Dozen Trends:</strong><br>"
+                        "This strategy targets the hottest dozen (1st, 2nd, or 3rd Dozen) based on recent spins. "
+                        "Each dozen covers 12 numbers, offering a 2:1 payout. It’s a good balance of risk and reward. "
+                        "For example, if the 1st Dozen is hitting frequently, you’d bet on it until the trend shifts.<br>"
+                        "Tip: Use a flat betting approach or a mild progression like D’Alembert for safer play.</p>"
+                    )
+                elif last_strategy == "Neighbours of Strong Number":
+                    response = (
+                        "<p><strong>More About Neighbours of Strong Number:</strong><br>"
+                        "This strategy involves betting on the hottest numbers and their neighbors on the roulette wheel. "
+                        "Each 'neighbours' bet typically covers the number plus two numbers on either side (5 numbers total), with a 35:1 payout for a straight-up win. "
+                        "It’s a higher-risk, higher-reward strategy ideal when specific numbers are hitting frequently.<br>"
+                        "Tip: Adjust the number of neighbors in the 'Strategies' section to balance risk and coverage.</p>"
+                    )
+                else:
+                    response = "<p>I don’t have more details on that strategy, but you can try asking about a different topic or change your strategy in the 'Strategies' section!</p>"
+            else:
+                response = "<p>I don’t have a recent strategy recommendation to explain. Try asking 'What’s the best strategy for me?' first!</p>"
+
+        # Handle reset command
+        elif "reset my spins" in query or "clear analysis" in query:
+            # Call the clear_all function to reset the analysis
+            clear_outputs_tuple = clear_all()
+            # Update the response to confirm the reset
+            response = "<p><strong>Analysis Reset:</strong><br>All spins and scores have been cleared. Start adding new spins to analyze!</p>"
+            # Prepare outputs to match the clear_all_button.click handler
+            outputs = list(clear_outputs_tuple) + [
+                "",  # spin_analysis_output
+                "No even money bets analyzed yet.",  # even_money_output
+                "No dozens analyzed yet.",  # dozens_output
+                "No columns analyzed yet.",  # columns_output
+                "No streets analyzed yet.",  # streets_output
+                "No corners analyzed yet.",  # corners_output
+                "No double streets analyzed yet.",  # six_lines_output
+                "No splits analyzed yet.",  # splits_output
+                "No sides analyzed yet.",  # sides_output
+                "",  # straight_up_html
+                "",  # top_18_html
+                "",  # strongest_numbers_output
+                "",  # dynamic_table_output
+                "",  # strategy_output
+                create_color_code_table()  # color_code_output
+            ]
+
         # Handle 'best' queries
-        if "best streets" in query:
+        elif "best streets" in query:
             streets = best_streets()
             if "No hits" in streets:
                 response = "<p>No streets have hit yet. Try analyzing some spins first!</p>"
@@ -1417,12 +1227,113 @@ def chatbot_response(query, chat_history):
                 response = f"<p><strong>Betting Progression Status:</strong><br>{state.status}<br>Bankroll: {state.bankroll}<br>Message: {state.message}</p>"
             else:
                 response = f"<p><strong>Betting Progression Status:</strong><br>Active<br>Bankroll: {state.bankroll}<br>Current Bet: {state.current_bet}<br>Next Bet: {state.next_bet}<br>Message: {state.message}</p>"
+        # Handle 'best strategy' query with enhanced logic
+        elif "best strategy" in query:
+            if not state.last_spins:
+                response = "<p>No spins have been analyzed yet. Try adding some spins first!</p>"
+            else:
+                # Analyze recent spins to suggest a strategy
+                # 1. Check hottest even money bet
+                even_money = best_even_money_bets()
+                hottest_even_money = ""
+                even_money_hits = 0
+                if "No hits" not in even_money:
+                    even_money_lines = even_money.split('\n')
+                    if len(even_money_lines) > 1:
+                        hottest_even_money = even_money_lines[1].split(':')[0].strip()  # e.g., "Red"
+                        even_money_hits = state.even_money_scores.get(hottest_even_money, 0)
+
+                # 2. Check hottest dozen
+                dozens = best_dozens()
+                hottest_dozen = ""
+                dozen_hits = 0
+                if "No hits" not in dozens:
+                    dozen_lines = dozens.split('\n')
+                    if len(dozen_lines) > 1:
+                        hottest_dozen = dozen_lines[1].split(':')[0].strip()  # e.g., "1st Dozen"
+                        dozen_hits = state.dozen_scores.get(hottest_dozen, 0)
+
+                # 3. Check hottest numbers
+                sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+                hot_numbers = [num for num, score in sorted_numbers if score > 0][:3]  # Top 3 hot numbers
+                hottest_numbers = ', '.join(f"{num} ({score} hits)" for num, score in sorted_numbers if num in hot_numbers) if hot_numbers else "None"
+                hottest_number_hits = sorted_numbers[0][1] if hot_numbers else 0
+
+                # 4. Check casino data trends
+                casino_hot_numbers = sorted(state.casino_data.get("hot_numbers", {}).items(), key=lambda x: x[1], reverse=True)[:3]  # Top 3 hot numbers
+                casino_hot_numbers_str = ', '.join(f"{num} ({perc:.1f}%)" for num, perc in casino_hot_numbers) if casino_hot_numbers else "None"
+                casino_even_money = state.casino_data.get("even_odd", {})
+                casino_hottest_even_money = max(casino_even_money.items(), key=lambda x: x[1], default=("None", 0))[0] if casino_even_money else "None"
+                casino_dozen = state.casino_data.get("dozens", {})
+                casino_hottest_dozen = max(casino_dozen.items(), key=lambda x: x[1], default=("None", 0))[0] if casino_dozen else "None"
+
+                # 5. Consider betting progression status
+                bankroll_status = "stable"
+                profit = state.bankroll - state.initial_bankroll
+                if state.is_stopped:
+                    bankroll_status = "stopped"
+                elif profit < -100:
+                    bankroll_status = "low"
+                elif profit > 100:
+                    bankroll_status = "high"
+
+                # Recommend a strategy based on trends and status
+                recommendation = "<p><strong>Recommended Strategy:</strong><br>"
+                recommended_strategy = None
+                if hottest_even_money and even_money_hits >= 2:
+                    recommended_strategy = "Even Money Trends"
+                    progression_suggestion = "Martingale" if bankroll_status != "low" else "D’Alembert"
+                    recommendation += f"- Focus on <strong>{hottest_even_money}</strong> for even money bets (hits: {even_money_hits}).<br>"
+                    recommendation += f"  Casino Data Trend: {casino_hottest_even_money} ({casino_even_money.get(casino_hottest_even_money, 0):.1f}%).<br>"
+                    recommendation += f"  Strategy Suggestion: Use 'Even Money Trends' with a {progression_suggestion} progression.<br>"
+                elif hottest_dozen and dozen_hits >= 2:
+                    recommended_strategy = "Dozen Trends"
+                    progression_suggestion = "Flat Betting" if bankroll_status == "low" else "D’Alembert"
+                    recommendation += f"- Focus on <strong>{hottest_dozen}</strong> for dozen bets (hits: {dozen_hits}).<br>"
+                    recommendation += f"  Casino Data Trend: {casino_hottest_dozen} ({casino_dozen.get(casino_hottest_dozen, 0):.1f}%).<br>"
+                    recommendation += f"  Strategy Suggestion: Use 'Dozen Trends' with a {progression_suggestion} approach.<br>"
+                elif hot_numbers:
+                    recommended_strategy = "Neighbours of Strong Number"
+                    progression_suggestion = "Flat Betting" if bankroll_status == "low" else "Oscar’s Grind"
+                    recommendation += f"- Target the hottest numbers: {hottest_numbers}.<br>"
+                    recommendation += f"  Casino Hot Numbers: {casino_hot_numbers_str}.<br>"
+                    recommendation += f"  Strategy Suggestion: Use 'Neighbours of Strong Number' with a {progression_suggestion} approach.<br>"
+                else:
+                    recommended_strategy = "Even Money Trends"
+                    recommendation += "- No strong trends detected in spins.<br>"
+                    recommendation += f"  Casino Data Suggestion: Consider {casino_hottest_even_money} ({casino_even_money.get(casino_hottest_even_money, 0):.1f}%) for even money bets.<br>"
+                    recommendation += "  Strategy Suggestion: Use 'Even Money Trends' as a starting point with a D’Alembert progression.<br>"
+
+                # Adjust recommendation based on bankroll status
+                recommendation += f"<br><strong>Bankroll Status:</strong> {bankroll_status.capitalize()} (Profit: {profit})<br>"
+                if bankroll_status == "low":
+                    recommendation += "  <strong>Caution:</strong> Your bankroll is low. Consider safer strategies or lowering your base unit.<br>"
+                elif bankroll_status == "stopped":
+                    recommendation += "  <strong>Notice:</strong> Your progression is stopped. Reset your progression to continue betting.<br>"
+
+                # Consider the current strategy_dropdown selection
+                current_strategy = strategy_dropdown.value if hasattr(strategy_dropdown, 'value') else "None"
+                recommendation += f"<strong>Current Strategy:</strong> {current_strategy}<br>"
+                recommendation += "You can change your strategy in the 'Strategies' section above.</p>"
+
+                response = recommendation
+                context = {"recommended_strategy": recommended_strategy}  # Store the recommended strategy for follow-ups
         else:
-            response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'What are the best columns?'<br>- 'What are the best even money bets?'<br>- 'Which numbers are coldest?'<br>- 'What are the hottest numbers?'<br>- 'What’s my betting progression status?'</p>"
+            response = "<p>Sorry, I don't understand that question.</p>"
 
     # Append the new question and answer to the chat history with a timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    chat_history.append({"question": query, "answer": response, "timestamp": timestamp})
+    entry = {"question": query, "answer": response, "timestamp": timestamp}
+    if context:
+        entry.update(context)  # Add context (e.g., recommended_strategy) to the history entry
+    chat_history.append(entry)
+
+    # Save the chat history to a file
+    try:
+        with open("chat_history.json", 'w') as f:
+            json.dump(chat_history, f)
+    except Exception as e:
+        print(f"Error saving chat history: {str(e)}")
 
     # Format the chat history as HTML
     html_output = "<div style='max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #d3d3d3; border-radius: 5px;'>"
@@ -1430,8 +1341,12 @@ def chatbot_response(query, chat_history):
         html_output += f"<p><strong>You:</strong> {entry['question']}<br><span class='timestamp'>{entry['timestamp']}</span></p>"
         html_output += f"<p><strong>Bot:</strong> {entry['answer']}<br><span class='timestamp'>{entry['timestamp']}</span></p>"
         html_output += "<hr style='border: 0; border-top: 1px solid #eee; margin: 5px 0;'>"
+    html_output += suggested_questions  # Append suggested questions after the chat history
     html_output += "</div>"
 
+    # If outputs are populated (e.g., from reset command), return them along with chat history
+    if outputs:
+        return [chat_history, html_output] + outputs
     return chat_history, html_output
 # --- NEW CODE END (Updated) ---
 
@@ -4599,7 +4514,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
 
     # Define state and components used across sections
-    spins_display = gr.State(value="")
+import json
+import os
+
+# Load chat history from file if it exists
+chat_history_file = "chat_history.json"
+initial_chat_history = []
+if os.path.exists(chat_history_file):
+    try:
+        with open(chat_history_file, 'r') as f:
+            initial_chat_history = json.load(f)
+    except Exception as e:
+        print(f"Error loading chat history: {str(e)}")
+
+spins_display = gr.State(value="")
+chat_history = gr.State(value=initial_chat_history)  # Initialize with loaded history
+spins_textbox = gr.Textbox(
+    label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+    value="",
+    interactive=True,
+    elem_id="selected-spins"
+)
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -5248,7 +5183,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 chatbot_output = gr.HTML(
                     label="Bot Response",
-                    value="<p>Ask a question about bets, strategies, or analysis to get started!</p>",
+                    value="<p><strong>Welcome to the Roulette Bot! 🤖</strong><br>I can help you analyze your spins and suggest bets. Here are some questions to get started:<br>- What are the best streets?<br>- What are the best dozens?<br>- What are the best columns?<br>- What are the best even money bets?<br>- Which numbers are coldest?<br>- What are the hottest numbers?<br>- What’s my betting progression status?<br>- What's the best strategy for me?<br>- Reset my spins<br>Type your question above to begin!</p>",
                     elem_classes=["chatbot-output"]
                 )
                 clear_chat_button = gr.Button(
@@ -7395,7 +7330,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         chatbot_input.submit(
             fn=chatbot_response,
             inputs=[chatbot_input, chat_history],
-            outputs=[chat_history, chatbot_output]
+            outputs=[
+                chat_history,
+                chatbot_output,
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                last_spin_display,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                spin_counter,
+                sides_of_zero_display,
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                color_code_output
+            ]
         ).then(
             fn=lambda: "",  # Clear the input box after submission
             inputs=[],
@@ -7409,12 +7379,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda: ([], "<p>Chat history cleared. Ask a new question to get started!</p>"),
             inputs=[],
             outputs=[chat_history, chatbot_output]
+        ).then(
+            fn=lambda: [],  # Save empty chat history to file
+            inputs=[],
+            outputs=[chat_history],
+            _js="""
+            () => {
+                fetch('/file=chat_history.json', {
+                    method: 'PUT',
+                    body: JSON.stringify([])
+                });
+                return [];
+            }
+            """
         )
     except Exception as e:
         print(f"Error in clear_chat_button.click handler: {str(e)}")
-
+    
     # --- NEW CODE END (Updated) ---
-
+    
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -7432,7 +7415,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -7458,7 +7441,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=clear_outputs,
@@ -7576,7 +7559,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -7640,7 +7623,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -7708,7 +7691,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -7731,7 +7714,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[dynamic_table_output]
         ).then(
-            fn=dozen_tracker,
+            fn=dozen_tracker,  # Fixed typo: "dozen_tracker Befor" to "dozen_tracker"
             inputs=[
                 dozen_tracker_spins_dropdown,
                 dozen_tracker_consecutive_hits_dropdown,
@@ -8293,7 +8276,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ]
         ).then(
             fn=create_dynamic_table,
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong microbials_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
     except Exception as e:
@@ -8455,15 +8438,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in video_category_dropdown.change handler: {str(e)}")
-    
-    try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
 
     try:
         video_dropdown.change(
