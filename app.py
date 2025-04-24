@@ -6114,9 +6114,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         )
+
+    # --- NEW CODE START (Updated) ---
+    try:
+        chatbot_input.submit(
+            fn=chatbot_response,
+            inputs=[chatbot_input],
+            outputs=[chatbot_output]
+        )
     except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
-    
+        print(f"Error in chatbot_input.submit handler: {str(e)}")
+    # --- NEW CODE END (Updated) ---
+
     try:
         spins_display.change(
             fn=update_spin_counter,
