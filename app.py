@@ -658,6 +658,7 @@ def render_sides_of_zero_display():
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
     # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
+
     return f"""
     <style>
         .circular-progress {{
@@ -910,7 +911,7 @@ def render_sides_of_zero_display():
                     const progress = Math.min(elapsed / duration, 1);
                     const easeProgress = 1 - Math.pow(1 - progress, 3);
                     const currentAngle = startAngle + (endAngle - startAngle) * easeProgress;
-
+            
                     if (isBall) {{
                         const rad = (currentAngle - 90) * (Math.PI / 180);
                         const x = 170 + radius * Math.cos(rad);
@@ -918,14 +919,14 @@ def render_sides_of_zero_display():
                         element.style.left = x + 'px';
                         element.style.top = y + 'px';
                     }} else {{
-                        element.style.transform = `rotate(${currentAngle}deg)`;
+                        element.style.transform = 'rotate(' + currentAngle + 'deg)';
                     }}
-
+            
                     if (progress < 1) {{
                         requestAnimationFrame(step);
                     }}
                 }}
-
+            
                 requestAnimationFrame(step);
             }}
 
