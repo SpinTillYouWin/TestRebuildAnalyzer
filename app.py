@@ -460,6 +460,57 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
+# Line 1: New render_hot_cold_bar function
+def render_hot_cold_bar():
+    """Render a bar showing the top 5 hot and bottom 5 cold numbers with tie handling."""
+    # Get all numbers and their scores
+    scores = state.scores
+    
+    # Sort for hot numbers (descending)
+    sorted_hot = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    hot_numbers = []
+    last_score = None
+    for num, hits in sorted_hot:
+        if len(hot_numbers) >= 5:
+            break
+        if last_score is not None and hits == last_score and len(hot_numbers) > 0:
+            # Tie detected, stop adding numbers
+            break
+        hot_numbers.append(num)
+        last_score = hits
+    
+    # Sort for cold numbers (ascending)
+    sorted_cold = sorted(scores.items(), key=lambda x: x[1])
+    cold_numbers = []
+    last_score = None
+    for num, hits in sorted_cold:
+        if len(cold_numbers) >= 5:
+            break
+        if last_score is not None and hits == last_score and len(cold_numbers) > 0:
+            # Tie detected, stop adding numbers
+            break
+        cold_numbers.append(num)
+        last_score = hits
+    
+    # Generate HTML for the bar
+    hot_display = " ".join(map(str, hot_numbers)) if hot_numbers else "Waiting for untied hot numbers…"
+    cold_display = " ".join(map(str, cold_numbers)) if cold_numbers else "Waiting for untied cold numbers…"
+    
+    html = '''
+    <div class="hot-cold-bar" style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between;">
+        <div class="hot-section" style="flex: 1; text-align: center;">
+            <span class="hot-icon" style="font-size: 16px; color: #ff4500; margin-right: 5px;">🔥</span>
+            <span style="font-weight: bold;">Hot Numbers:</span> <span>{}</span>
+        </div>
+        <div class="cold-section" style="flex: 1; text-align: center;">
+            <span class="cold-icon" style="font-size: 16px; color: #00b7eb; margin-right: 5px;">❄️</span>
+            <span style="font-weight: bold;">Cold Numbers:</span> <span>{}</span>
+        </div>
+    </div>
+    '''.format(hot_display, cold_display)
+    
+    return html
+
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -4487,6 +4538,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
         )
+
+# Line 1: New hot-cold bar component
+    hot_cold_bar = gr.HTML(
+        label="Hot and Cold Numbers",
+        value=render_hot_cold_bar(),
+        elem_classes=["hot-cold-bar"]
+    )
+
+# Line 2: Unchanged lines
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -4501,7 +4561,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    
+
+# Lines after (context)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -6013,7 +6074,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, hot_cold_bar  # Added hot_cold_bar
             ]
         ).then(
             fn=update_spin_counter,
@@ -6043,7 +6104,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-    
+
+# Lines after (context)
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -6205,7 +6267,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, hot_cold_bar  # Added hot_cold_bar
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
