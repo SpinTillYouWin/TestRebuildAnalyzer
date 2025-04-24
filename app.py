@@ -6281,7 +6281,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
+            outputs=[spins_display, last_spin_display, spin_counter, sides_of_zero_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -6292,7 +6292,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[
                 spins_display,
-                spins_textbox,
                 spin_analysis_output,
                 last_spin_display,
                 even_money_output,
@@ -6307,7 +6306,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=clear_outputs,
@@ -6348,7 +6347,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         generate_spins_button.click(
             fn=generate_random_spins,
             inputs=[gr.State(value="5"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
+            outputs=[spins_display, spin_analysis_output, spin_counter, sides_of_zero_display]
         ).then(
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
@@ -6463,7 +6462,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spins_display,
-                spins_textbox,
                 spin_analysis_output,
                 even_money_output,
                 dozens_output,
@@ -6477,7 +6475,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6539,7 +6537,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 straight_up_html,
                 top_18_html,
                 strongest_numbers_output,
-                spins_textbox,
                 spins_display,
                 dynamic_table_output,
                 strategy_output,
