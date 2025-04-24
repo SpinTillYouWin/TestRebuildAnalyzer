@@ -637,13 +637,13 @@ def render_sides_of_zero_display():
             hit_count = state.scores.get(num, 0)
             is_hot = hit_count >= 1  # Hot if hits >= 1
             is_cold = hit_count == 0  # Cold if hits == 0
-            class_name = "section-number"
+            class_name = f"section-number {num_color}"  # Use class for color instead of inline style
             if is_hot:
                 class_name += " hot-number hot-fire"  # Add fire effect for hot numbers
             elif is_cold:
                 class_name += " cold ice"  # Add ice effect for cold numbers
             badge = f'<span class="number-hit-badge">{hit_count}</span>' if hit_count > 0 else ''
-            numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
+            numbers_html.append(f'<span class="{class_name}" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
         # Create a static section instead of an accordion
@@ -912,6 +912,8 @@ def render_sides_of_zero_display():
             border-top: 1px solid #d3d3d3;
             border-radius: 0 0 5px 5px;
         }}
+        
+# Line 1: Updated section-number styles with color classes
         .section-number {{
             padding: 0;
             margin: 2px;
@@ -926,7 +928,19 @@ def render_sides_of_zero_display():
             justify-content: center;
             position: relative;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            color: white;
         }}
+        .section-number.red {{
+            background-color: red;
+        }}
+        .section-number.black {{
+            background-color: black;
+        }}
+        .section-number.green {{
+            background-color: green;
+        }}
+        
+# Line 2: Unchanged lines
         .section-number:not(.hot-number) {{
             margin-left: 4px;
             margin-right: 4px;
@@ -988,8 +1002,6 @@ def render_sides_of_zero_display():
             0% {{ box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00; }}
             100% {{ box-shadow: 0 0 15px #ff4500, 0 0 25px #ff8c00; }}
         }}
-        
-# Line 2: Updated ice effect
         /* Ice effect for cold numbers */
         .section-number.cold.ice {{
             background: linear-gradient(145deg, #87cefa, #00b7eb) !important;
