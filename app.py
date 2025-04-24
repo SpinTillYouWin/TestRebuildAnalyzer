@@ -6331,43 +6331,45 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         analyze_button.click(
-            fn=analyze_spins,
-            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            fn=orchestrate_analysis,
+            inputs=[
+                spins_display, reset_scores_checkbox, strategy_dropdown,
+                neighbours_count_slider, strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
+                even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox, even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown,
+                top_color_picker, middle_color_picker, lower_color_picker
+            ],
             outputs=[
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
-            ]
-        ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        ).then(
-            fn=create_color_code_table,
-            inputs=[],
-            outputs=[color_code_output]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
+                dynamic_table_output, strategy_output, sides_of_zero_display,
+                gr.State(), dozen_tracker_output, dozen_tracker_sequence_output,
+                gr.State(), even_money_tracker_output, color_code_output, analysis_cache
             ],
-            outputs=[gr.State(), even_money_tracker_output]
+            concurrency_limit=1,  # Limit to one execution at a time
+            _js="""
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            return debounce((...args) => args, 500);
+            """  # Debounce clicks by 500ms
         )
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
