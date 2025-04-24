@@ -4488,7 +4488,13 @@ def clear_last_spins_display():
 # ... (previous imports, function definitions, and state setup remain unchanged) ...
 
 # --- NEW CODE START (Updated) ---
-    # Temporary test for chatbot_response
+    # --- NEW CODE START (Updated) ---
+    # Placeholder function for toggle_labouchere to fix NameError
+    def toggle_labouchere(progression):
+        """Placeholder function for toggling Labouchere strategy. Returns the input for now."""
+        return progression
+
+    # Temporary test for chatbot_response (re-adding to ensure it’s present)
     print("Testing chatbot_response:")
     print(chatbot_response("best streets"))
     print(chatbot_response("best dozens"))
@@ -4497,7 +4503,7 @@ def clear_last_spins_display():
     print("End of chatbot_response test")
     # --- NEW CODE END (Updated) ---
 
-# Build the Gradio interface
+    # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
