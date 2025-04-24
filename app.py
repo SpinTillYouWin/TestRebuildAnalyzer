@@ -6059,12 +6059,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in spins_display.change handler: {str(e)}")
     
     try:
-        clear_spins_button.click(
-            fn=clear_spins,
+        clear_spins_button.click(  # Line 1: Start of event handler
+            fn=lambda: clear_spins() + (f'<div style="margin: 10px 0; padding: 8px; background-color: #e0ffe0; border: 1px solid #d3d3d3; border-radius: 5px; text-align: center; font-family: Arial, sans-serif; font-size: 12px; color: #2e7d32;">Spins cleared successfully!</div>',),
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display, clear_spins_message]  # Removed betting_sections_display
         )
-    except Exception as e:
+    except Exception as e:  # Line 3: End of event handler
         print(f"Error in clear_spins_button.click handler: {str(e)}")
     
     try:
