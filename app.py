@@ -4676,12 +4676,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             {
                 "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
                 "link": "https://youtu.be/UBajAwUXWS0"
+            },
+            {
+                "title": "Eighteen Strong Numbers with No Neighbours Strategy",
+                "link": "https://youtu.be/8Nmbi8KmY9c"
             }
         ],
         "Neighbours Strategies": [
             {
                 "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
                 "link": "https://youtu.be/UBajAwUXWS0"
+            },
+            {
+                "title": "Triad Spin Strategy: 87.53% (Modified Makarov-Biarritz)",
+                "link": "https://youtu.be/ADhCvxNiWVc"
             }
         ]
     }
