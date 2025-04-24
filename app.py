@@ -1351,6 +1351,8 @@ def add_spin(number, current_spins, num_to_show):
 # Function to handle chatbot queries
 def chatbot_response(query, chat_history):
     """Process user queries, append to chat history, and return formatted history as HTML."""
+    from datetime import datetime  # For timestamps
+
     # Validate input
     if not query or not query.strip():
         response = "<p>Please enter a valid question (e.g., 'What are the best streets?').</p>"
@@ -1373,7 +1375,21 @@ def chatbot_response(query, chat_history):
             else:
                 dozens = dozens.replace('\n', '<br>')
                 response = f"<p><strong>Best Dozens:</strong><br>{dozens}</p>"
-        # Handle 'coldest' queries
+        elif "best columns" in query:
+            columns = best_columns()
+            if "No hits" in columns:
+                response = "<p>No columns have hit yet. Try analyzing some spins first!</p>"
+            else:
+                columns = columns.replace('\n', '<br>')
+                response = f"<p><strong>Best Columns:</strong><br>{columns}</p>"
+        elif "best even money" in query:
+            even_money = best_even_money_bets()
+            if "No hits" in even_money:
+                response = "<p>No even money bets have hit yet. Try analyzing some spins first!</p>"
+            else:
+                even_money = even_money.replace('\n', '<br>')
+                response = f"<p><strong>Best Even Money Bets:</strong><br>{even_money}</p>"
+        # Handle 'coldest' and 'hot' queries
         elif "coldest numbers" in query:
             sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1])
             cold_numbers = [num for num, score in sorted_numbers if score == 0]
@@ -1381,17 +1397,32 @@ def chatbot_response(query, chat_history):
                 response = f"<p><strong>Coldest Numbers (No Hits):</strong><br>{', '.join(map(str, sorted(cold_numbers)))}</p>"
             else:
                 response = "<p>All numbers have hit at least once. Try analyzing more spins!</p>"
+        elif "hot numbers" in query or "hottest numbers" in query:
+            sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+            hot_numbers = [num for num, score in sorted_numbers if score > 0][:5]  # Top 5 hot numbers
+            if hot_numbers:
+                hot_numbers_str = ', '.join(f"{num} ({score} hits)" for num, score in sorted_numbers if num in hot_numbers)
+                response = f"<p><strong>Hottest Numbers (Top 5):</strong><br>{hot_numbers_str}</p>"
+            else:
+                response = "<p>No numbers have hit yet. Try analyzing some spins first!</p>"
+        # Handle betting progression status query
+        elif "betting progression status" in query or "progression status" in query:
+            if state.is_stopped:
+                response = f"<p><strong>Betting Progression Status:</strong><br>{state.status}<br>Bankroll: {state.bankroll}<br>Message: {state.message}</p>"
+            else:
+                response = f"<p><strong>Betting Progression Status:</strong><br>Active<br>Bankroll: {state.bankroll}<br>Current Bet: {state.current_bet}<br>Next Bet: {state.next_bet}<br>Message: {state.message}</p>"
         else:
-            response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'Which numbers are coldest?'</p>"
+            response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'What are the best columns?'<br>- 'What are the best even money bets?'<br>- 'Which numbers are coldest?'<br>- 'What are the hottest numbers?'<br>- 'What’s my betting progression status?'</p>"
 
-    # Append the new question and answer to the chat history
-    chat_history.append({"question": query, "answer": response})
+    # Append the new question and answer to the chat history with a timestamp
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    chat_history.append({"question": query, "answer": response, "timestamp": timestamp})
 
     # Format the chat history as HTML
     html_output = "<div style='max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #d3d3d3; border-radius: 5px;'>"
     for entry in chat_history:
-        html_output += f"<p><strong>You:</strong> {entry['question']}</p>"
-        html_output += f"<p><strong>Bot:</strong> {entry['answer']}</p>"
+        html_output += f"<p><strong>You:</strong> {entry['question']}<br><span class='timestamp'>{entry['timestamp']}</span></p>"
+        html_output += f"<p><strong>Bot:</strong> {entry['answer']}<br><span class='timestamp'>{entry['timestamp']}</span></p>"
         html_output += "<hr style='border: 0; border-top: 1px solid #eee; margin: 5px 0;'>"
     html_output += "</div>"
 
@@ -5188,6 +5219,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value="<p>Ask a question about bets, strategies, or analysis to get started!</p>",
                     elem_classes=["chatbot-output"]
                 )
+                clear_chat_button = gr.Button(
+                    "Clear Chat History",
+                    elem_classes=["action-button", "clear-chat-btn"]
+                )
     # --- NEW CODE END (Updated) ---
 
     # 12. Row 12: Feedback Section
@@ -5567,6 +5602,66 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* Chatbot Styling */
+        .chatbot-output {
+            background-color: #f9f9f9 !important;
+            border: 1px solid #d3d3d3 !important;
+            border-radius: 5px !important;
+            padding: 10px !important;
+        }
+        .chatbot-output p {
+            margin: 5px 0 !important;
+            padding: 8px 12px !important;
+            border-radius: 15px !important;
+            transition: background-color 0.2s ease !important;
+        }
+        .chatbot-output strong {
+            color: #333 !important;
+        }
+        .chatbot-output hr {
+            border: 0 !important;
+            border-top: 1px dashed #ccc !important;
+            margin: 10px 0 !important;
+        }
+        .chatbot-output div {
+            font-family: Arial, sans-serif !important;
+            font-size: 14px !important;
+        }
+        /* Chat bubble styling */
+        .chatbot-output p:nth-child(odd) { /* User messages */
+            background-color: #e3f2fd !important; /* Light blue */
+            border-radius: 15px 15px 15px 0 !important;
+            margin-right: 20% !important;
+            margin-left: 5px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        }
+        .chatbot-output p:nth-child(even) { /* Bot messages */
+            background-color: #f0f0f0 !important; /* Light gray */
+            border-radius: 15px 15px 0 15px !important;
+            margin-left: 20% !important;
+            margin-right: 5px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        }
+        .chatbot-output p:hover {
+            background-color: #e0e0e0 !important; /* Slightly darker on hover */
+        }
+        .timestamp {
+            font-size: 12px !important;
+            color: #777 !important;
+            margin-left: 10px !important;
+            display: block !important;
+        }
+        .clear-chat-btn {
+            background-color: #ff4444 !important;
+            color: white !important;
+            border: 1px solid #000 !important;
+            padding: 5px 10px !important;
+            margin-top: 10px !important;
+        }
+        .clear-chat-btn:hover {
+            background-color: #cc0000 !important;
         }
     
         /* Responsive Design */
@@ -6145,6 +6240,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in chatbot_input.submit handler: {str(e)}")
+
+    try:
+        clear_chat_button.click(
+            fn=lambda: ([], "<p>Chat history cleared. Ask a new question to get started!</p>"),
+            inputs=[],
+            outputs=[chat_history, chatbot_output]
+        )
+    except Exception as e:
+        print(f"Error in clear_chat_button.click handler: {str(e)}")
+
     # --- NEW CODE END (Updated) ---
 
     try:
