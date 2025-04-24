@@ -4513,7 +4513,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections
+# Define state and components used across sections
 import json
 import os
 
@@ -7335,7 +7335,6 @@ spins_textbox = gr.Textbox(
                 chat_history,
                 chatbot_output,
                 spins_display,
-                spins_textbox,
                 spin_analysis_output,
                 last_spin_display,
                 even_money_output,
@@ -7416,7 +7415,7 @@ spins_textbox = gr.Textbox(
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
+            outputs=[spins_display, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -7427,7 +7426,6 @@ spins_textbox = gr.Textbox(
             inputs=[],
             outputs=[
                 spins_display,
-                spins_textbox,
                 spin_analysis_output,
                 last_spin_display,
                 even_money_output,
@@ -7483,7 +7481,7 @@ spins_textbox = gr.Textbox(
         generate_spins_button.click(
             fn=generate_random_spins,
             inputs=[gr.State(value="5"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
+            outputs=[spins_display, spin_analysis_output, spin_counter, sides_of_zero_display]
         ).then(
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
@@ -7610,7 +7608,6 @@ spins_textbox = gr.Textbox(
             inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spins_display,
-                spins_textbox,
                 spin_analysis_output,
                 even_money_output,
                 dozens_output,
@@ -7686,7 +7683,6 @@ spins_textbox = gr.Textbox(
                 straight_up_html,
                 top_18_html,
                 strongest_numbers_output,
-                spins_textbox,
                 spins_display,
                 dynamic_table_output,
                 strategy_output,
@@ -7715,7 +7711,7 @@ spins_textbox = gr.Textbox(
             ],
             outputs=[dynamic_table_output]
         ).then(
-            fn=dozen_tracker,  # Fixed typo: "dozen_tracker Befor" to "dozen_tracker"
+            fn=dozen_tracker,
             inputs=[
                 dozen_tracker_spins_dropdown,
                 dozen_tracker_consecutive_hits_dropdown,
