@@ -2411,6 +2411,8 @@ def reset_scores():
     return "Scores reset!"
 
 def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
+    import time
+    print(f"undo_last_spin called at {time.strftime('%Y-%m-%d %H:%M:%S')}")
     if not state.spin_history:
         return ("No spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
 
@@ -2506,6 +2508,16 @@ def reset_strategy_dropdowns():
     return default_category, default_strategy, strategy_choices
 
 def generate_random_spins(num_spins, current_spins_display, last_spin_count):
+    import time
+    import random
+    # Debouncing: Ignore calls within 500ms of the last execution
+    current_time = time.time()
+    if hasattr(state, 'last_generate_time') and (current_time - state.last_generate_time) < 0.5:
+        print(f"generate_random_spins: Debounced call at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        return current_spins_display, current_spins_display, f"Action ignored (too frequent). Last generation: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(state.last_generate_time))}", update_spin_counter(), render_sides_of_zero_display()
+    state.last_generate_time = current_time
+    print(f"generate_random_spins called at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
     try:
         num_spins = int(num_spins)
         if num_spins <= 0:
@@ -2513,7 +2525,7 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
 
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
         # Update scores for the new spins
-        update_scores_batch(new_spins)
+        action_log = update_scores_batch(new_spins)
 
         if current_spins_display and current_spins_display.strip():
             current_spins = current_spins_display.split(", ")
@@ -2523,6 +2535,13 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
 
         # Update state.last_spins
         state.last_spins = updated_spins  # Replace the list entirely
+        # Update state.spin_history with the action log
+        for i, spin in enumerate(new_spins):
+            state.spin_history.append(action_log[i])
+            # Limit spin history to 100 spins
+            if len(state.spin_history) > 100:
+                state.spin_history.pop(0)
+
         spins_text = ", ".join(updated_spins)
         print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
         return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_sides_of_zero_display()
