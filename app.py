@@ -4573,19 +4573,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
         )
-# Line 1: New Bet Suggestion Panel component
-        with gr.Row():
-            bet_suggestion_panel = gr.HTML(
-                label="Bet Suggestions",
-                value=render_bet_suggestion_panel(),
-                elem_classes=["bet-suggestion-container"]
-            )
-            suggestion_mode_dropdown = gr.Dropdown(
-                choices=["Aggressive", "Balanced", "Conservative"],
-                value="Balanced",
-                label="Suggestion Mode",
-                elem_id="suggestion-mode-dropdown"
-            )
+
+# Line 1: Updated Bet Suggestion Panel component
+    with gr.Row():
+        bet_suggestion_panel = gr.HTML(
+            label="Bet Suggestions",
+            value=render_bet_suggestion_panel(),
+            elem_classes=["bet-suggestion-container"]
+        )
+        suggestion_mode_dropdown = gr.Dropdown(
+            choices=["Aggressive", "Balanced", "Conservative"],
+            value="Balanced",
+            label="Suggestion Mode",
+            interactive=True,  # Ensure dropdown is interactive
+            elem_id="suggestion-mode-dropdown"
+        )
 
 # Line 2: End of accordion
     last_spin_display = gr.HTML(
@@ -6251,6 +6253,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         if category == "None":
             return gr.update(choices=["None"], value="None")
         return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
+    # Line 1: New event handler for suggestion mode dropdown
+    try:
+        suggestion_mode_dropdown.change(
+            fn=render_bet_suggestion_panel,
+            inputs=[suggestion_mode_dropdown],
+            outputs=[bet_suggestion_panel]
+        )
+    except Exception as e:
+        print(f"Error in suggestion_mode_dropdown.change handler: {str(e)}")
     
     try:
         category_dropdown.change(
