@@ -4560,6 +4560,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
+    analysis_cache = gr.State(value={})  # New: Cache for analysis results
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
