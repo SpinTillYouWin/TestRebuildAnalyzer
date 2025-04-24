@@ -1356,8 +1356,28 @@ def add_spin(number, current_spins, num_to_show):
 # --- NEW CODE START (Updated) ---
 # Function to handle chatbot queries
 def chatbot_response(query, chat_history):
-    """Process user queries, append to chat history, and return formatted history as HTML."""
-    from datetime import datetime  # For timestamps
+    """Process user queries, append to chat history, save history, and return formatted history as HTML."""
+    from datetime import datetime
+    import json
+
+    # Suggested questions to display after each response
+    suggested_questions = (
+        "<p><strong>Suggested Questions:</strong><br>"
+        "- What are the best streets?<br>"
+        "- What are the best dozens?<br>"
+        "- What are the best columns?<br>"
+        "- What are the best even money bets?<br>"
+        "- Which numbers are coldest?<br>"
+        "- What are the hottest numbers?<br>"
+        "- What’s my betting progression status?<br>"
+        "- What's the best strategy for me?<br>"
+        "- Reset my spins</p>"
+    )
+
+    # Initialize response and context
+    response = ""
+    context = None
+    outputs = []  # For additional outputs (e.g., reset command)
 
     # Validate input
     if not query or not query.strip():
@@ -1366,8 +1386,73 @@ def chatbot_response(query, chat_history):
         query = query.lower().strip()
         response = "<p>Processing your question...</p>"
 
+        # Helper function to get the last recommended strategy from chat history
+        def get_last_recommended_strategy(history):
+            for entry in reversed(history):
+                if "recommended_strategy" in entry:
+                    return entry["recommended_strategy"]
+            return None
+
+        # Handle follow-up queries
+        if "tell me more" in query or "explain that strategy" in query:
+            last_strategy = get_last_recommended_strategy(chat_history)
+            if last_strategy:
+                if last_strategy == "Even Money Trends":
+                    response = (
+                        "<p><strong>More About Even Money Trends:</strong><br>"
+                        "This strategy focuses on betting on even money options (Red/Black, Even/Odd, Low/High) that are currently trending. "
+                        "For example, if Red has hit multiple times recently, you might continue betting on Red until the trend changes. "
+                        "It’s a low-risk strategy with a 1:1 payout, suitable for steady gains.<br>"
+                        "Tip: Combine with a progression like Martingale to increase your bet after losses, but be cautious of table limits!</p>"
+                    )
+                elif last_strategy == "Dozen Trends":
+                    response = (
+                        "<p><strong>More About Dozen Trends:</strong><br>"
+                        "This strategy targets the hottest dozen (1st, 2nd, or 3rd Dozen) based on recent spins. "
+                        "Each dozen covers 12 numbers, offering a 2:1 payout. It’s a good balance of risk and reward. "
+                        "For example, if the 1st Dozen is hitting frequently, you’d bet on it until the trend shifts.<br>"
+                        "Tip: Use a flat betting approach or a mild progression like D’Alembert for safer play.</p>"
+                    )
+                elif last_strategy == "Neighbours of Strong Number":
+                    response = (
+                        "<p><strong>More About Neighbours of Strong Number:</strong><br>"
+                        "This strategy involves betting on the hottest numbers and their neighbors on the roulette wheel. "
+                        "Each 'neighbours' bet typically covers the number plus two numbers on either side (5 numbers total), with a 35:1 payout for a straight-up win. "
+                        "It’s a higher-risk, higher-reward strategy ideal when specific numbers are hitting frequently.<br>"
+                        "Tip: Adjust the number of neighbors in the 'Strategies' section to balance risk and coverage.</p>"
+                    )
+                else:
+                    response = "<p>I don’t have more details on that strategy, but you can try asking about a different topic or change your strategy in the 'Strategies' section!</p>"
+            else:
+                response = "<p>I don’t have a recent strategy recommendation to explain. Try asking 'What’s the best strategy for me?' first!</p>"
+
+        # Handle reset command
+        elif "reset my spins" in query or "clear analysis" in query:
+            # Call the clear_all function to reset the analysis
+            clear_outputs_tuple = clear_all()
+            # Update the response to confirm the reset
+            response = "<p><strong>Analysis Reset:</strong><br>All spins and scores have been cleared. Start adding new spins to analyze!</p>"
+            # Prepare outputs to match the clear_all_button.click handler
+            outputs = list(clear_outputs_tuple) + [
+                "",  # spin_analysis_output
+                "No even money bets analyzed yet.",  # even_money_output
+                "No dozens analyzed yet.",  # dozens_output
+                "No columns analyzed yet.",  # columns_output
+                "No streets analyzed yet.",  # streets_output
+                "No corners analyzed yet.",  # corners_output
+                "No double streets analyzed yet.",  # six_lines_output
+                "No splits analyzed yet.",  # splits_output
+                "No sides analyzed yet.",  # sides_output
+                "",  # straight_up_html
+                "",  # top_18_html
+                "",  # strongest_numbers_output
+                "",  # dynamic_table_output
+                "",  # strategy_output
+                create_color_code_table()  # color_code_output
+            ]
+
         # Handle 'best' queries
-        if "best streets" in query:
+        elif "best streets" in query:
             streets = best_streets()
             if "No hits" in streets:
                 response = "<p>No streets have hit yet. Try analyzing some spins first!</p>"
@@ -1417,12 +1502,113 @@ def chatbot_response(query, chat_history):
                 response = f"<p><strong>Betting Progression Status:</strong><br>{state.status}<br>Bankroll: {state.bankroll}<br>Message: {state.message}</p>"
             else:
                 response = f"<p><strong>Betting Progression Status:</strong><br>Active<br>Bankroll: {state.bankroll}<br>Current Bet: {state.current_bet}<br>Next Bet: {state.next_bet}<br>Message: {state.message}</p>"
+        # Handle 'best strategy' query with enhanced logic
+        elif "best strategy" in query:
+            if not state.last_spins:
+                response = "<p>No spins have been analyzed yet. Try adding some spins first!</p>"
+            else:
+                # Analyze recent spins to suggest a strategy
+                # 1. Check hottest even money bet
+                even_money = best_even_money_bets()
+                hottest_even_money = ""
+                even_money_hits = 0
+                if "No hits" not in even_money:
+                    even_money_lines = even_money.split('\n')
+                    if len(even_money_lines) > 1:
+                        hottest_even_money = even_money_lines[1].split(':')[0].strip()  # e.g., "Red"
+                        even_money_hits = state.even_money_scores.get(hottest_even_money, 0)
+
+                # 2. Check hottest dozen
+                dozens = best_dozens()
+                hottest_dozen = ""
+                dozen_hits = 0
+                if "No hits" not in dozens:
+                    dozen_lines = dozens.split('\n')
+                    if len(dozen_lines) > 1:
+                        hottest_dozen = dozen_lines[1].split(':')[0].strip()  # e.g., "1st Dozen"
+                        dozen_hits = state.dozen_scores.get(hottest_dozen, 0)
+
+                # 3. Check hottest numbers
+                sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+                hot_numbers = [num for num, score in sorted_numbers if score > 0][:3]  # Top 3 hot numbers
+                hottest_numbers = ', '.join(f"{num} ({score} hits)" for num, score in sorted_numbers if num in hot_numbers) if hot_numbers else "None"
+                hottest_number_hits = sorted_numbers[0][1] if hot_numbers else 0
+
+                # 4. Check casino data trends
+                casino_hot_numbers = sorted(state.casino_data.get("hot_numbers", {}).items(), key=lambda x: x[1], reverse=True)[:3]  # Top 3 hot numbers
+                casino_hot_numbers_str = ', '.join(f"{num} ({perc:.1f}%)" for num, perc in casino_hot_numbers) if casino_hot_numbers else "None"
+                casino_even_money = state.casino_data.get("even_odd", {})
+                casino_hottest_even_money = max(casino_even_money.items(), key=lambda x: x[1], default=("None", 0))[0] if casino_even_money else "None"
+                casino_dozen = state.casino_data.get("dozens", {})
+                casino_hottest_dozen = max(casino_dozen.items(), key=lambda x: x[1], default=("None", 0))[0] if casino_dozen else "None"
+
+                # 5. Consider betting progression status
+                bankroll_status = "stable"
+                profit = state.bankroll - state.initial_bankroll
+                if state.is_stopped:
+                    bankroll_status = "stopped"
+                elif profit < -100:
+                    bankroll_status = "low"
+                elif profit > 100:
+                    bankroll_status = "high"
+
+                # Recommend a strategy based on trends and status
+                recommendation = "<p><strong>Recommended Strategy:</strong><br>"
+                recommended_strategy = None
+                if hottest_even_money and even_money_hits >= 2:
+                    recommended_strategy = "Even Money Trends"
+                    progression_suggestion = "Martingale" if bankroll_status != "low" else "D’Alembert"
+                    recommendation += f"- Focus on <strong>{hottest_even_money}</strong> for even money bets (hits: {even_money_hits}).<br>"
+                    recommendation += f"  Casino Data Trend: {casino_hottest_even_money} ({casino_even_money.get(casino_hottest_even_money, 0):.1f}%).<br>"
+                    recommendation += f"  Strategy Suggestion: Use 'Even Money Trends' with a {progression_suggestion} progression.<br>"
+                elif hottest_dozen and dozen_hits >= 2:
+                    recommended_strategy = "Dozen Trends"
+                    progression_suggestion = "Flat Betting" if bankroll_status == "low" else "D’Alembert"
+                    recommendation += f"- Focus on <strong>{hottest_dozen}</strong> for dozen bets (hits: {dozen_hits}).<br>"
+                    recommendation += f"  Casino Data Trend: {casino_hottest_dozen} ({casino_dozen.get(casino_hottest_dozen, 0):.1f}%).<br>"
+                    recommendation += f"  Strategy Suggestion: Use 'Dozen Trends' with a {progression_suggestion} approach.<br>"
+                elif hot_numbers:
+                    recommended_strategy = "Neighbours of Strong Number"
+                    progression_suggestion = "Flat Betting" if bankroll_status == "low" else "Oscar’s Grind"
+                    recommendation += f"- Target the hottest numbers: {hottest_numbers}.<br>"
+                    recommendation += f"  Casino Hot Numbers: {casino_hot_numbers_str}.<br>"
+                    recommendation += f"  Strategy Suggestion: Use 'Neighbours of Strong Number' with a {progression_suggestion} approach.<br>"
+                else:
+                    recommended_strategy = "Even Money Trends"
+                    recommendation += "- No strong trends detected in spins.<br>"
+                    recommendation += f"  Casino Data Suggestion: Consider {casino_hottest_even_money} ({casino_even_money.get(casino_hottest_even_money, 0):.1f}%) for even money bets.<br>"
+                    recommendation += "  Strategy Suggestion: Use 'Even Money Trends' as a starting point with a D’Alembert progression.<br>"
+
+                # Adjust recommendation based on bankroll status
+                recommendation += f"<br><strong>Bankroll Status:</strong> {bankroll_status.capitalize()} (Profit: {profit})<br>"
+                if bankroll_status == "low":
+                    recommendation += "  <strong>Caution:</strong> Your bankroll is low. Consider safer strategies or lowering your base unit.<br>"
+                elif bankroll_status == "stopped":
+                    recommendation += "  <strong>Notice:</strong> Your progression is stopped. Reset your progression to continue betting.<br>"
+
+                # Consider the current strategy_dropdown selection
+                current_strategy = strategy_dropdown.value if hasattr(strategy_dropdown, 'value') else "None"
+                recommendation += f"<strong>Current Strategy:</strong> {current_strategy}<br>"
+                recommendation += "You can change your strategy in the 'Strategies' section above.</p>"
+
+                response = recommendation
+                context = {"recommended_strategy": recommended_strategy}  # Store the recommended strategy for follow-ups
         else:
-            response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'What are the best columns?'<br>- 'What are the best even money bets?'<br>- 'Which numbers are coldest?'<br>- 'What are the hottest numbers?'<br>- 'What’s my betting progression status?'</p>"
+            response = "<p>Sorry, I don't understand that question.</p>"
 
     # Append the new question and answer to the chat history with a timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    chat_history.append({"question": query, "answer": response, "timestamp": timestamp})
+    entry = {"question": query, "answer": response, "timestamp": timestamp}
+    if context:
+        entry.update(context)  # Add context (e.g., recommended_strategy) to the history entry
+    chat_history.append(entry)
+
+    # Save the chat history to a file
+    try:
+        with open("chat_history.json", 'w') as f:
+            json.dump(chat_history, f)
+    except Exception as e:
+        print(f"Error saving chat history: {str(e)}")
 
     # Format the chat history as HTML
     html_output = "<div style='max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #d3d3d3; border-radius: 5px;'>"
@@ -1430,8 +1616,12 @@ def chatbot_response(query, chat_history):
         html_output += f"<p><strong>You:</strong> {entry['question']}<br><span class='timestamp'>{entry['timestamp']}</span></p>"
         html_output += f"<p><strong>Bot:</strong> {entry['answer']}<br><span class='timestamp'>{entry['timestamp']}</span></p>"
         html_output += "<hr style='border: 0; border-top: 1px solid #eee; margin: 5px 0;'>"
+    html_output += suggested_questions  # Append suggested questions after the chat history
     html_output += "</div>"
 
+    # If outputs are populated (e.g., from reset command), return them along with chat history
+    if outputs:
+        return [chat_history, html_output] + outputs
     return chat_history, html_output
 # --- NEW CODE END (Updated) ---
 
@@ -4599,7 +4789,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
 
     # Define state and components used across sections
+    import json
+    import os
+    
+    # Load chat history from file if it exists
+    chat_history_file = "chat_history.json"
+    initial_chat_history = []
+    if os.path.exists(chat_history_file):
+        try:
+            with open(chat_history_file, 'r') as f:
+                initial_chat_history = json.load(f)
+        except Exception as e:
+            print(f"Error loading chat history: {str(e)}")
+    
     spins_display = gr.State(value="")
+    chat_history = gr.State(value=initial_chat_history)  # Initialize with loaded history
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -5236,7 +5446,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
 
     # --- NEW CODE START (Updated) ---
-    # 11.1 Row 11.1: Chatbot Interface
+    # 11.1 Row 11.1: Chatbot Interface# 11.1 Row 11.1: Chatbot Interface
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Ask the Roulette Bot 🤖", open=False, elem_id="chatbot-section"):
@@ -5248,7 +5458,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 chatbot_output = gr.HTML(
                     label="Bot Response",
-                    value="<p>Ask a question about bets, strategies, or analysis to get started!</p>",
+                    value="<p><strong>Welcome to the Roulette Bot! 🤖</strong><br>I can help you analyze your spins and suggest bets. Here are some questions to get started:<br>- What are the best streets?<br>- What are the best dozens?<br>- What are the best columns?<br>- What are the best even money bets?<br>- Which numbers are coldest?<br>- What are the hottest numbers?<br>- What’s my betting progression status?<br>- What's the best strategy for me?<br>- Reset my spins<br>Type your question above to begin!</p>",
                     elem_classes=["chatbot-output"]
                 )
                 clear_chat_button = gr.Button(
@@ -7395,7 +7605,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         chatbot_input.submit(
             fn=chatbot_response,
             inputs=[chatbot_input, chat_history],
-            outputs=[chat_history, chatbot_output]
+            outputs=[
+                chat_history,
+                chatbot_output,
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                last_spin_display,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                spin_counter,
+                sides_of_zero_display,
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                color_code_output
+            ]
         ).then(
             fn=lambda: "",  # Clear the input box after submission
             inputs=[],
@@ -7409,6 +7654,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda: ([], "<p>Chat history cleared. Ask a new question to get started!</p>"),
             inputs=[],
             outputs=[chat_history, chatbot_output]
+        ).then(
+            fn=lambda: [],  # Save empty chat history to file
+            inputs=[],
+            outputs=[chat_history],
+            _js="""
+            () => {
+                fetch('/file=chat_history.json', {
+                    method: 'PUT',
+                    body: JSON.stringify([])
+                });
+                return [];
+            }
+            """
         )
     except Exception as e:
         print(f"Error in clear_chat_button.click handler: {str(e)}")
