@@ -4513,38 +4513,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-# Define state and components used across sections
-import json
-import os
-
-# Load chat history from file if it exists
-chat_history_file = "chat_history.json"
-initial_chat_history = []
-if os.path.exists(chat_history_file):
-    try:
-        with open(chat_history_file, 'r') as f:
-            initial_chat_history = json.load(f)
-    except Exception as e:
-        print(f"Error loading chat history: {str(e)}")
-
-spins_display = gr.State(value="")
-chat_history = gr.State(value=initial_chat_history)  # Initialize with loaded history
-    spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="selected-spins"
-    )
+    # Define state and components used across sections
+    import json
+    import os
+    
+    # Load chat history from file if it exists
+    chat_history_file = "chat_history.json"
+    initial_chat_history = []
+    if os.path.exists(chat_history_file):
+        try:
+            with open(chat_history_file, 'r') as f:
+                initial_chat_history = json.load(f)
+        except Exception as e:
+            print(f"Error loading chat history: {str(e)}")
+    
+    spins_display = gr.State(value="")
+    chat_history = gr.State(value=initial_chat_history)  # Initialize with loaded history
     spin_counter = gr.HTML(
         label="Total Spins",
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-
-    # --- NEW CODE START (Updated) ---
-    chat_history = gr.State(value=[])  # Initialize chat history as an empty list
-    # --- NEW CODE END (Updated) ---
-
+    
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
