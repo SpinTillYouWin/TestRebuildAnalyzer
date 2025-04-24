@@ -1316,10 +1316,15 @@ def add_spin(number, current_spins, num_to_show):
     action_log = update_scores_batch(valid_spins)
     print(f"add_spin: Time to update scores: {time.time() - start_time:.2f} seconds")
 
-    # Update state with new spins
+    # Update state with new spins, avoiding duplicates
     new_spins = spins.copy()
+    last_added_spin = state.last_spins[-1] if state.last_spins else None
     for num_str in valid_spins:
         num = int(num_str)
+        # Skip if this spin is the same as the last one (possible double-click)
+        if last_added_spin == str(num):
+            print(f"add_spin: Skipping duplicate spin '{num}'")
+            continue
         new_spins.append(str(num))
         state.last_spins.append(str(num))
         state.spin_history.append(action_log.pop(0))
@@ -1331,6 +1336,7 @@ def add_spin(number, current_spins, num_to_show):
             state.last_spins.pop(0)
         # Update selected_numbers incrementally
         state.selected_numbers.add(num)
+        last_added_spin = str(num)
 
     print(f"add_spin: Time to update state: {time.time() - start_time:.2f} seconds")
     new_spins_str = ", ".join(new_spins)
@@ -2414,6 +2420,9 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
             return ("Please select a positive number of spins to undo.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
         undo_count = min(undo_count, len(state.spin_history))  # Don't exceed history length
 
+        # Log state before undo
+        print(f"Before undo: spin_history length = {len(state.spin_history)}, last_spins = {state.last_spins}")
+
         # Undo the specified number of spins
         undone_spins = []
         for _ in range(undo_count):
@@ -2432,6 +2441,9 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
                         score_dict[key] = 0
 
             state.last_spins.pop()  # Remove from last_spins too
+
+        # Log state after undo
+        print(f"After undo: spin_history length = {len(state.spin_history)}, last_spins = {state.last_spins}, undone_spins = {undone_spins}")
 
         spins_input = ", ".join(state.last_spins) if state.last_spins else ""
         spin_analysis_output = f"Undo successful: Removed {undo_count} spin(s) - {', '.join(undone_spins)}"
@@ -2480,6 +2492,7 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
     except Exception as e:
         print(f"undo_last_spin: Unexpected error: {str(e)}")
         return (f"Unexpected error during undo: {str(e)}", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
+
 def clear_all():
     state.selected_numbers.clear()
     state.last_spins = []
