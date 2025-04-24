@@ -5100,6 +5100,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
 
+    # --- NEW CODE START (Updated) ---
+    # 11.1 Row 11.1: Chatbot Interface
+    with gr.Row():
+        with gr.Column():
+            with gr.Accordion("Ask the Roulette Bot 🤖", open=False, elem_id="chatbot-section"):
+                chatbot_input = gr.Textbox(
+                    label="Ask a Question (e.g., 'What are the best streets?')",
+                    placeholder="Type your question here...",
+                    interactive=True,
+                    elem_id="chatbot-input"
+                )
+                chatbot_output = gr.HTML(
+                    label="Bot Response",
+                    value="<p>Ask a question about bets, strategies, or analysis to get started!</p>",
+                    elem_classes=["chatbot-output"]
+                )
+    # --- NEW CODE END (Updated) ---
+
     # 12. Row 12: Feedback Section
     with gr.Row():
         with gr.Column():
