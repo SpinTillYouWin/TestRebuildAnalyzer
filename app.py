@@ -5352,13 +5352,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 11.1 Row 11.1: Chatbot Interface
     with gr.Row():
         with gr.Column():
-            with gr.Accordion("Ask the Roulette Bot 🤖", open=False, elem_id="chatbot-section"):
+            with gr.Accordion("Ask the Roulette Bot 🤖", open=True, elem_id="chatbot-section"):
+                chat_history = gr.State([])
                 chatbot_input = gr.Textbox(
                     label="Ask a Question (e.g., 'What are the best streets?')",
                     placeholder="Type your question here...",
                     interactive=True,
                     elem_id="chatbot-input"
                 )
+                submit_button = gr.Button("Submit", elem_id="chatbot-submit-button")
                 chatbot_output = gr.HTML(
                     label="Bot Response",
                     value="<p>Ask a question about bets, strategies, or analysis to get started!</p>",
@@ -7507,6 +7509,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in chatbot_input.submit handler: {str(e)}")
+        print(f"Input: {locals().get('user_input', 'unknown')}")
+        print(f"Chat history: {locals().get('chat_history', 'unknown')}")
+        import traceback
+        traceback.print_exc()
+    
+    try:
+        submit_button.click(
+            fn=lambda user_input, chat_hist: chatbot_response(user_input, chat_hist, state),
+            inputs=[chatbot_input, chat_history],
+            outputs=[chat_history, chatbot_output]
+        ).then(
+            fn=lambda: "",  # Clear the input box after submission
+            inputs=[],
+            outputs=[chatbot_input]
+        )
+    except Exception as e:
+        print(f"Error in submit_button.click handler: {str(e)}")
         print(f"Input: {locals().get('user_input', 'unknown')}")
         print(f"Chat history: {locals().get('chat_history', 'unknown')}")
         import traceback
