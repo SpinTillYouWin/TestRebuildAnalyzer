@@ -6210,13 +6210,95 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }, 2000); // Increased delay to ensure Gradio rendering
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
-      });
-    </script>
-    """)
-
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log("JavaScript debouncing script loaded");
+    
+                // Debounce function
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+    
+                // Function to set up debouncing for a button
+                let undoButtonFound = false;
+                let generateButtonFound = false;
+    
+                function setupButtonDebouncing() {
+                    const buttons = Array.from(document.querySelectorAll('button'));
+                    if (!undoButtonFound) {
+                        const undoButton = buttons.find(btn => btn.textContent.trim() === "Undo Last Spin");
+                        if (undoButton) {
+                            console.log("Undo Last Spin button found on attempt");
+                            const debouncedUndo = debounce(() => {
+                                console.log("Debounced undo click triggered");
+                                undoButton.click();
+                            }, 500);
+                            undoButton.addEventListener('click', (e) => {
+                                console.log("Undo Last Spin button clicked");
+                                e.preventDefault();
+                                e.stopPropagation();
+                                debouncedUndo();
+                            }, { once: true });
+                            undoButtonFound = true;
+                        } else {
+                            console.log("Undo Last Spin button NOT found on attempt");
+                        }
+                    }
+                    if (!generateButtonFound) {
+                        const generateButton = buttons.find(btn => btn.textContent.trim() === "Generate Random Spins");
+                        if (generateButton) {
+                            console.log("Generate Random Spins button found on attempt");
+                            const debouncedGenerate = debounce(() => {
+                                console.log("Debounced generate click triggered");
+                                generateButton.click();
+                            }, 500);
+                            generateButton.addEventListener('click', (e) => {
+                                console.log("Generate Random Spins button clicked");
+                                e.preventDefault();
+                                e.stopPropagation();
+                                debouncedGenerate();
+                            }, { once: true });
+                            generateButtonFound = true;
+                        } else {
+                            console.log("Generate Random Spins button NOT found on attempt");
+                        }
+                    }
+                }
+    
+                // Initial attempt
+                setupButtonDebouncing();
+    
+                // Set up MutationObserver to watch for DOM changes
+                const observer = new MutationObserver((mutations) => {
+                    if (!undoButtonFound || !generateButtonFound) {
+                        setupButtonDebouncing();
+                    }
+                    // Stop observing once both buttons are found
+                    if (undoButtonFound && generateButtonFound) {
+                        observer.disconnect();
+                        console.log("Both buttons found, MutationObserver disconnected");
+                    }
+                });
+    
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+    
+                // Fallback: Retry after delays
+                setTimeout(setupButtonDebouncing, 2000);
+                setTimeout(setupButtonDebouncing, 5000);
+            });
+        </script>
+        """)
+    
     # Event Handlers
     try:
         spins_textbox.change(
