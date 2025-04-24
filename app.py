@@ -8257,7 +8257,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ]
         ).then(
             fn=create_dynamic_table,
-            inputs=[strategy_dropdown, neighbours_count_slider, strong microbials_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         )
     except Exception as e:
