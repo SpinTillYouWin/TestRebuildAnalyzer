@@ -5190,6 +5190,7 @@ spins_textbox = gr.Textbox(
                     "Clear Chat History",
                     elem_classes=["action-button", "clear-chat-btn"]
                 )
+       
     # --- NEW CODE END (Updated) ---
 
     # 12. Row 12: Feedback Section
