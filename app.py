@@ -1349,41 +1349,53 @@ def add_spin(number, current_spins, num_to_show):
                 
 # --- NEW CODE START (Updated) ---
 # Function to handle chatbot queries
-def chatbot_response(query):
-    """Process user queries and return responses based on RouletteState and analysis functions."""
+def chatbot_response(query, chat_history):
+    """Process user queries, append to chat history, and return formatted history as HTML."""
+    # Validate input
     if not query or not query.strip():
-        return "<p>Please enter a valid question (e.g., 'What are the best streets?').</p>"
-    
-    query = query.lower().strip()
-    response = "<p>Processing your question...</p>"
-
-    # Handle 'best' queries
-    if "best streets" in query:
-        streets = best_streets()
-        if "No hits" in streets:
-            response = "<p>No streets have hit yet. Try analyzing some spins first!</p>"
-        else:
-            streets = streets.replace('\n', '<br>')
-            response = f"<p><strong>Best Streets:</strong><br>{streets}</p>"
-    elif "best dozens" in query:
-        dozens = best_dozens()
-        if "No hits" in dozens:
-            response = "<p>No dozens have hit yet. Try analyzing some spins first!</p>"
-        else:
-            dozens = dozens.replace('\n', '<br>')
-            response = f"<p><strong>Best Dozens:</strong><br>{dozens}</p>"
-    # Handle 'coldest' queries
-    elif "coldest numbers" in query:
-        sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1])
-        cold_numbers = [num for num, score in sorted_numbers if score == 0]
-        if cold_numbers:
-            response = f"<p><strong>Coldest Numbers (No Hits):</strong><br>{', '.join(map(str, sorted(cold_numbers)))}</p>"
-        else:
-            response = "<p>All numbers have hit at least once. Try analyzing more spins!</p>"
+        response = "<p>Please enter a valid question (e.g., 'What are the best streets?').</p>"
     else:
-        response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'Which numbers are coldest?'</p>"
+        query = query.lower().strip()
+        response = "<p>Processing your question...</p>"
 
-    return response
+        # Handle 'best' queries
+        if "best streets" in query:
+            streets = best_streets()
+            if "No hits" in streets:
+                response = "<p>No streets have hit yet. Try analyzing some spins first!</p>"
+            else:
+                streets = streets.replace('\n', '<br>')
+                response = f"<p><strong>Best Streets:</strong><br>{streets}</p>"
+        elif "best dozens" in query:
+            dozens = best_dozens()
+            if "No hits" in dozens:
+                response = "<p>No dozens have hit yet. Try analyzing some spins first!</p>"
+            else:
+                dozens = dozens.replace('\n', '<br>')
+                response = f"<p><strong>Best Dozens:</strong><br>{dozens}</p>"
+        # Handle 'coldest' queries
+        elif "coldest numbers" in query:
+            sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1])
+            cold_numbers = [num for num, score in sorted_numbers if score == 0]
+            if cold_numbers:
+                response = f"<p><strong>Coldest Numbers (No Hits):</strong><br>{', '.join(map(str, sorted(cold_numbers)))}</p>"
+            else:
+                response = "<p>All numbers have hit at least once. Try analyzing more spins!</p>"
+        else:
+            response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'Which numbers are coldest?'</p>"
+
+    # Append the new question and answer to the chat history
+    chat_history.append({"question": query, "answer": response})
+
+    # Format the chat history as HTML
+    html_output = "<div style='max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #d3d3d3; border-radius: 5px;'>"
+    for entry in chat_history:
+        html_output += f"<p><strong>You:</strong> {entry['question']}</p>"
+        html_output += f"<p><strong>Bot:</strong> {entry['answer']}</p>"
+        html_output += "<hr style='border: 0; border-top: 1px solid #eee; margin: 5px 0;'>"
+    html_output += "</div>"
+
+    return chat_history, html_output
 # --- NEW CODE END (Updated) ---
 
 # Function to clear spins
@@ -4536,6 +4548,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
+
+    # --- NEW CODE START (Updated) ---
+    chat_history = gr.State(value=[])  # Initialize chat history as an empty list
+    # --- NEW CODE END (Updated) ---
+
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
@@ -6119,8 +6136,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         chatbot_input.submit(
             fn=chatbot_response,
-            inputs=[chatbot_input],
-            outputs=[chatbot_output]
+            inputs=[chatbot_input, chat_history],
+            outputs=[chat_history, chatbot_output]
+        ).then(
+            fn=lambda: "",  # Clear the input box after submission
+            inputs=[],
+            outputs=[chatbot_input]
         )
     except Exception as e:
         print(f"Error in chatbot_input.submit handler: {str(e)}")
