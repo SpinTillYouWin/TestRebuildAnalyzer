@@ -978,21 +978,21 @@ def render_sides_of_zero_display():
             animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, green-pulse 1.5s infinite ease-in-out;
         }}
         
-# Line 1: New fire and ice effects
+# Line 1: Updated fire effect
         /* Fire effect for hot numbers */
-        .hot-fire {{
+        .section-number.hot-fire {{
             background: linear-gradient(145deg, #ff4500, #ff8c00) !important;
-            box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00;
             animation: fire-glow 1.2s infinite alternate ease-in-out;
         }}
         @keyframes fire-glow {{
             0% {{ box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00; }}
             100% {{ box-shadow: 0 0 15px #ff4500, 0 0 25px #ff8c00; }}
         }}
+        
+# Line 2: Updated ice effect
         /* Ice effect for cold numbers */
-        .cold.ice {{
+        .section-number.cold.ice {{
             background: linear-gradient(145deg, #87cefa, #00b7eb) !important;
-            box-shadow: 0 0 10px #87cefa, 0 0 20px #00b7eb;
             animation: ice-shimmer 1.5s infinite alternate ease-in-out;
         }}
         @keyframes ice-shimmer {{
@@ -1004,11 +1004,11 @@ def render_sides_of_zero_display():
             border: 2px solid #ff4500 !important;
             text-shadow: 0 0 5px #ff8c00 !important;
         }}
-        .cold.ice {{
+        .section-number.cold.ice {{
             border: 1px solid #00b7eb !important;
         }}
         
-# Line 2: Unchanged lines
+# Lines after (context)
         @keyframes green-pulse {{
             0% {{ background-color: green; }}
             50% {{ background-color: #33cc33; }}
@@ -1025,20 +1025,6 @@ def render_sides_of_zero_display():
             width: 16px;
             height: 16px;
             line-height: 16px;
-            border-radius: 50%;
-            z-index: 3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-        .betting-section-hits {{
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            font-size: 10px;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
             border-radius: 50%;
             z-index: 3;
             display: flex;
