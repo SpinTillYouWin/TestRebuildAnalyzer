@@ -1346,7 +1346,44 @@ def add_spin(number, current_spins, num_to_show):
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
-        
+                
+# --- NEW CODE START (Updated) ---
+# Function to handle chatbot queries
+def chatbot_response(query):
+    """Process user queries and return responses based on RouletteState and analysis functions."""
+    if not query or not query.strip():
+        return "<p>Please enter a valid question (e.g., 'What are the best streets?').</p>"
+    
+    query = query.lower().strip()
+    response = "<p>Processing your question...</p>"
+
+    # Handle 'best' queries
+    if "best streets" in query:
+        streets = best_streets()
+        if "No hits" in streets:
+            response = "<p>No streets have hit yet. Try analyzing some spins first!</p>"
+        else:
+            response = f"<p><strong>Best Streets:</strong><br>{streets.replace('\n', '<br>')}</p>"
+    elif "best dozens" in query:
+        dozens = best_dozens()
+        if "No hits" in dozens:
+            response = "<p>No dozens have hit yet. Try analyzing some spins first!</p>"
+        else:
+            response = f"<p><strong>Best Dozens:</strong><br>{dozens.replace('\n', '<br>')}</p>"
+    # Handle 'coldest' queries
+    elif "coldest numbers" in query:
+        sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1])
+        cold_numbers = [num for num, score in sorted_numbers if score == 0]
+        if cold_numbers:
+            response = f"<p><strong>Coldest Numbers (No Hits):</strong><br>{', '.join(map(str, sorted(cold_numbers)))}</p>"
+        else:
+            response = "<p>All numbers have hit at least once. Try analyzing more spins!</p>"
+    else:
+        response = "<p>Sorry, I don't understand that question. Try asking:<br>- 'What are the best streets?'<br>- 'What are the best dozens?'<br>- 'Which numbers are coldest?'</p>"
+
+    return response
+# --- NEW CODE END (Updated) ---
+
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
