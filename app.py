@@ -1363,13 +1363,15 @@ def chatbot_response(query):
         if "No hits" in streets:
             response = "<p>No streets have hit yet. Try analyzing some spins first!</p>"
         else:
-            response = f"<p><strong>Best Streets:</strong><br>{streets.replace('\n', '<br>')}</p>"
+            streets = streets.replace('\n', '<br>')
+            response = f"<p><strong>Best Streets:</strong><br>{streets}</p>"
     elif "best dozens" in query:
         dozens = best_dozens()
         if "No hits" in dozens:
             response = "<p>No dozens have hit yet. Try analyzing some spins first!</p>"
         else:
-            response = f"<p><strong>Best Dozens:</strong><br>{dozens.replace('\n', '<br>')}</p>"
+            dozens = dozens.replace('\n', '<br>')
+            response = f"<p><strong>Best Dozens:</strong><br>{dozens}</p>"
     # Handle 'coldest' queries
     elif "coldest numbers" in query:
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1])
