@@ -460,7 +460,7 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
-def render_sides_of_zero_display():
+def render_sides_of_zero_display(betting_sections_visible):
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
     right_hits = state.side_scores["Right Side of Zero"]
@@ -478,7 +478,7 @@ def render_sides_of_zero_display():
     left_side = original_order[:18]  # 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
     zero = [0]
     right_side = original_order[19:]  # 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10
-    wheel_order = left_side + zero + right_side  # Used for wheel SVG, now 5, ..., 26, 0, 32, ..., 10
+    wheel_order = left_side + zero + right_side  # Used for number list, now 5, ..., 26, 0, 32, ..., 10
     
     # Define betting sections
     jeu_0 = [12, 35, 3, 26, 0, 32, 15]
@@ -495,19 +495,12 @@ def render_sides_of_zero_display():
     # Determine the winning section for Left/Right Side
     winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
     
-    # Get the latest spin for bounce effect and wheel rotation
+    # Get the latest spin for bounce effect
     latest_spin = int(state.last_spins[-1]) if state.last_spins else None
-    latest_spin_angle = 0
     has_latest_spin = latest_spin is not None
-    if latest_spin is not None:
-        index = original_order.index(latest_spin) if latest_spin in original_order else 0
-        latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom
     
     # Prepare numbers with hit counts
     wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
-    
-    # Calculate maximum hits for scaling highlights
-    max_segment_hits = max(state.scores.values(), default=1)
     
     # Generate HTML for the number list
     def generate_number_list(numbers):
@@ -532,96 +525,54 @@ def render_sides_of_zero_display():
     
     number_list = generate_number_list(wheel_numbers)
     
-    # Generate SVG for the roulette wheel
-    wheel_svg = '<div class="roulette-wheel-container">'
-    wheel_svg += '<svg id="roulette-wheel" width="340" height="340" viewBox="0 0 340 340" style="transform: rotate(90deg);">'  # Size unchanged
+    # Collect all numbers from the betting sections (remove duplicates)
+    all_section_numbers = set()
+    for section in [jeu_0, voisins_du_zero, orphelins, tiers_du_cylindre]:
+        all_section_numbers.update(section)
     
-    # Add background arcs for Left Side and Right Side
-    left_start_angle = 0
-    left_end_angle = 180
-    left_start_rad = left_start_angle * (3.14159 / 180)
-    left_end_rad = left_end_angle * (3.14159 / 180)
-    left_x1 = 170 + 145 * math.cos(left_start_rad)
-    left_y1 = 170 + 145 * math.sin(left_start_rad)
-    left_x2 = 170 + 145 * math.cos(left_end_rad)
-    left_y2 = 170 + 145 * math.sin(left_end_rad)
-    left_path_d = f"M 170,170 L {left_x1},{left_y1} A 145,145 0 0,1 {left_x2},{left_y2} L 170,170 Z"
-    left_fill = "rgba(106, 27, 154, 0.5)" if winning_section == "Left Side" else "rgba(128, 128, 128, 0.3)"
-    left_stroke = "#4A148C" if winning_section == "Left Side" else "#808080"
-    wheel_svg += f'<path d="{left_path_d}" fill="{left_fill}" stroke="{left_stroke}" stroke-width="3"/>'
+    # Get scores for these numbers
+    number_scores = [(num, state.scores.get(num, 0)) for num in all_section_numbers]
     
-    right_start_angle = 180
-    right_end_angle = 360
-    right_start_rad = right_start_angle * (3.14159 / 180)
-    right_end_rad = right_end_angle * (3.14159 / 180)
-    right_x1 = 170 + 145 * math.cos(right_start_rad)
-    right_y1 = 170 + 145 * math.sin(right_start_rad)
-    right_x2 = 170 + 145 * math.cos(right_end_rad)
-    right_y2 = 170 + 145 * math.sin(right_end_rad)
-    right_path_d = f"M 170,170 L {right_x1},{right_y1} A 145,145 0 0,1 {right_x2},{right_y2} L 170,170 Z"
-    right_fill = "rgba(244, 81, 30, 0.5)" if winning_section == "Right Side" else "rgba(128, 128, 128, 0.3)"
-    right_stroke = "#D84315" if winning_section == "Right Side" else "#808080"
-    wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="{right_stroke}" stroke-width="3"/>'
+    # Determine hottest numbers
+    hottest_numbers = []
+    if number_scores:
+        # Sort by score descending
+        sorted_by_score_desc = sorted(number_scores, key=lambda x: (-x[1], x[0]))
+        # Check for ties at the 5th position
+        if len(sorted_by_score_desc) >= 5:
+            top_5_scores = [score for _, score in sorted_by_score_desc[:5]]
+            sixth_score = sorted_by_score_desc[5][1] if len(sorted_by_score_desc) > 5 else None
+            # Only proceed if there's no tie for the 5th position
+            if sixth_score is None or top_5_scores[-1] > sixth_score:
+                hottest_numbers = [num for num, _ in sorted_by_score_desc[:5]]
     
-    # Add the wheel background
-    wheel_svg += '<circle cx="170" cy="170" r="135" fill="#2e7d32"/>'
+    # Determine coldest numbers
+    coldest_numbers = []
+    if number_scores:
+        # Sort by score ascending
+        sorted_by_score_asc = sorted(number_scores, key=lambda x: (x[1], x[0]))
+        lowest_score = sorted_by_score_asc[0][1]
+        # Get all numbers with the lowest score
+        lowest_score_numbers = [(num, score) for num, score in sorted_by_score_asc if score == lowest_score]
+        if len(lowest_score_numbers) <= 5:
+            # If 5 or fewer numbers, take them all
+            coldest_numbers = [num for num, _ in lowest_score_numbers]
+            # Fill up to 5 by taking the next lowest scores
+            remaining = 5 - len(coldest_numbers)
+            if remaining > 0:
+                next_numbers = [(num, score) for num, score in sorted_by_score_asc if score > lowest_score]
+                next_numbers = next_numbers[:remaining]
+                coldest_numbers.extend([num for num, _ in next_numbers])
+        else:
+            # If more than 5 numbers have the lowest score, sort by last appearance
+            last_appearance = {num: -state.last_spins[::-1].index(str(num)) if str(num) in state.last_spins else float('-inf') for num, _ in lowest_score_numbers}
+            sorted_lowest = sorted(lowest_score_numbers, key=lambda x: last_appearance[x[0]])
+            coldest_numbers = [num for num, _ in sorted_lowest[:5]]
     
-    # Draw the wheel segments
-    angle_per_number = 360 / 37
-    for i, num in enumerate(original_order):
-        angle = i * angle_per_number
-        color = colors.get(str(num), "black")
-        hits = state.scores.get(num, 0)
-        stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2
-        opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5
-        stroke_color = "#FF00FF" if hits > 0 else "#FFF"
-        is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
-        class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
-        rad = angle * (3.14159 / 180)
-        next_rad = (angle + angle_per_number) * (3.14159 / 180)
-        x1 = 170 + 135 * math.cos(rad)
-        y1 = 170 + 135 * math.sin(rad)
-        x2 = 170 + 135 * math.cos(next_rad)
-        y2 = 170 + 135 * math.sin(next_rad)
-        x3 = 170 + 105 * math.cos(next_rad)
-        y3 = 170 + 105 * math.sin(next_rad)
-        x4 = 170 + 105 * math.cos(rad)
-        y4 = 170 + 105 * math.sin(rad)
-        path_d = f"M 170,170 L {x1},{y1} A 135,135 0 0,1 {x2},{y2} L {x3},{y3} A 105,105 0 0,0 {x4},{y4} Z"
-        wheel_svg += f'<path class="{class_name}" data-number="{num}" data-hits="{hits}" d="{path_d}" fill="{color}" stroke="{stroke_color}" stroke-width="{stroke_width}" fill-opacity="{opacity}" style="cursor: pointer;"/>'
-        text_angle = angle + (angle_per_number / 2)
-        text_rad = text_angle * (3.14159 / 180)
-        text_x = 170 + 120 * math.cos(text_rad)
-        text_y = 170 + 120 * math.sin(text_rad)
-        wheel_svg += f'<text x="{text_x}" y="{text_y}" font-size="8" fill="white" text-anchor="middle" transform="rotate({text_angle + 90} {text_x},{text_y})">{num}</text>'
-        hit_text_x = 170 + 90 * math.cos(text_rad)
-        hit_text_y = 170 + 90 * math.sin(text_rad)
-        wheel_svg += f'<text x="{hit_text_x}" y="{hit_text_y}" font-size="6" fill="#FFD700" text-anchor="middle" transform="rotate({text_angle + 90} {hit_text_x},{hit_text_y})">{hits if hits > 0 else ""}</text>'
-    
-    # Add labels for Left Side and Right Side
-    left_label_angle = 90
-    left_label_rad = left_label_angle * (3.14159 / 180)
-    left_label_x = 170 + 155 * math.cos(left_label_rad)
-    left_label_y = 170 + 155 * math.sin(left_label_rad)
-    wheel_svg += f'<rect x="{left_label_x - 25}" y="{left_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#6A1B9A" stroke-width="1" rx="3"/>'
-    wheel_svg += f'<text x="{left_label_x}" y="{left_label_y}" font-size="10" fill="#6A1B9A" text-anchor="middle" dy="3">Left: {left_hits}</text>'
-    
-    right_label_angle = 270
-    right_label_rad = right_label_angle * (3.14159 / 180)
-    right_label_x = 170 + 155 * math.cos(right_label_rad)
-    right_label_y = 170 + 155 * math.sin(right_label_rad)
-    wheel_svg += f'<rect x="{right_label_x - 25}" y="{right_label_y - 8}" width="50" height="16" fill="#FFF" stroke="#F4511E" stroke-width="1" rx="3"/>'
-    wheel_svg += f'<text x="{right_label_x}" y="{right_label_y}" font-size="10" fill="#F4511E" text-anchor="middle" dy="3">Right: {right_hits}</text>'
-    
-    wheel_svg += '<circle cx="170" cy="170" r="15" fill="#FFD700"/>'  # Gold center
-    wheel_svg += '</svg>'
-    wheel_svg += f'<div id="wheel-pointer" style="position: absolute; top: -10px; left: 168.5px; width: 3px; height: 170px; background-color: #00695C; transform-origin: bottom center;"></div>'
-    wheel_svg += f'<div id="spinning-ball" style="position: absolute; width: 12px; height: 12px; background-color: #fff; border-radius: 50%; transform-origin: center center;"></div>'
-    wheel_svg += f'<div id="wheel-fallback" style="display: none;">Latest Spin: {latest_spin if latest_spin is not None else "None"}</div>'
-    wheel_svg += '</div>'
-    
-    # Add static betting sections display below the wheel with enhanced effects
-    betting_sections_html = '<div class="betting-sections-container">'
+    # Add static betting sections display with enhanced effects
+    betting_sections_html = '<div class="betting-sections-container" style="display: {display_style};">'.format(
+        display_style="flex" if betting_sections_visible else "none"
+    )
     sections = [
         ("jeu_0", "Jeu 0", jeu_0, "#228B22", jeu_0_hits),
         ("voisins_du_zero", "Voisins du Zero", voisins_du_zero, "#008080", voisins_du_zero_hits),
@@ -636,7 +587,15 @@ def render_sides_of_zero_display():
             num_color = colors.get(str(num), "black")
             hit_count = state.scores.get(num, 0)
             is_hot = hit_count > 0
-            class_name = "section-number" + (" hot-number" if is_hot else "")
+            is_hottest = num in hottest_numbers
+            is_coldest = num in coldest_numbers
+            class_name = "section-number"
+            if is_hottest:
+                class_name += " hottest-number"
+            elif is_coldest:
+                class_name += " coldest-number"
+            if is_hot:
+                class_name += " hot-number"
             badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
@@ -654,10 +613,14 @@ def render_sides_of_zero_display():
     
     betting_sections_html += '</div>'
     
-    # Convert Python boolean to JavaScript lowercase boolean
-    js_has_latest_spin = "true" if has_latest_spin else "false"
+    # Add toggle button
+    toggle_button_html = '''
+    <button id="toggle-betting-sections-btn-html" onclick="document.getElementById('toggle-betting-sections-btn').click();" style="margin: 10px auto; display: block; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
+        {button_text}
+    </button>
+    '''.format(button_text="Hide Betting Sections" if betting_sections_visible else "Show Betting Sections")
     
-    # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
+    # HTML output with JavaScript to handle animations and interactivity
     return f"""
     <style>
         .circular-progress {{
@@ -785,32 +748,6 @@ def render_sides_of_zero_display():
             margin: 0 auto;
             font-family: Arial, sans-serif;
         }}
-        .roulette-wheel-container {{
-            position: relative;
-            width: 340px;
-            height: 340px;
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }}
-        .wheel-segment:hover {{
-            filter: brightness(1.2);
-        }}
-        .pulse {{
-            animation: pulse 1.5s infinite ease-in-out;
-        }}
-        @keyframes pulse {{
-            0% {{ stroke-opacity: 1; }}
-            50% {{ stroke-opacity: 0.5; }}
-            100% {{ stroke-opacity: 1; }}
-        }}
-        .winning-segment {{
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-        }}
-        #wheel-pointer {{
-            z-index: 3;
-        }}
         @media (max-width: 600px) {{
             .tracker-container {{
                 flex-direction: column;
@@ -848,25 +785,6 @@ def render_sides_of_zero_display():
                 top: -6px;
                 right: -6px;
             }}
-            .roulette-wheel-container {{
-                width: 290px;
-                height: 290px;
-            }}
-            #roulette-wheel {{
-                width: 290px;
-                height: 290px;
-            }}
-            #wheel-pointer {{
-                top: -24px;
-                left: 143.5px;
-                width: 3px;
-                height: 150px;
-                background-color: #00695C;
-            }}
-            #spinning-ball {{
-                width: 10px;
-                height: 10px;
-            }}
         }}
         /* Updated styles for static betting sections with enhanced effects */
         .betting-sections-container {{
@@ -875,6 +793,7 @@ def render_sides_of_zero_display():
             gap: 10px;
             margin-top: 20px;
             padding: 10px;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
         }}
         .betting-section {{
             background-color: #fff;
@@ -889,7 +808,7 @@ def render_sides_of_zero_display():
         .betting-section-header {{
             color: white;
             padding: 8px 12px;
-            border-radius: 5px 5px 0 0; /* Adjusted for static section */
+            border-radius: 5px 5px 0 0;
             font-weight: bold;
             font-size: 14px;
             position: relative;
@@ -906,6 +825,8 @@ def render_sides_of_zero_display():
             background-color: #f9f9f9;
             border-top: 1px solid #d3d3d3;
             border-radius: 0 0 5px 5px;
+            overflow-y: auto;
+            max-height: 80px;
         }}
         .section-number {{
             padding: 0;
@@ -922,7 +843,7 @@ def render_sides_of_zero_display():
             position: relative;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }}
-        .section-number:not(.hot-number) {{
+        .section-number:not(.hot-number):not(.hottest-number):not(.coldest-number) {{
             margin-left: 4px;
             margin-right: 4px;
         }}
@@ -935,6 +856,26 @@ def render_sides_of_zero_display():
             box-shadow: 0 0 8px #FF00FF;
             text-shadow: 0 0 5px #FF00FF;
             animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
+        }}
+        .hottest-number {{
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 18px;
+            background-color: #ff3333 !important;
+            border: 3px solid #ff0000 !important;
+            box-shadow: 0 0 12px #ff6666;
+            animation: fiery-glow 1.5s infinite ease-in-out, bounce 0.4s ease-in-out;
+        }}
+        .coldest-number {{
+            width: 34px;
+            height: 34px;
+            line-height: 34px;
+            font-size: 14px;
+            background-color: #66b3ff !important;
+            border: 2px solid #3399ff !important;
+            box-shadow: 0 0 8px #99ccff;
+            animation: frost-glow 1.5s infinite ease-in-out, shiver 0.5s infinite ease-in-out;
         }}
         @keyframes glow {{
             0% {{ box-shadow: 0 0 8px #FF00FF; text-shadow: 0 0 5px #FF00FF; }}
@@ -949,6 +890,23 @@ def render_sides_of_zero_display():
         @keyframes bounce {{
             0%, 100% {{ transform: scale(1); }}
             50% {{ transform: scale(1.2); }}
+        }}
+        @keyframes fiery-glow {{
+            0% {{ box-shadow: 0 0 12px #ff6666; }}
+            50% {{ box-shadow: 0 0 20px #ff9999; }}
+            100% {{ box-shadow: 0 0 12px #ff6666; }}
+        }}
+        @keyframes frost-glow {{
+            0% {{ box-shadow: 0 0 8px #99ccff; }}
+            50% {{ box-shadow: 0 0 14px #b3d9ff; }}
+            100% {{ box-shadow: 0 0 8px #99ccff; }}
+        }}
+        @keyframes shiver {{
+            0% {{ transform: translateX(0); }}
+            25% {{ transform: translateX(-2px); }}
+            50% {{ transform: translateX(2px); }}
+            75% {{ transform: translateX(-2px); }}
+            100% {{ transform: translateX(0); }}
         }}
         /* Dynamic color pulse for red numbers */
         .hot-number[style*="background-color: red"] {{
@@ -994,6 +952,14 @@ def render_sides_of_zero_display():
             align-items: center;
             justify-content: center;
         }}
+        .hottest-number .number-hit-badge, .coldest-number .number-hit-badge {{
+            top: -10px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            font-size: 10px;
+        }}
         .betting-section-hits {{
             background-color: #ff4444;
             color: white;
@@ -1032,7 +998,7 @@ def render_sides_of_zero_display():
             </div>
         </div>
         {number_list}
-        {wheel_svg}
+        {toggle_button_html}
         {betting_sections_html}
     </div>
     <script>
@@ -1083,128 +1049,6 @@ def render_sides_of_zero_display():
             }});
         }});
 
-        // Tooltip functionality for wheel segments
-        document.querySelectorAll('.wheel-segment').forEach(segment => {{
-            segment.addEventListener('click', (e) => {{
-                const hits = segment.getAttribute('data-hits');
-                const num = segment.getAttribute('data-number');
-                const neighbors = {json.dumps(dict(current_neighbors))};
-                const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
-                const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
-                const tooltipText = "Number " + num + ": " + hits + " hits\\nLeft Neighbor: " + leftNeighbor + "\\nRight Neighbor: " + rightNeighbor;
-                
-                // Remove any existing tooltips
-                const existingTooltip = document.querySelector('.tooltip');
-                if (existingTooltip) existingTooltip.remove();
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                document.body.appendChild(tooltip);
-                
-                const rect = segment.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltipRect.width / 2)) + 'px';
-                tooltip.style.top = (rect.top + window.scrollY - tooltipRect.height - 5) + 'px';
-                tooltip.style.opacity = '1';
-                
-                // Remove tooltip after 3 seconds or on click
-                setTimeout(() => {{
-                    tooltip.remove();
-                }}, 3000);
-                segment.addEventListener('click', () => {{
-                    tooltip.remove();
-                }}, {{ once: true }});
-            }});
-            
-            segment.addEventListener('mouseout', () => {{
-                const tooltip = document.querySelector('.tooltip');
-                if (tooltip) {{
-                    tooltip.style.opacity = '0';
-                }}
-            }});
-        }});
-
-        // Remove bounce class after animation
-        document.querySelectorAll('.bounce').forEach(element => {{
-            setTimeout(() => {{
-                element.classList.remove('bounce');
-            }}, 400);
-        }});
-
-        // JavaScript animation function
-        function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
-            console.log("animateElement called for element: " + element.id + ", startAngle: " + startAngle + ", endAngle: " + endAngle + ", duration: " + duration + ", isBall: " + isBall);
-            const startTime = performance.now();
-            const radius = isBall ? 135 : 0;
-            
-            function step(currentTime) {{
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                const currentAngle = startAngle + (endAngle - startAngle) * easeOut;
-                
-                if (isBall) {{
-                    element.style.transform = "rotate(" + currentAngle + "deg) translateX(" + radius + "px)";
-                }} else {{
-                    element.style.transform = "rotate(" + currentAngle + "deg)";
-                }}
-                console.log("Animation step - element: " + element.id + ", progress: " + progress.toFixed(2) + ", currentAngle: " + currentAngle.toFixed(2));
-                
-                if (progress < 1) {{
-                    requestAnimationFrame(step);
-                }} else {{
-                    console.log("Animation completed for element: " + element.id);
-                }}
-            }}
-            
-            requestAnimationFrame(step);
-        }}
-
-        // Trigger wheel and ball spin animations with JavaScript
-        setTimeout(() => {{
-            console.log('Attempting to trigger animations...');
-            const wheel = document.getElementById('roulette-wheel');
-            const ball = document.getElementById('spinning-ball');
-            const hasSpin = {js_has_latest_spin};
-            console.log('Wheel element:', wheel);
-            console.log('Ball element:', ball);
-            console.log('Has latest spin:', hasSpin);
-            console.log('Latest spin angle:', {latest_spin_angle});
-            
-            if (wheel && ball && hasSpin) {{
-                console.log('Starting animations for wheel and ball using JavaScript...');
-                
-                // Force visibility toggle to ensure rendering
-                wheel.style.visibility = 'hidden';
-                ball.style.visibility = 'hidden';
-                setTimeout(() => {{
-                    wheel.style.visibility = 'visible';
-                    ball.style.visibility = 'visible';
-                    console.log('Visibility toggled to visible for wheel and ball');
-                    
-                    // Directly use JavaScript animation
-                    animateElement(wheel, 90, {latest_spin_angle}, 2000);
-                    animateElement(ball, 0, {-latest_spin_angle}, 2000, true);
-                    console.log('JavaScript animations triggered for wheel and ball');
-                    
-                    // Finalize position after animation
-                    setTimeout(() => {{
-                        console.log('Finalizing animation positions...');
-                        wheel.style.transform = "rotate(" + {latest_spin_angle} + "deg)";
-                        ball.style.transform = "rotate(" + {-latest_spin_angle} + "deg) translateX(135px)";
-                        console.log('Animation positions finalized');
-                    }}, 2000);
-                }}, 10);
-            }} else {{
-                console.warn('Animation not triggered: Elements or latest spin missing');
-                if (!wheel) console.warn('Wheel element not found');
-                if (!ball) console.warn('Ball element not found');
-                if (!hasSpin) console.warn('No latest spin to animate');
-            }}
-        }}, 2000);
-
         // Add tooltips to section numbers
         document.querySelectorAll('.section-number').forEach(element => {{
             element.addEventListener('mouseover', (e) => {{
@@ -1231,6 +1075,13 @@ def render_sides_of_zero_display():
                     tooltip.remove();
                 }}
             }});
+        }});
+
+        // Remove bounce class after animation
+        document.querySelectorAll('.bounce').forEach(element => {{
+            setTimeout(() => {{
+                element.classList.remove('bounce');
+            }}, 400);
         }});
     </script>
     """
