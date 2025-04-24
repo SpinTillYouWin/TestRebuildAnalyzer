@@ -2262,12 +2262,13 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
+# Line 1: Updated analyze_spins function
 def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
-            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -2287,11 +2288,11 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
         if not spins:
             print("analyze_spins: No valid spins found.")
-            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
         if reset_scores:
             state.reset()
@@ -2391,6 +2392,20 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         top_18_html += "</table>"
         print(f"analyze_spins: top_18_html generated")
 
+        # New: Top Numbers with Untied Scores (Max 5)
+        untied_scores_df = straight_up_df.copy()
+        seen_scores = set()
+        untied_scores = []
+        for idx, row in untied_scores_df.iterrows():
+            score = row["Score"]
+            if score in seen_scores or len(untied_scores) >= 5:
+                break
+            seen_scores.add(score)
+            untied_scores.append(row)
+        untied_scores_df = pd.DataFrame(untied_scores)
+        untied_scores_html = create_html_table(untied_scores_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Top Numbers with Untied Scores (Max 5)")
+        print(f"analyze_spins: untied_scores_html generated")
+
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         print(f"analyze_spins: strongest_numbers_output='{strongest_numbers_output}'")
 
@@ -2402,15 +2417,18 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
+                straight_up_html, top_18_html, strongest_numbers_output, untied_scores_html,  # New output
+                dynamic_table_html, strategy_output, render_sides_of_zero_display())
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
 
+# Line 3: Start of next function (unchanged)
 # Function to reset scores
 def reset_scores():
+    """Reset all scores in the state."""
     state.reset()
-    return "Scores reset!"
+    print("reset_scores: All scores have been reset.")
 
 def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     if not state.spin_history:
@@ -5107,12 +5125,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             lines=5
         )
 
+# Line 1: Updated Strongest Numbers Tables accordion
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         with gr.Row():
             with gr.Column():
                 straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
             with gr.Column():
                 top_18_html = gr.HTML(label="Top 18 Strongest Numbers (Sorted Lowest to Highest)", elem_classes="scrollable-table")
+                # New: Top numbers with untied scores
+                untied_scores_html = gr.HTML(label="Top Numbers with Untied Scores (Max 5)", elem_classes="scrollable-table")
         with gr.Row():
             strongest_numbers_dropdown = gr.Dropdown(
                 label="Select Number of Strongest Numbers",
@@ -5130,6 +5151,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 visible=False  # Hide the textbox
             )
 
+# Line 3: Start of next accordion (unchanged)
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
@@ -5138,6 +5160,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column():
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
+
+# Lines after (context, unchanged)
         with gr.Row():
             with gr.Column():
                 with gr.Accordion("Columns", open=False):
@@ -6337,7 +6361,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                untied_scores_html,  # New output
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
