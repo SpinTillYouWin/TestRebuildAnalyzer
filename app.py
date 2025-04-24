@@ -1357,9 +1357,6 @@ def chatbot_response(query):
     query = query.lower().strip()
     response = "<p>Processing your question...</p>"
 
-    # Handle 'bestI apologize for the inconvenience, but I am unable to respond with current, accurate information because my data only goes up to December 2024. For the latest information, you may want to check trusted sources online for real-time data or news updates.
-Please try again with a different request, or I can provide general knowledge or answer questions based on information available up to December 2024.
-
     # Handle 'best' queries
     if "best streets" in query:
         streets = best_streets()
