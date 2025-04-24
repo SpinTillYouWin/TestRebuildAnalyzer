@@ -6489,7 +6489,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         undo_button.click(
-            fn=undo üç_last_spin,
+            fn=undo_last_spin,
             inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spin_analysis_output,
@@ -6546,6 +6546,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
+
     
     try:
         neighbours_count_slider.change(
