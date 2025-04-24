@@ -458,7 +458,93 @@ def format_spins_as_html(spins, num_to_show):
     </script>
     '''
     
+# Lines before (context)
     return html_output
+
+def render_bet_suggestion_panel(suggestion_mode="Balanced"):
+    """Render a Bet Suggestion Panel with real-time betting recommendations."""
+    # Default to Balanced mode if invalid
+    suggestion_mode = suggestion_mode if suggestion_mode in ["Aggressive", "Balanced", "Conservative"] else "Balanced"
+    
+    # Gather data for suggestions
+    total_spins = sum(state.scores.values())
+    hot_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)[:3]  # Top 3 hot numbers
+    cold_numbers = sorted(state.scores.items(), key=lambda x: x[1])[:3]  # Top 3 cold numbers
+    dozen_hits = state.dozen_scores
+    top_dozen = max(dozen_hits.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0] if dozen_hits else "1st Dozen"
+    
+    # Confidence calculation (simplified: based on hit frequency)
+    def get_confidence(hits, total, base=0.5):
+        if total == 0:
+            return base
+        return min(0.95, base + (hits / total) * 2)
+    
+    # Generate bet suggestions based on mode
+    suggestions = []
+    if suggestion_mode == "Aggressive":
+        # Suggest high-risk bets (e.g., straight bets on hot numbers)
+        for num, hits in hot_numbers:
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.7)
+                suggestions.append({
+                    "type": "Straight Bet",
+                    "target": f"Number {num}",
+                    "units": state.base_unit * 2,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+    elif suggestion_mode == "Conservative":
+        # Suggest low-risk bets (e.g., dozens, even-money)
+        confidence = get_confidence(dozen_hits[top_dozen], total_spins, 0.6)
+        suggestions.append({
+            "type": "Dozen",
+            "target": top_dozen,
+            "units": state.base_unit,
+            "confidence": f"{int(confidence * 100)}%"
+        })
+        if state.casino_data["red_black"]["Red"] > state.casino_data["red_black"]["Black"]:
+            confidence = get_confidence(state.even_money_scores["Red"], total_spins, 0.5)
+            suggestions.append({
+                "type": "Even Money",
+                "target": "Red",
+                "units": state.base_unit,
+                "confidence": f"{int(confidence * 100)}%"
+            })
+    else:  # Balanced
+        # Mix of hot numbers and safe bets
+        if hot_numbers:
+            num, hits = hot_numbers[0]
+            confidence = get_confidence(hits, total_spins, 0.65)
+            suggestions.append({
+                "type": "Straight Bet",
+                "target": f"Number {num}",
+                "units": state.base_unit,
+                "confidence": f"{int(confidence * 100)}%"
+            })
+        confidence = get_confidence(dozen_hits[top_dozen], total_spins, 0.6)
+        suggestions.append({
+            "type": "Dozen",
+            "target": top_dozen,
+            "units": state.base_unit,
+            "confidence": f"{int(confidence * 100)}%"
+        })
+
+    # Generate HTML for the panel
+    html = '<div style="background-color: #d4edda; border: 2px solid #c3e6cb; border-radius: 5px; padding: 10px; margin-top: 20px;">'
+    html += '<h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Bet Suggestion Panel 🎯</h4>'
+    if not suggestions:
+        html += '<p>No suggestions available. Spin the wheel to analyze patterns!</p>'
+    else:
+        html += '<div style="display: flex; flex-direction: column; gap: 10px;">'
+        for suggestion in suggestions:
+            html += f'''
+            <div style="background-color: #fff; border: 1px solid #c3e6cb; border-radius: 5px; padding: 10px;">
+                <strong>{suggestion["type"]}</strong>: {suggestion["target"]} ({suggestion["units"]} units)
+                <span style="float: right; color: #155724;">Confidence: {suggestion["confidence"]}</span>
+            </div>
+            '''
+        html += '</div>'
+    html += '</div>'
+    return html
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
@@ -4487,6 +4573,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
         )
+# Line 1: New Bet Suggestion Panel component
+        with gr.Row():
+            bet_suggestion_panel = gr.HTML(
+                label="Bet Suggestions",
+                value=render_bet_suggestion_panel(),
+                elem_classes=["bet-suggestion-container"]
+            )
+            suggestion_mode_dropdown = gr.Dropdown(
+                choices=["Aggressive", "Balanced", "Conservative"],
+                value="Balanced",
+                label="Suggestion Mode",
+                elem_id="suggestion-mode-dropdown"
+            )
+
+# Line 2: End of accordion
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
