@@ -654,8 +654,32 @@ def render_sides_of_zero_display():
     
     betting_sections_html += '</div>'
     
+    # Generate Hot/Cold Numbers Table
+    # Sort numbers by hit count (descending for hot, ascending for cold)
+    sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    hot_numbers = sorted_scores[:5]  # Top 5 most frequent
+    cold_numbers = sorted_scores[-5:][::-1]  # Bottom 5 least frequent, reversed to show lowest first
+    
+    # Create HTML table for hot/cold numbers
+    hot_cold_html = '<div style="margin-top: 20px; padding: 10px; background-color: #fff; border: 1px solid #d3d3d3; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">'
+    hot_cold_html += '<h4 style="text-align: center; margin: 0 0 10px 0;">Hot & Cold Numbers</h4>'
+    hot_cold_html += '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">'
+    hot_cold_html += '<tr><th style="background-color: #ff4444; color: white; padding: 8px; border-radius: 5px 0 0 0;">Hot Numbers</th><th style="background-color: #2196f3; color: white; padding: 8px; border-radius: 0 5px 0 0;">Cold Numbers</th></tr>'
+    for i in range(5):
+        hot_num, hot_hits = hot_numbers[i] if i < len(hot_numbers) else ("-", 0)
+        cold_num, cold_hits = cold_numbers[i] if i < len(cold_numbers) else ("-", 0)
+        hot_color = colors.get(str(hot_num), "black") if hot_num != "-" else "black"
+        cold_color = colors.get(str(cold_num), "black") if cold_num != "-" else "black"
+        hot_cold_html += f'<tr><td style="text-align: center; padding: 6=8px; border: 1px solid #d3d3d3; background-color: {hot_color}; color: white;">{hot_num} ({hot_hits})</td><td style="text-align: center; padding: 8px; border: 1px solid #d3d3d3; background-color: {cold_color}; color: white;">{cold_num} ({cold_hits})</td></tr>'
+    hot_cold_html += '</table></div>'
+    
+    betting_sections_html += hot_cold_html
+    
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
+    
+    # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
+    return f"""
     
     # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
     return f"""
