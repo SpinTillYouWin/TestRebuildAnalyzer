@@ -6510,7 +6510,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
