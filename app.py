@@ -468,12 +468,12 @@ def render_bet_suggestion_panel(suggestion_mode="Balanced"):
     
     # Gather data for suggestions
     total_spins = sum(state.scores.values())
-    hot_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)[:3]  # Top 3 hot numbers
-    cold_numbers = sorted(state.scores.items(), key=lambda x: x[1])[:3]  # Top 3 cold numbers
-    dozen_hits = state.dozen_scores
-    top_dozen = max(dozen_hits.items(), key=lambda x: x[1], default=("1st Dozen", 0))[0] if dozen_hits else "1st Dozen"
+    hot_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)  # Sorted by hits
+    even_money_hits = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    dozen_hits = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    column_hits = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
     
-    # Confidence calculation (simplified: based on hit frequency)
+    # Confidence calculation
     def get_confidence(hits, total, base=0.5):
         if total == 0:
             return base
@@ -482,8 +482,8 @@ def render_bet_suggestion_panel(suggestion_mode="Balanced"):
     # Generate bet suggestions based on mode
     suggestions = []
     if suggestion_mode == "Aggressive":
-        # Suggest high-risk bets (e.g., straight bets on hot numbers)
-        for num, hits in hot_numbers:
+        # 18 numbers, 2 even-money, 2 dozens, 2 columns
+        for num, hits in hot_numbers[:18]:  # Top 18 numbers
             if hits > 0:
                 confidence = get_confidence(hits, total_spins, 0.7)
                 suggestions.append({
@@ -492,45 +492,116 @@ def render_bet_suggestion_panel(suggestion_mode="Balanced"):
                     "units": state.base_unit * 2,
                     "confidence": f"{int(confidence * 100)}%"
                 })
+        for name, hits in even_money_hits[:2]:  # Top 2 even-money
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.55)
+                suggestions.append({
+                    "type": "Even Money",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        for name, hits in dozen_hits[:2]:  # Top 2 dozens
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.6)
+                suggestions.append({
+                    "type": "Dozen",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        for name, hits in column_hits[:2]:  # Top 2 columns
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.6)
+                suggestions.append({
+                    "type": "Column",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
     elif suggestion_mode == "Conservative":
-        # Suggest low-risk bets (e.g., dozens, even-money)
-        confidence = get_confidence(dozen_hits[top_dozen], total_spins, 0.6)
-        suggestions.append({
-            "type": "Dozen",
-            "target": top_dozen,
-            "units": state.base_unit,
-            "confidence": f"{int(confidence * 100)}%"
-        })
-        if state.casino_data["red_black"]["Red"] > state.casino_data["red_black"]["Black"]:
-            confidence = get_confidence(state.even_money_scores["Red"], total_spins, 0.5)
-            suggestions.append({
-                "type": "Even Money",
-                "target": "Red",
-                "units": state.base_unit,
-                "confidence": f"{int(confidence * 100)}%"
-            })
+        # 5 numbers, 1 even-money, 1 dozen, 1 column
+        for num, hits in hot_numbers[:5]:  # Top 5 numbers
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.65)
+                suggestions.append({
+                    "type": "Straight Bet",
+                    "target": f"Number {num}",
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        if even_money_hits:
+            name, hits = even_money_hits[0]  # Top even-money
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.55)
+                suggestions.append({
+                    "type": "Even Money",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        if dozen_hits:
+            name, hits = dozen_hits[0]  # Top dozen
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.6)
+                suggestions.append({
+                    "type": "Dozen",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        if column_hits:
+            name, hits = column_hits[0]  # Top column
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.6)
+                suggestions.append({
+                    "type": "Column",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
     else:  # Balanced
-        # Mix of hot numbers and safe bets
-        if hot_numbers:
-            num, hits = hot_numbers[0]
-            confidence = get_confidence(hits, total_spins, 0.65)
-            suggestions.append({
-                "type": "Straight Bet",
-                "target": f"Number {num}",
-                "units": state.base_unit,
-                "confidence": f"{int(confidence * 100)}%"
-            })
-        confidence = get_confidence(dozen_hits[top_dozen], total_spins, 0.6)
-        suggestions.append({
-            "type": "Dozen",
-            "target": top_dozen,
-            "units": state.base_unit,
-            "confidence": f"{int(confidence * 100)}%"
-        })
+        # 10 numbers, 2 even-money, 2 dozens, 2 columns
+        for num, hits in hot_numbers[:10]:  # Top 10 numbers
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.65)
+                suggestions.append({
+                    "type": "Straight Bet",
+                    "target": f"Number {num}",
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        for name, hits in even_money_hits[:2]:  # Top 2 even-money
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.55)
+                suggestions.append({
+                    "type": "Even Money",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        for name, hits in dozen_hits[:2]:  # Top 2 dozens
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.6)
+                suggestions.append({
+                    "type": "Dozen",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
+        for name, hits in column_hits[:2]:  # Top 2 columns
+            if hits > 0:
+                confidence = get_confidence(hits, total_spins, 0.6)
+                suggestions.append({
+                    "type": "Column",
+                    "target": name,
+                    "units": state.base_unit,
+                    "confidence": f"{int(confidence * 100)}%"
+                })
 
     # Generate HTML for the panel
     html = '<div style="background-color: #d4edda; border: 2px solid #c3e6cb; border-radius: 5px; padding: 10px; margin-top: 20px;">'
-    html += '<h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Bet Suggestion Panel 🎯</h4>'
+    html += '<h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif;">Bet Recommendations</h4>'
     if not suggestions:
         html += '<p>No suggestions available. Spin the wheel to analyze patterns!</p>'
     else:
@@ -4574,22 +4645,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             elem_classes=["sides-of-zero-container"]
         )
 
-# Line 1: Updated Bet Suggestion Panel component
-    with gr.Row():
-        bet_suggestion_panel = gr.HTML(
-            label="Bet Suggestions",
-            value=render_bet_suggestion_panel(),
-            elem_classes=["bet-suggestion-container"]
-        )
-        suggestion_mode_dropdown = gr.Dropdown(
-            choices=["Aggressive", "Balanced", "Conservative"],
-            value="Balanced",
-            label="Suggestion Mode",
-            interactive=True,  # Ensure dropdown is interactive
-            elem_id="suggestion-mode-dropdown"
-        )
+# Line 1: New Bet Suggestion Panel accordion
+    with gr.Accordion("Bet Suggestion Panel 🎯", open=True, elem_id="bet-suggestion-accordion"):
+        with gr.Row():
+            bet_suggestion_panel = gr.HTML(
+                label="Bet Suggestions",
+                value=render_bet_suggestion_panel(),
+                elem_classes=["bet-suggestion-container"]
+            )
+            suggestion_mode_dropdown = gr.Dropdown(
+                choices=["Aggressive", "Balanced", "Conservative"],
+                value="Balanced",
+                label="Suggestion Mode",
+                interactive=True,
+                elem_id="suggestion-mode-dropdown"
+            )
 
-# Line 2: End of accordion
+# Line 2: Unchanged lines
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -4604,7 +4676,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    
+
+# Lines after (context)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5255,6 +5328,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     });
                 </script>
                 """)
+
     # CSS
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -5296,15 +5370,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 5px !important;
         }
-        
-        /* Style for Feedback Section accordion */
-        #feedback-section summary {
-            background-color: #dc3545 !important;
+
+# Line 1: New CSS for bet suggestion accordion
+        /* Style for Bet Suggestion Panel accordion */
+        #bet-suggestion-accordion {
+            background-color: #d4edda !important;
+            padding: 10px !important;
+        }
+        #bet-suggestion-accordion > div {
+            background-color: #d4edda !important;
+        }
+        #bet-suggestion-accordion summary {
+            background-color: #28a745 !important;
             color: #fff !important;
             padding: 10px !important;
             border-radius: 5px !important;
         }
-        
+
+# Line 2: Unchanged lines
         /* Hide stray labels in the Sides of Zero section */
         .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
             display: none !important;
@@ -5318,11 +5401,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             flex-wrap: wrap !important;
             background-color: white !important;
             padding: 10px 0 !important;
-            width: 100% !important; /* Ensure the header spans the full width */
-            margin: 0 auto !important; /* Center the row horizontally */
-            margin-bottom: 20px !important; /* Add spacing below the header */
+            width: 100% !important;
+            margin: 0 auto !important;
+            margin-bottom: 20px !important;
         }
-        
+
+# Lines after (context)
         .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
         
         /* Fix Selected Spins Label Cutoff */
@@ -6106,9 +6190,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # Event Handlers
     try:
         spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
+            fn=add_spin,
+            inputs=[spins_textbox, spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -6116,12 +6200,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, bet_suggestion_panel
             ]
-        ).then(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
         ).then(
             fn=dozen_tracker,
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
@@ -6317,7 +6397,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, bet_suggestion_panel
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
