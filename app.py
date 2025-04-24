@@ -4529,12 +4529,6 @@ if os.path.exists(chat_history_file):
 
 spins_display = gr.State(value="")
 chat_history = gr.State(value=initial_chat_history)  # Initialize with loaded history
-spins_textbox = gr.Textbox(
-    label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-    value="",
-    interactive=True,
-    elem_id="selected-spins"
-)
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
