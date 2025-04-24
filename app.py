@@ -652,7 +652,7 @@ def render_sides_of_zero_display():
         </div>
         '''
     
-    betting_sections_html += '</div>'
+    betting_sections_html += '</div>'  # Line before (context)
     
     # Generate Hot/Cold Numbers Table
     # Sort numbers by hit count (descending for hot, ascending for cold)
@@ -670,17 +670,17 @@ def render_sides_of_zero_display():
         cold_num, cold_hits = cold_numbers[i] if i < len(cold_numbers) else ("-", 0)
         hot_color = colors.get(str(hot_num), "black") if hot_num != "-" else "black"
         cold_color = colors.get(str(cold_num), "black") if cold_num != "-" else "black"
-        hot_cold_html += f'<tr><td style="text-align: center; padding: 6=8px; border: 1px solid #d3d3d3; background-color: {hot_color}; color: white;">{hot_num} ({hot_hits})</td><td style="text-align: center; padding: 8px; border: 1px solid #d3d3d3; background-color: {cold_color}; color: white;">{cold_num} ({cold_hits})</td></tr>'
+        hot_cold_html += f'<tr><td style="text-align: center; padding: 8px; border: 1px solid #d3d3d3; background-color: {hot_color}; color: white;">{hot_num} ({hot_hits})</td><td style="text-align: center; padding: 8px; border: 1px solid #d3d3d3; background-color: {cold_color}; color: white;">{cold_num} ({cold_hits})</td></tr>'
     hot_cold_html += '</table></div>'
     
     betting_sections_html += hot_cold_html
     
     # Convert Python boolean to JavaScript lowercase boolean
-    js_has_latest_spin = "true" if has_latest_spin else "false"
+    js_has_latest_spin = "true" if has_latest_spin else "false"  # Line after (context)
     
     # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
     return f"""
-    
+        
     # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
     return f"""
     <style>
