@@ -635,9 +635,14 @@ def render_sides_of_zero_display():
         for num in numbers:
             num_color = colors.get(str(num), "black")
             hit_count = state.scores.get(num, 0)
-            is_hot = hit_count > 0
-            class_name = "section-number" + (" hot-number" if is_hot else "")
-            badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
+            is_hot = hit_count >= 1  # Hot if hits >= 1
+            is_cold = hit_count == 0  # Cold if hits == 0
+            class_name = "section-number"
+            if is_hot:
+                class_name += " hot-number hot-fire"  # Add fire effect for hot numbers
+            elif is_cold:
+                class_name += " cold ice"  # Add ice effect for cold numbers
+            badge = f'<span class="number-hit-badge">{hit_count}</span>' if hit_count > 0 else ''
             numbers_html.append(f'<span class="{class_name}" style="background-color: {num_color}; color: white;" data-hits="{hit_count}" data-number="{num}">{num}{badge}</span>')
         numbers_display = "".join(numbers_html)
         
@@ -972,6 +977,38 @@ def render_sides_of_zero_display():
         .hot-number[style*="background-color: green"] {{
             animation: glow 1.5s infinite ease-in-out, border-flash 1.5s infinite ease-in-out, bounce 0.4s ease-in-out, green-pulse 1.5s infinite ease-in-out;
         }}
+        
+# Line 1: New fire and ice effects
+        /* Fire effect for hot numbers */
+        .hot-fire {{
+            background: linear-gradient(145deg, #ff4500, #ff8c00) !important;
+            box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00;
+            animation: fire-glow 1.2s infinite alternate ease-in-out;
+        }}
+        @keyframes fire-glow {{
+            0% {{ box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00; }}
+            100% {{ box-shadow: 0 0 15px #ff4500, 0 0 25px #ff8c00; }}
+        }}
+        /* Ice effect for cold numbers */
+        .cold.ice {{
+            background: linear-gradient(145deg, #87cefa, #00b7eb) !important;
+            box-shadow: 0 0 10px #87cefa, 0 0 20px #00b7eb;
+            animation: ice-shimmer 1.5s infinite alternate ease-in-out;
+        }}
+        @keyframes ice-shimmer {{
+            0% {{ box-shadow: 0 0 10px #87cefa, 0 0 20px #00b7eb; }}
+            100% {{ box-shadow: 0 0 15px #87cefa, 0 0 25px #00b7eb; }}
+        }}
+        /* Ensure hot-fire and ice effects layer with existing hot-number glow */
+        .hot-number.hot-fire {{
+            border: 2px solid #ff4500 !important;
+            text-shadow: 0 0 5px #ff8c00 !important;
+        }}
+        .cold.ice {{
+            border: 1px solid #00b7eb !important;
+        }}
+        
+# Line 2: Unchanged lines
         @keyframes green-pulse {{
             0% {{ background-color: green; }}
             50% {{ background-color: #33cc33; }}
