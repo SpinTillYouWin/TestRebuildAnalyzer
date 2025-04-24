@@ -4586,9 +4586,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                outputs=[spins_display, last_spin_display, spin_counter, sides_of_zero_display]
                             )
-
+    
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
@@ -7397,7 +7397,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
+            outputs=[spins_display, last_spin_display, spin_counter, sides_of_zero_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
