@@ -6270,6 +6270,47 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gr.update(visible=is_visible),
             gr.update(visible=is_visible)
         )
+
+    # New: Orchestrating function to combine analysis steps
+    def orchestrate_analysis(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
+        """Orchestrate analysis, caching results and producing all outputs in one pass."""
+        import time
+        start_time = time.time()
+        
+        # Check cache
+        cache_key = f"{spins_display}_{reset_scores}_{strategy}"
+        if cache_key in analysis_cache.value and not reset_scores:
+            cached = analysis_cache.value[cache_key]
+            spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = cached
+        else:
+            # Run analysis if not cached or reset requested
+            spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = analyze_spins(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count)
+            analysis_cache.value[cache_key] = (spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers)
+        
+        # Run trackers and dynamic table
+        dozen_text, dozen_html, dozen_sequence_html = dozen_tracker(
+            dozen_tracker_spins, dozen_consecutive_hits, dozen_alert,
+            dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert
+        )
+        even_money_text, even_money_html = even_money_tracker(
+            even_money_spins, even_money_consecutive_hits, even_money_alert,
+            even_money_combination_mode, red, black, even, odd, low, high,
+            identical_traits, consecutive_identical
+        )
+        dynamic_table = create_dynamic_table(
+            strategy if strategy != "None" else None, neighbours_count,
+            strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+        )
+        color_code = create_color_code_table()
+        
+        print(f"Analysis completed in {time.time() - start_time:.3f} seconds")
+        return (
+            spins_analysis, even_money, dozens, columns, streets, corners, six_lines,
+            splits, sides, straight_up, top_18, strongest_numbers, dynamic_table,
+            show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count),
+            render_sides_of_zero_display(), dozen_text, dozen_html, dozen_sequence_html,
+            even_money_text, even_money_html, color_code, analysis_cache.value
+        )
     
     try:
         strategy_dropdown.change(
