@@ -405,9 +405,48 @@ colors = {
 }
 
 
-# Lines before (context)
-def format_spins_as_html(spins, num_to_show):
-    if not spins:
+def render_quick_stats_summary():
+    # Calculate total spins (sum of all hits)
+    total_spins = sum(state.scores.values())
+    
+    # Find hottest and coldest numbers
+    sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    hottest_num, hottest_hits = sorted_scores[0] if sorted_scores else (0, 0)  # Default to 0 if no spins
+    coldest_num, coldest_hits = sorted_scores[-1] if sorted_scores else (0, 0)  # Default to 0 if no spins
+    
+    # Generate HTML for the stats summary
+    html = '<div style="margin: 20px 0; padding: 10px; background-color: #fff; border: 1px solid #d3d3d3; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">'
+    html += '<h4 style="text-align: center; margin: 0 0 10px 0; font-size: 14px;">Quick Stats Summary</h4>'
+    html += '<div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">'
+    # Total Spins
+    html += '<div style="background-color: #e0e0e0; padding: 8px; border-radius: 5px; text-align: center; min-width: 120px;">'
+    html += f'<span style="font-size: 12px; font-weight: bold;">Total Spins: {total_spins}</span>'
+    html += '</div>'
+    # Hottest Number
+    html += '<div style="background-color: #ff4444; color: white; padding: 8px; border-radius: 5px; text-align: center; min-width: 120px;">'
+    html += f'<span style="font-size: 12px; font-weight: bold;">Hottest: {hottest_num} ({hottest_hits})</span>'
+    html += '</div>'
+    # Coldest Number
+    html += '<div style="background-color: #2196f3; color: white; padding: 8px; border-radius: 5px; text-align: center; min-width: 120px;">'
+    html += f'<span style="font-size: 12px; font-weight: bold;">Coldest: {coldest_num} ({coldest_hits})</span>'
+    html += '</div>'
+    html += '</div>'
+    html += '</div>'
+    # Add media query for responsive design
+    html += '''
+    <style>
+        @media (max-width: 600px) {
+            div[style*="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;"] {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+    '''
+    return html
+
+def format_spins_as_html(spins, num_to_show):  # Line 1: Start of format_spins_as_html
+    if not spins:  # Line 3: First line of function body
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
     
     # Split the spins string into a list and reverse to get the most recent first
