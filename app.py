@@ -5358,7 +5358,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Ask a Question (e.g., 'What are the best streets?')",
                     placeholder="Type your question here...",
                     interactive=True,
-                    elem_id="chatbot-input"
+                    elem_id="chatbot-input",
+                    _js="""(element) => {
+                        element.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter' && !event.shiftKey) {
+                                event.preventDefault();
+                                element.dispatchEvent(new Event('submit'));
+                                console.log('Enter key pressed - submit event triggered');
+                            }
+                        });
+                    }"""
                 )
                 submit_button = gr.Button("Submit", elem_id="chatbot-submit-button")
                 chatbot_output = gr.HTML(
