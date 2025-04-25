@@ -598,6 +598,32 @@ def render_sides_of_zero_display():
     # Calculate maximum hits for scaling highlights
     max_segment_hits = max(state.scores.values(), default=1)
     
+    # Hot & Cold Numbers Display
+    spins_to_analyze = 50  # Fixed to last 50 spins
+    hot_cold_html = '<div class="hot-cold-numbers" style="margin-top: 10px; padding: 8px; background-color: #f9f9f9; border: 1px solid #d3d3d3; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">'
+    if state.last_spins and len(state.last_spins) >= 1:
+        # Count hits in last 50 spins
+        recent_spins = state.last_spins[-spins_to_analyze:] if len(state.last_spins) >= spins_to_analyze else state.last_spins
+        hit_counts = {n: 0 for n in range(37)}
+        for spin in recent_spins:
+            hit_counts[int(spin)] += 1
+        # Get top 3 hot and cold numbers
+        sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))[:3]
+        sorted_cold = sorted(hit_counts.items(), key=lambda x: (x[1], x[0]))[:3]
+        # Hot numbers
+        hot_cold_html += '<div style="flex: 1; min-width: 150px;"><strong>🔥 Hot:</strong> '
+        hot_numbers = [f'<span style="color: red; margin: 0 3px;">{num} ({hits})</span>' for num, hits in sorted_hot if hits > 0]
+        hot_cold_html += ", ".join(hot_numbers) if hot_numbers else "None"
+        hot_cold_html += '</div>'
+        # Cold numbers
+        hot_cold_html += '<div style="flex: 1; min-width: 150px;"><strong>🧊 Cold:</strong> '
+        cold_numbers = [f'<span style="color: blue; margin: 0 3px;">{num} ({hits})</span>' for num, hits in sorted_cold]
+        hot_cold_html += ", ".join(cold_numbers[:3]) if cold_numbers else "None"
+        hot_cold_html += '</div>'
+    else:
+        hot_cold_html += '<p>No spins yet to analyze.</p>'
+    hot_cold_html += '</div>'
+    
     # Generate HTML for the number list
     def generate_number_list(numbers):
         if not numbers:
@@ -647,7 +673,7 @@ def render_sides_of_zero_display():
     right_y1 = 170 + 145 * math.sin(right_start_rad)
     right_x2 = 170 + 145 * math.cos(right_end_rad)
     right_y2 = 170 + 145 * math.sin(right_end_rad)
-    right_path_d = f"M 170,170 L {right_x1},{right_y1} A 145,145 0 0,1 {right_x2},{right_y2} L 170,170 Z"
+    right_path_d = f"M 170,170 L {right_x1},{left_y1} A 145,145 0 0,1 {right_x2},{right_y2} L 170,170 Z"
     right_fill = "rgba(244, 81, 30, 0.5)" if winning_section == "Right Side" else "rgba(128, 128, 128, 0.3)"
     right_stroke = "#D84315" if winning_section == "Right Side" else "#808080"
     wheel_svg += f'<path d="{right_path_d}" fill="{right_fill}" stroke="{right_stroke}" stroke-width="3"/>'
@@ -1120,6 +1146,7 @@ def render_sides_of_zero_display():
                 <span style="display: block; font-weight: bold; font-size: 10px; background-color: #f4511e; color: white; padding: 2px 5px; border-radius: 3px;">Right Side</span>
             </div>
         </div>
+        {hot_cold_html}
         {number_list}
         {wheel_svg}
         {betting_sections_html}
