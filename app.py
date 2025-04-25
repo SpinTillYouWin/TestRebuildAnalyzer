@@ -549,6 +549,7 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
+```python
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -598,7 +599,7 @@ def render_sides_of_zero_display():
     # Calculate maximum hits for scaling highlights
     max_segment_hits = max(state.scores.values(), default=1)
     
-    # Hot & Cold Numbers Display
+    # Hot & Cold Numbers Display with Enhanced Visuals
     spins_to_analyze = 50  # Fixed to last 50 spins
     hot_cold_html = '<div class="hot-cold-numbers" style="margin-top: 10px; padding: 8px; background-color: #f9f9f9; border: 1px solid #d3d3d3; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">'
     if state.last_spins and len(state.last_spins) >= 1:
@@ -610,18 +611,28 @@ def render_sides_of_zero_display():
         # Get top 3 hot and cold numbers
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))[:3]
         sorted_cold = sorted(hit_counts.items(), key=lambda x: (x[1], x[0]))[:3]
-        # Hot numbers
-        hot_cold_html += '<div style="flex: 1; min-width: 150px;"><strong>🔥 Hot:</strong> '
-        hot_numbers = [f'<span style="color: red; margin: 0 3px;">{num} ({hits})</span>' for num, hits in sorted_hot if hits > 0]
-        hot_cold_html += ", ".join(hot_numbers) if hot_numbers else "None"
+        # Hot numbers with circular badges
+        hot_cold_html += '<div style="flex: 1; min-width: 150px;">'
+        hot_cold_html += '<span style="display: block; font-weight: bold; font-size: 14px; background: linear-gradient(to right, #ff0000, #ff4500); color: white; padding: 2px 8px; border-radius: 3px; margin-bottom: 5px;">🔥 Hot</span>'
+        hot_numbers = []
+        for num, hits in sorted_hot:
+            if hits > 0:
+                hot_numbers.append(
+                    f'<span class="number-badge" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: #1e90ff; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; margin: 0 3px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s ease;">{num}<span class="hit-badge" style="position: absolute; top: -6px; right: -6px; background-color: #ff4444; color: white; border-radius: 50%; width: 16px; height: 16px; line-height: 16px; font-size: 8px; text-align: center;">{hits}</span></span>'
+                )
+        hot_cold_html += "".join(hot_numbers) if hot_numbers else '<span style="color: #666;">None</span>'
         hot_cold_html += '</div>'
-        # Cold numbers
-        hot_cold_html += '<div style="flex: 1; min-width: 150px;"><strong>🧊 Cold:</strong> '
-        cold_numbers = [f'<span style="color: blue; margin: 0 3px;">{num} ({hits})</span>' for num, hits in sorted_cold]
-        hot_cold_html += ", ".join(cold_numbers[:3]) if cold_numbers else "None"
+        # Cold numbers with circular badges
+        hot_cold_html += '<div style="flex: 1; min-width: 150px;">'
+        hot_cold_html += '<span style="display: block; font-weight: bold; font-size: 14px; background: linear-gradient(to right, #1e90ff, #87cefa); color: white; padding: 2px 8px; border-radius: 3px; margin-bottom: 5px;">🧊 Cold</span>'
+        cold_numbers = [
+            f'<span class="number-badge" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: #1e90ff; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; margin: 0 3px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s ease;">{num}<span class="hit-badge" style="position: absolute; top: -6px; right: -6px; background-color: #4682b4; color: white; border-radius: 50%; width: 16px; height: 16px; line-height: 16px; font-size: 8px; text-align: center;">{hits}</span></span>'
+            for num, hits in sorted_cold
+        ]
+        hot_cold_html += "".join(cold_numbers[:3]) if cold_numbers else '<span style="color: #666;">None</span>'
         hot_cold_html += '</div>'
     else:
-        hot_cold_html += '<p>No spins yet to analyze.</p>'
+        hot_cold_html += '<p style="color: #666; font-size: 12px;">No spins yet to analyze.</p>'
     hot_cold_html += '</div>'
     
     # Generate HTML for the number list
@@ -772,7 +783,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
+    # HTML output with JavaScript to handle animations and interactivity
     return f"""
     <style>
         .circular-progress {{
@@ -868,6 +879,10 @@ def render_sides_of_zero_display():
             line-height: 20px;
             font-size: 10px;
         }}
+        .number-badge:hover {{
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }}
         .tooltip {{
             position: absolute;
             background: #000;
@@ -938,7 +953,7 @@ def render_sides_of_zero_display():
             .number-item {{
                 width: 16px;
                 height: 16px;
-                line-height: 16px;
+               line-height: 16px;
                 font-size: 8px;
             }}
             .number-item.zero-number {{
