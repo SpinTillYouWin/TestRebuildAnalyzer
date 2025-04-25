@@ -2364,139 +2364,147 @@ def get_strongest_numbers_with_neighbors(num_count):
     sorted_numbers = sorted(list(all_numbers))
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
-# Function to analyze spins
-# Line 1: Start of the analyze_spins function (unchanged)
+# Line 1: Start of the analyze_spins function (updated with try-except)
 def analyze_spins(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count):
-    spins = spins_display.strip()
-    if not spins:
-        return (
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "No spins to analyze.",
-            "<p>No spins to analyze.</p>",
-            "<p>No spins to analyze.</p>",
-            "No spins to analyze.",
-        )
+    try:
+        spins = spins_display.strip()
+        if not spins:
+            return (
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "No spins to analyze.",
+                "<p>No spins to analyze.</p>",
+                "<p>No spins to analyze.</p>",
+                "No spins to analyze.",
+                "<p>No spins to analyze.</p>"  # Added for hot_cold_overview_display
+            )
+        
+        spins = [int(s.strip()) for s in spins.split(",") if s.strip().isdigit()]
+        if not spins:
+            return (
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "No valid spins to analyze.",
+                "<p>No valid spins to analyze.</p>",
+                "<p>No valid spins to analyze.</p>",
+                "No valid spins to analyze.",
+                "<p>No valid spins to analyze.</p>"  # Added for hot_cold_overview_display
+            )
+        
+        # Reset scores if requested
+        if reset_scores:
+            state.reset_scores()
+            print("analyze_spins: Scores reset due to reset_scores=True")
+        
+        # Update scores based on spins
+        for spin in spins:
+            if 0 <= spin <= 36:
+                state.scores[spin] = state.scores.get(spin, 0) + 1
+                # Update even money scores
+                for name, numbers in EVEN_MONEY.items():
+                    if spin in numbers:
+                        state.even_money_scores[name] = state.even_money_scores.get(name, 0) + 1
+                # Update side scores (Left/Right of Zero)
+                if spin in [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]:
+                    state.side_scores["Left Side of Zero"] += 1
+                elif spin in [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]:
+                    state.side_scores["Right Side of Zero"] += 1
+        
+        # Calculate statistics
+        total_spins = len(spins)
+        spins_analysis = f"Total Spins Analyzed: {total_spins}\n"
+        spins_analysis += f"Unique Numbers Hit: {len([s for s in state.scores if state.scores[s] > 0])}\n"
+        spins_analysis += f"Most Frequent Number: {max(state.scores.items(), key=lambda x: x[1], default=(0, 0))[0]} (Hits: {max(state.scores.values(), default=0)})\n"
+        
+        # Even Money Bets
+        even_money = "Even Money Bets:\n"
+        for name, count in state.even_money_scores.items():
+            even_money += f"{name}: {count} hits\n"
+        
+        # Dozens
+        dozens = "Dozens:\n"
+        for name, numbers in DOZENS.items():
+            hits = sum(state.scores.get(num, 0) for num in numbers)
+            dozens += f"{name}: {hits} hits\n"
+        
+        # Columns
+        columns = "Columns:\n"
+        for name, numbers in COLUMNS.items():
+            hits = sum(state.scores.get(num, 0) for num in numbers)
+            columns += f"{name}: {hits} hits\n"
+        
+        # Streets
+        streets = "Streets:\n"
+        for name, numbers in STREETS.items():
+            hits = sum(state.scores.get(num, 0) for num in numbers)
+            streets += f"{name}: {hits} hits\n"
+        
+        # Corners
+        corners = "Corners:\n"
+        for name, numbers in CORNERS.items():
+            hits = sum(state.scores.get(num, 0) for num in numbers)
+            corners += f"{name}: {hits} hits\n"
+        
+        # Double Streets (Six Lines)
+        six_lines = "Double Streets (Six Lines):\n"
+        for name, numbers in SIX_LINES.items():
+            hits = sum(state.scores.get(num, 0) for num in numbers)
+            six_lines += f"{name}: {hits} hits\n"
+        
+        # Splits
+        splits = "Splits:\n"
+        for name, numbers in SPLITS.items():
+            hits = sum(state.scores.get(num, 0) for num in numbers)
+            splits += f"{name}: {hits} hits\n"
+        
+        # Sides of Zero
+        sides = "Sides of Zero:\n"
+        for side, count in state.side_scores.items():
+            sides += f"{side}: {count} hits\n"
+        
+        # Strongest Numbers Tables
+        sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
+        straight_up_html = '<table style="width: 100%; border-collapse: collapse;"><tr><th>Number</th><th>Hits</th></tr>'
+        for num, hits in sorted_numbers:
+            if hits > 0:
+                straight_up_html += f'<tr><td>{num}</td><td>{hits}</td></tr>'
+        straight_up_html += '</table>'
+        
+        top_18_numbers = sorted_numbers[:18]
+        top_18_html = '<table style="width: 100%; border-collapse: collapse;"><tr><th>Number</th><th>Hits</th></tr>'
+        for num, hits in top_18_numbers:
+            if hits > 0:
+                top_18_html += f'<tr><td>{num}</td><td>{hits}</td></tr>'
+        top_18_html += '</table>'
+        
+        strongest_numbers = ", ".join(f"{num} (Hits: {hits})" for num, hits in top_18_numbers if hits > 0) or "None"
     
-    spins = [int(s.strip()) for s in spins.split(",") if s.strip().isdigit()]
-    if not spins:
-        return (
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "No valid spins to analyze.",
-            "<p>No valid spins to analyze.</p>",
-            "<p>No valid spins to analyze.</p>",
-            "No valid spins to analyze.",
-        )
-    
-    # Reset scores if requested
-    if reset_scores:
-        state.reset_scores()
-        print("analyze_spins: Scores reset due to reset_scores=True")
-    
-    # Update scores based on spins
-    for spin in spins:
-        if 0 <= spin <= 36:
-            state.scores[spin] = state.scores.get(spin, 0) + 1
-            # Update even money scores
-            for name, numbers in EVEN_MONEY.items():
-                if spin in numbers:
-                    state.even_money_scores[name] = state.even_money_scores.get(name, 0) + 1
-            # Update side scores (Left/Right of Zero)
-            if spin in [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]:
-                state.side_scores["Left Side of Zero"] += 1
-            elif spin in [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]:
-                state.side_scores["Right Side of Zero"] += 1
-    
-    # Calculate statistics
-    total_spins = len(spins)
-    spins_analysis = f"Total Spins Analyzed: {total_spins}\n"
-    spins_analysis += f"Unique Numbers Hit: {len([s for s in state.scores if state.scores[s] > 0])}\n"
-    spins_analysis += f"Most Frequent Number: {max(state.scores.items(), key=lambda x: x[1], default=(0, 0))[0]} (Hits: {max(state.scores.values(), default=0)})\n"
-    
-    # Even Money Bets
-    even_money = "Even Money Bets:\n"
-    for name, count in state.even_money_scores.items():
-        even_money += f"{name}: {count} hits\n"
-    
-    # Dozens
-    dozens = "Dozens:\n"
-    for name, numbers in DOZENS.items():
-        hits = sum(state.scores.get(num, 0) for num in numbers)
-        dozens += f"{name}: {hits} hits\n"
-    
-    # Columns
-    columns = "Columns:\n"
-    for name, numbers in COLUMNS.items():
-        hits = sum(state.scores.get(num, 0) for num in numbers)
-        columns += f"{name}: {hits} hits\n"
-    
-    # Streets
-    streets = "Streets:\n"
-    for name, numbers in STREETS.items():
-        hits = sum(state.scores.get(num, 0) for num in numbers)
-        streets += f"{name}: {hits} hits\n"
-    
-    # Corners
-    corners = "Corners:\n"
-    for name, numbers in CORNERS.items():
-        hits = sum(state.scores.get(num, 0) for num in numbers)
-        corners += f"{name}: {hits} hits\n"
-    
-    # Double Streets (Six Lines)
-    six_lines = "Double Streets (Six Lines):\n"
-    for name, numbers in SIX_LINES.items():
-        hits = sum(state.scores.get(num, 0) for num in numbers)
-        six_lines += f"{name}: {hits} hits\n"
-    
-    # Splits
-    splits = "Splits:\n"
-    for name, numbers in SPLITS.items():
-        hits = sum(state.scores.get(num, 0) for num in numbers)
-        splits += f"{name}: {hits} hits\n"
-    
-    # Sides of Zero
-    sides = "Sides of Zero:\n"
-    for side, count in state.side_scores.items():
-        sides += f"{side}: {count} hits\n"
-    
-    # Strongest Numbers Tables
-    sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
-    straight_up_html = '<table style="width: 100%; border-collapse: collapse;"><tr><th>Number</th><th>Hits</th></tr>'
-    for num, hits in sorted_numbers:
-        if hits > 0:
-            straight_up_html += f'<tr><td>{num}</td><td>{hits}</td></tr>'
-    straight_up_html += '</table>'
-    
-    top_18_numbers = sorted_numbers[:18]
-    top_18_html = '<table style="width: 100%; border-collapse: collapse;"><tr><th>Number</th><th>Hits</th></tr>'
-    for num, hits in top_18_numbers:
-        if hits > 0:
-            top_18_html += f'<tr><td>{num}</td><td>{hits}</td></tr>'
-    top_18_html += '</table>'
-    
-    strongest_numbers = ", ".join(f"{num} (Hits: {hits})" for num, hits in top_18_numbers if hits > 0) or "None"
+        # Line 2: Add the Hot & Cold bar HTML for the new overview display
+        hot_cold_html = render_hot_cold_bar()
 
-    # Line 2: Add the Hot & Cold bar HTML for the new overview display
-    hot_cold_html = render_hot_cold_bar()
+        # Line 3: Updated return statement to include the new hot_cold_html
+        return spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up_html, top_18_html, strongest_numbers, hot_cold_html
 
-    # Line 3: Updated return statement to include the new hot_cold_html
-    return spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up_html, top_18_html, strongest_numbers, hot_cold_html
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+        return (
+            f"Unexpected error while analyzing spins: {str(e)}. Please try again.",
+            "", "", "", "", "", "", "", "",
+            "", "", "",
+            "<p>Unexpected error while analyzing spins.</p>"  # Added for hot_cold_overview_display
+        )
 
 # Function to reset scores
 def reset_scores():
