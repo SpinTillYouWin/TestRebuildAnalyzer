@@ -549,56 +549,9 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
-def render_sides_of_zero_display():
-    left_hits = state.side_scores["Left Side of Zero"]
-    zero_hits = state.scores[0]
-    right_hits = state.side_scores["Right Side of Zero"]
-    
-    # Calculate the maximum hit count for scaling
-    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
-    
-    # Calculate progress percentages (0 to 100)
-    left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
-    zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
-    right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
-    
-    # Define the order of numbers for the European roulette wheel
-    original_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    left_side = original_order[:18]  # 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
-    zero = [0]
-    right_side = original_order[19:]  # 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10
-    wheel_order = left_side + zero + right_side  # Used for wheel SVG, now 5, ..., 26, 0, 32, ..., 10
-    
-    # Define betting sections
-    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
-    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]
-    orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
-    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
-    
-    # Calculate hit counts for each betting section
-    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
-    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
-    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
-    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
-    
-    # Determine the winning section for Left/Right Side
-    winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
-    
-    # Get the latest spin for bounce effect and wheel rotation
-    latest_spin = int(state.last_spins[-1]) if state.last_spins else None
-    latest_spin_angle = 0
-    has_latest_spin = latest_spin is not None
-    if latest_spin is not None:
-        index = original_order.index(latest_spin) if latest_spin in original_order else 0
-        latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom
-    
-    # Prepare numbers with hit counts
-    wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
-    
-    # Calculate maximum hits for scaling highlights
-    max_segment_hits = max(state.scores.values(), default=1)
-    
-    # Hot & Cold Numbers Display with Ties Handling and Cap
+# Line 1: New function to add
+def render_hot_cold_bar():
+    """Generate the Hot & Cold Numbers bar HTML."""
     hot_cold_html = '<div class="hot-cold-numbers" style="margin-top: 10px; padding: 8px; background-color: #f9f9f9; border: 1px solid #d3d3d3; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">'
     if state.last_spins and len(state.last_spins) >= 1:
         # Use state.scores for consistency with Strongest Numbers Tables
@@ -660,6 +613,63 @@ def render_sides_of_zero_display():
         hot_cold_html += '<p style="color: #666; font-size: 12px;">No spins yet to analyze.</p>'
     hot_cold_html += '</div>'
     
+    return hot_cold_html
+
+# Line 1: Start of the function (unchanged)
+def render_sides_of_zero_display():
+    left_hits = state.side_scores["Left Side of Zero"]
+    zero_hits = state.scores[0]
+    right_hits = state.side_scores["Right Side of Zero"]
+    
+    # Calculate the maximum hit count for scaling
+    max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
+    
+    # Calculate progress percentages (0 to 100)
+    left_progress = (left_hits / max_hits) * 100 if max_hits > 0 else 0
+    zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
+    right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
+    
+    # Define the order of numbers for the European roulette wheel
+    original_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    left_side = original_order[:18]  # 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+    zero = [0]
+    right_side = original_order[19:]  # 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10
+    wheel_order = left_side + zero + right_side  # Used for wheel SVG, now 5, ..., 26, 0, 32, ..., 10
+    
+    # Define betting sections
+    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
+    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]
+    orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
+    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+    
+    # Calculate hit counts for each betting section
+    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
+    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
+    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
+    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
+    
+    # Determine the winning section for Left/Right Side
+    winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
+    
+    # Get the latest spin for bounce effect and wheel rotation
+    latest_spin = int(state.last_spins[-1]) if state.last_spins else None
+    latest_spin_angle = 0
+    has_latest_spin = latest_spin is not None
+    if latest_spin is not None:
+        index = original_order.index(latest_spin) if latest_spin in original_order else 0
+        latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom
+    
+    # Prepare numbers with hit counts
+    wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
+    
+    # Calculate maximum hits for scaling highlights
+    max_segment_hits = max(state.scores.values(), default=1)
+    
+    # Line 2: Updated to call render_hot_cold_bar (replaces the Hot & Cold logic)
+    # Hot & Cold Numbers Display with Ties Handling and Cap
+    hot_cold_html = render_hot_cold_bar()
+    
+    # Line 3: End of the section (unchanged)
     # Generate HTML for the number list
     def generate_number_list(numbers):
         if not numbers:
@@ -4688,6 +4698,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # 2. Row 2: European Roulette Table
     with gr.Group():
+        # Line 1: Start of the European Roulette Table section
         gr.Markdown("### European Roulette Table")
         table_layout = [
             ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
@@ -4718,6 +4729,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             )
 
+    # Line 2: New Row 2.5 - Add the Hot & Cold Numbers Overview accordion
+    with gr.Row():
+        with gr.Accordion("Hot & Cold Numbers Overview", open=False, elem_id="hot-cold-overview"):
+            hot_cold_overview_display = gr.HTML(
+                label="Hot & Cold Numbers Overview",
+                value='<p>No spins yet to analyze.</p>',
+                elem_classes=["hot-cold-overview-container"]
+            )
+
+    # Line 3: Start of the Last Spins Display section (unchanged)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
@@ -5727,11 +5748,32 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
     
         /* Responsive Design for Video */
-        @media (max-width: 600px) {
-            #video-output iframe {
-                height: 200px !important;
+            @media (max-width: 600px) {
+                #video-output iframe {
+                    height: 200px !important;
+                }
             }
+        # Line 1: End of the last CSS block (unchanged)
         }
+
+        # Line 2: Add new CSS for Hot & Cold Numbers Overview
+        /* Hot & Cold Numbers Overview */
+        .hot-cold-overview-container {
+            background-color: #f5f5f5 !important;
+            border: 1px solid #d3d3d3 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin-top: 10px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }
+        #hot-cold-overview summary {
+            background-color: #ff9800 !important;
+            color: #fff !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+        }
+
+        # Line 3: End of the style section (unchanged)
     </style>
     """)
     print("CSS Updated")
