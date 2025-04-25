@@ -4904,6 +4904,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Casino Data Insights",
                     value="<p>No casino data entered yet.</p>"
                 )
+        # Start of section
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
                 label="Select Category",
@@ -5037,6 +5038,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
 
+# Line 1: Start of section
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -5062,6 +5064,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value="",
                     visible=False
                 )
+
+# Line 2: End of section
             with gr.Row():
                 win_button = gr.Button("Win")
                 lose_button = gr.Button("Lose")
@@ -5070,6 +5074,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
                 current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+# Lines after (context, unchanged)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
