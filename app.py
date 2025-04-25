@@ -2364,13 +2364,13 @@ def get_strongest_numbers_with_neighbors(num_count):
     sorted_numbers = sorted(list(all_numbers))
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
-# Function to analyze spins
+# Line 1: Start of the analyze_spins function (updated with try-except)
 def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
-            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return "Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "<p>No spins to analyze.</p>", render_sides_of_zero_display()
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -2390,11 +2390,11 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return error_msg, "", "", "", "", "", "", "", "", "", "", "", "<p>Errors in spin analysis.</p>", render_sides_of_zero_display()
 
         if not spins:
             print("analyze_spins: No valid spins found.")
-            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+            return "No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "<p>No valid spins to analyze.</p>", render_sides_of_zero_display()
 
         if reset_scores:
             state.reset()
@@ -2497,18 +2497,17 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         print(f"analyze_spins: strongest_numbers_output='{strongest_numbers_output}'")
 
-        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count)
-        print(f"analyze_spins: dynamic_table_html generated")
+        # Line 2: Add Hot & Cold bar HTML
+        hot_cold_html = render_hot_cold_bar()
 
-        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
-        print(f"analyze_spins: Strategy output = {strategy_output}")
-
+        # Line 3: Updated return statement to include hot_cold_html
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
+                straight_up_html, top_18_html, strongest_numbers_output, hot_cold_html, render_sides_of_zero_display())
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display()
+        return f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "<p>Unexpected error while analyzing spins.</p>", render_sides_of_zero_display()
+
 
 # Function to reset scores
 def reset_scores():
@@ -4761,6 +4760,95 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
 
+    # Line 1: Start of the spins_textbox.change handler (updated)
+    try:
+        spins_textbox.change(
+            fn=validate_spins_input,
+            inputs=[spins_textbox],
+            outputs=[spins_display, last_spin_display]
+        ).then(
+            fn=analyze_spins,
+            inputs=[
+                spins_display,
+                reset_scores_checkbox,
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider
+            ],
+            outputs=[
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                hot_cold_overview_display,  # Added for Hot & Cold Overview
+                sides_of_zero_display
+            ]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[
+                gr.State(),
+                dozen_tracker_output,
+                dozen_tracker_sequence_output
+            ]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[
+                gr.State(),
+                even_money_tracker_output
+            ]
+        )
+    # Line 3: End of the try-except block (unchanged)
+    except Exception as e:
+        print(f"Error in spins_textbox.change handler: {str(e)}")
+
+    # Lines after (context, unchanged)
+    try:
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in spins_display.change handler: {str(e)}")
+
     # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
@@ -5304,6 +5392,99 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Video",
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
+
+    # Line 1: Start of the analyze_button.click handler (updated)
+    try:
+        analyze_button.click(
+            fn=analyze_spins,
+            inputs=[
+                spins_display,
+                reset_scores_checkbox,
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider
+            ],
+            outputs=[
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                hot_cold_overview_display,  # Added for Hot & Cold Overview
+                sides_of_zero_display
+            ]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown,
+                top_color_picker,
+                middle_color_picker,
+                lower_color_picker
+            ],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[
+                gr.State(),
+                dozen_tracker_output,
+                dozen_tracker_sequence_output
+            ]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[
+                gr.State(),
+                even_money_tracker_output
+            ]
+        )
+    # Line 3: End of the try-except block (unchanged)
+    except Exception as e:
+        print(f"Error in analyze_button.click handler: {str(e)}")
+
+    # Lines after (context, unchanged)
+    try:
+        save_button.click(
+            fn=save_session,
+            inputs=[],
+            outputs=[save_output]
+        )
+    except Exception as e:
+        print(f"Error in save_button.click handler: {str(e)}")
 
     # 12. Row 12: Feedback Section
     with gr.Row():
@@ -6362,7 +6543,73 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
-    
+
+    # Line 1: Start of the clear_all_button.click handler (updated)
+    try:
+        clear_all_button.click(
+            fn=clear_all,
+            inputs=[],
+            outputs=[
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                last_spin_display,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                spin_counter,
+                hot_cold_overview_display,  # Added for Hot & Cold Overview
+                sides_of_zero_display
+            ]
+        ).then(
+            fn=clear_outputs,
+            inputs=[],
+            outputs=[
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                color_code_output
+            ]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[
+                gr.State(),
+                dozen_tracker_output,
+                dozen_tracker_sequence_output
+            ]
+        )
+    # Line 3: End of the try-except block (unchanged)
+    except Exception as e:
+        print(f"Error in clear_all_button.click handler: {str(e)}")
+
+    # Lines after (context, unchanged)
     try:
         last_spin_count.change(
             fn=format_spins_as_html,
@@ -6519,7 +6766,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         load_input.change(
             fn=load_session,
-            inputs=[load_input, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[
+                load_input,
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider
+            ],
             outputs=[
                 spins_display,
                 spins_textbox,
@@ -6536,7 +6788,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output,
+                hot_cold_overview_display  # Added for Hot & Cold Overview
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6576,15 +6829,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_follow_up_spins_dropdown,
                 dozen_tracker_sequence_alert_checkbox
             ],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+            outputs=[
+                gr.State(),
+                dozen_tracker_output,
+                dozen_tracker_sequence_output
+            ]
         )
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
-    
+
+    # Line 1: Start of the undo_button.click handler (updated)
     try:
         undo_button.click(
             fn=undo_last_spin,
-            inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[
+                spins_display,
+                gr.State(value=1),
+                strategy_dropdown,
+                neighbours_count_slider,
+                strong_numbers_count_slider
+            ],
             outputs=[
                 spin_analysis_output,
                 even_money_output,
@@ -6604,7 +6868,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                hot_cold_overview_display,  # Added for Hot & Cold Overview
+                sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6636,11 +6901,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_follow_up_spins_dropdown,
                 dozen_tracker_sequence_alert_checkbox
             ],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+            outputs=[
+                gr.State(),
+                dozen_tracker_output,
+                dozen_tracker_sequence_output
+            ]
         )
+    # Line 3: End of the try-except block (unchanged)
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
-    
+
+    # Lines after (context, unchanged)
     try:
         neighbours_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -6653,7 +6924,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in neighbours_count_slider.change handler: {str(e)}")
-    
+
     try:
         strong_numbers_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
