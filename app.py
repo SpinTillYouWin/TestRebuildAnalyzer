@@ -4131,20 +4131,11 @@ def top_numbers_with_neighbours_tiered():
     if straight_up_df.empty:
         return "<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>"
 
-    # Start with the HTML table for Strongest Numbers
-    table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
-    table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"  # Table header
-    for _, row in straight_up_df.iterrows():
-        num = str(row["Number"])
-        left, right = current_neighbors.get(row["Number"], ("", ""))
-        left = str(left) if left is not None else ""
-        right = str(right) if right is not None else ""
-        table_html += f"<tr><td>{num}</td><td>{left}</td><td>{right}</td></tr>"
-    table_html += "</table>"
-
-    # Wrap the table in a div with a heading
-    recommendations.append("<h3>Strongest Numbers:</h3>")
-    recommendations.append(table_html)
+    # Removed the Strongest Numbers table generation
+    # Previously, this section created an HTML table:
+    # table_html = '<table border="1" style="border-collapse: collapse; text-align: center; font-family: Arial, sans-serif;">'
+    # table_html += "<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>"
+    # ...
 
     num_to_take = min(8, len(straight_up_df))
     top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
