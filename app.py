@@ -598,7 +598,7 @@ def render_sides_of_zero_display():
     # Calculate maximum hits for scaling highlights
     max_segment_hits = max(state.scores.values(), default=1)
     
-    # Hot & Cold Numbers Display with Ties Handling
+    # Hot & Cold Numbers Display with Ties Handling and Cap
     hot_cold_html = '<div class="hot-cold-numbers" style="margin-top: 10px; padding: 8px; background-color: #f9f9f9; border: 1px solid #d3d3d3; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">'
     if state.last_spins and len(state.last_spins) >= 1:
         # Use state.scores for consistency with Strongest Numbers Tables
@@ -606,7 +606,7 @@ def render_sides_of_zero_display():
         
         # Hot numbers: Sort by score descending, number ascending
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
-        # Take top 5, but include all tied numbers at the 5th position
+        # Take top 5, but include all tied numbers at the 5th position, capped at 28
         hot_numbers = []
         if len(sorted_hot) >= 5:
             fifth_score = sorted_hot[4][1]  # Score of the 5th number
@@ -618,10 +618,11 @@ def render_sides_of_zero_display():
                     break
         else:
             hot_numbers = [(num, score) for num, score in sorted_hot if score > 0]
+        hot_numbers = hot_numbers[:28]  # Cap at 28 to keep display compact
         
         # Cold numbers: Sort by score ascending, number ascending
         sorted_cold = sorted(hit_counts.items(), key=lambda x: (x[1], x[0]))
-        # Take top 5, but include all tied numbers at the 5th position
+        # Take top 5, but include all tied numbers at the 5th position, capped at 15
         cold_numbers = []
         if len(sorted_cold) >= 5:
             fifth_score = sorted_cold[4][1]  # Score of the 5th number
@@ -632,6 +633,7 @@ def render_sides_of_zero_display():
                     break
         else:
             cold_numbers = [(num, score) for num, score in sorted_cold]
+        cold_numbers = cold_numbers[:15]  # Cap at 15 to prevent overflow
         
         # Hot numbers display
         hot_cold_html += '<div style="flex: 1; min-width: 150px;">'
@@ -645,7 +647,6 @@ def render_sides_of_zero_display():
         hot_cold_html += '</div>'
         
         # Cold numbers display
-        cold_numbers = cold_numbers[:15]  # Cap at 15 to prevent overflow
         hot_cold_html += '<div style="flex: 1; min-width: 150px;">'
         hot_cold_html += '<span style="display: block; font-weight: bold; font-size: 14px; background: linear-gradient(to right, #1e90ff, #87cefa); color: white; padding: 2px 8px; border-radius: 3px; margin-bottom: 5px;">🧊 Cold</span>'
         cold_display = []
@@ -807,7 +808,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
+    # HTML output with JavaScript to handle animations and interactivity
     return f"""
     <style>
         .circular-progress {{
@@ -1137,7 +1138,7 @@ def render_sides_of_zero_display():
         @keyframes red-pulse {{
             0% {{ background-color: red; }}
             50% {{ background-color: #ff3333; }}
-            100% {{ scholarship red; }}
+            100% {{ background-color: red; }}
         }}
         /* Dynamic color pulse for black numbers */
         .hot-number[style*="background-color: black"] {{
