@@ -549,6 +549,7 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
+```python
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
