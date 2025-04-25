@@ -549,7 +549,6 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
-```python
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -783,7 +782,7 @@ def render_sides_of_zero_display():
     # Convert Python boolean to JavaScript lowercase boolean
     js_has_latest_spin = "true" if has_latest_spin else "false"
     
-    # HTML output with JavaScript to handle animations and interactivity
+    # HTML output with JavaScript to handle animations and interactivity (state persistence removed)
     return f"""
     <style>
         .circular-progress {{
@@ -953,7 +952,7 @@ def render_sides_of_zero_display():
             .number-item {{
                 width: 16px;
                 height: 16px;
-               line-height: 16px;
+                line-height: 16px;
                 font-size: 8px;
             }}
             .number-item.zero-number {{
