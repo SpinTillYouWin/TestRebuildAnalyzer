@@ -5041,12 +5041,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
             with gr.Row():
-                bankroll_input = gr.Number(label="Bankroll", value=1000)
-                base_unit_input = gr.Number(label="Base Unit", value=10)
-                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-                stop_win_input = gr.Number(label="Stop Win", value=200)
-                # Line 1: Updated line with min_value removed
-                target_profit_input = gr.Number(label="Target Profit (Units)", value=10, step=1)
+                bankroll_input = gr.Number(label="Bankroll", value=1000, minimum=1, step=1)
+                base_unit_input = gr.Number(label="Base Unit", value=10, minimum=1, step=1)
+                stop_loss_input = gr.Number(label="Stop Loss", value=-500, step=1)  # Allow negative for stop loss
+                stop_win_input = gr.Number(label="Stop Win", value=200, minimum=1, step=1)
+                target_profit_input = gr.Number(label="Target Profit (Units)", value=10, minimum=1, step=1)
             with gr.Row():
                 bet_type_dropdown = gr.Dropdown(
                     label="Bet Type",
@@ -7061,6 +7060,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
+    # Validate inputs
+    try:
+        # Ensure inputs are numbers and positive integers
+        inputs = {
+            "Bankroll": bankroll,
+            "Base Unit": base_unit,
+            "Stop Loss": stop_loss,
+            "Stop Win": stop_win,
+            "Target Profit": target_profit
+        }
+        for name, value in inputs.items():
+            if value is None or not isinstance(value, (int, float)) or value <= 0 or value != int(value):
+                error_msg = f"Invalid {name}: Must be a positive integer."
+                return state.bankroll, state.current_bet, state.next_bet, error_msg, f'<div style="background-color: red; padding: 5px; border-radius: 3px;">Error</div>', state.labouchere_sequence
+        
+        # Cast to integers
+        bankroll = int(bankroll)
+        base_unit = int(base_unit)
+        stop_loss = int(stop_loss)  # Stop loss can be negative, but we'll allow it as per existing logic
+        stop_win = int(stop_win)
+        target_profit = int(target_profit)
+
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
         state.base_unit = base_unit
@@ -7068,9 +7089,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         state.stop_win = stop_win
         state.bet_type = bet_type
         state.progression = progression
-        # Line 1: Enforce minimum value and reset labouchere_sequence
-        target_profit = int(target_profit) if target_profit is not None else 10  # Ensure integer, default to 10
         state.target_profit = max(1, target_profit)  # Enforce minimum value of 1
+
         if progression == "Labouchere":
             try:
                 # Only use the sequence if it's non-empty and valid; otherwise, auto-generate
@@ -7094,7 +7114,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
-    
+    except Exception as e:
+        error_msg = f"Error updating configuration: {str(e)}"
+        return state.bankroll, state.current_bet, state.next_bet, error_msg, f'<div style="background-color: red; padding: 5px; border-radius: 3px;">Error</div>', state.labouchere_sequence
+
+# Line 2: End of updated function
     try:
         bankroll_input.change(
             fn=update_config,
@@ -7111,6 +7135,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
         )
     except Exception as e:
+        print(f"Error in base_unit_input.change handler: {str(e)}")
         print(f"Error in base_unit_input.change handler: {str(e)}")
     
     try:
