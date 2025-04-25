@@ -934,6 +934,29 @@ def render_sides_of_zero_display():
             50% {{ background-color: #add8e6; }}
             100% {{ background-color: #87cefa; }}
         }}
+        .particle {{
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }}
+        .flame-particle {{
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #ff4500, #ff0000);
+        }}
+        .snowflake-particle {{
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 3px #87cefa;
+        }}
+        .sparkle-particle {{
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }}
         .tooltip {{
             position: absolute;
             background: #000;
@@ -1237,6 +1260,184 @@ def render_sides_of_zero_display():
         updateCircularProgress('zero-progress', {zero_progress});
         updateCircularProgress('right-progress', {right_progress});
 
+        // JavaScript Animations for Hot & Cold Numbers
+        function createParticle(badge, className, count, duration, spread, colors) {{
+            const rect = badge.getBoundingClientRect();
+            const badgeCenterX = rect.left + window.scrollX + (rect.width / 2);
+            const badgeCenterY = rect.top + window.scrollY + (rect.height / 2);
+            
+            for (let i = 0; i < count; i++) {{
+                const particle = document.createElement('div');
+                particle.className = `particle ${className}`;
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                document.body.appendChild(particle);
+                
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * spread;
+                const targetX = badgeCenterX + Math.cos(angle) * distance;
+                const targetY = badgeCenterY + Math.sin(angle) * distance;
+                
+                particle.style.left = badgeCenterX + 'px';
+                particle.style.top = badgeCenterY + 'px';
+                
+                const startTime = performance.now();
+                function animateParticle(currentTime) {{
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    
+                    const currentX = badgeCenterX + (targetX - badgeCenterX) * easeOut;
+                    const currentY = badgeCenterY + (targetY - badgeCenterY) * easeOut;
+                    particle.style.left = currentX + 'px';
+                    particle.style.top = currentY + 'px';
+                    particle.style.opacity = 1 - easeOut;
+                    
+                    if (progress < 1) {{
+                        requestAnimationFrame(animateParticle);
+                    }} else {{
+                        particle.remove();
+                    }}
+                }}
+                requestAnimationFrame(animateParticle);
+            }}
+        }}
+
+        function createFallingSnowflake(badge, count, duration, spread) {{
+            const rect = badge.getBoundingClientRect();
+            const badgeCenterX = rect.left + window.scrollX + (rect.width / 2);
+            const badgeCenterY = rect.top + window.scrollY + (rect.height / 2);
+            
+            for (let i = 0; i < count; i++) {{
+                const snowflake = document.createElement('div');
+                snowflake.className = 'particle snowflake-particle';
+                document.body.appendChild(snowflake);
+                
+                const offsetX = (Math.random() - 0.5) * spread;
+                const targetY = badgeCenterY + 30 + Math.random() * 20;
+                
+                snowflake.style.left = (badgeCenterX + offsetX) + 'px';
+                snowflake.style.top = badgeCenterY + 'px';
+                
+                const startTime = performance.now();
+                function animateSnowflake(currentTime) {{
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    
+                    const currentY = badgeCenterY + (targetY - badgeCenterY) * easeOut;
+                    const sway = Math.sin(progress * Math.PI * 2) * 5;
+                    snowflake.style.left = (badgeCenterX + offsetX + sway) + 'px';
+                    snowflake.style.top = currentY + 'px';
+                    snowflake.style.opacity = 1 - easeOut;
+                    
+                    if (progress < 1) {{
+                        requestAnimationFrame(animateSnowflake);
+                    }} else {{
+                        snowflake.remove();
+                    }}
+                }}
+                requestAnimationFrame(animateSnowflake);
+            }}
+        }}
+
+        function bounceInBadge(badge, duration) {{
+            badge.style.opacity = '0';
+            badge.style.transform = 'translateY(20px)';
+            
+            const startTime = performance.now();
+            function animateBounce(currentTime) {{
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOutBounce = 1 - Math.pow(1 - progress, 4);
+                const bounce = Math.sin(progress * Math.PI * 2) * (1 - progress) * 10;
+                
+                badge.style.opacity = easeOutBounce;
+                badge.style.transform = `translateY(${(1 - easeOutBounce) * 20 - bounce}px)`;
+                
+                if (progress < 1) {{
+                    requestAnimationFrame(animateBounce);
+                }}
+            }}
+            requestAnimationFrame(animateBounce);
+        }}
+
+        function pulseBadge(badge, duration) {{
+            const startTime = performance.now();
+            function animatePulse(currentTime) {{
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const scale = 1 + Math.sin(progress * Math.PI * 2) * 0.15;
+                
+                badge.style.transform = `scale(${scale})`;
+                
+                if (progress < 1) {{
+                    requestAnimationFrame(animatePulse);
+                }} else {{
+                    badge.style.transform = 'scale(1)';
+                }}
+            }}
+            requestAnimationFrame(animatePulse);
+        }}
+
+        // Function to trigger animations
+        function triggerHotColdAnimations() {{
+            // Hot badges: Flame burst and bounce-in
+            document.querySelectorAll('.hot-badge').forEach(badge => {{
+                bounceInBadge(badge, 600);
+                createParticle(badge, 'flame-particle', 5, 500, 20, ['#ff4500', '#ff0000']);
+                setInterval(() => createParticle(badge, 'flame-particle', 3, 500, 20, ['#ff4500', '#ff0000']), 2000);
+            }});
+
+            // Cold badges: Snowflake fall and bounce-in
+            document.querySelectorAll('.cold-badge').forEach(badge => {{
+                bounceInBadge(badge, 600);
+                createFallingSnowflake(badge, 3, 800, 10);
+                setInterval(() => createFallingSnowflake(badge, 2, 800, 10), 2000);
+            }});
+
+            // Hover effects: Pulse and sparkles
+            document.querySelectorAll('.number-badge').forEach(badge => {{
+                badge.addEventListener('mouseover', () => {{
+                    pulseBadge(badge, 800);
+                    if (badge.classList.contains('hot-badge')) {{
+                        createParticle(badge, 'sparkle-particle', 5, 600, 15, ['#FFD700', '#FFFFFF']);
+                    }} else {{
+                        createParticle(badge, 'sparkle-particle', 5, 600, 15, ['#FFFFFF', '#87CEFA']);
+                    }}
+                }});
+            }});
+        }}
+
+        // Automatically expand the accordion on load
+        setTimeout(() => {{
+            const accordionHeader = document.querySelector('h4');
+            if (accordionHeader && accordionHeader.textContent.includes("Dealer’s Spin Tracker")) {{
+                const accordion = accordionHeader.closest('.gradio-accordion');
+                if (accordion && !accordion.open) {{
+                    accordionHeader.click(); // Simulate click to expand
+                    console.log("Expanded Dealer’s Spin Tracker accordion");
+                }}
+            }}
+            // Trigger animations after ensuring accordion is expanded
+            triggerHotColdAnimations();
+        }}, 500);
+
+        // Re-trigger animations on bar update (e.g., after adding a spin)
+        const observer = new MutationObserver((mutations) => {{
+            mutations.forEach(mutation => {{
+                if (mutation.type === 'childList' && mutation.target.classList.contains('hot-cold-numbers')) {{
+                    console.log("Hot & Cold Numbers bar updated, re-triggering animations");
+                    triggerHotColdAnimations();
+                }}
+            }});
+        }});
+        setTimeout(() => {{
+            const hotColdContainer = document.querySelector('.hot-cold-numbers');
+            if (hotColdContainer) {{
+                observer.observe(hotColdContainer, {{ childList: true, subtree: true }});
+            }}
+        }}, 1000);
+
         // Tooltip functionality for numbers
         document.querySelectorAll('.number-item').forEach(element => {{
             element.addEventListener('mouseover', (e) => {{
@@ -1315,7 +1516,7 @@ def render_sides_of_zero_display():
             }}, 400);
         }});
 
-        // JavaScript animation function
+        // JavaScript animation function for wheel and ball
         function animateElement(element, startAngle, endAngle, duration, isBall = false) {{
             console.log("animateElement called for element: " + element.id + ", startAngle: " + startAngle + ", endAngle: " + endAngle + ", duration: " + duration + ", isBall: " + isBall);
             const startTime = performance.now();
