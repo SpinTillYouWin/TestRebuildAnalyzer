@@ -4753,6 +4753,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
+        # Lines before (context, unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
@@ -4760,12 +4761,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
 
-    # Line 1: Start of the spins_textbox.change handler (updated)
+    # Line 1: Start of the spins_textbox.change handler (updated with error logging)
     try:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
+            outputs=[spins_display, last_spin_display],
+            _js="() => { console.log('Validating spins input'); }"
         ).then(
             fn=analyze_spins,
             inputs=[
@@ -4788,13 +4790,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 straight_up_html,
                 top_18_html,
                 strongest_numbers_output,
-                hot_cold_overview_display,  # Added for Hot & Cold Overview
+                hot_cold_overview_display,
                 sides_of_zero_display
-            ]
+            ],
+            _js="() => { console.log('Analyzing spins'); }"
         ).then(
             fn=update_spin_counter,
             inputs=[],
-            outputs=[spin_counter]
+            outputs=[spin_counter],
+            _js="() => { console.log('Updating spin counter'); }"
         ).then(
             fn=dozen_tracker,
             inputs=[
@@ -4809,7 +4813,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 gr.State(),
                 dozen_tracker_output,
                 dozen_tracker_sequence_output
-            ]
+            ],
+            _js="() => { console.log('Running Dozen Tracker'); }"
         ).then(
             fn=even_money_tracker,
             inputs=[
@@ -4829,7 +4834,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[
                 gr.State(),
                 even_money_tracker_output
-            ]
+            ],
+            _js="() => { console.log('Running Even Money Tracker'); }"
         )
     # Line 3: End of the try-except block (unchanged)
     except Exception as e:
@@ -5417,7 +5423,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 straight_up_html,
                 top_18_html,
                 strongest_numbers_output,
-                hot_cold_overview_display,  # Added for Hot & Cold Overview
+                hot_cold_overview_display,
                 sides_of_zero_display
             ]
         ).then(
@@ -5431,11 +5437,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 middle_color_picker,
                 lower_color_picker
             ],
-            outputs=[dynamic_table_output]
+            outputs=[dynamic_table_output],
+            _js="() => { console.log('Updating Dynamic Table after analyze_spins'); }"
         ).then(
             fn=create_color_code_table,
             inputs=[],
-            outputs=[color_code_output]
+            outputs=[color_code_output],
+            _js="() => { console.log('Updating Color Code Table'); }"
         ).then(
             fn=dozen_tracker,
             inputs=[
@@ -5450,7 +5458,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 gr.State(),
                 dozen_tracker_output,
                 dozen_tracker_sequence_output
-            ]
+            ],
+            _js="() => { console.log('Running Dozen Tracker'); }"
         ).then(
             fn=even_money_tracker,
             inputs=[
@@ -5470,7 +5479,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[
                 gr.State(),
                 even_money_tracker_output
-            ]
+            ],
+            _js="() => { console.log('Running Even Money Tracker'); }"
         )
     # Line 3: End of the try-except block (unchanged)
     except Exception as e:
