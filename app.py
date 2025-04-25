@@ -7058,8 +7058,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
     
-    # Betting progression event handlers
 def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
+    """Update betting progression configuration with input validation."""
     # Validate inputs
     try:
         # Ensure inputs are numbers and positive integers
@@ -7118,7 +7118,7 @@ def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progressio
         error_msg = f"Error updating configuration: {str(e)}"
         return state.bankroll, state.current_bet, state.next_bet, error_msg, f'<div style="background-color: red; padding: 5px; border-radius: 3px;">Error</div>', state.labouchere_sequence
 
-# Line 2: End of updated function
+# Lines after (context, unchanged)
     try:
         bankroll_input.change(
             fn=update_config,
@@ -7135,7 +7135,6 @@ def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progressio
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
         )
     except Exception as e:
-        print(f"Error in base_unit_input.change handler: {str(e)}")
         print(f"Error in base_unit_input.change handler: {str(e)}")
     
     try:
