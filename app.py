@@ -549,6 +549,30 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
+# Previous function (end of format_spins_as_html)
+    html_output += '''
+    <script>
+        document.querySelectorAll('.fade-in').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('fade-in');
+            }, 500);
+        });
+        document.querySelectorAll('.flash').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('flash');
+            }, 300);
+        });
+        document.querySelectorAll('.flip').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('flip');
+            }, 500);
+        });
+    </script>
+    '''
+    
+    return html_output
+
+# The function to update (render_sides_of_zero_display)
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -1261,14 +1285,14 @@ def render_sides_of_zero_display():
         updateCircularProgress('right-progress', {right_progress});
 
         // JavaScript Animations for Hot & Cold Numbers
-        function createParticle(badge, className, count, duration, spread, colors) {{
+        function createParticle(badge, class_name, count, duration, spread, colors) {{
             const rect = badge.getBoundingClientRect();
             const badgeCenterX = rect.left + window.scrollX + (rect.width / 2);
             const badgeCenterY = rect.top + window.scrollY + (rect.height / 2);
             
             for (let i = 0; i < count; i++) {{
                 const particle = document.createElement('div');
-                particle.className = `particle ${className}`;
+                particle.className = 'particle ' + class_name;
                 particle.style.background = colors[Math.floor(Math.random() * colors.length)];
                 document.body.appendChild(particle);
                 
@@ -1618,6 +1642,7 @@ def render_sides_of_zero_display():
     </script>
     """
 
+# Next function (start of validate_spins_input)
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
