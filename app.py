@@ -549,7 +549,6 @@ def format_spins_as_html(spins, num_to_show):
     
     return html_output
 
-```python
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
     zero_hits = state.scores[0]
@@ -1365,6 +1364,7 @@ def render_sides_of_zero_display():
         }});
     </script>
     """
+
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
