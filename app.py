@@ -1543,7 +1543,7 @@ def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_n
     """Handle clicks on the roulette table numbers with debouncing."""
     global last_click_time
     current_time = time.time()
-    print(f"click_number called with number={number}, current_spins='{current_spins}', time={current_time}")
+    print(f"click_number called at {current_time} with number={number}, current_spins='{current_spins}', state.input_type='{state.input_type}'")
 
     # Debounce: Ignore clicks within 0.5 seconds of the last click
     if current_time - last_click_time < 0.5:
@@ -1556,6 +1556,8 @@ def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_n
     if not isinstance(number, str):
         number = str(number)
 
+    print(f"click_number processing at {current_time}: state.input_type='{state.input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
+
     # Check the input type to determine where the clicked number goes
     if state.input_type == "Hot Numbers":
         # Add to hot numbers (max 5), ensure uniqueness
@@ -1563,6 +1565,7 @@ def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_n
             state.hot_numbers.append(number)
         # Update the hot numbers textbox with fire emojis
         hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers])
+        print(f"click_number at {current_time}: Added to Hot Numbers - hot_display='{hot_display}'")
         return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_display, cold_numbers_textbox
     elif state.input_type == "Cold Numbers":
         # Add to cold numbers (max 5), ensure uniqueness
@@ -1570,9 +1573,11 @@ def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_n
             state.cold_numbers.append(number)
         # Update the cold numbers textbox with ice emojis
         cold_display = ", ".join([f"{num}🧊" for num in state.cold_numbers])
+        print(f"click_number at {current_time}: Added to Cold Numbers - cold_display='{cold_display}'")
         return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_numbers_textbox, cold_display
     else:
         # Default to "Selected Spins" behavior
+        print(f"click_number at {current_time}: Adding to Selected Spins")
         return add_spin(number, current_spins, num_to_show) + (hot_numbers_textbox, cold_numbers_textbox)
 
 # Function to clear spins
@@ -7479,13 +7484,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         def update_input_type(input_type, hot_numbers_textbox, cold_numbers_textbox):
             """Update state.input_type and sync textboxes when the radio button selection changes."""
             global state
-            print(f"update_input_type: Before update - state.input_type='{state.input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
+            import time
+            timestamp = time.time()
+            print(f"update_input_type called at {timestamp}: Before update - state.input_type='{state.input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
             print(f"update_input_type: Input hot_numbers_textbox='{hot_numbers_textbox}', cold_numbers_textbox='{cold_numbers_textbox}'")
             state.input_type = input_type
             # Sync the textboxes with the current state to prevent doubling
             hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers]) if state.hot_numbers else ""
             cold_display = ", ".join([f"{num}🧊" for num in state.cold_numbers]) if state.cold_numbers else ""
-            print(f"update_input_type: After update - Input type set to: '{state.input_type}', hot_display='{hot_display}', cold_display='{cold_display}'")
+            print(f"update_input_type at {timestamp}: After update - Input type set to: '{state.input_type}', hot_display='{hot_display}', cold_display='{cold_display}'")
             return hot_display, cold_display
     
         input_type_radio.change(
