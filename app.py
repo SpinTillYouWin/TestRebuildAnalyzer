@@ -1539,11 +1539,11 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
         
-def click_number(number, current_spins, num_to_show, input_type, hot_numbers_textbox, cold_numbers_textbox):
+def click_number(number, current_spins, num_to_show, input_type_state, hot_numbers_textbox, cold_numbers_textbox):
     """Handle clicks on the roulette table numbers with debouncing."""
-    global last_click_time, state  # Declare both globals at the start
+    global last_click_time, state
     current_time = time.time()
-    print(f"click_number called at {current_time} with number={number}, current_spins='{current_spins}', input_type='{input_type}'")
+    print(f"click_number called at {current_time} with number={number}, current_spins='{current_spins}', input_type_state='{input_type_state}'")
 
     # Debounce: Ignore clicks within 0.5 seconds of the last click
     if current_time - last_click_time < 0.5:
@@ -1555,10 +1555,10 @@ def click_number(number, current_spins, num_to_show, input_type, hot_numbers_tex
     if not isinstance(number, str):
         number = str(number)
 
-    print(f"click_number processing at {current_time}: input_type='{input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
+    print(f"click_number processing at {current_time}: input_type_state='{input_type_state}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
 
     # Check the input type to determine where the clicked number goes
-    if input_type == "Hot Numbers":
+    if input_type_state == "Hot Numbers":
         # Add to hot numbers (max 5), ensure uniqueness
         if number not in state.hot_numbers and len(state.hot_numbers) < 5:
             state.hot_numbers.append(number)
@@ -1566,7 +1566,7 @@ def click_number(number, current_spins, num_to_show, input_type, hot_numbers_tex
         hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers])
         print(f"click_number at {current_time}: Added to Hot Numbers - hot_display='{hot_display}'")
         return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_display, cold_numbers_textbox
-    elif input_type == "Cold Numbers":
+    elif input_type_state == "Cold Numbers":
         # Add to cold numbers (max 5), ensure uniqueness
         if number not in state.cold_numbers and len(state.cold_numbers) < 5:
             state.cold_numbers.append(number)
@@ -4735,7 +4735,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
-    analysis_cache = gr.State(value={})  # New: Cache for analysis results
+    analysis_cache = gr.State(value={})
+    input_type_state = gr.State(value="Selected Spins")  # New: Store the current input type
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -4759,7 +4760,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
+        label="",
         minimum=1,
         maximum=36,
         step=1,
@@ -4836,7 +4837,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             # Attach the click event directly
                             btn.click(
                                 fn=click_number,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count, hot_numbers_textbox, cold_numbers_textbox],
+                                inputs=[gr.State(value=num), spins_display, last_spin_count, input_type_state, hot_numbers_textbox, cold_numbers_textbox],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, hot_numbers_textbox, cold_numbers_textbox]
                             )
                         
@@ -7481,23 +7482,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # Event Handler for Input Type Radio
     try:
         def update_input_type(input_type, hot_numbers_textbox, cold_numbers_textbox):
-            """Update state.input_type and sync textboxes when the radio button selection changes."""
+            """Sync textboxes with the current state and update input_type_state when the radio button selection changes."""
             global state
             import time
             timestamp = time.time()
-            print(f"update_input_type called at {timestamp}: Before update - state.input_type='{state.input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
+            print(f"update_input_type called at {timestamp}: input_type='{input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
             print(f"update_input_type: Input hot_numbers_textbox='{hot_numbers_textbox}', cold_numbers_textbox='{cold_numbers_textbox}'")
-            state.input_type = input_type
             # Sync the textboxes with the current state to prevent doubling
             hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers]) if state.hot_numbers else ""
             cold_display = ", ".join([f"{num}🧊" for num in state.cold_numbers]) if state.cold_numbers else ""
-            print(f"update_input_type at {timestamp}: After update - Input type set to: '{state.input_type}', hot_display='{hot_display}', cold_display='{cold_display}'")
-            return hot_display, cold_display
+            print(f"update_input_type at {timestamp}: After update - hot_display='{hot_display}', cold_display='{cold_display}'")
+            return input_type, hot_display, cold_display
     
         input_type_radio.change(
             fn=update_input_type,
             inputs=[input_type_radio, hot_numbers_textbox, cold_numbers_textbox],
-            outputs=[hot_numbers_textbox, cold_numbers_textbox]
+            outputs=[input_type_state, hot_numbers_textbox, cold_numbers_textbox]
         )
     except Exception as e:
         print(f"Error in input_type_radio.change handler: {str(e)}")
