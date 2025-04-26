@@ -1541,7 +1541,7 @@ def add_spin(number, current_spins, num_to_show):
         
 def click_number(number, current_spins, num_to_show, input_type, hot_numbers_textbox, cold_numbers_textbox):
     """Handle clicks on the roulette table numbers with debouncing."""
-    global last_click_time
+    global last_click_time, state  # Declare both globals at the start
     current_time = time.time()
     print(f"click_number called at {current_time} with number={number}, current_spins='{current_spins}', input_type='{input_type}'")
 
@@ -1552,7 +1552,6 @@ def click_number(number, current_spins, num_to_show, input_type, hot_numbers_tex
 
     last_click_time = current_time
 
-    global state
     if not isinstance(number, str):
         number = str(number)
 
