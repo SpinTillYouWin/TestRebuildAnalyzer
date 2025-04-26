@@ -4767,43 +4767,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value=36,
         interactive=True,
         elem_classes="long-slider"
-    )
-
-    # Moved: Casino Hot/Cold Booster (Originally Row 6.1, now before Row 2)
-    with gr.Accordion("Casino Hot/Cold Booster 🎰", open=False, elem_id="casino-hot-cold-booster"):
-        with gr.Column(scale=4, min_width=600):
-            input_type_radio = gr.Radio(
-                choices=["Selected Spins", "Hot Numbers", "Cold Numbers"],
-                label="Input Type",
-                value="Selected Spins",
-                interactive=True
-            )
-            with gr.Row():
-                hot_numbers_textbox = gr.Textbox(
-                    label="Table’s Hot Numbers",
-                    value="",
-                    interactive=False,
-                    placeholder="e.g., 19🔥, 26🔥, 32🔥 (max 5)",
-                    scale=3
-                )
-                hot_reset_button = gr.Button("Reset Hot Numbers", elem_classes=["action-button"], scale=1)
-            with gr.Row():
-                cold_numbers_textbox = gr.Textbox(
-                    label="Table’s Cold Numbers",
-                    value="",
-                    interactive=False,
-                    placeholder="e.g., 0🧊, 1🧊, 8🧊 (max 5)",
-                    scale=3
-                )
-                cold_reset_button = gr.Button("Reset Cold Numbers", elem_classes=["action-button"], scale=1)
-            with gr.Row():
-                use_casino_numbers = gr.Checkbox(
-                    label="Use Casino Numbers",
-                    value=False,
-                    interactive=True,
-                    scale=1
-                )
-                clear_all_casino_button = gr.Button("Clear All Casino Numbers", elem_classes=["action-button"], scale=1)  # Renamed     
+    ) 
 
     # 2. Row 2: European Roulette Table (Now after Casino Hot/Cold Booster)
     with gr.Group():
