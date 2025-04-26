@@ -1535,8 +1535,9 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
         
-def click_number(number, current_spins, num_to_show, state, hot_numbers_textbox, cold_numbers_textbox):
+def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_numbers_textbox):
     """Handle clicks on the roulette table numbers."""
+    global state  # Access the global state variable
     if not isinstance(number, str):
         number = str(number)
 
@@ -7389,11 +7390,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
+# Event Handler for Roulette Table Clicks
     try:
         for num in range(37):
             table_numbers[num].click(
                 fn=click_number,
-                inputs=[gr.State(value=str(num)), spins_display, last_spin_count, state, hot_numbers_textbox, cold_numbers_textbox],
+                inputs=[gr.State(value=str(num)), spins_display, last_spin_count, hot_numbers_textbox, cold_numbers_textbox],
                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, hot_numbers_textbox, cold_numbers_textbox]
             )
     except Exception as e:
