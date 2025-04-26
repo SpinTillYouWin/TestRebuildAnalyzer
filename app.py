@@ -4740,7 +4740,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
     
-    # New: Row 5.1: Casino Hot/Cold Booster UI
+# New: Row 5.1: Casino Hot/Cold Booster UI (Wrapped in Accordion)
+with gr.Accordion("Casino Hot/Cold Booster 🎰", open=False, elem_id="casino-hot-cold-booster"):
     with gr.Row():
         with gr.Column(scale=4, min_width=600):
             input_type_radio = gr.Radio(
