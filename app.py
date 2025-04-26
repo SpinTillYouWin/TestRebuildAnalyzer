@@ -1537,7 +1537,8 @@ def add_spin(number, current_spins, num_to_show):
         
 def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_numbers_textbox):
     """Handle clicks on the roulette table numbers."""
-    global state  # Access the global state variable
+    print(f"click_number called with number={number}, current_spins='{current_spins}'")
+    global state
     if not isinstance(number, str):
         number = str(number)
 
