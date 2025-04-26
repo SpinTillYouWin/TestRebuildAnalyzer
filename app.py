@@ -175,7 +175,6 @@ def validate_roulette_data():
         "RIGHT_OF_ZERO_EUROPEAN": RIGHT_OF_ZERO_EUROPEAN
     }
 
-# Lines after (context, unchanged)
     errors = []
 
     # Check betting category dictionaries
@@ -203,63 +202,60 @@ def validate_roulette_data():
     return errors if errors else None
 
 class RouletteState:
-class RouletteState:
-        def __init__(self):
-            self.scores = {n: 0 for n in range(37)}
-            self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-            self.dozen_scores = {name: 0 for name in DOZENS.keys()}
-            self.column_scores = {name: 0 for name in COLUMNS.keys()}
-            self.street_scores = {name: 0 for name in STREETS.keys()}
-            self.corner_scores = {name: 0 for name in CORNERS.keys()}
-            self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-            self.split_scores = {name: 0 for name in SPLITS.keys()}
-            self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-            self.selected_numbers = set()
-            self.last_spins = []
-            self.spin_history = []  # Tracks each spin's effects for undoing
+    def __init__(self):
+        self.scores = {n: 0 for n in range(37)}
+        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
+        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
+        self.column_scores = {name: 0 for name in COLUMNS.keys()}
+        self.street_scores = {name: 0 for name in STREETS.keys()}
+        self.corner_scores = {name: 0 for name in CORNERS.keys()}
+        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
+        self.split_scores = {name: 0 for name in SPLITS.keys()}
+        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        self.selected_numbers = set()
+        self.last_spins = []
+        self.spin_history = []  # Tracks each spin's effects for undoing
 
-            # New: Casino Hot/Cold Booster state variables
-            self.hot_numbers = []  # List to store casino hot numbers (e.g., [19, 26, 32])
-            self.cold_numbers = []  # List to store casino cold numbers (e.g., [0, 1, 8])
-            self.input_type = "Selected Spins"  # Tracks input type ("Selected Spins", "Hot Numbers", "Cold Numbers")
-            self.use_casino_numbers = False  # Tracks if casino numbers are used for strategy boosts
+        # New: Casino Hot/Cold Booster state variables
+        self.hot_numbers = []  # List to store casino hot numbers (e.g., [19, 26, 32])
+        self.cold_numbers = []  # List to store casino cold numbers (e.g., [0, 1, 8])
+        self.input_type = "Selected Spins"  # Tracks input type ("Selected Spins", "Hot Numbers", "Cold Numbers")
+        self.use_casino_numbers = False  # Tracks if casino numbers are used for strategy boosts
 
-            # Casino data storage
-            self.casino_data = {
-                "spins_count": 100,  # Default number of spins
-                "hot_numbers": {},   # {number: percentage, e.g., 5: 10.0}
-                "cold_numbers": {},  # {number: percentage, e.g., 0: 0.0}
-                "even_odd": {"Even": 0.0, "Odd": 0.0},
-                "red_black": {"Red": 0.0, "Black": 0.0},
-                "low_high": {"Low": 0.0, "High": 0.0},
-                "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
-                "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
-            }
-            self.use_casino_winners = False  # Toggle to highlight casino winners
+        # Casino data storage
+        self.casino_data = {
+            "spins_count": 100,  # Default number of spins
+            "hot_numbers": {},   # {number: percentage, e.g., 5: 10.0}
+            "cold_numbers": {},  # {number: percentage, e.g., 0: 0.0}
+            "even_odd": {"Even": 0.0, "Odd": 0.0},
+            "red_black": {"Red": 0.0, "Black": 0.0},
+            "low_high": {"Low": 0.0, "High": 0.0},
+            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+        }
+        self.use_casino_winners = False  # Toggle to highlight casino winners
 
-            # New betting progression fields
-            self.bankroll = 1000
-            self.initial_bankroll = 1000  # For profit/loss tracking
-            self.base_unit = 10
-            self.stop_loss = -500  # Relative to initial_bankroll
-            self.stop_win = 200    # Relative to initial_bankroll
-            self.bet_type = "Even Money"
-            self.progression = "Martingale"
+        # New betting progression fields
+        self.bankroll = 1000
+        self.initial_bankroll = 1000  # For profit/loss tracking
+        self.base_unit = 10
+        self.stop_loss = -500  # Relative to initial_bankroll
+        self.stop_win = 200    # Relative to initial_bankroll
+        self.bet_type = "Even Money"
+        self.progression = "Martingale"
+        self.current_bet = self.base_unit
+        self.next furgt_bet = self.base_unit
+        self.progression_state = None  # e.g., Fibonacci index or Labouchere list
+        self.labouchere_sequence = ""  # Default Labouchere sequence
+        self.target_profit = 10  # Default target profit in units for Labouchere
+        self.is_stopped = False
+        self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+        self.status = "Active"
+        self.status_color = "white"  # Default color for active status
+        self.last_dozen_alert_index = -1  # Track the last spin index where a Dozen alert was triggered
+        self.last_alerted_spins = None  # Track the specific spins that triggered the last alert
+        self.alerted_patterns = set()  # Track patterns (as tuples) that have already triggered a sequence match alert
 
-    # Lines after (context, unchanged)
-            self.current_bet = self.base_unit
-            self.next_bet = self.base_unit
-            self.progression_state = None  # e.g., Fibonacci index or Labouchere list
-            self.labouchere_sequence = ""  # Default Labouchere sequence
-            self.target_profit = 10  # Default target profit in units for Labouchere
-            self.is_stopped = False
-            self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
-            self.status = "Active"
-            self.status_color = "white"  # Default color for active status
-            self.last_dozen_alert_index = -1  # Track the last spin index where a Dozen alert was triggered
-            self.last_alerted_spins = None  # Track the specific spins that triggered the last alert
-            self.alerted_patterns = set()  # Track patterns (as tuples) that have already triggered a sequence match alert
-        
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -314,7 +310,7 @@ class RouletteState:
             self.status_color = "red"  # Red for insufficient bankroll
             self.message = "Cannot continue: Bankroll too low."
             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    
+        
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 2
