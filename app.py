@@ -8,6 +8,10 @@ from roulette_data import (
     EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
+import time  # Added import
+
+# Global variable to track the last click time
+last_click_time = 0
 
 # New: Initialize betting category mappings for faster lookups
 BETTING_MAPPINGS = {}
@@ -1536,8 +1540,18 @@ def add_spin(number, current_spins, num_to_show):
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
         
 def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_numbers_textbox):
-    """Handle clicks on the roulette table numbers."""
-    print(f"click_number called with number={number}, current_spins='{current_spins}'")
+    """Handle clicks on the roulette table numbers with debouncing."""
+    global last_click_time
+    current_time = time.time()
+    print(f"click_number called with number={number}, current_spins='{current_spins}', time={current_time}")
+
+    # Debounce: Ignore clicks within 0.5 seconds of the last click
+    if current_time - last_click_time < 0.5:
+        print(f"Debounced click for number={number}, time difference={current_time - last_click_time}")
+        return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_numbers_textbox, cold_numbers_textbox
+
+    last_click_time = current_time
+
     global state
     if not isinstance(number, str):
         number = str(number)
