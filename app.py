@@ -244,7 +244,8 @@ class RouletteState:
         self.bet_type = "Even Money"
         self.progression = "Martingale"
         self.current_bet = self.base_unit
-        self.next furgt_bet = self.base_unit
+        # Fixed: Corrected typo 'furgt' to 'next_bet'
+        self.next_bet = self.base_unit
         self.progression_state = None  # e.g., Fibonacci index or Labouchere list
         self.labouchere_sequence = ""  # Default Labouchere sequence
         self.target_profit = 10  # Default target profit in units for Labouchere
