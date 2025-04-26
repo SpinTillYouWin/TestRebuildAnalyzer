@@ -1539,11 +1539,11 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
         
-def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_numbers_textbox):
+def click_number(number, current_spins, num_to_show, input_type, hot_numbers_textbox, cold_numbers_textbox):
     """Handle clicks on the roulette table numbers with debouncing."""
     global last_click_time
     current_time = time.time()
-    print(f"click_number called at {current_time} with number={number}, current_spins='{current_spins}', state.input_type='{state.input_type}'")
+    print(f"click_number called at {current_time} with number={number}, current_spins='{current_spins}', input_type='{input_type}'")
 
     # Debounce: Ignore clicks within 0.5 seconds of the last click
     if current_time - last_click_time < 0.5:
@@ -1556,10 +1556,10 @@ def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_n
     if not isinstance(number, str):
         number = str(number)
 
-    print(f"click_number processing at {current_time}: state.input_type='{state.input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
+    print(f"click_number processing at {current_time}: input_type='{input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
 
     # Check the input type to determine where the clicked number goes
-    if state.input_type == "Hot Numbers":
+    if input_type == "Hot Numbers":
         # Add to hot numbers (max 5), ensure uniqueness
         if number not in state.hot_numbers and len(state.hot_numbers) < 5:
             state.hot_numbers.append(number)
@@ -1567,7 +1567,7 @@ def click_number(number, current_spins, num_to_show, hot_numbers_textbox, cold_n
         hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers])
         print(f"click_number at {current_time}: Added to Hot Numbers - hot_display='{hot_display}'")
         return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_display, cold_numbers_textbox
-    elif state.input_type == "Cold Numbers":
+    elif input_type == "Cold Numbers":
         # Add to cold numbers (max 5), ensure uniqueness
         if number not in state.cold_numbers and len(state.cold_numbers) < 5:
             state.cold_numbers.append(number)
