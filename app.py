@@ -4886,8 +4886,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-
-    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
+    
+    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -4901,103 +4901,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
-            with gr.Accordion("Casino Data Insights", open=False, elem_id="casino-data-insights"):
-                spins_count_dropdown = gr.Dropdown(
-                    label="Past Spins Count",
-                    choices=["30", "50", "100", "200", "300", "500"],
-                    value="100",
-                    interactive=True
-                )
-                with gr.Row():
-                    even_percent = gr.Dropdown(
-                        label="Even %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    odd_percent = gr.Dropdown(
-                        label="Odd %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    red_percent = gr.Dropdown(
-                        label="Red %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    black_percent = gr.Dropdown(
-                        label="Black %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    low_percent = gr.Dropdown(
-                        label="Low %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    high_percent = gr.Dropdown(
-                        label="High %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    dozen1_percent = gr.Dropdown(
-                        label="1st Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    dozen2_percent = gr.Dropdown(
-                        label="2nd Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    dozen3_percent = gr.Dropdown(
-                        label="3rd Dozen %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                with gr.Row():
-                    col1_percent = gr.Dropdown(
-                        label="1st Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    col2_percent = gr.Dropdown(
-                        label="2nd Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                    col3_percent = gr.Dropdown(
-                        label="3rd Column %",
-                        choices=[f"{i:02d}" for i in range(100)],
-                        value="00",
-                        interactive=True
-                    )
-                use_winners_checkbox = gr.Checkbox(
-                    label="Highlight Casino Winners",
-                    value=False,
-                    interactive=True
-                )
-                reset_casino_data_button = gr.Button(
-                    "Reset Casino Data",
-                    elem_classes=["action-button"]
-                )
-                casino_data_output = gr.HTML(
-                    label="Casino Data Insights",
-                    value="<p>No casino data entered yet.</p>"
-                )
+            # Removed Casino Data Insights accordion from this column
         with gr.Column(scale=1, min_width=200):
             category_dropdown = gr.Dropdown(
                 label="Select Category",
@@ -5034,7 +4938,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 elem_classes="long-slider"
             )
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
-
+    
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
@@ -5130,7 +5034,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
-
+    
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -5139,7 +5043,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 base_unit_input = gr.Number(label="Base Unit", value=10)
                 stop_loss_input = gr.Number(label="Stop Loss", value=-500)
                 stop_win_input = gr.Number(label="Stop Win", value=200)
-                # Line 1: Updated line with min_value removed
                 target_profit_input = gr.Number(label="Target Profit (Units)", value=10, step=1)
             with gr.Row():
                 bet_type_dropdown = gr.Dropdown(
@@ -5167,8 +5070,108 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
-                
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+    
+    # 8.1. Row 8.1: Casino Data Insights (New Full-Width Section)
+    with gr.Row():
+        with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
+            spins_count_dropdown = gr.Dropdown(
+                label="Past Spins Count",
+                choices=["30", "50", "100", "200", "300", "500"],
+                value="100",
+                interactive=True
+            )
+            with gr.Row():
+                even_percent = gr.Dropdown(
+                    label="Even %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                odd_percent = gr.Dropdown(
+                    label="Odd %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+            with gr.Row():
+                red_percent = gr.Dropdown(
+                    label="Red %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                black_percent = gr.Dropdown(
+                    label="Black %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+            with gr.Row():
+                low_percent = gr.Dropdown(
+                    label="Low %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                high_percent = gr.Dropdown(
+                    label="High %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+            with gr.Row():
+                dozen1_percent = gr.Dropdown(
+                    label="1st Dozen %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                dozen2_percent = gr.Dropdown(
+                    label="2nd Dozen %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                dozen3_percent = gr.Dropdown(
+                    label="3rd Dozen %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+            with gr.Row():
+                col1_percent = gr.Dropdown(
+                    label="1st Column %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                col2_percent = gr.Dropdown(
+                    label="2nd Column %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+                col3_percent = gr.Dropdown(
+                    label="3rd Column %",
+                    choices=[f"{i:02d}" for i in range(100)],
+                    value="00",
+                    interactive=True
+                )
+            use_winners_checkbox = gr.Checkbox(
+                label="Highlight Casino Winners",
+                value=False,
+                interactive=True
+            )
+            reset_casino_data_button = gr.Button(
+                "Reset Casino Data",
+                elem_classes=["action-button"]
+            )
+            casino_data_output = gr.HTML(
+                label="Casino Data Insights",
+                value="<p>No casino data entered yet.</p>"
+            )
+    
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
         with gr.Row():
@@ -5190,6 +5193,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             )
             reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
         color_code_output = gr.HTML(label="Color Code Key")
+
 
     # 10. Row 10: Analysis Outputs (Collapsible, Renumbered)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
