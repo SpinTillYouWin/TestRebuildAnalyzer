@@ -4739,6 +4739,45 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
+    
+    # New: Row 5.1: Casino Hot/Cold Booster UI
+    with gr.Row():
+        with gr.Column(scale=4, min_width=600):
+            input_type_radio = gr.Radio(
+                choices=["Selected Spins", "Hot Numbers", "Cold Numbers"],
+                label="Input Type",
+                value="Selected Spins",
+                interactive=True
+            )
+            hot_numbers_textbox = gr.Textbox(
+                label="Table’s Hot Numbers",
+                value="",
+                interactive=False,
+                placeholder="e.g., 19🔥, 26🔥, 32🔥 (max 5)"
+            )
+            hot_reset_button = gr.Button("Reset Hot Numbers", elem_classes=["action-button"])
+            cold_numbers_textbox = gr.Textbox(
+                label="Table’s Cold Numbers",
+                value="",
+                interactive=False,
+                placeholder="e.g., 0🧊, 1🧊, 8🧊 (max 5)"
+            )
+            cold_reset_button = gr.Button("Reset Cold Numbers", elem_classes=["action-button"])
+            use_casino_numbers = gr.Checkbox(
+                label="Use Casino Numbers",
+                value=False,
+                interactive=True
+            )
+            clear_all_button = gr.Button("Clear All Casino Numbers", elem_classes=["action-button"])
+    
+    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+    with gr.Row():
+        with gr.Column(scale=2):
+            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
+        with gr.Column(scale=1):
+            clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
+        with gr.Column(scale=1):
+            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
 
     # Define strategy categories and choices
     strategy_categories = {
