@@ -4733,17 +4733,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
     
-    # 5. Row 5: Selected Spins Textbox and Spin Counter
-    with gr.Row(elem_id="selected-spins-row"):
-        with gr.Column(scale=4, min_width=600):
-            spins_textbox
-        with gr.Column(scale=1, min_width=200):
-            spin_counter  # Restore side-by-side layout with styling
-    
-# New: Row 5.1: Casino Hot/Cold Booster UI (Wrapped in Accordion)
-with gr.Accordion("Casino Hot/Cold Booster 🎰", open=False, elem_id="casino-hot-cold-booster"):
-    with gr.Row():
-        with gr.Column(scale=4, min_width=600):
+        # 5. Row 5: Selected Spins Textbox and Spin Counter
+        with gr.Row(elem_id="selected-spins-row"):
+            with gr.Column(scale=4, min_width=600):
+                spins_textbox
+            with gr.Column(scale=1, min_width=200):
+                spin_counter  # Restore side-by-side layout with styling
+        
+        # New: Row 5.1: Casino Hot/Cold Booster UI (Wrapped in Accordion, Fixed Nesting)
+        with gr.Accordion("Casino Hot/Cold Booster 🎰", open=False, elem_id="casino-hot-cold-booster"):
             input_type_radio = gr.Radio(
                 choices=["Selected Spins", "Hot Numbers", "Cold Numbers"],
                 label="Input Type",
