@@ -1577,7 +1577,10 @@ def click_number(number, current_spins, num_to_show, input_type_state, hot_numbe
     else:
         # Default to "Selected Spins" behavior
         print(f"click_number at {current_time}: Adding to Selected Spins")
-        return add_spin(number, current_spins, num_to_show) + (hot_numbers_textbox, cold_numbers_textbox)
+        # Call add_spin and unpack its results
+        new_spins_display, new_spins_textbox, new_last_spin_display = add_spin(number, current_spins, num_to_show)
+        # Return all 7 outputs
+        return new_spins_display, new_spins_textbox, new_last_spin_display, update_spin_counter(), render_sides_of_zero_display(), hot_numbers_textbox, cold_numbers_textbox
 
 # Function to clear spins
 def clear_spins():
@@ -5009,43 +5012,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
         with gr.Column(scale=1):
-            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
-    
-    # New: Row 6.1: Casino Hot/Cold Booster UI (Wrapped in Accordion, Fixed Layout)
-    with gr.Accordion("Casino Hot/Cold Booster 🎰", open=False, elem_id="casino-hot-cold-booster"):
-        with gr.Column(scale=4, min_width=600):
-            input_type_radio = gr.Radio(
-                choices=["Selected Spins", "Hot Numbers", "Cold Numbers"],
-                label="Input Type",
-                value="Selected Spins",
-                interactive=True
-            )
-            with gr.Row():
-                hot_numbers_textbox = gr.Textbox(
-                    label="Table’s Hot Numbers",
-                    value="",
-                    interactive=False,
-                    placeholder="e.g., 19🔥, 26🔥, 32🔥 (max 5)",
-                    scale=3
-                )
-                hot_reset_button = gr.Button("Reset Hot Numbers", elem_classes=["action-button"], scale=1)
-            with gr.Row():
-                cold_numbers_textbox = gr.Textbox(
-                    label="Table’s Cold Numbers",
-                    value="",
-                    interactive=False,
-                    placeholder="e.g., 0🧊, 1🧊, 8🧊 (max 5)",
-                    scale=3
-                )
-                cold_reset_button = gr.Button("Reset Cold Numbers", elem_classes=["action-button"], scale=1)
-            with gr.Row():
-                use_casino_numbers = gr.Checkbox(
-                    label="Use Casino Numbers",
-                    value=False,
-                    interactive=True,
-                    scale=1
-                )
-                clear_all_casino_button = gr.Button("Clear All Casino Numbers", elem_classes=["action-button"], scale=1)  # Renamed     
+            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"]) 
                 
     # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
