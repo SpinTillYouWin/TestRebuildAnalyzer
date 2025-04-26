@@ -4795,9 +4795,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             table_numbers[int(num)] = btn
                             # Attach the click event directly
                             btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                fn=click_number,
+                                inputs=[gr.State(value=num), spins_display, last_spin_count, hot_numbers_textbox, cold_numbers_textbox],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, hot_numbers_textbox, cold_numbers_textbox]
                             )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -7469,7 +7469,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in hot_reset_button.click handler: {str(e)}")
-
+    
     try:
         cold_reset_button.click(
             fn=reset_cold_numbers,
@@ -7478,7 +7478,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in cold_reset_button.click handler: {str(e)}")
-
+    
     try:
         clear_all_casino_button.click(
             fn=clear_all_casino_numbers,
