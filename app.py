@@ -3524,6 +3524,39 @@ def best_even_money_and_top_18():
 
     return "\n".join(recommendations)
 
+def reset_hot_numbers(hot_numbers_textbox, cold_numbers_textbox):
+    """Reset the Hot Numbers list and update the textbox."""
+    global state
+    print(f"reset_hot_numbers: Before reset - state.hot_numbers={state.hot_numbers}")
+    state.hot_numbers = []
+    hot_display = ""
+    print(f"reset_hot_numbers: After reset - state.hot_numbers={state.hot_numbers}, hot_display='{hot_display}'")
+    return hot_display, cold_numbers_textbox
+
+def reset_cold_numbers(hot_numbers_textbox, cold_numbers_textbox):
+    """Reset the Cold Numbers list and update the textbox."""
+    global state
+    print(f"reset_cold_numbers: Before reset - state.cold_numbers={state.cold_numbers}")
+    state.cold_numbers = []
+    cold_display = ""
+    print(f"reset_cold_numbers: After reset - state.cold_numbers={state.cold_numbers}, cold_display='{cold_display}'")
+    return hot_numbers_textbox, cold_display
+
+def clear_all_casino_numbers(spins_display, spins_textbox, hot_numbers_textbox, cold_numbers_textbox):
+    """Clear both Hot and Cold Numbers lists, Selected Spins, and update the textboxes."""
+    global state
+    print(f"clear_all_casino_numbers: Before clear - state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}, state.last_spins={state.last_spins}")
+    state.hot_numbers = []
+    state.cold_numbers = []
+    state.last_spins = []  # Clear Selected Spins
+    state.selected_numbers.clear()  # Clear selected numbers set
+    hot_display = ""
+    cold_display = ""
+    new_spins_display = ""
+    new_spins_textbox = ""
+    print(f"clear_all_casino_numbers: After clear - state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}, state.last_spins={state.last_spins}")
+    return new_spins_display, new_spins_textbox, hot_display, cold_display
+
 def best_dozens_and_top_18():
     recommendations = []
 
@@ -4971,8 +5004,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     interactive=True,
                     scale=1
                 )
-                clear_all_button = gr.Button("Clear All Casino Numbers", elem_classes=["action-button"], scale=1)
-    
+                clear_all_casino_button = gr.Button("Clear All Casino Numbers", elem_classes=["action-button"], scale=1)  # Renamed     
+                
     # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
@@ -7426,7 +7459,43 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in input_type_radio.change handler: {str(e)}")
-    
+
+    # Event Handlers for Casino Hot/Cold Booster Reset Buttons
+    try:
+        hot_reset_button.click(
+            fn=reset_hot_numbers,
+            inputs=[hot_numbers_textbox, cold_numbers_textbox],
+            outputs=[hot_numbers_textbox, cold_numbers_textbox]
+        )
+    except Exception as e:
+        print(f"Error in hot_reset_button.click handler: {str(e)}")
+
+    try:
+        cold_reset_button.click(
+            fn=reset_cold_numbers,
+            inputs=[hot_numbers_textbox, cold_numbers_textbox],
+            outputs=[hot_numbers_textbox, cold_numbers_textbox]
+        )
+    except Exception as e:
+        print(f"Error in cold_reset_button.click handler: {str(e)}")
+
+    try:
+        clear_all_casino_button.click(
+            fn=clear_all_casino_numbers,
+            inputs=[spins_display, spins_textbox, hot_numbers_textbox, cold_numbers_textbox],
+            outputs=[spins_display, spins_textbox, hot_numbers_textbox, cold_numbers_textbox]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        )
+    except Exception as e:
+        print(f"Error in clear_all_casino_button.click handler: {str(e)}")
+
     # Launch the interface
     print("Starting Gradio launch...")
     demo.launch()
