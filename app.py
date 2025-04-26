@@ -1535,6 +1535,30 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
         return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
         
+def click_number(number, current_spins, num_to_show, state, hot_numbers_textbox, cold_numbers_textbox):
+    """Handle clicks on the roulette table numbers."""
+    if not isinstance(number, str):
+        number = str(number)
+
+    # Check the input type to determine where the clicked number goes
+    if state.input_type == "Hot Numbers":
+        # Add to hot numbers (max 5), ensure uniqueness
+        if number not in state.hot_numbers and len(state.hot_numbers) < 5:
+            state.hot_numbers.append(number)
+        # Update the hot numbers textbox with fire emojis
+        hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers])
+        return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_display, cold_numbers_textbox
+    elif state.input_type == "Cold Numbers":
+        # Add to cold numbers (max 5), ensure uniqueness
+        if number not in state.cold_numbers and len(state.cold_numbers) < 5:
+            state.cold_numbers.append(number)
+        # Update the cold numbers textbox with ice emojis
+        cold_display = ", ".join([f"{num}🧊" for num in state.cold_numbers])
+        return current_spins, current_spins, format_spins_as_html(current_spins, num_to_show), update_spin_counter(), render_sides_of_zero_display(), hot_numbers_textbox, cold_display
+    else:
+        # Default to "Selected Spins" behavior
+        return add_spin(number, current_spins, num_to_show) + (hot_numbers_textbox, cold_numbers_textbox)
+
 # Function to clear spins
 def clear_spins():
     state.selected_numbers.clear()
@@ -4699,6 +4723,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+        # Create an array to store the table buttons
+        table_numbers = [None] * 37  # Array to hold buttons for numbers 0-36
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
@@ -4716,6 +4742,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
+                            # Store the button in the table_numbers array
+                            table_numbers[int(num)] = btn
                             # Attach the click event directly
                             btn.click(
                                 fn=add_spin,
@@ -7362,13 +7390,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
     try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
+        for num in range(37):
+            table_numbers[num].click(
+                fn=click_number,
+                inputs=[gr.State(value=str(num)), spins_display, last_spin_count, state, hot_numbers_textbox, cold_numbers_textbox],
+                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, hot_numbers_textbox, cold_numbers_textbox]
+            )
     except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
+        print(f"Error in table_numbers.click handler: {str(e)}")
 
 
 # Launch the interface
