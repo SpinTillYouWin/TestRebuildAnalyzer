@@ -7404,20 +7404,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
-
-# Event Handler for Roulette Table Clicks
+    
+    # Event Handler for Input Type Radio
     try:
-        for num in range(37):
-            table_numbers[num].click(
-                fn=click_number,
-                inputs=[gr.State(value=str(num)), spins_display, last_spin_count, hot_numbers_textbox, cold_numbers_textbox],
-                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, hot_numbers_textbox, cold_numbers_textbox]
-            )
+        def update_input_type(input_type, hot_numbers_textbox, cold_numbers_textbox):
+            """Update state.input_type and sync textboxes when the radio button selection changes."""
+            global state
+            print(f"update_input_type: Before update - state.input_type='{state.input_type}', state.hot_numbers={state.hot_numbers}, state.cold_numbers={state.cold_numbers}")
+            print(f"update_input_type: Input hot_numbers_textbox='{hot_numbers_textbox}', cold_numbers_textbox='{cold_numbers_textbox}'")
+            state.input_type = input_type
+            # Sync the textboxes with the current state to prevent doubling
+            hot_display = ", ".join([f"{num}🔥" for num in state.hot_numbers]) if state.hot_numbers else ""
+            cold_display = ", ".join([f"{num}🧊" for num in state.cold_numbers]) if state.cold_numbers else ""
+            print(f"update_input_type: After update - Input type set to: '{state.input_type}', hot_display='{hot_display}', cold_display='{cold_display}'")
+            return hot_display, cold_display
+    
+        input_type_radio.change(
+            fn=update_input_type,
+            inputs=[input_type_radio, hot_numbers_textbox, cold_numbers_textbox],
+            outputs=[hot_numbers_textbox, cold_numbers_textbox]
+        )
     except Exception as e:
-        print(f"Error in table_numbers.click handler: {str(e)}")
-
-
-# Launch the interface
-print("Starting Gradio launch...")
-demo.launch()
-print("Gradio launch completed.")
+        print(f"Error in input_type_radio.change handler: {str(e)}")
+    
+    # Launch the interface
+    print("Starting Gradio launch...")
+    demo.launch()
+    print("Gradio launch completed.")
