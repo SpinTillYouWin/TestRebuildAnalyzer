@@ -4592,7 +4592,7 @@ def clear_hot_cold_picks(type_label, current_spins_display):
 
 # Updated function with debug log
 def summarize_spin_traits(last_spin_count):
-    """Summarize traits for the last X spins as HTML badges."""
+    """Summarize traits for the last X spins as HTML badges, highlighting winners."""
     print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
     try:
         last_spins = state.last_spins[-int(last_spin_count):] if state.last_spins else []
@@ -4626,31 +4626,40 @@ def summarize_spin_traits(last_spin_count):
             except ValueError:
                 continue
 
-        # Build HTML badges
+        # Find the maximum counts for each section (excluding Repeat Numbers)
+        max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+        max_columns = max(column_counts.values()) if column_counts else 0
+        max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+
+        # Build HTML badges with winner highlighting
         html = '<div class="traits-badges">'
         # Even Money
         html += '<div class="badge-group"><h4>Even Money Bets</h4>'
         for name, count in even_money_counts.items():
-            html += f'<span class="trait-badge even-money">{name}: {count}</span>'
+            # Add 'winner' class if this count is the maximum in the section
+            badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
+            html += f'<span class="{badge_class}">{name}: {count}</span>'
         html += '</div>'
         # Columns
         html += '<div class="badge-group"><h4>Columns</h4>'
         for name, count in column_counts.items():
-            html += f'<span class="trait-badge column">{name}: {count}</span>'
+            badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
+            html += f'<span class="{badge_class}">{name}: {count}</span>'
         html += '</div>'
         # Dozens
         html += '<div class="badge-group"><h4>Dozens</h4>'
         for name, count in dozen_counts.items():
-            html += f'<span class="trait-badge dozen">{name}: {count}</span>'
+            badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
+            html += f'<span class="{badge_class}">{name}: {count}</span>'
         html += '</div>'
-        # Repeat Numbers
+        # Repeat Numbers (no highlighting)
         repeats = {num: count for num, count in number_counts.items() if count > 1}
         html += '<div class="badge-group"><h4>Repeat Numbers</h4>'
         if repeats:
             for num, count in sorted(repeats.items()):
                 html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
         else:
-            html += '<span class="trait-badge repeat">No repeats</span>'
+            html += f'<span class="trait-badge repeat">No repeats</span>'
         html += '</div></div>'
         return html
     except Exception as e:
@@ -6071,7 +6080,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
         .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
         .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
-
+        
+        /* Highlight winning badges */
+        .trait-badge.winner {
+            font-weight: bold !important;
+            border: 2px solid #ffd700 !important; /* Gold border */
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            background-color: rgba(255, 215, 0, 0.3) !important; /* Light gold background overlay */
+        }
 
         /* Suggestion Box */
         .suggestion-box {
