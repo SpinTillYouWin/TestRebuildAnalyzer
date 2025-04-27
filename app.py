@@ -4790,7 +4790,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-# Updated state/components section
     # Define state and components used across sections
     spins_display = gr.State(value="")
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
@@ -4825,10 +4824,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    traits_display = gr.HTML(
-        label="Spin Traits",
-        value=summarize_spin_traits(36),
-        elem_classes=["traits-container"]
+    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+        traits_display = gr.HTML(
+            label="Spin Traits",
+            value=summarize_spin_traits(36),
+            elem_classes=["traits-container"]
     )
 
 # Surrounding lines before (unchanged)
