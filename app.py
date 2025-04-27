@@ -6080,21 +6080,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
       // Step 14a: Hot and Cold Numbers
       tour.addStep({
-        id: 'part14a',
-        title: 'Test Your Hot and Cold Picks!',
-        text: 'Enter 1 to 10 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/4Xz1dNg29mA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
-        beforeShowPromise: function() {
-          return Promise.all([
-            forceAccordionOpen('#casino-data-insights'),
-            forceAccordionOpen('#hot-cold-numbers')
-          ]);
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 14a', 'Part 15') },
-          { text: 'Skip', action: tour.cancel }
-        ]
+          id: 'part14a',
+          title: 'Test Your Hot and Cold Picks!',
+          text: 'Enter 1 to 10 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/4Xz1dNg29mA?fs=0" frameborder="0" onerror="console.error('Failed to load video for Step 14a')"></iframe>',
+          attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
+          beforeShowPromise: function() {
+            console.log('Starting Step 14a: Hot and Cold Numbers');
+            return Promise.all([
+              forceAccordionOpen('#casino-data-insights'),
+              forceAccordionOpen('#hot-cold-numbers')
+            ]).catch(error => {
+              console.error('Error in Step 14a beforeShowPromise:', error);
+              return Promise.resolve();
+            });
+          },
+          buttons: [
+            { text: 'Back', action: function() { try { tour.back(); } catch(e) { console.error('Error in Back button:', e); } } },
+            { text: 'Next', action: logStep('Part 14a', 'Part 15') },
+            { text: 'Skip', action: function() { try { tour.cancel(); } catch(e) { console.error('Error in Skip button:', e); } } }
+          ]
+        });
       });
     
       // Step 15: Dealer’s Spin Tracker
