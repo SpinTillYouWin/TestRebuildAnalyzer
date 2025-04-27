@@ -6082,7 +6082,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       tour.addStep({
         id: 'part14a',
         title: 'Test Your Hot and Cold Picks!',
-        text: Enter 1 to 10 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+        text: 'Enter 1 to 10 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/4Xz1dNg29mA?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
         beforeShowPromise: function() {
           return Promise.all([
