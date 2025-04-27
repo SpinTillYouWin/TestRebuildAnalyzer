@@ -6084,11 +6084,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Highlight winning badges */
         .trait-badge.winner {
             font-weight: bold !important;
+            color: #333 !important; /* Dark gray text for better contrast */
             border: 2px solid #ffd700 !important; /* Gold border */
             box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            background-color: rgba(255, 215, 0, 0.3) !important; /* Light gold background overlay */
+            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
         }
-
         /* Suggestion Box */
         .suggestion-box {
             background-color: #f0f8ff !important;
