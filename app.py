@@ -4878,23 +4878,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             last_spin_display
             last_spin_count
 
-
-    # 4. Row 4: Spin Controls
-    with gr.Row():
-        with gr.Column(scale=2):  # Increase scale to match button widths
-            with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
-                traits_display = gr.HTML(
-                    label="Spin Traits",
-                    value=summarize_spin_traits(36),
-                    elem_classes=["traits-container"]
-                )
-        with gr.Column(scale=2):
-            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
-        with gr.Column(scale=1):
-            undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
-        with gr.Column(scale=1):
-            generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
-
 # Surrounding lines after (unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
