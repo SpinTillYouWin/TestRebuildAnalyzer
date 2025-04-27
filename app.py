@@ -5414,7 +5414,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </script>
                 """)
     
-    # CSS
+    # CSS (end of the previous section, for context)
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
@@ -5891,10 +5891,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      <!-- ... (rest of tour script unchanged, unless you want the updated tour with Step 14a) -->
-    </script>
-    """)
-
       // Step 2: Roulette Table
       tour.addStep({
         id: 'part2',
@@ -5907,7 +5903,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 3: Last Spins Display
       tour.addStep({
         id: 'part3',
@@ -5920,7 +5916,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 4: Spin Controls
       tour.addStep({
         id: 'part4',
@@ -5933,7 +5929,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 5: Selected Spins Textbox
       tour.addStep({
         id: 'part5',
@@ -5946,7 +5942,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 6: Analyze Button
       tour.addStep({
         id: 'part6',
@@ -5959,7 +5955,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 7: Dynamic Table
       tour.addStep({
         id: 'part7',
@@ -5972,7 +5968,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 8: Betting Progression Tracker
       tour.addStep({
         id: 'part8',
@@ -5988,7 +5984,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 9: Color Code Key
       tour.addStep({
         id: 'part9',
@@ -6004,7 +6000,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 10: Color Code Key (Continued)
       tour.addStep({
         id: 'part10',
@@ -6020,7 +6016,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 11: Spin Analysis
       tour.addStep({
         id: 'part11',
@@ -6036,7 +6032,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 12: Save/Load Session
       tour.addStep({
         id: 'part12',
@@ -6052,7 +6048,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 13: Strategy Selection
       tour.addStep({
         id: 'part13',
@@ -6065,59 +6061,58 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 14: Casino Data Insights
       tour.addStep({
-      tour.addStep({
-          id: 'part14',
-          title: 'Boost Wins with Casino Intel!',
-          text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#casino-data-insights', on: 'bottom' },
-          beforeShowPromise: function() {
-              return forceAccordionOpen('#casino-data-insights');
-          },
-          buttons: [
-              { text: 'Back', action: tour.back },
-              { text: 'Next', action: logStep('Part 14', 'Part 14a') },
-              { text: 'Skip', action: tour.cancel }
-          ]
+        id: 'part14',
+        title: 'Boost Wins with Casino Intel!',
+        text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#casino-data-insights', on: 'bottom' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#casino-data-insights');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 14', 'Part 14a') },
+          { text: 'Skip', action: tour.cancel }
+        ]
       });
     
-      # Step 14a: Hot and Cold Numbers
+      // Step 14a: Hot and Cold Numbers
       tour.addStep({
-          id: 'part14a',
-          title: 'Test Your Hot and Cold Picks!',
-          text: 'Enter 5 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',  # Replace with specific video if available
-          attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
-          beforeShowPromise: function() {
-              return Promise.all([
-                  forceAccordionOpen('#casino-data-insights'),
-                  forceAccordionOpen('#hot-cold-numbers')
-              ]);
-          },
-          buttons: [
-              { text: 'Back', action: tour.back },
-              { text: 'Next', action: logStep('Part 14a', 'Part 15') },
-              { text: 'Skip', action: tour.cancel }
-          ]
+        id: 'part14a',
+        title: 'Test Your Hot and Cold Picks!',
+        text: 'Enter 5 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
+        beforeShowPromise: function() {
+          return Promise.all([
+            forceAccordionOpen('#casino-data-insights'),
+            forceAccordionOpen('#hot-cold-numbers')
+          ]);
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 14a', 'Part 15') },
+          { text: 'Skip', action: tour.cancel }
+        ]
       });
     
-      # Step 15: Dealer’s Spin Tracker
+      // Step 15: Dealer’s Spin Tracker
       tour.addStep({
-          id: 'part15',
-          title: 'Spot the Dealer’s Bias!',
-          text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
-          beforeShowPromise: function() {
-              return forceAccordionOpen('#sides-of-zero-accordion');
-          },
-          buttons: [
-              { text: 'Back', action: tour.back },
-              { text: 'Next', action: logStep('Part 15', 'Part 16a') },
-              { text: 'Skip', action: tour.cancel }
-          ]
+        id: 'part15',
+        title: 'Spot the Dealer’s Bias!',
+        text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#sides-of-zero-accordion');
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 15', 'Part 16a') },
+          { text: 'Skip', action: tour.cancel }
+        ]
       });
-
+    
       // Step 16a: Create Dozen/Even Bet Triggers - Dozen Triggers
       tour.addStep({
         id: 'part16a',
@@ -6133,7 +6128,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 16a1: Create Dozen/Even Bet Triggers - Dozen Triggers: Alert on Consecutive Dozen Hits
       tour.addStep({
         id: 'part16a1',
@@ -6149,7 +6144,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 16a2: Create Dozen/Even Bet Triggers - Dozen Triggers: Sequence Length to Match (X), Follow-Up Spins to Track (Y)
       tour.addStep({
         id: 'part16a2',
@@ -6165,7 +6160,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 16b: Create Dozen/Even Bet Triggers - Even Money Bet Triggers
       tour.addStep({
         id: 'part16b',
@@ -6181,7 +6176,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 16b1: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Alert on Consecutive Even Money Hits (And/Or)
       tour.addStep({
         id: 'part16b1',
@@ -6197,7 +6192,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 16b2: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Track Consecutive Identical Traits
       tour.addStep({
         id: 'part16b2',
@@ -6213,7 +6208,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 17: Top Strategies with Roulette Spin Analyzer
       tour.addStep({
         id: 'part17',
@@ -6229,7 +6224,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
-
+    
       // Step 18: Feedback & Suggestions
       tour.addStep({
         id: 'part18',
@@ -6244,7 +6239,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
         ]
       });
-
+    
       function startTour() {
         console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
         if (typeof Shepherd === 'undefined') {
@@ -6268,6 +6263,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '#save-load-session',
             '#select-category',
             '#casino-data-insights',
+            '#hot-cold-numbers',  // Added for Hot and Cold Numbers
             '#sides-of-zero-accordion',
             '#dozen-tracker',
             '#top-strategies',
@@ -6287,16 +6283,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             console.error('Error starting tour:', error);
             alert('Tour failed to start due to an unexpected error. Please check the console for details.');
           }
-        }, 2000); // Increased delay to ensure Gradio rendering
+        }, 2000);
       }
-
+    
       document.addEventListener("DOMContentLoaded", () => {
         console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
         console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
       });
     </script>
     """)
-
+    
     # Event Handlers
     try:
         spins_textbox.change(
@@ -6310,7 +6306,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             fn=update_spin_counter,
