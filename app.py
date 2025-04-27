@@ -4879,12 +4879,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column():
             last_spin_display
             last_spin_count
+
+# 4. Row 4: Spin Controls
+    with gr.Row():
+        with gr.Column(scale=1):
             with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
                 traits_display  # Use the pre-defined component
-
-# Surrounding lines after (unchanged)
-    # 4. Row 4: Spin Controls
-    with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
