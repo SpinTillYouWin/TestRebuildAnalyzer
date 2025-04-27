@@ -4574,10 +4574,10 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
 
         state.last_spins = updated_spins
         state.casino_data[f"{type_label.lower()}_numbers"] = numbers
-            spins_text = ", ".join(updated_spins)
-            success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
-            print(f"play_specific_numbers: {success_msg}")
-            return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
+        spins_text = ", ".join(updated_spins)
+        success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
+        print(f"play_specific_numbers: {success_msg}")
+        return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
     except Exception as e:
         error_msg = f"Error playing {type_label} numbers: {str(e)}"
         print(f"play_specific_numbers: {error_msg}")
