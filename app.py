@@ -4829,7 +4829,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             label="Spin Traits",
             value=summarize_spin_traits(36),
             elem_classes=["traits-container"]
-    )
+        )
 
 # Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
@@ -6626,8 +6626,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
-            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]  # Removed betting_sections_display
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         )
+
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
     
@@ -6652,7 +6657,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=clear_outputs,
@@ -6685,7 +6690,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         )
+ 
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
     
@@ -6698,6 +6708,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
@@ -6948,7 +6962,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_output,
                 color_code_output,
                 spin_counter,
-                sides_of_zero_display  # Removed betting_sections_display
+                sides_of_zero_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -6981,6 +6995,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
