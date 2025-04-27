@@ -4873,18 +4873,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[traits_display]
                             )
 
-# Updated Row 3
+# Row 3 (unchanged, keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
-
-# 4. Row 4: Spin Controls
-    with gr.Row():
-        with gr.Column(scale=1):
             with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
                 traits_display  # Use the pre-defined component
+
+# Updated Row 4 (remove the accordion)
+    # 4. Row 4: Spin Controls
+    with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
@@ -4892,7 +4892,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
 
-# Surrounding lines after Row 4 (unchanged)
+# Surrounding lines after (unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
