@@ -4769,8 +4769,6 @@ def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
 
-# ... (previous imports, function definitions, and state setup remain unchanged) ...
-
 
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -4873,18 +4871,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[traits_display]
                             )
 
-# Row 3 (unchanged, keep the accordion here)
+
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
-            with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
-                traits_display  # Use the pre-defined component
 
-# Updated Row 4 (remove the accordion)
+
     # 4. Row 4: Spin Controls
     with gr.Row():
+        with gr.Column(scale=2):  # Increase scale to match button widths
+            with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
+                traits_display = gr.HTML(
+                    label="Spin Traits",
+                    value=summarize_spin_traits(36),
+                    elem_classes=["traits-container"]
+                )
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
