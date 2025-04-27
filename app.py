@@ -202,6 +202,8 @@ def validate_roulette_data():
 
     return errors if errors else None
 
+# In Part 1, replace the RouletteState class with the following:
+
 class RouletteState:
     def __init__(self):
         self.scores = {n: 0 for n in range(37)}
@@ -215,42 +217,37 @@ class RouletteState:
         self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
         self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []  # Tracks each spin's effects for undoing
-
-        # Casino data storage
+        self.spin_history = []
         self.casino_data = {
-            "spins_count": 100,  # Default number of spins
-            "hot_numbers": {},   # {number: percentage, e.g., 5: 10.0}
-            "cold_numbers": {},  # {number: percentage, e.g., 0: 0.0}
+            "spins_count": 100,
+            "hot_numbers": [],  # Store 5 user-specified hot numbers
+            "cold_numbers": [],  # Store 5 user-specified cold numbers
             "even_odd": {"Even": 0.0, "Odd": 0.0},
             "red_black": {"Red": 0.0, "Black": 0.0},
             "low_high": {"Low": 0.0, "High": 0.0},
             "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
             "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
         }
-        self.use_casino_winners = False  # Toggle to highlight casino winners
-
-        # New betting progression fields
+        self.use_casino_winners = False
         self.bankroll = 1000
-        self.initial_bankroll = 1000  # For profit/loss tracking
+        self.initial_bankroll = 1000
         self.base_unit = 10
-        self.stop_loss = -500  # Relative to initial_bankroll
-        self.stop_win = 200    # Relative to initial_bankroll
+        self.stop_loss = -500
+        self.stop_win = 200
+        self.target_profit = 10
         self.bet_type = "Even Money"
         self.progression = "Martingale"
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
-        self.progression_state = None  # e.g., Fibonacci index or Labouchere list
-        self.labouchere_sequence = ""  # Default Labouchere sequence
-        self.target_profit = 10  # Default target profit in units for Labouchere
-        self.is_stopped = False
+        self.progression_state = None
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
-        self.status_color = "white"  # Default color for active status
-        self.last_dozen_alert_index = -1  # Track the last spin index where a Dozen alert was triggered
-        self.last_alerted_spins = None  # Track the specific spins that triggered the last alert
-        self.alerted_patterns = set()  # Track patterns (as tuples) that have already triggered a sequence match alert
-        
+        self.status_color = "white"
+        self.last_dozen_alert_index = -1
+        self.alerted_patterns = set()
+        self.last_alerted_spins = None
+        self.labouchere_sequence = ""
+
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -264,9 +261,20 @@ class RouletteState:
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
+        self.casino_data = {
+            "spins_count": 100,
+            "hot_numbers": [],  # Reset to empty list
+            "cold_numbers": [],  # Reset to empty list
+            "even_odd": {"Even": 0.0, "Odd": 0.0},
+            "red_black": {"Red": 0.0, "Black": 0.0},
+            "low_high": {"Low": 0.0, "High": 0.0},
+            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
+            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
+        }
+        self.use_casino_winners = False
+        self.reset_progression()
 
-        # Reset betting progression (optional: only if you want full reset to affect progression)
-        # self.reset_progression()
+    # ... (other methods like update_progression, reset_progression unchanged) ...
 
     def reset_progression(self):
         self.current_bet = self.base_unit
@@ -1540,10 +1548,12 @@ def clear_spins():
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
 # Function to save the session
+# In Part 1, replace save_session and load_session with:
+
 def save_session():
     session_data = {
         "spins": state.last_spins,
-        "spin_history": state.spin_history,  # Include spin history
+        "spin_history": state.spin_history,
         "scores": state.scores,
         "even_money_scores": state.even_money_scores,
         "dozen_scores": state.dozen_scores,
@@ -1553,14 +1563,13 @@ def save_session():
         "six_line_scores": state.six_line_scores,
         "split_scores": state.split_scores,
         "side_scores": state.side_scores,
-        "casino_data": state.casino_data,
+        "casino_data": state.casino_data,  # Includes hot_numbers and cold_numbers as lists
         "use_casino_winners": state.use_casino_winners
     }
     with open("session.json", "w") as f:
         json.dump(session_data, f)
     return "session.json"
 
-# Function to load the session
 def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     try:
         if file is None:
@@ -1583,8 +1592,8 @@ def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *c
         state.side_scores = session_data.get("side_scores", {"Left Side of Zero": 0, "Right Side of Zero": 0})
         state.casino_data = session_data.get("casino_data", {
             "spins_count": 100,
-            "hot_numbers": {},
-            "cold_numbers": {},
+            "hot_numbers": [],  # Load as list
+            "cold_numbers": [],  # Load as list
             "even_odd": {"Even": 0.0, "Odd": 0.0},
             "red_black": {"Red": 0.0, "Black": 0.0},
             "low_high": {"Low": 0.0, "High": 0.0},
@@ -1595,50 +1604,41 @@ def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *c
 
         new_spins = ", ".join(state.last_spins)
         spin_analysis_output = f"Session loaded successfully with {len(state.last_spins)} spins."
-        
-        # Compute UI outputs
-        even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
-        dozens_output = "Dozens:\n" + "\n".join(f"{name}: {score}" for name, score in state.dozen_scores.items())
-        columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
-        streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
-        corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
-        six_lines_output = "Double Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.six_line_scores.items() if score > 0)
-        splits_output = "Splits:\n" + "\n".join(f"{name}: {score}" for name, score in state.split_scores.items() if score > 0)
-        sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
+        even_money_output = "\n".join([f"{name}: {score}" for name, score in state.even_money_scores.items()])
+        dozens_output = "\n".join([f"{name}: {score}" for name, score in state.dozen_scores.items()])
+        columns_output = "\n".join([f"{name}: {score}" for name, score in state.column_scores.items()])
+        streets_output = "\n".join([f"{name}: {score}" for name, score in state.street_scores.items()])
+        corners_output = "\n".join([f"{name}: {score}" for name, score in state.corner_scores.items()])
+        six_lines_output = "\n".join([f"{name}: {score}" for name, score in state.six_line_scores.items()])
+        splits_output = "\n".join([f"{name}: {score}" for name, score in state.split_scores.items()])
+        sides_output = "\n".join([f"{name}: {score}" for name, score in state.side_scores.items()])
+        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"]).sort_values(by="Score", ascending=False)
+        straight_up_html = straight_up_df.to_html(index=False, classes="scrollable-table")
+        top_18_df = straight_up_df[straight_up_df["Score"] > 0].head(18)
+        top_18_html = top_18_df.to_html(index=False, classes="scrollable-table")
+        strongest_numbers_output = ", ".join([str(n) for n, s in straight_up_df.head(3).iterrows() if s["Score"] > 0]) or "No numbers have hit yet."
 
-        straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
-        straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-        straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
-        straight_up_df["Right Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][1] if x in current_neighbors else "")
-        straight_up_html = create_html_table(straight_up_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Strongest Numbers")
-
-        top_18_df = straight_up_df.head(18).sort_values(by="Number", ascending=True)
-        numbers = top_18_df["Number"].tolist()
-        if len(numbers) < 18:
-            numbers.extend([""] * (18 - len(numbers)))
-        grid_data = [numbers[i::3] for i in range(3)]
-        top_18_html = "<h3>Top 18 Strongest Numbers (Sorted Lowest to Highest)</h3>"
-        top_18_html += '<table border="1" style="border-collapse: collapse; text-align: center;">'
-        for row in grid_data:
-            top_18_html += "<tr>"
-            for num in row:
-                top_18_html += f'<td style="padding: 5px; width: 40px;">{num}</td>'
-            top_18_html += "</tr>"
-        top_18_html += "</table>"
-
-        strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
-        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count)
-        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *checkbox_args)
-
-        return (new_spins, new_spins, spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output)
-    except FileNotFoundError:
-        return ("", "", f"Error: The file '{file.name if file else 'unknown'}' was not found.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
-    except json.JSONDecodeError:
-        return ("", "", "Error: The session file is corrupted or not valid JSON. Please upload a valid file.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
+        return (
+            new_spins,
+            new_spins,
+            spin_analysis_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count),
+            show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count)
+        )
     except Exception as e:
-        return ("", "", f"Unexpected error loading session: {str(e)}. Please try again or check the file.", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
+        print(f"load_session: Error loading session: {str(e)}")
+        return ("", "", f"Error loading session: {str(e)}", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "")
 
 # Function to calculate statistical insights
 def statistical_insights():
@@ -4534,6 +4534,59 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     html_output += "</div>"
 
     return "\n".join(recommendations), html_output
+# In Part 2, add after the existing function definitions (e.g., after even_money_tracker):
+
+def validate_hot_cold_numbers(numbers_input, type_label):
+    """Validate hot or cold numbers input (exactly 5 numbers, 0-36)."""
+    import gradio as gr
+    if not numbers_input or not numbers_input.strip():
+        return None, f"Please enter 5 {type_label} numbers."
+
+    try:
+        numbers = [int(n.strip()) for n in numbers_input.split(",") if n.strip()]
+        if len(numbers) != 5:
+            return None, f"Exactly 5 {type_label} numbers are required (entered {len(numbers)})."
+        if not all(0 <= n <= 36 for n in numbers):
+            return None, f"All {type_label} numbers must be between 0 and 36."
+        return numbers, None
+    except ValueError:
+        return None, f"Invalid {type_label} numbers. Use comma-separated integers (e.g., 1, 3, 5, 7, 9)."
+
+def play_specific_numbers(numbers_input, type_label, current_spins_display, last_spin_count):
+    """Add the 5 specified hot or cold numbers as spins."""
+    import gradio as gr
+    try:
+        numbers, error = validate_hot_cold_numbers(numbers_input, type_label)
+        if error:
+            gr.Warning(error)
+            return current_spins_display, current_spins_display, error, update_spin_counter(), render_sides_of_zero_display()
+
+        new_spins = [str(n) for n in numbers]  # Use the 5 numbers exactly as entered
+        update_scores_batch(new_spins)  # Update scores
+
+        if current_spins_display and current_spins_display.strip():
+            current_spins = current_spins_display.split(", ")
+            updated_spins = current_spins + new_spins
+        else:
+            updated_spins = new_spins
+
+        state.last_spins = updated_spins
+        state.casino_data[f"{type_label.lower()}_numbers"] = numbers  # Store in state
+        spins_text = ", ".join(updated_spins)
+        success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
+        print(f"play_specific_numbers: {success_msg}")
+        return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
+    except Exception as e:
+        error_msg = f"Error playing {type_label} numbers: {str(e)}"
+        print(f"play_specific_numbers: {error_msg}")
+        return current_spins_display, current_spins_display, error_msg, update_spin_counter(), render_sides_of_zero_display()
+
+def clear_hot_cold_picks(type_label, current_spins_display):
+    """Clear hot or cold numbers input."""
+    state.casino_data[f"{type_label.lower()}_numbers"] = []
+    success_msg = f"Cleared {type_label} Picks successfully"
+    print(f"clear_hot_cold_picks: {success_msg}")
+    return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -5070,9 +5123,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
     
-    # 8.1. Row 8.1: Casino Data Insights (New Full-Width Section)
+    # 8.1. Row 8.1: Casino Data Insights
     with gr.Row():
         with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
             spins_count_dropdown = gr.Dropdown(
@@ -5171,6 +5224,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 label="Casino Data Insights",
                 value="<p>No casino data entered yet.</p>"
             )
+            # New: Hot and Cold Numbers Section
+            with gr.Accordion("Hot and Cold Numbers", open=False, elem_id="hot-cold-numbers"):
+                hot_numbers_input = gr.Textbox(
+                    label="Hot Numbers (5 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
+                    value="",
+                    interactive=True,
+                    placeholder="Enter 5 hot numbers"
+                )
+                cold_numbers_input = gr.Textbox(
+                    label="Cold Numbers (5 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
+                    value="",
+                    interactive=True,
+                    placeholder="Enter 5 cold numbers"
+                )
+                with gr.Row():
+                    play_hot_button = gr.Button("Play Hot Numbers", elem_classes=["action-button"])
+                    play_cold_button = gr.Button("Play Cold Numbers", elem_classes=["action-button"])
+                with gr.Row():
+                    clear_hot_button = gr.Button("Clear Hot Picks", elem_classes=["action-button"])
+                    clear_cold_button = gr.Button("Clear Cold Picks", elem_classes=["action-button"])
     
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
@@ -5581,6 +5654,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
         }
     
+        /* NEW CSS TWEAKS GO HERE */
+        #hot-cold-numbers .action-button:nth-child(1), #hot-cold-numbers .action-button:nth-child(2) {
+            background-color: #28a745 !important; /* Green for Play buttons */
+            color: white !important;
+            border: 1px solid #000 !important;
+        }
+        #hot-cold-numbers .action-button:nth-child(1):hover, #hot-cold-numbers .action-button:nth-child(2):hover {
+            background-color: #218838 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        #hot-cold-numbers .action-button:nth-child(3), #hot-cold-numbers .action-button:nth-child(4) {
+            background-color: #ff4444 !important; /* Red for Clear buttons */
+            color: white !important;
+            border: 1px solid #000 !important;
+        }
+        #hot-cold-numbers .action-button:nth-child(3):hover, #hot-cold-numbers .action-button:nth-child(4):hover {
+            background-color: #cc0000 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        #hot-cold-numbers .gr-textbox {
+            width: 100% !important;
+            margin: 5px 0 !important;
+            padding: 8px !important;
+            border: 1px solid #d3d3d3 !important;
+            border-radius: 5px !important;
+        }
+    </style>
+    """)
+    print("CSS Updated")
+    
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important; /* Light gray background */
@@ -5979,34 +6084,54 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
       // Step 14: Casino Data Insights
       tour.addStep({
-        id: 'part14',
-        title: 'Boost Wins with Casino Intel!',
-        text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#casino-data-insights', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#casino-data-insights');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 14', 'Part 15') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-
-      // Step 15: Dealer’s Spin Tracker
       tour.addStep({
-        id: 'part15',
-        title: 'Spot the Dealer’s Bias!',
-        text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#sides-of-zero-accordion');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 15', 'Part 16a') },
-          { text: 'Skip', action: tour.cancel }
-        ]
+          id: 'part14',
+          title: 'Boost Wins with Casino Intel!',
+          text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#casino-data-insights', on: 'bottom' },
+          beforeShowPromise: function() {
+              return forceAccordionOpen('#casino-data-insights');
+          },
+          buttons: [
+              { text: 'Back', action: tour.back },
+              { text: 'Next', action: logStep('Part 14', 'Part 14a') },
+              { text: 'Skip', action: tour.cancel }
+          ]
+      });
+    
+      # Step 14a: Hot and Cold Numbers
+      tour.addStep({
+          id: 'part14a',
+          title: 'Test Your Hot and Cold Picks!',
+          text: 'Enter 5 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',  # Replace with specific video if available
+          attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
+          beforeShowPromise: function() {
+              return Promise.all([
+                  forceAccordionOpen('#casino-data-insights'),
+                  forceAccordionOpen('#hot-cold-numbers')
+              ]);
+          },
+          buttons: [
+              { text: 'Back', action: tour.back },
+              { text: 'Next', action: logStep('Part 14a', 'Part 15') },
+              { text: 'Skip', action: tour.cancel }
+          ]
+      });
+    
+      # Step 15: Dealer’s Spin Tracker
+      tour.addStep({
+          id: 'part15',
+          title: 'Spot the Dealer’s Bias!',
+          text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
+          beforeShowPromise: function() {
+              return forceAccordionOpen('#sides-of-zero-accordion');
+          },
+          buttons: [
+              { text: 'Back', action: tour.back },
+              { text: 'Next', action: logStep('Part 15', 'Part 16a') },
+              { text: 'Skip', action: tour.cancel }
+          ]
       });
 
       // Step 16a: Create Dozen/Even Bet Triggers - Dozen Triggers
@@ -7135,19 +7260,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[dynamic_table_output]
         )
     except Exception as e:
-        print(f"Error in use_winners_checkbox.change handler: {str(e)}")
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")    
     
     try:
         reset_casino_data_button.click(
             fn=lambda: (
                 "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
-                "<p>Casino data reset to defaults.</p>"
+                "", "", "<p>Casino data reset to defaults.</p>"  # Added hot_numbers_input, cold_numbers_input
             ),
             inputs=[],
             outputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
                 low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
-                col1_percent, col2_percent, col3_percent, use_winners_checkbox, casino_data_output
+                col1_percent, col2_percent, col3_percent, use_winners_checkbox,
+                hot_numbers_input, cold_numbers_input, casino_data_output  # Added new inputs
             ]
         ).then(
             fn=create_dynamic_table,
@@ -7156,6 +7282,50 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
+
+    try:
+        play_hot_button.click(
+            fn=play_specific_numbers,
+            inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in play_hot_button.click handler: {str(e)}")
+    
+    try:
+        play_cold_button.click(
+            fn=play_specific_numbers,
+            inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in play_cold_button.click handler: {str(e)}")
+    
+    try:
+        clear_hot_button.click(
+            fn=clear_hot_cold_picks,
+            inputs=[gr.State(value="Hot"), spins_display],
+            outputs=[hot_numbers_input, casino_data_output, spin_counter, sides_of_zero_display, spins_display]
+        )
+    except Exception as e:
+        print(f"Error in clear_hot_button.click handler: {str(e)}")
+    
+    try:
+        clear_cold_button.click(
+            fn=clear_hot_cold_picks,
+            inputs=[gr.State(value="Cold"), spins_display],
+            outputs=[cold_numbers_input, casino_data_output, spin_counter, sides_of_zero_display, spins_display]
+        )
+    except Exception as e:
+        print(f"Error in clear_cold_button.click handler: {str(e)}")
     
     # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
