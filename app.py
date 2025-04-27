@@ -4572,6 +4572,7 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
         else:
             updated_spins = new_spins
 
+# Surrounding lines before Line 1 (unchanged)
         state.last_spins = updated_spins
         state.casino_data[f"{type_label.lower()}_numbers"] = numbers
         spins_text = ", ".join(updated_spins)
@@ -4656,6 +4657,7 @@ def summarize_spin_traits(last_spin_count):
         print(f"summarize_spin_traits: Error: {str(e)}")
         return "<p>Error analyzing spin traits.</p>"
 
+# Line 3: Next function (unchanged)
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
