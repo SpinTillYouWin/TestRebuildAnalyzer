@@ -228,6 +228,8 @@ class RouletteState:
             "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
             "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
         }
+        self.hot_suggestions = ""  # Store suggested hot numbers
+        self.cold_suggestions = ""  # Store suggested cold numbers
         self.use_casino_winners = False
         self.bankroll = 1000
         self.initial_bankroll = 1000
@@ -4588,6 +4590,23 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
+def suggest_hot_cold_numbers():
+    """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
+    try:
+        # Sort scores by value (descending for hot, ascending for cold)
+        sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+        hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
+        cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score >= 0]
+        # Fill with random numbers if not enough data
+        if len(hot_numbers) < 5:
+            hot_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(hot_numbers))])
+        if len(cold_numbers) < 5:
+            cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
+        return ", ".join(hot_numbers), ", ".join(cold_numbers)
+    except Exception as e:
+        print(f"suggest_hot_cold_numbers: Error: {str(e)}")
+        return "", ""  # Fallback to empty suggestions
+
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -5124,7 +5143,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
-       
+         
     # 8.1. Row 8.1: Casino Data Insights
     with gr.Row():
         with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
@@ -5222,28 +5241,55 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             )
             casino_data_output = gr.HTML(
                 label="Casino Data Insights",
-                value="<p>No casino data entered yet.</p>"
+                value="<p>No casino data entered yet.</p>",
+                elem_classes=["fade-in"]
             )
             # Hot and Cold Numbers Section
             with gr.Accordion("Hot and Cold Numbers", open=False, elem_id="hot-cold-numbers"):
-                hot_numbers_input = gr.Textbox(
-                    label="Hot Numbers (1 to 10 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
+                with gr.Row():
+                    gr.HTML('<span class="hot-icon">🔥</span>')
+                    hot_numbers_input = gr.Textbox(
+                        label="Hot Numbers (1 to 10 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
+                        value="",
+                        interactive=True,
+                        placeholder="Enter 1 to 10 hot numbers"
+                    )
+                hot_suggestions = gr.Textbox(
+                    label="Suggested Hot Numbers (based on recent spins)",
                     value="",
-                    interactive=True,
-                    placeholder="Enter 1 to 10 hot numbers"
+                    interactive=False,
+                    elem_classes=["suggestion-box"]
                 )
-                cold_numbers_input = gr.Textbox(
-                    label="Cold Numbers (1 to 10 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
-                    value="",
-                    interactive=True,
-                    placeholder="Enter 1 to 10 cold numbers"
+                gr.Button("Use Suggested Hot Numbers", elem_classes=["action-button", "suggestion-btn"]).click(
+                    fn=lambda: state.hot_suggestions,
+                    inputs=[],
+                    outputs=[hot_numbers_input]
                 )
                 with gr.Row():
-                    play_hot_button = gr.Button("Play Hot Numbers", elem_classes=["action-button"])
-                    play_cold_button = gr.Button("Play Cold Numbers", elem_classes=["action-button"])
+                    gr.HTML('<span class="cold-icon">❄️</span>')
+                    cold_numbers_input = gr.Textbox(
+                        label="Cold Numbers (1 to 10 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
+                        value="",
+                        interactive=True,
+                        placeholder="Enter 1 to 10 cold numbers"
+                    )
+                cold_suggestions = gr.Textbox(
+                    label="Suggested Cold Numbers (based on recent spins)",
+                    value="",
+                    interactive=False,
+                    elem_classes=["suggestion-box"]
+                )
+                gr.Button("Use Suggested Cold Numbers", elem_classes=["action-button", "suggestion-btn"]).click(
+                    fn=lambda: state.cold_suggestions,
+                    inputs=[],
+                    outputs=[cold_numbers_input]
+                )
                 with gr.Row():
-                    clear_hot_button = gr.Button("Clear Hot Picks", elem_classes=["action-button"])
-                    clear_cold_button = gr.Button("Clear Cold Picks", elem_classes=["action-button"])
+                    play_hot_button = gr.Button("Play Hot Numbers", elem_classes=["action-button", "play-btn"])
+                    play_cold_button = gr.Button("Play Cold Numbers", elem_classes=["action-button", "play-btn"])
+                with gr.Row():
+                    clear_hot_button = gr.Button("Clear Hot Picks", elem_classes=["action-button", "clear-btn"])
+                    clear_cold_button = gr.Button("Clear Cold Picks", elem_classes=["action-button", "clear-btn"])
     
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
@@ -5820,6 +5866,49 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 8px !important;
             border: 1px solid #d3d3d3 !important;
             border-radius: 5px !important;
+        }
+
+        /* Hot/Cold Icons */
+        .hot-icon {
+            font-size: 24px !important;
+            margin-right: 10px !important;
+            animation: flicker 1.5s infinite alternate !important;
+        }
+        .cold-icon {
+            font-size: 24px !important;
+            margin-right: 10px !important;
+            animation: sparkle 2s infinite alternate !important;
+        }
+        @keyframes flicker {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.2); }
+        }
+        @keyframes sparkle {
+            0% { opacity: 1; transform: rotate(0deg); }
+            100% { opacity: 0.6; transform: rotate(20deg); }
+        }
+        
+        /* Suggestion Box */
+        .suggestion-box {
+            background-color: #f0f8ff !important;
+            border: 1px solid #4682b4 !important;
+            border-radius: 5px !important;
+            padding: 5px !important;
+            font-size: 14px !important;
+        }
+        
+        /* Spin Animation */
+        .play-btn:active {
+            animation: spin 0.5s ease-in-out !important;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Fade-In Animation for Output */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in !important;
         }
     </style>
     """)
@@ -7304,6 +7393,54 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
+
+    try:
+        # Update suggestions on spin changes
+        spins_textbox.change(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=lambda hot, cold: (setattr(state, 'hot_suggestions', hot), setattr(state, 'cold_suggestions', cold), hot, cold)[2:],
+            inputs=[hot_suggestions, cold_suggestions],
+            outputs=[hot_suggestions, cold_suggestions]
+        )
+    except Exception as e:
+        print(f"Error in spins_textbox.change for suggestions: {str(e)}")
+    
+    try:
+        play_hot_button.click(
+            fn=play_specific_numbers,
+            inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        )
+    except Exception as e:
+        print(f"Error in play_hot_button.click handler: {str(e)}")
+    
+    try:
+        play_cold_button.click(
+            fn=play_specific_numbers,
+            inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        )
+    except Exception as e:
+        print(f"Error in play_cold_button.click handler: {str(e)}")
     
     # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
