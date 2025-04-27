@@ -4534,26 +4534,26 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     html_output += "</div>"
 
     return "\n".join(recommendations), html_output
-# In Part 2, add after the existing function definitions (e.g., after even_money_tracker):
 
 def validate_hot_cold_numbers(numbers_input, type_label):
-    """Validate hot or cold numbers input (exactly 5 numbers, 0-36)."""
+    """Validate hot or cold numbers input (1 to 10 numbers, 0-36)."""
     import gradio as gr
     if not numbers_input or not numbers_input.strip():
-        return None, f"Please enter 5 {type_label} numbers."
+        return None, f"Please enter 1 to 10 {type_label} numbers."
 
     try:
         numbers = [int(n.strip()) for n in numbers_input.split(",") if n.strip()]
-        if len(numbers) != 5:
-            return None, f"Exactly 5 {type_label} numbers are required (entered {len(numbers)})."
+        if len(numbers) < 1 or len(numbers) > 10:
+            return None, f"Enter 1 to 10 {type_label} numbers (entered {len(numbers)})."
         if not all(0 <= n <= 36 for n in numbers):
             return None, f"All {type_label} numbers must be between 0 and 36."
         return numbers, None
     except ValueError:
         return None, f"Invalid {type_label} numbers. Use comma-separated integers (e.g., 1, 3, 5, 7, 9)."
 
+# Note: play_specific_numbers and clear_hot_cold_picks remain unchanged, e.g.:
 def play_specific_numbers(numbers_input, type_label, current_spins_display, last_spin_count):
-    """Add the 5 specified hot or cold numbers as spins."""
+    """Add the specified hot or cold numbers as spins."""
     import gradio as gr
     try:
         numbers, error = validate_hot_cold_numbers(numbers_input, type_label)
@@ -4561,8 +4561,8 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
             gr.Warning(error)
             return current_spins_display, current_spins_display, error, update_spin_counter(), render_sides_of_zero_display()
 
-        new_spins = [str(n) for n in numbers]  # Use the 5 numbers exactly as entered
-        update_scores_batch(new_spins)  # Update scores
+        new_spins = [str(n) for n in numbers]
+        update_scores_batch(new_spins)
 
         if current_spins_display and current_spins_display.strip():
             current_spins = current_spins_display.split(", ")
@@ -4571,7 +4571,7 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
             updated_spins = new_spins
 
         state.last_spins = updated_spins
-        state.casino_data[f"{type_label.lower()}_numbers"] = numbers  # Store in state
+        state.casino_data[f"{type_label.lower()}_numbers"] = numbers
         spins_text = ", ".join(updated_spins)
         success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
         print(f"play_specific_numbers: {success_msg}")
@@ -5124,7 +5124,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
-    
+       
     # 8.1. Row 8.1: Casino Data Insights
     with gr.Row():
         with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
@@ -5224,19 +5224,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 label="Casino Data Insights",
                 value="<p>No casino data entered yet.</p>"
             )
-            # New: Hot and Cold Numbers Section
+            # Hot and Cold Numbers Section
             with gr.Accordion("Hot and Cold Numbers", open=False, elem_id="hot-cold-numbers"):
                 hot_numbers_input = gr.Textbox(
-                    label="Hot Numbers (5 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
+                    label="Hot Numbers (1 to 10 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
                     value="",
                     interactive=True,
-                    placeholder="Enter 5 hot numbers"
+                    placeholder="Enter 1 to 10 hot numbers"
                 )
                 cold_numbers_input = gr.Textbox(
-                    label="Cold Numbers (5 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
+                    label="Cold Numbers (1 to 10 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
                     value="",
                     interactive=True,
-                    placeholder="Enter 5 cold numbers"
+                    placeholder="Enter 1 to 10 cold numbers"
                 )
                 with gr.Row():
                     play_hot_button = gr.Button("Play Hot Numbers", elem_classes=["action-button"])
@@ -6082,7 +6082,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       tour.addStep({
         id: 'part14a',
         title: 'Test Your Hot and Cold Picks!',
-        text: 'Enter 5 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+        text: Enter 1 to 10 hot or cold numbers, play them as spins to test your strategy, and clear them when done.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
         beforeShowPromise: function() {
           return Promise.all([
