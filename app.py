@@ -4590,9 +4590,10 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
-# Line 1: New function (updated)
+# Updated function with debug log
 def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges."""
+    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
     try:
         last_spins = state.last_spins[-int(last_spin_count):] if state.last_spins else []
         if not last_spins:
@@ -4656,7 +4657,7 @@ def summarize_spin_traits(last_spin_count):
         print(f"summarize_spin_traits: Error: {str(e)}")
         return "<p>Error analyzing spin traits.</p>"
 
-# Line 3: Next function (unchanged)
+# Surrounding lines after (unchanged)
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
@@ -4834,6 +4835,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+        
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
@@ -4851,15 +4853,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
-                            # Attach the click event directly
+
+                        # Updated click handler
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                            ).then(
+                                fn=format_spins_as_html,
+                                inputs=[spins_display, last_spin_count],
+                                outputs=[last_spin_display]
+                            ).then(
+                                fn=summarize_spin_traits,
+                                inputs=[last_spin_count],
+                                outputs=[traits_display]
                             )
 
-# Row 3: Last Spins Display and Show Last Spins Slider (unchanged, includes slider)
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+# Surrounding lines after (unchanged)
+# Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
