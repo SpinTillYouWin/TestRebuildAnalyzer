@@ -5413,6 +5413,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     });
                 </script>
                 """)
+    
     # CSS
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -5427,7 +5428,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
         };
         document.head.appendChild(script);
-
+    
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
@@ -5476,9 +5477,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             flex-wrap: wrap !important;
             background-color: white !important;
             padding: 10px 0 !important;
-            width: 100% !important; /* Ensure the header spans the full width */
-            margin: 0 auto !important; /* Center the row horizontally */
-            margin-bottom: 20px !important; /* Add spacing below the header */
+            width: 100% !important;
+            margin: 0 auto !important;
+            margin-bottom: 20px !important;
         }
         
         .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
@@ -5497,11 +5498,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             display: block !important;
             background-color: #87CEEB;
             color: black;
-            padding: 10px 5px !important; /* Increased top/bottom padding */
+            padding: 10px 5px !important;
             border-radius: 3px;
-            line-height: 1.5em !important; /* Increased for better spacing */
-            font-size: 14px !important; /* Reduced font size */
-            margin-top: 5px !important; /* Added to shift text downward */
+            line-height: 1.5em !important;
+            font-size: 14px !important;
+            margin-top: 5px !important;
         }
         #selected-spins {
             width: 100% !important;
@@ -5522,14 +5523,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gap: 0 !important; 
             margin: 0 !important; 
             padding: 5px !important; 
-            background-color: #2e7d32 !important; /* Green felt background */
+            background-color: #2e7d32 !important;
             border: 2px solid #d3d3d3 !important; 
             border-radius: 5px !important; 
             width: 100% !important; 
             max-width: 600px !important; 
             margin: 0 auto !important; 
-            overflow-x: auto !important; /* Enable horizontal scrolling */
-            overflow-y: hidden !important; /* Prevent vertical scrolling */
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
         }
         .table-row { 
             display: flex !important; 
@@ -5538,22 +5539,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 0 !important; 
             flex-wrap: nowrap !important; 
             line-height: 0 !important; 
-            min-width: 580px !important; /* Ensure the row is wide enough for all buttons */
-            white-space: nowrap !important; /* Prevent buttons from wrapping */
+            min-width: 580px !important;
+            white-space: nowrap !important;
         }
         
         /* Responsive adjustments for desktop */
         @media (min-width: 768px) {
             .roulette-table {
-                max-width: 800px !important; /* Larger max-width on desktop */
+                max-width: 800px !important;
             }
             .table-row {
-                min-width: 754px !important; /* Adjusted for larger buttons: 13 × 48px + 12 × 5px = 684px + 60px = 744px */
+                min-width: 754px !important;
             }
             .roulette-button, .empty-button {
-                width: 48px !important; /* Slightly larger buttons on desktop */
+                width: 48px !important;
                 height: 48px !important;
-                font-size: 16px !important; /* Larger font size for better readability */
+                font-size: 16px !important;
             }
         }
         
@@ -5562,7 +5563,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
         button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
         
-        /* Remove display: inline-block to match container width */
         button.green-btn {
             background-color: #28a745 !important;
             color: white !important;
@@ -5633,67 +5633,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-        /* Spin Counter Styling */
-        .spin-counter {
-            font-size: 16px !important;
-            font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-            padding: 8px 12px !important;
-            border: 2px solid #3498DB !important;
-            border-radius: 8px !important;
-            margin-top: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-        }
-        .spin-counter:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-    
-        /* NEW CSS TWEAKS GO HERE */
-        #hot-cold-numbers .action-button:nth-child(1), #hot-cold-numbers .action-button:nth-child(2) {
-            background-color: #28a745 !important; /* Green for Play buttons */
-            color: white !important;
-            border: 1px solid #000 !important;
-        }
-        #hot-cold-numbers .action-button:nth-child(1):hover, #hot-cold-numbers .action-button:nth-child(2):hover {
-            background-color: #218838 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        #hot-cold-numbers .action-button:nth-child(3), #hot-cold-numbers .action-button:nth-child(4) {
-            background-color: #ff4444 !important; /* Red for Clear buttons */
-            color: white !important;
-            border: 1px solid #000 !important;
-        }
-        #hot-cold-numbers .action-button:nth-child(3):hover, #hot-cold-numbers .action-button:nth-child(4):hover {
-            background-color: #cc0000 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        #hot-cold-numbers .gr-textbox {
-            width: 100% !important;
-            margin: 5px 0 !important;
-            padding: 8px !important;
-            border: 1px solid #d3d3d3 !important;
-            border-radius: 5px !important;
-        }
-    </style>
-    """)
-    print("CSS Updated")
-    
         /* Last Spins Container */
         .last-spins-container {
-            background-color: #f5f5f5 !important; /* Light gray background */
-            border: 1px solid #d3d3d3 !important; /* Subtle gray border */
+            background-color: #f5f5f5 !important;
+            border: 1px solid #d3d3d3 !important;
             padding: 10px !important;
             border-radius: 5px !important;
             margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; /* Very light shadow */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
         
         /* Fade-in animation for Last Spins */
@@ -5748,21 +5695,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
         /* Spin Counter Styling */
         .spin-counter {
-            font-size: 14px !important; /* Reduced from 16px */
+            font-size: 14px !important;
             font-weight: bold !important;
             color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important; /* Soft blue gradient */
-            padding: 4px 8px !important; /* Reduced from 8px 12px */
-            border: 2px solid #3498DB !important; /* Darker blue border */
-            border-radius: 6px !important; /* Reduced from 8px */
-            margin-top: 0 !important; /* Align with textbox */
+            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+            padding: 4px 8px !important;
+            border: 2px solid #3498DB !important;
+            border-radius: 6px !important;
+            margin-top: 0 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important; /* Reduced shadow intensity */
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important; /* Smooth hover effect */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
-    
+        .spin-counter:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        
         .sides-of-zero-container {
             background-color: #ffffff !important;
             border: 1px solid #d3d3d3 !important;
@@ -5771,7 +5722,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-    
+        
         /* Responsive Design */
         @media (max-width: 600px) {
             .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
@@ -5781,7 +5732,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             .long-slider { width: 100% !important; }
             .header-title { font-size: 1.8em !important; }
         }
-    
+        
         #strongest-numbers-dropdown select {
             -webkit-appearance: menulist !important;
             -moz-appearance: menulist !important;
@@ -5796,13 +5747,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         #strategy-dropdown select option:checked {
             font-weight: bold;
-            background-color: #e0e0ff; /* Light blue to indicate selection */
+            background-color: #e0e0ff;
             color: #000;
         }
         .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
         .betting-progression .gr-button { width: 100px; margin: 5px; }
         .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
-    
+        
         /* Top Strategies Accordion */
         #top-strategies summary {
             background-color: #dc3545 !important;
@@ -5810,7 +5761,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 5px !important;
         }
-    
+        
         /* Video Section */
         #top-strategies .gr-box {
             background-color: #f5c6cb !important;
@@ -5834,17 +5785,46 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
         }
-    
+        
         /* Responsive Design for Video */
         @media (max-width: 600px) {
             #video-output iframe {
                 height: 200px !important;
             }
         }
+        
+        /* Hot and Cold Numbers Styling */
+        #hot-cold-numbers .action-button:nth-child(1), #hot-cold-numbers .action-button:nth-child(2) {
+            background-color: #28a745 !important; /* Green for Play buttons */
+            color: white !important;
+            border: 1px solid #000 !important;
+        }
+        #hot-cold-numbers .action-button:nth-child(1):hover, #hot-cold-numbers .action-button:nth-child(2):hover {
+            background-color: #218838 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        #hot-cold-numbers .action-button:nth-child(3), #hot-cold-numbers .action-button:nth-child(4) {
+            background-color: #ff4444 !important; /* Red for Clear buttons */
+            color: white !important;
+            border: 1px solid #000 !important;
+        }
+        #hot-cold-numbers .action-button:nth-child(3):hover, #hot-cold-numbers .action-button:nth-child(4):hover {
+            background-color: #cc0000 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        #hot-cold-numbers .gr-textbox {
+            width: 100% !important;
+            margin: 5px 0 !important;
+            padding: 8px !important;
+            border: 1px solid #d3d3d3 !important;
+            border-radius: 5px !important;
+        }
     </style>
     """)
     print("CSS Updated")
-
+    
     # Shepherd.js Tour Script
     gr.HTML("""
     <script>
@@ -5861,7 +5841,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         },
         useModalOverlay: true
       });
-
+    
       // Debug function to log step transitions
       function logStep(stepId, nextStepId) {
         return () => {
@@ -5869,7 +5849,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           tour.next();
         };
       }
-
+    
       // Force accordion open with direct DOM manipulation and Promise
       function forceAccordionOpen(accordionId) {
         console.log(`Checking accordion: ${accordionId}`);
@@ -5898,7 +5878,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           }
         });
       }
-
+    
       // Step 1: Header
       tour.addStep({
         id: 'part1',
@@ -5910,6 +5890,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Skip', action: tour.cancel }
         ]
       });
+    
+      <!-- ... (rest of tour script unchanged, unless you want the updated tour with Step 14a) -->
+    </script>
+    """)
 
       // Step 2: Roulette Table
       tour.addStep({
