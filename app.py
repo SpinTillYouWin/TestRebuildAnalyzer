@@ -4574,10 +4574,10 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
 
         state.last_spins = updated_spins
         state.casino_data[f"{type_label.lower()}_numbers"] = numbers
-        spins_text = ", ".join(updated_spins)
-        success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
-        print(f"play_specific_numbers: {success_msg}")
-        return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
+            spins_text = ", ".join(updated_spins)
+            success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
+            print(f"play_specific_numbers: {success_msg}")
+            return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
     except Exception as e:
         error_msg = f"Error playing {type_label} numbers: {str(e)}"
         print(f"play_specific_numbers: {error_msg}")
@@ -4589,6 +4589,72 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     success_msg = f"Cleared {type_label} Picks successfully"
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
+
+# Line 1: New function (updated)
+def summarize_spin_traits(last_spin_count):
+    """Summarize traits for the last X spins as HTML badges."""
+    try:
+        last_spins = state.last_spins[-int(last_spin_count):] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for analysis.</p>"
+
+        # Initialize counters
+        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        number_counts = {}
+
+        # Analyze spins
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                # Even Money Bets
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        even_money_counts[name] += 1
+                # Columns
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        column_counts[name] += 1
+                # Dozens
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts[name] += 1
+                # Repeat Numbers
+                number_counts[num] = number_counts.get(num, 0) + 1
+            except ValueError:
+                continue
+
+        # Build HTML badges
+        html = '<div class="traits-badges">'
+        # Even Money
+        html += '<div class="badge-group"><h4>Even Money Bets</h4>'
+        for name, count in even_money_counts.items():
+            html += f'<span class="trait-badge even-money">{name}: {count}</span>'
+        html += '</div>'
+        # Columns
+        html += '<div class="badge-group"><h4>Columns</h4>'
+        for name, count in column_counts.items():
+            html += f'<span class="trait-badge column">{name}: {count}</span>'
+        html += '</div>'
+        # Dozens
+        html += '<div class="badge-group"><h4>Dozens</h4>'
+        for name, count in dozen_counts.items():
+            html += f'<span class="trait-badge dozen">{name}: {count}</span>'
+        html += '</div>'
+        # Repeat Numbers
+        repeats = {num: count for num, count in number_counts.items() if count > 1}
+        html += '<div class="badge-group"><h4>Repeat Numbers</h4>'
+        if repeats:
+            for num, count in sorted(repeats.items()):
+                html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
+        else:
+            html += '<span class="trait-badge repeat">No repeats</span>'
+        html += '</div></div>'
+        return html
+    except Exception as e:
+        print(f"summarize_spin_traits: Error: {str(e)}")
+        return "<p>Error analyzing spin traits.</p>"
 
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
@@ -4749,14 +4815,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
+                    label="",  # Remove the label to be safe
+                    minimum=1,
+                    maximum=36,
+                    step=1,
+                    value=36,
+                    interactive=True,
+                    elem_classes="long-slider"
+                )
+    
+    # New accordion with badges (updated)
+                with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
+                    traits_display = gr.HTML(
+                        label="Spin Traits",
+                        value=summarize_spin_traits(36),
+                        elem_classes=["traits-container"]
+                    )
     
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -5887,6 +5961,46 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { opacity: 1; transform: rotate(0deg); }
             100% { opacity: 0.6; transform: rotate(20deg); }
         }
+
+# Line 1: New styles for traits badges (updated)
+        /* Traits Badges */
+        .traits-container {
+            padding: 10px !important;
+            background-color: #2e7d32 !important; /* Casino green felt */
+            border-radius: 5px !important;
+            border: 1px solid #d3d3d3 !important;
+        }
+        .traits-badges {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+        }
+        .badge-group {
+            margin: 5px 0 !important;
+        }
+        .badge-group h4 {
+            color: #ffd700 !important; /* Gold text */
+            font-size: 14px !important;
+            margin: 5px 0 !important;
+        }
+        .trait-badge {
+            background-color: #444 !important;
+            color: #fff !important;
+            padding: 5px 10px !important;
+            border-radius: 12px !important;
+            font-size: 12px !important;
+            margin: 3px !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+            cursor: pointer !important;
+        }
+        .trait-badge:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+        }
+        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
+        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
+        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
+        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
         
         /* Suggestion Box */
         .suggestion-box {
@@ -6515,6 +6629,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[last_spin_display]
         )
     except Exception as e:
+        print(f"Error in generate_spins_button.click handler: {str(e)}")
+
+# Line 1: Slider change handler (updated)
+    try:
+        last_spin_count.change(
+            fn=format_spins_as_html,
+            inputs=[spins_display, last_spin_count],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        )
+    except Exception as e:
+        print(f"Error in last_spin_count.change handler: {str(e)}")
         print(f"Error in generate_spins_button.click handler: {str(e)}")
     
     try:
