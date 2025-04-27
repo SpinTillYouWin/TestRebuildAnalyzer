@@ -4864,16 +4864,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column():
             last_spin_display
             last_spin_count
+            with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
+                traits_display = gr.HTML(
+                    label="Spin Traits",
+                    value=summarize_spin_traits(36),
+                    elem_classes=["traits-container"]
+                )
 
 # Row 4: Spin Controls (updated, removes duplicate slider)
     # 4. Row 4: Spin Controls
     with gr.Row():
-        with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
-            traits_display = gr.HTML(
-                label="Spin Traits",
-                value=summarize_spin_traits(36),
-                elem_classes=["traits-container"]
-            )
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
@@ -5946,6 +5946,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
 
         /* Hot/Cold Icons */
+        
         .hot-icon {
             font-size: 24px !important;
             margin-right: 10px !important;
@@ -6004,6 +6005,62 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
         .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
         .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
+        # Existing styles (unchanged)
+        /* Hot/Cold Icons */
+        .hot-icon {
+            font-size: 24px !important;
+            margin-right: 10px !important;
+            animation: flicker 1.5s infinite alternate !important;
+        }
+        .cold-icon {
+            font-size: 24px !important;
+            margin-right: 10px !important;
+            animation: sparkle 2s infinite alternate !important;
+        }
+
+# Updated styles for traits badges
+        /* Traits Badges */
+        .traits-container {
+            padding: 10px !important;
+            background-color: #2e7d32 !important; /* Casino green felt */
+            border-radius: 5px !important;
+            border: 1px solid #d3d3d3 !important;
+            width: 100% !important; /* Match slider width */
+            max-width: 600px !important; /* Align with roulette table max-width */
+            margin-top: 10px !important; /* Space between slider and accordion */
+        }
+        .traits-badges {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+        }
+        .badge-group {
+            margin: 5px 0 !important;
+        }
+        .badge-group h4 {
+            color: #ffd700 !important; /* Gold text */
+            font-size: 14px !important;
+            margin: 5px 0 !important;
+        }
+        .trait-badge {
+            background-color: #444 !important;
+            color: #fff !important;
+            padding: 5px 10px !important;
+            border-radius: 12px !important;
+            font-size: 12px !important;
+            margin: 3px !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+            cursor: pointer !important;
+        }
+        .trait-badge:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+        }
+        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
+        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
+        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
+        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
+
 
         /* Suggestion Box */
         .suggestion-box {
