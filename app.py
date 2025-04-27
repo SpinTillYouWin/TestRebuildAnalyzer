@@ -6100,7 +6100,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             { text: 'Skip', action: function() { try { tour.cancel(); } catch(e) { console.error('Error in Skip button:', e); } } }
           ]
         });
-      });
     
       // Step 15: Dealer’s Spin Tracker
       tour.addStep({
