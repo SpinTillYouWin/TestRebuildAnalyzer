@@ -4792,6 +4792,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
+# Updated state/components section
     # Define state and components used across sections
     spins_display = gr.State(value="")
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
@@ -4826,7 +4827,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+    traits_display = gr.HTML(
+        label="Spin Traits",
+        value=summarize_spin_traits(36),
+        elem_classes=["traits-container"]
+    )
 
+# Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -4835,7 +4842,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-        
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
@@ -4853,8 +4859,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
-
-                        # Updated click handler
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
@@ -4869,20 +4873,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[traits_display]
                             )
 
-# Surrounding lines after (unchanged)
-# Row 3: Last Spins Display and Show Last Spins Slider
+# Updated Row 3
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
             with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
-                traits_display = gr.HTML(
-                    label="Spin Traits",
-                    value=summarize_spin_traits(36),
-                    elem_classes=["traits-container"]
-                )
+                traits_display  # Use the pre-defined component
 
-# Row 4: Spin Controls (updated, removes duplicate slider)
+# Surrounding lines after (unchanged)
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
