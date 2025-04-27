@@ -4883,17 +4883,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             last_spin_count
             
 
-# Row 4 (use the provided code, no accordion)
     # 4. Row 4: Spin Controls
     with gr.Row():
-        with gr.Column(scale=1):
-            with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
-                print("Defining traits_display in Spin Traits Analysis accordion (Row 4)")
-                traits_display = gr.HTML(
-                    label="Spin Traits",
-                    value=summarize_spin_traits(36),
-                    elem_classes=["traits-container"]
-                )
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
