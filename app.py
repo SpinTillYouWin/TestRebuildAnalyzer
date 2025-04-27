@@ -6644,16 +6644,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
-        print(f"Error in generate_spins_button.click handler: {str(e)}")
-    
-    try:
-        last_spin_count.change(
-            fn=format_spins_as_html,
-            inputs=[spins_display, last_spin_count],
-            outputs=[last_spin_display]
-        )
-    except Exception as e:
-        print(f"Error in last_spin_count.change handler: {str(e)}")
     
     def update_strategy_dropdown(category):
         if category == "None":
