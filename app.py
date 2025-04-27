@@ -4572,7 +4572,6 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
         else:
             updated_spins = new_spins
 
-# Surrounding lines before Line 1 (unchanged)
         state.last_spins = updated_spins
         state.casino_data[f"{type_label.lower()}_numbers"] = numbers
         spins_text = ", ".join(updated_spins)
@@ -4866,9 +4865,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             last_spin_display
             last_spin_count
 
-# Surrounding lines after Row 3 (unchanged, partial context)
-    # 4. Row 4: Spin Controls
+
+# 4. Row 4: Spin Controls
     with gr.Row():
+        last_spin_count = gr.Slider(
+            label="",  # Remove the label to be safe
+            minimum=1,
+            maximum=36,
+            step=1,
+            value=36,
+            interactive=True,
+            elem_classes="long-slider"
+        )
+        with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
+            traits_display = gr.HTML(
+                label="Spin Traits",
+                value=summarize_spin_traits(36),
+                elem_classes=["traits-container"]
+            )
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
@@ -5998,7 +6012,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
         .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
         .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
-        
+
         /* Suggestion Box */
         .suggestion-box {
             background-color: #f0f8ff !important;
