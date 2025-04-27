@@ -4771,6 +4771,7 @@ def clear_last_spins_display():
 
 # ... (previous imports, function definitions, and state setup remain unchanged) ...
 
+
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 1. Row 1: Header (Moved to the top)
@@ -4817,23 +4818,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
-                    label="",  # Remove the label to be safe
-                    minimum=1,
-                    maximum=36,
-                    step=1,
-                    value=36,
-                    interactive=True,
-                    elem_classes="long-slider"
-                )
-    
-    # New accordion with badges (updated)
-                with gr.Accordion("Spin Traits Analysis", open=False, elem_id="spin-traits-analysis"):
-                    traits_display = gr.HTML(
-                        label="Spin Traits",
-                        value=summarize_spin_traits(36),
-                        elem_classes=["traits-container"]
-                    )
-    
+        label="",  # Remove the label to be safe
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
+
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -4866,12 +4859,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             )
 
+# Row 3: Last Spins Display and Show Last Spins Slider (unchanged)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
 
+# Surrounding lines after Row 3 (unchanged, partial context)
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
