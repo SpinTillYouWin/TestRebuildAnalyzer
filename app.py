@@ -2030,6 +2030,8 @@ def calculate_trending_sections():
     }
 
 # Line 1: Start of apply_strategy_highlights function (updated)
+# Line 1: Start of apply_strategy_highlights function (updated)
+# Line 1: Start of apply_strategy_highlights function (updated with neighbor highlights)
 def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None, suggestions=None):
     """Apply highlights based on the selected strategy with custom colors, passing suggestions for outside bets."""
     if sorted_sections is None:
@@ -2055,10 +2057,17 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     if strategy_name and strategy_name in STRATEGIES:
         strategy_info = STRATEGIES[strategy_name]
         if strategy_name == "Neighbours of Strong Number":
-            recommendations, strategy_suggestions = strategy_info["function"](neighbours_count, strong_numbers_count)
-            # Use the passed suggestions if available, otherwise fall back to strategy_suggestions
-            suggestions = suggestions if suggestions is not None else strategy_suggestions
+            result = strategy_info["function"](neighbours_count, strong_numbers_count)
+            # Handle the tuple return value
+            if isinstance(result, tuple) and len(result) == 2:
+                recommendations, strategy_suggestions = result
+                suggestions = suggestions if suggestions is not None else strategy_suggestions
+            else:
+                # Fallback in case the function doesn't return the expected tuple
+                recommendations = result
+                suggestions = None
         else:
+            # Other strategies return a single string
             recommendations = strategy_info["function"]()
             suggestions = None
         
@@ -2067,9 +2076,10 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         dz_trending, dz_second, dz_highlights = highlight_dozens(strategy_name, sorted_sections, top_color, middle_color, lower_color)
         col_trending, col_second, col_highlights = highlight_columns(strategy_name, sorted_sections, top_color, middle_color, lower_color)
         num_highlights = highlight_numbers(strategy_name, sorted_sections, top_color, middle_color, lower_color)
+        neighbor_highlights = highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong_numbers_count, top_color, middle_color)
         other_highlights = highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color, lower_color)
 
-        # Combine highlights (excluding neighbor_highlights since we're not highlighting numbers)
+        # Combine highlights
         trending_even_money = em_trending
         second_even_money = em_second
         third_even_money = em_third
@@ -2081,6 +2091,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         number_highlights.update(dz_highlights)
         number_highlights.update(col_highlights)
         number_highlights.update(num_highlights)
+        number_highlights.update(neighbor_highlights)
         number_highlights.update(other_highlights)
 
     # Dozen Tracker Logic (When No Strategy is Selected)
