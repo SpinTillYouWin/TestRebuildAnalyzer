@@ -2013,6 +2013,45 @@ def highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong
             for num in neighbors_set:
                 number_highlights[str(num)] = middle_color
     return number_highlights
+# New helper function to highlight suggested bets
+def highlight_suggested_bets(strategy_name, suggestions, top_color, middle_color, lower_color):
+    """Highlight numbers corresponding to suggested bets for Neighbours of Strong Number strategy."""
+    number_highlights = {}
+    if strategy_name != "Neighbours of Strong Number" or not suggestions:
+        return number_highlights
+
+    # Best Even Money Bet (Yellow)
+    if suggestions.get("best_even_money") and suggestions["best_even_money"] in EVEN_MONEY:
+        for num in EVEN_MONEY[suggestions["best_even_money"]]:
+            number_highlights[str(num)] = top_color
+
+    # Best Bet (Cyan)
+    if suggestions.get("best_bet"):
+        best_bet = suggestions["best_bet"]
+        if best_bet in DOZENS:
+            for num in DOZENS[best_bet]:
+                number_highlights[str(num)] = middle_color
+        elif best_bet in COLUMNS:
+            for num in COLUMNS[best_bet]:
+                number_highlights[str(num)] = middle_color
+
+    # Play Two Dozens/Columns (Second bet in Green)
+    if suggestions.get("play_two") and len(suggestions["play_two"]) == 2:
+        play_two_category = suggestions.get("play_two_category")
+        second_bet = suggestions["play_two"][1]  # First bet is already in middle_color
+        if play_two_category == "dozen" and second_bet in DOZENS:
+            for num in DOZENS[second_bet]:
+                # Only apply green if not already highlighted in cyan
+                if number_highlights.get(str(num)) != middle_color:
+                    number_highlights[str(num)] = lower_color
+        elif play_two_category == "column" and second_bet in COLUMNS:
+            for num in COLUMNS[second_bet]:
+                # Only apply green if not already highlighted in cyan
+                if number_highlights.get(str(num)) != middle_color:
+                    number_highlights[str(num)] = lower_color
+
+    return number_highlights
+
 # Function to create the dynamic roulette table with highlighted trending sections
 def calculate_trending_sections():
     """Calculate trending sections based on current scores."""
@@ -2029,7 +2068,8 @@ def calculate_trending_sections():
         "splits": sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     }
 
-def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None):
+# Line 1: Start of apply_strategy_highlights function (updated)
+def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None, suggestions=None):
     """Apply highlights based on the selected strategy with custom colors."""
     if sorted_sections is None:
         return None, None, None, None, None, None, None, {}, "white", "white", "white"
@@ -2050,13 +2090,14 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     trending_column, second_column = None, None
     number_highlights = {}
 
-    # Apply highlights based onShannon (state, strategy_name)
+    # Apply highlights based on strategy
     if strategy_name and strategy_name in STRATEGIES:
         strategy_info = STRATEGIES[strategy_name]
         if strategy_name == "Neighbours of Strong Number":
-            strategy_output = strategy_info["function"](neighbours_count, strong_numbers_count)
+            recommendations, strategy_suggestions = strategy_info["function"](neighbours_count, strong_numbers_count)
         else:
-            strategy_output = strategy_info["function"]()
+            recommendations = strategy_info["function"]()
+            strategy_suggestions = None
         
         # Delegate to helper functions
         em_trending, em_second, em_third, em_highlights = highlight_even_money(strategy_name, sorted_sections, top_color, middle_color, lower_color)
@@ -2064,7 +2105,8 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         col_trending, col_second, col_highlights = highlight_columns(strategy_name, sorted_sections, top_color, middle_color, lower_color)
         num_highlights = highlight_numbers(strategy_name, sorted_sections, top_color, middle_color, lower_color)
         other_highlights = highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color, lower_color)
-        neighbor_highlights = highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong_numbers_count, top_color, middle_color)
+        # Use highlight_suggested_bets instead of highlight_neighbors for Neighbours of Strong Number
+        suggested_highlights = highlight_suggested_bets(strategy_name, suggestions if suggestions else strategy_suggestions, top_color, middle_color, lower_color)
 
         # Combine highlights
         trending_even_money = em_trending
@@ -2079,7 +2121,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         number_highlights.update(col_highlights)
         number_highlights.update(num_highlights)
         number_highlights.update(other_highlights)
-        number_highlights.update(neighbor_highlights)
+        number_highlights.update(suggested_highlights)
 
     # Dozen Tracker Logic (When No Strategy is Selected)
     if strategy_name == "None":
@@ -2299,6 +2341,7 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
     except Exception as e:
         return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
         
+# Lines before (context, unchanged)
 def reset_casino_data():
     """Reset casino data to defaults and clear UI inputs."""
     state.casino_data = {
@@ -2325,8 +2368,9 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
-    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
+# Line 1: Start of create_dynamic_table function (updated)
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None, suggestions=None):
+    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}, suggestions: {suggestions}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
     sorted_sections = calculate_trending_sections()
     
@@ -2344,13 +2388,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
         lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
     else:
-        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
-    
-    # If still no highlights and no sorted_sections, provide a default message
-    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
-    
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color, suggestions)
     
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -2358,7 +2396,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
     
     return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
 
-# Function to get strongest numbers with neighbors
+# Line 3: Start of get_strongest_numbers_with_neighbors function (unchanged)
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
@@ -4033,7 +4071,7 @@ def top_numbers_with_neighbours_tiered():
 
 # Line 1: Start of neighbours_of_strong_number function (updated)
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
-    """Recommend numbers and their neighbors based on hit frequency, including strategy recommendations with tie information."""
+    """Recommend numbers and their neighbors based on hit frequency, returning text output and structured suggestions."""
     recommendations = []
     
     # Validate inputs
@@ -4045,14 +4083,14 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         if strong_numbers_count == 0:
             raise ValueError("Strong numbers count must be at least 1.")
     except (ValueError, TypeError) as e:
-        return f"Error: Invalid input - {str(e)}. Please use positive integers for neighbours and strong numbers."
+        return f"Error: Invalid input - {str(e)}. Please use positive integers for neighbours and strong numbers.", {}
 
     # Check if current_neighbors is valid
     if not isinstance(current_neighbors, dict):
-        return "Error: Neighbor data is not properly configured. Contact support."
+        return "Error: Neighbor data is not properly configured. Contact support.", {}
     for key, value in current_neighbors.items():
         if not isinstance(key, int) or not isinstance(value, tuple) or len(value) != 2:
-            return "Error: Neighbor data is malformed. Contact support."
+            return "Error: Neighbor data is malformed. Contact support.", {}
 
     try:
         print(f"neighbours_of_strong_number: Starting with neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
@@ -4061,7 +4099,7 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         
         if not numbers_hits:
             recommendations.append("Neighbours of Strong Number: No numbers have hit yet.")
-            return "\n".join(recommendations)
+            return "\n".join(recommendations), {}
 
         # Limit strong_numbers_count to available hits
         strong_numbers_count = min(strong_numbers_count, len(numbers_hits))
@@ -4101,14 +4139,27 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
 
         # Combine all bet numbers (strong numbers + neighbors) for aggregated scoring
         bet_numbers = list(selected_numbers) + list(neighbors_set)
+        total_bet_numbers = len(bet_numbers)
 
         # Calculate Aggregated Scores for the bet numbers (needed for Suggestions)
         even_money_scores, dozen_scores, column_scores = state.calculate_aggregated_scores_for_spins(bet_numbers)
+
+        # Initialize suggestions dictionary
+        suggestions = {
+            "best_even_money": None,
+            "best_bet": None,
+            "play_two": [],
+            "play_two_category": None  # "dozen" or "column"
+        }
 
         # Determine the best even money bet and check for ties
         sorted_even_money = sorted(even_money_scores.items(), key=lambda x: (-x[1], x[0]))
         best_even_money = sorted_even_money[0] if sorted_even_money else ("None", 0)
         best_even_money_name, best_even_money_hits = best_even_money
+        suggestions["best_even_money"] = best_even_money_name
+        # Calculate confidence for best even money bet
+        even_money_confidence = (best_even_money_hits / total_bet_numbers * 100) if total_bet_numbers > 0 else 0
+        even_money_confidence_text = f", Confidence: {even_money_confidence:.1f}%"
         # Check for ties in even money bets
         even_money_ties = []
         if sorted_even_money and best_even_money_hits > 0:
@@ -4124,10 +4175,13 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         # Compare dozens vs. columns for the stronger section and check for ties
         suggestion = ""
         winner_category = ""
+        best_bet_hits = 0
         best_bet_tie_text = ""
         if best_dozen_hits > best_column_hits:
             suggestion = f"{best_dozen_name}: {best_dozen_hits}"
             winner_category = "dozen"
+            best_bet_hits = best_dozen_hits
+            suggestions["best_bet"] = best_dozen_name
             # Check if the best dozen ties with others
             sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
             dozen_ties = [f"{name}: {score}" for name, score in sorted_dozens if score == best_dozen_hits and name != best_dozen_name]
@@ -4136,6 +4190,8 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         elif best_column_hits > best_dozen_hits:
             suggestion = f"{best_column_name}: {best_column_hits}"
             winner_category = "column"
+            best_bet_hits = best_column_hits
+            suggestions["best_bet"] = best_column_name
             # Check if the best column ties with others
             sorted_columns = sorted(column_scores.items(), key=lambda x: (-x[1], x[0]))
             column_ties = [f"{name}: {score}" for name, score in sorted_columns if score == best_column_hits and name != best_column_name]
@@ -4149,6 +4205,8 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
                 # Two dozens tie at the highest hit count
                 suggestion = f"{sorted_dozens[0][0]} and {sorted_dozens[1][0]}: {sorted_dozens[0][1]}"
                 winner_category = "dozen"
+                best_bet_hits = sorted_dozens[0][1]
+                suggestions["best_bet"] = sorted_dozens[0][0]  # Use the first tied dozen
                 # Check for additional dozen ties
                 dozen_ties = [f"{name}: {score}" for name, score in sorted_dozens[2:] if score == sorted_dozens[0][1]]
                 if dozen_ties:
@@ -4157,6 +4215,8 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
                 # Two columns tie at the highest hit count
                 suggestion = f"{sorted_columns[0][0]} and {sorted_columns[1][0]}: {sorted_columns[0][1]}"
                 winner_category = "column"
+                best_bet_hits = sorted_columns[0][1]
+                suggestions["best_bet"] = sorted_columns[0][0]  # Use the first tied column
                 # Check for additional column ties
                 column_ties = [f"{name}: {score}" for name, score in sorted_columns[2:] if score == sorted_columns[0][1]]
                 if column_ties:
@@ -4165,17 +4225,26 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
                 # Default to the best dozen (alphabetically if tied), check for ties with columns
                 suggestion = f"{best_dozen_name}: {best_dozen_hits}"
                 winner_category = "dozen"
+                best_bet_hits = best_dozen_hits
+                suggestions["best_bet"] = best_dozen_name
                 if best_dozen_hits == best_column_hits and best_column_hits > 0:
                     best_bet_tie_text = f" (Tied with {best_column_name}: {best_column_hits})"
+        # Calculate confidence for best bet
+        best_bet_confidence = (best_bet_hits / total_bet_numbers * 100) if total_bet_numbers > 0 else 0
+        best_bet_confidence_text = f", Confidence: {best_bet_confidence:.1f}%"
 
         # Determine the top two winners in the winning category (dozens or columns) and check for ties
         two_winners_suggestion = ""
         two_winners_tie_text = ""
+        two_winners_hits = 0
+        suggestions["play_two_category"] = winner_category
         if winner_category == "dozen":
             sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
             top_two_dozens = sorted_dozens[:2]  # Take top two dozens
             if top_two_dozens[0][1] > 0:  # Only suggest if there are hits
                 two_winners_suggestion = f"Play Two Dozens: {top_two_dozens[0][0]} ({top_two_dozens[0][1]}) and {top_two_dozens[1][0]} ({top_two_dozens[1][1]})"
+                two_winners_hits = top_two_dozens[0][1] + top_two_dozens[1][1]
+                suggestions["play_two"] = [top_two_dozens[0][0], top_two_dozens[1][0]]
                 # Check if the second dozen ties with others
                 if len(sorted_dozens) > 2:
                     second_score = top_two_dozens[1][1]
@@ -4189,6 +4258,8 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
             top_two_columns = sorted_columns[:2]  # Take top two columns
             if top_two_columns[0][1] > 0:  # Only suggest if there are hits
                 two_winners_suggestion = f"Play Two Columns: {top_two_columns[0][0]} ({top_two_columns[0][1]}) and {top_two_columns[1][0]} ({top_two_columns[1][1]})"
+                two_winners_hits = top_two_columns[0][1] + top_two_columns[1][1]
+                suggestions["play_two"] = [top_two_columns[0][0], top_two_columns[1][0]]
                 # Check if the second column ties with others
                 if len(sorted_columns) > 2:
                     second_score = top_two_columns[1][1]
@@ -4197,12 +4268,15 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
                         two_winners_tie_text = f" (Tied with {', '.join(ties)})"
             else:
                 two_winners_suggestion = "Play Two Columns: Not enough hits to suggest two columns."
+        # Calculate confidence for play two
+        two_winners_confidence = (two_winners_hits / total_bet_numbers * 100) if total_bet_numbers > 0 else 0
+        two_winners_confidence_text = f", Confidence: {two_winners_confidence:.1f}%"
 
         # Append the Suggestions section first
         recommendations.append("Suggestions:")
-        recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}{even_money_tie_text}")
-        recommendations.append(f"Best Bet: {suggestion}{best_bet_tie_text}")
-        recommendations.append(f"{two_winners_suggestion}{two_winners_tie_text}")
+        recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}{even_money_tie_text}{even_money_confidence_text}")
+        recommendations.append(f"Best Bet: {suggestion}{best_bet_tie_text}{best_bet_confidence_text}")
+        recommendations.append(f"{two_winners_suggestion}{two_winners_tie_text}{two_winners_confidence_text}")
 
         # Now append the Strongest Numbers and Neighbours section
         recommendations.append(f"\nTop {strong_numbers_count} Strongest Numbers and Their Neighbours:")
@@ -4218,11 +4292,11 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         else:
             recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
 
-        return "\n".join(recommendations)
+        return "\n".join(recommendations), suggestions
 
     except Exception as e:
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
-        return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
+        return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support.", {}
 
 # Line 3: Start of dozen_tracker function (unchanged)
 def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
@@ -4883,9 +4957,10 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
                 print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
                 neighbours_count = 2
                 strong_numbers_count = 1
-            recommendations = strategy_func(neighbours_count, strong_numbers_count)
+            recommendations, suggestions = strategy_func(neighbours_count, strong_numbers_count)
         else:
             recommendations = strategy_func()
+            suggestions = None  # Other strategies don't provide suggestions
 
         print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
 
