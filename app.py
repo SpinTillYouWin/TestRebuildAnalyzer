@@ -4102,21 +4102,7 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         # Combine all bet numbers (strong numbers + neighbors) for aggregated scoring
         bet_numbers = list(selected_numbers) + list(neighbors_set)
 
-        # Format recommendations
-        recommendations.append(f"Top {strong_numbers_count} Strongest Numbers and Their Neighbours:")
-        recommendations.append("\nStrongest Numbers (Yellow):")
-        for i, num in enumerate(sorted(top_numbers), 1):
-            score = top_scores[num]
-            recommendations.append(f"{i}. Number {num} (Score: {score})")
-        
-        if neighbors_set:
-            recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan):")
-            for i, num in enumerate(sorted(list(neighbors_set)), 1):
-                recommendations.append(f"{i}. Number {num}")
-        else:
-            recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
-
-        # Calculate Aggregated Scores for the bet numbers
+        # Calculate Aggregated Scores for the bet numbers (needed for Suggestions)
         even_money_scores, dozen_scores, column_scores = state.calculate_aggregated_scores_for_spins(bet_numbers)
 
         # Determine the best even money bet
@@ -4172,11 +4158,25 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
             else:
                 two_winners_suggestion = "Play Two Columns: Not enough hits to suggest two columns."
 
-        # Append the suggestions to the recommendations
-        recommendations.append("\nSuggestions:")
+        # Append the Suggestions section first
+        recommendations.append("Suggestions:")
         recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}")
         recommendations.append(f"Best Bet: {suggestion}")
         recommendations.append(two_winners_suggestion)
+
+        # Now append the Strongest Numbers and Neighbours section
+        recommendations.append(f"\nTop {strong_numbers_count} Strongest Numbers and Their Neighbours:")
+        recommendations.append("\nStrongest Numbers (Yellow):")
+        for i, num in enumerate(sorted(top_numbers), 1):
+            score = top_scores[num]
+            recommendations.append(f"{i}. Number {num} (Score: {score})")
+        
+        if neighbors_set:
+            recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan):")
+            for i, num in enumerate(sorted(list(neighbors_set)), 1):
+                recommendations.append(f"{i}. Number {num}")
+        else:
+            recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
 
         return "\n".join(recommendations)
 
