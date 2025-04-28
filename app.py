@@ -55,106 +55,68 @@ def initialize_betting_mappings():
 
 def update_scores_batch(spins):
     """Update scores for a batch of spins and return actions for undo."""
+    import gradio as gr
     action_log = []
-    # Temporary dictionaries to aggregate increments
-    increments = {
-        "even_money_scores": {},
-        "dozen_scores": {},
-        "column_scores": {},
-        "street_scores": {},
-        "corner_scores": {},
-        "six_line_scores": {},
-        "split_scores": {},
-        "scores": {},
-        "side_scores": {}
-    }
-
+    
+    # Validate input
+    if not spins or not isinstance(spins, (list, tuple)):
+        gr.Warning("No valid spins provided.")
+        return []
+    
+    valid_spins = []
     for spin in spins:
-        spin_value = int(spin)
+        try:
+            spin_value = int(spin)
+            if 0 <= spin_value <= 36:
+                valid_spins.append(spin_value)
+            else:
+                gr.Warning(f"Spin value '{spin}' out of range (0-36). Skipped.")
+        except (ValueError, TypeError):
+            gr.Warning(f"Invalid spin value '{spin}'. Skipped.")
+    
+    if not valid_spins:
+        gr.Warning("No valid spins to process.")
+        return []
+    
+    # Map category names to state score dictionaries
+    category_to_scores = {
+        "even_money": state.even_money_scores,
+        "dozens": state.dozen_scores,
+        "columns": state.column_scores,
+        "streets": state.street_scores,
+        "corners": state.corner_scores,
+        "six_lines": state.six_line_scores,
+        "splits": state.split_scores,
+        "scores": state.scores,
+        "side_scores": state.side_scores
+    }
+    
+    for spin_value in valid_spins:
         action = {"spin": spin_value, "increments": {}}
-
-        # Get all betting categories for this number from precomputed mappings
+        
+        # Process all categories for this spin in a single pass
         categories = BETTING_MAPPINGS[spin_value]
-
-        # Update even money scores
-        for name in categories["even_money"]:
-            increments["even_money_scores"].setdefault(name, 0)
-            increments["even_money_scores"][name] += 1
-            action["increments"].setdefault("even_money_scores", {})[name] = 1
-
-        # Update dozens scores
-        for name in categories["dozens"]:
-            increments["dozen_scores"].setdefault(name, 0)
-            increments["dozen_scores"][name] += 1
-            action["increments"].setdefault("dozen_scores", {})[name] = 1
-
-        # Update columns scores
-        for name in categories["columns"]:
-            increments["column_scores"].setdefault(name, 0)
-            increments["column_scores"][name] += 1
-            action["increments"].setdefault("column_scores", {})[name] = 1
-
-        # Update streets scores
-        for name in categories["streets"]:
-            increments["street_scores"].setdefault(name, 0)
-            increments["street_scores"][name] += 1
-            action["increments"].setdefault("street_scores", {})[name] = 1
-
-        # Update corners scores
-        for name in categories["corners"]:
-            increments["corner_scores"].setdefault(name, 0)
-            increments["corner_scores"][name] += 1
-            action["increments"].setdefault("corner_scores", {})[name] = 1
-
-        # Update six lines scores
-        for name in categories["six_lines"]:
-            increments["six_line_scores"].setdefault(name, 0)
-            increments["six_line_scores"][name] += 1
-            action["increments"].setdefault("six_line_scores", {})[name] = 1
-
-        # Update splits scores
-        for name in categories["splits"]:
-            increments["split_scores"].setdefault(name, 0)
-            increments["split_scores"][name] += 1
-            action["increments"].setdefault("split_scores", {})[name] = 1
-
-        # Update straight-up scores
-        increments["scores"].setdefault(spin_value, 0)
-        increments["scores"][spin_value] += 1
-        action["increments"].setdefault("scores", {})[spin_value] = 1
-
+        for category, names in categories.items():
+            action["increments"][f"{category}_scores"] = {}
+            for name in names:
+                category_to_scores[category][name] += 1
+                action["increments"][f"{category}_scores"][name] = 1
+        
+        # Update straight-up score
+        action["increments"]["scores"] = {spin_value: 1}
+        category_to_scores["scores"][spin_value] += 1
+        
         # Update side scores
+        action["increments"]["side_scores"] = {}
         if spin_value in current_left_of_zero:
-            increments["side_scores"].setdefault("Left Side of Zero", 0)
-            increments["side_scores"]["Left Side of Zero"] += 1
-            action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
+            category_to_scores["side_scores"]["Left Side of Zero"] += 1
+            action["increments"]["side_scores"]["Left Side of Zero"] = 1
         if spin_value in current_right_of_zero:
-            increments["side_scores"].setdefault("Right Side of Zero", 0)
-            increments["side_scores"]["Right Side of Zero"] += 1
-            action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-
+            category_to_scores["side_scores"]["Right Side of Zero"] += 1
+            action["increments"]["side_scores"]["Right Side of Zero"] = 1
+        
         action_log.append(action)
-
-    # Apply aggregated increments to state
-    for name, count in increments["even_money_scores"].items():
-        state.even_money_scores[name] += count
-    for name, count in increments["dozen_scores"].items():
-        state.dozen_scores[name] += count
-    for name, count in increments["column_scores"].items():
-        state.column_scores[name] += count
-    for name, count in increments["street_scores"].items():
-        state.street_scores[name] += count
-    for name, count in increments["corner_scores"].items():
-        state.corner_scores[name] += count
-    for name, count in increments["six_line_scores"].items():
-        state.six_line_scores[name] += count
-    for name, count in increments["split_scores"].items():
-        state.split_scores[name] += count
-    for num, count in increments["scores"].items():
-        state.scores[num] += count
-    for name, count in increments["side_scores"].items():
-        state.side_scores[name] += count
-
+    
     return action_log
 
 # Line 3: Start of next function (unchanged)
