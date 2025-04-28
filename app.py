@@ -4909,6 +4909,7 @@ STRATEGIES = {
 
 # Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
+    """Generate strategy recommendations based on the selected strategy."""
     try:
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
         print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
@@ -4936,8 +4937,21 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
                 print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
                 neighbours_count = 2
                 strong_numbers_count = 1
-            recommendations = strategy_func(neighbours_count, strong_numbers_count)
+            result = strategy_func(neighbours_count, strong_numbers_count)
+            # Handle the tuple return value for Neighbours of Strong Number
+            if isinstance(result, tuple) and len(result) == 2:
+                recommendations, _ = result  # We only need the recommendations string for display
+            else:
+                recommendations = result
+        elif strategy_name == "Dozen Tracker":
+            # Dozen Tracker expects multiple arguments and returns a tuple
+            result = strategy_func(*args)
+            if isinstance(result, tuple) and len(result) == 3:
+                recommendations, _, _ = result  # Unpack the tuple, we only need the first element
+            else:
+                recommendations = result
         else:
+            # Other strategies return a single string
             recommendations = strategy_func()
 
         print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
