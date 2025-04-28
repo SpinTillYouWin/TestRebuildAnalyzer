@@ -4030,8 +4030,9 @@ def top_numbers_with_neighbours_tiered():
 
     return "\n".join(recommendations)
 
+# Line 1: Start of neighbours_of_strong_number function (updated)
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
-    """Recommend numbers and their neighbors based on hit frequency."""
+    """Recommend numbers and their neighbors based on hit frequency, including strategy recommendations."""
     recommendations = []
     
     # Validate inputs
@@ -4097,6 +4098,9 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         print(f"neighbours_of_strong_number: Strong numbers = {sorted(list(selected_numbers))}")
         print(f"neighbours_of_strong_number: Neighbors = {sorted(list(neighbors_set))}")
 
+        # Combine all bet numbers (strong numbers + neighbors) for aggregated scoring
+        bet_numbers = list(selected_numbers) + list(neighbors_set)
+
         # Format recommendations
         recommendations.append(f"Top {strong_numbers_count} Strongest Numbers and Their Neighbours:")
         recommendations.append("\nStrongest Numbers (Yellow):")
@@ -4111,12 +4115,51 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         else:
             recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
 
+        # Calculate Aggregated Scores for the bet numbers
+        even_money_scores, dozen_scores, column_scores = state.calculate_aggregated_scores_for_spins(bet_numbers)
+
+        # Determine the best even money bet
+        best_even_money = max(even_money_scores.items(), key=lambda x: x[1], default=("None", 0))
+        best_even_money_name, best_even_money_hits = best_even_money
+
+        # Determine the best dozen and best column
+        best_dozen = max(dozen_scores.items(), key=lambda x: x[1], default=("None", 0))
+        best_dozen_name, best_dozen_hits = best_dozen
+        best_column = max(column_scores.items(), key=lambda x: x[1], default=("None", 0))
+        best_column_name, best_column_hits = best_column
+
+        # Compare dozens vs. columns for the stronger section
+        suggestion = ""
+        if best_dozen_hits > best_column_hits:
+            suggestion = f"{best_dozen_name}: {best_dozen_hits}"
+        elif best_column_hits > best_dozen_hits:
+            suggestion = f"{best_column_name}: {best_column_hits}"
+        else:
+            # Check for two dozens or two columns tying at the highest hit count
+            sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
+            sorted_columns = sorted(column_scores.items(), key=lambda x: (-x[1], x[0]))
+            if len(sorted_dozens) >= 2 and sorted_dozens[0][1] == sorted_dozens[1][1] and sorted_dozens[0][1] > 0:
+                # Two dozens tie at the highest hit count
+                suggestion = f"{sorted_dozens[0][0]} and {sorted_dozens[1][0]}: {sorted_dozens[0][1]}"
+            elif len(sorted_columns) >= 2 and sorted_columns[0][1] == sorted_columns[1][1] and sorted_columns[0][1] > 0:
+                # Two columns tie at the highest hit count
+                suggestion = f"{sorted_columns[0][0]} and {sorted_columns[1][0]}: {sorted_columns[0][1]}"
+            else:
+                # Default to the best dozen (alphabetically if tied)
+                suggestion = f"{best_dozen_name}: {best_dozen_hits}"
+
+        # Append the suggestions to the recommendations
+        recommendations.append("\nSuggestions:")
+        recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}")
+        recommendations.append(f"Best Bet: {suggestion}")
+
         return "\n".join(recommendations)
 
     except Exception as e:
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
         return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
 
+# Line 3: Start of dozen_tracker function (unchanged)
 def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
     """Track and display the history of Dozen hits for the last N spins, with optional alerts for consecutive hits and sequence matching."""
     recommendations = []
@@ -4192,6 +4235,8 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             print("dozen_tracker: Not enough spins to check for consecutive hits (need at least 3).")
             state.last_dozen_alert_index = -1
             state.last_alerted_spins = None
+
+# Lines after (context, unchanged)
         else:
             # Map the last 3 spins to their Dozens
             last_three_dozens = []
