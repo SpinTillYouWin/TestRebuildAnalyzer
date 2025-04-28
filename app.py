@@ -2029,10 +2029,11 @@ def calculate_trending_sections():
         "splits": sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     }
 
-def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None):
-    """Apply highlights based on the selected strategy with custom colors."""
+# Line 1: Start of apply_strategy_highlights function (updated)
+def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None, suggestions=None):
+    """Apply highlights based on the selected strategy with custom colors, passing suggestions for outside bets."""
     if sorted_sections is None:
-        return None, None, None, None, None, None, None, {}, "white", "white", "white"
+        return None, None, None, None, None, None, None, {}, "white", "white", "white", None
 
     # Set default colors unless overridden
     if strategy_name == "Cold Bet Strategy":
@@ -2050,13 +2051,16 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     trending_column, second_column = None, None
     number_highlights = {}
 
-    # Apply highlights based onShannon (state, strategy_name)
+    # Apply highlights based on strategy
     if strategy_name and strategy_name in STRATEGIES:
         strategy_info = STRATEGIES[strategy_name]
         if strategy_name == "Neighbours of Strong Number":
-            strategy_output = strategy_info["function"](neighbours_count, strong_numbers_count)
+            recommendations, strategy_suggestions = strategy_info["function"](neighbours_count, strong_numbers_count)
+            # Use the passed suggestions if available, otherwise fall back to strategy_suggestions
+            suggestions = suggestions if suggestions is not None else strategy_suggestions
         else:
-            strategy_output = strategy_info["function"]()
+            recommendations = strategy_info["function"]()
+            suggestions = None
         
         # Delegate to helper functions
         em_trending, em_second, em_third, em_highlights = highlight_even_money(strategy_name, sorted_sections, top_color, middle_color, lower_color)
@@ -2064,9 +2068,8 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         col_trending, col_second, col_highlights = highlight_columns(strategy_name, sorted_sections, top_color, middle_color, lower_color)
         num_highlights = highlight_numbers(strategy_name, sorted_sections, top_color, middle_color, lower_color)
         other_highlights = highlight_other_bets(strategy_name, sorted_sections, top_color, middle_color, lower_color)
-        neighbor_highlights = highlight_neighbors(strategy_name, sorted_sections, neighbours_count, strong_numbers_count, top_color, middle_color)
 
-        # Combine highlights
+        # Combine highlights (excluding neighbor_highlights since we're not highlighting numbers)
         trending_even_money = em_trending
         second_even_money = em_second
         third_even_money = em_third
@@ -2079,7 +2082,6 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         number_highlights.update(col_highlights)
         number_highlights.update(num_highlights)
         number_highlights.update(other_highlights)
-        number_highlights.update(neighbor_highlights)
 
     # Dozen Tracker Logic (When No Strategy is Selected)
     if strategy_name == "None":
@@ -2098,11 +2100,12 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
         if sorted_dozens[1][1] > 0:
             second_dozen = sorted_dozens[1][0]
 
-    return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color
+    return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
-def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color):
-    """Generate HTML for the dynamic roulette table with improved visual clarity."""
-    if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights:
+# Line 1: Start of render_dynamic_table_html function (updated)
+def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None):
+    """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
+    if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
     # Define casino winners if highlighting is enabled, only for non-zero data
@@ -2121,6 +2124,41 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         if any(state.casino_data["columns"].values()):
             casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get)}
         print(f"Casino Winners Set: Hot={casino_winners['hot_numbers']}, Cold={casino_winners['cold_numbers']}, Even Money={casino_winners['even_money']}, Dozens={casino_winners['dozens']}, Columns={casino_winners['columns']}")
+
+    # Initialize highlights for outside bets using suggestions (for Neighbours of Strong Number strategy)
+    suggestion_highlights = {}
+    if suggestions:
+        # Parse suggestions to extract recommendations
+        best_even_money = None
+        best_bet = None
+        play_two_first = None
+        play_two_second = None
+
+        for key, value in suggestions.items():
+            if key == "best_even_money" and "(Tied with" not in value:
+                # Extract the even money bet (e.g., "Even: 5" -> "Even")
+                best_even_money = value.split(":")[0].strip()
+            elif key == "best_bet" and "(Tied with" not in value:
+                # Extract the best bet (e.g., "2nd Column: 6" -> "2nd Column")
+                best_bet = value.split(":")[0].strip()
+            elif key == "play_two" and "(Tied with" not in value:
+                # Extract the two options (e.g., "Play Two Columns: 2nd Column (6) and 1st Column (2)")
+                parts = value.split(":", 1)[1].split(" and ")
+                play_two_first = parts[0].split("(")[0].strip()  # e.g., "2nd Column"
+                play_two_second = parts[1].split("(")[0].strip()  # e.g., "1st Column"
+
+        # Apply highlights based on suggestions (yellow for top tier, green for second in Play Two)
+        if best_even_money:
+            suggestion_highlights[best_even_money] = top_color  # Yellow for Best Even Money Bet
+        if best_bet:
+            suggestion_highlights[best_bet] = top_color  # Yellow for Best Bet
+        if play_two_first and play_two_second:
+            # Ensure the first option in Play Two matches the Best Bet (if present) and gets yellow
+            if best_bet and play_two_first == best_bet:
+                suggestion_highlights[play_two_first] = top_color  # Already set to yellow
+            else:
+                suggestion_highlights[play_two_first] = top_color  # Yellow if not already set
+            suggestion_highlights[play_two_second] = lower_color  # Green for second option
 
     table_layout = [
         ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
@@ -2153,25 +2191,25 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
         if row_idx == 0:
-            bg_color = top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white")
+            bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
             html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Column</td>'
         elif row_idx == 1:
-            bg_color = top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white")
+            bg_color = suggestion_highlights.get("2nd Column", top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white"))
             border_style = "3px dashed #FFD700" if "2nd Column" in casino_winners["columns"] else "1px solid black"
             html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Column</td>'
         elif row_idx == 2:
-            bg_color = top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white")
+            bg_color = suggestion_highlights.get("1st Column", top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white"))
             border_style = "3px dashed #FFD700" if "1st Column" in casino_winners["columns"] else "1px solid black"
             html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
         html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white"))
+    bg_color = suggestion_highlights.get("Low", top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white")))
     border_style = "3px dashed #FFD700" if "Low" in casino_winners["even_money"] else "1px solid black"
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
-    bg_color = top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white"))
+    bg_color = suggestion_highlights.get("High", top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white")))
     border_style = "3px dashed #FFD700" if "High" in casino_winners["even_money"] else "1px solid black"
     html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
@@ -2179,13 +2217,13 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white")
+    bg_color = suggestion_highlights.get("1st Dozen", top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "1st Dozen" in casino_winners["dozens"] else "1px solid black"
     html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
-    bg_color = top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white")
+    bg_color = suggestion_highlights.get("2nd Dozen", top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "2nd Dozen" in casino_winners["dozens"] else "1px solid black"
     html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
-    bg_color = top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white")
+    bg_color = suggestion_highlights.get("3rd Dozen", top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "3rd Dozen" in casino_winners["dozens"] else "1px solid black"
     html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
@@ -2193,17 +2231,17 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    bg_color = top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white"))
+    bg_color = suggestion_highlights.get("Odd", top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white")))
     border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
-    bg_color = top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white"))
+    bg_color = suggestion_highlights.get("Red", top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white")))
     border_style = "3px dashed #FFD700" if "Red" in casino_winners["even_money"] else "1px solid black"
     html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
-    bg_color = top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white"))
+    bg_color = suggestion_highlights.get("Black", top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white")))
     border_style = "3px dashed #FFD700" if "Black" in casino_winners["even_money"] else "1px solid black"
     html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
-    bg_color = top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white"))
+    bg_color = suggestion_highlights.get("Even", top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white")))
     border_style = "3px dashed #FFD700" if "Even" in casino_winners["even_money"] else "1px solid black"
     html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
@@ -2325,6 +2363,7 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
+# Line 1: Start of create_dynamic_table function (updated)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
@@ -2343,21 +2382,16 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
         middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
         lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
+        suggestions = None
     else:
-        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
     
     # If still no highlights and no sorted_sections, provide a default message
     if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
         return "<p>No spins yet. Select a strategy to see default highlights.</p>"
     
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
+    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
     
-    # If still no highlights and no sorted_sections, provide a default message
-    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
-    
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color)
-
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
     num_count = int(num_count)
