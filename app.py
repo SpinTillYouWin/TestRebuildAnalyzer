@@ -4800,7 +4800,7 @@ def summarize_spin_traits(last_spin_count):
 
         # Initialize counters
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
-        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        column_counts = {"1st Column": 0, "2ndaturallyColumn": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
 
@@ -4833,33 +4833,34 @@ def summarize_spin_traits(last_spin_count):
         # Build HTML badges with winner highlighting
         html = '<div class="traits-badges">'
         # Even Money
-        html += '<div class="badge-group"><h4>Even Money Bets</h4>'
+        html += '<div class="badge-group"><h4 class="badge-title">Even Money Bets</h4>'
         for name, count in even_money_counts.items():
             # Add 'winner' class if this count is the maximum in the section
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
             html += f'<span class="{badge_class}">{name}: {count}</span>'
         html += '</div>'
         # Columns
-        html += '<div class="badge-group"><h4>Columns</h4>'
+        html += '<div class="badge-group"><h4 class="badge-title">Columns</h4>'
         for name, count in column_counts.items():
             badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
             html += f'<span class="{badge_class}">{name}: {count}</span>'
         html += '</div>'
         # Dozens
-        html += '<div class="badge-group"><h4>Dozens</h4>'
+        html += '<div class="badge-group"><h4 class="badge-title">Dozens</h4>'
         for name, count in dozen_counts.items():
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
             html += f'<span class="{badge_class}">{name}: {count}</span>'
         html += '</div>'
         # Repeat Numbers (no highlighting)
         repeats = {num: count for num, count in number_counts.items() if count > 1}
-        html += '<div class="badge-group"><h4>Repeat Numbers</h4>'
+        html += '<div class="badge-group"><h4 class="badge-title">Repeat Numbers</h4>'
         if repeats:
             for num, count in sorted(repeats.items()):
                 html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
         else:
             html += f'<span class="trait-badge repeat">No repeats</span>'
         html += '</div></div>'
+        print(f"summarize_spin_traits: Generated HTML - {html[:100]}...")  # Debug log
         return html
     except Exception as e:
         print(f"summarize_spin_traits: Error: {str(e)}")
@@ -6201,7 +6202,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
 
         /* Hot/Cold Icons */
-        
         .hot-icon {
             font-size: 24px !important;
             margin-right: 10px !important;
@@ -6220,61 +6220,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { opacity: 1; transform: rotate(0deg); }
             100% { opacity: 0.6; transform: rotate(20deg); }
         }
-
-# Line 1: New styles for traits badges (updated)
-        /* Traits Badges */
-        .traits-container {
-            padding: 10px !important;
-            background-color: #2e7d32 !important; /* Casino green felt */
-            border-radius: 5px !important;
-            border: 1px solid #d3d3d3 !important;
-        }
-        .traits-badges {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-        }
-        .badge-group {
-            margin: 5px 0 !important;
-        }
-        .badge-group h4 {
-            color: #ffd700 !important; /* Gold text */
-            font-size: 14px !important;
-            margin: 5px 0 !important;
-        }
-        .trait-badge {
-            background-color: #444 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 12px !important;
-            font-size: 12px !important;
-            margin: 3px !important;
-            transition: transform 0.2s, box-shadow 0.2s !important;
-            cursor: pointer !important;
-        }
-        .trait-badge:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-        }
-        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
-        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
-        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
-        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
-        # Existing styles (unchanged)
-        /* Hot/Cold Icons */
-        .hot-icon {
-            font-size: 24px !important;
-            margin-right: 10px !important;
-            animation: flicker 1.5s infinite alternate !important;
-        }
-        .cold-icon {
-            font-size: 24px !important;
-            margin-right: 10px !important;
-            animation: sparkle 2s infinite alternate !important;
-        }
-
-# Updated styles for traits badges
-        /* Traits Badges */
+        
+        /* Updated styles for traits badges */
         .traits-container {
             padding: 10px !important;
             background-color: #2e7d32 !important; /* Casino green felt */
@@ -6296,6 +6243,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
         .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
         .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
+        .badge-title {
+            font-size: 14px !important;
+            margin: 5px 0 !important;
+            font-weight: bold !important;
+        }
         .trait-badge {
             background-color: #444 !important;
             color: #fff !important;
@@ -6320,17 +6272,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             font-weight: bold !important;
             color: #333 !important; /* Dark gray text for better contrast */
             border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            box-shadow: 0 0 8px #ffd700 !important; /* Base gold glow */
             background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
-            transform: scale(1.1) !important; /* Make winners slightly larger */
-            animation: pulse 1.5s infinite ease-in-out !important; /* Add pulsing animation */
+            transform: scale(1.3) !important; /* Increase base size significantly */
+            animation: pulse 1s infinite ease-in-out !important; /* Faster pulsing animation */
         }
         
         /* Pulsing animation for winners */
         @keyframes pulse {
-            0% { transform: scale(1.1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1.1); }
+            0% { 
+                transform: scale(1.3); 
+                box-shadow: 0 0 8px #ffd700; 
+            }
+            50% { 
+                transform: scale(1.4); 
+                box-shadow: 0 0 12px #ffd700; 
+            }
+            100% { 
+                transform: scale(1.3); 
+                box-shadow: 0 0 8px #ffd700; 
+            }
         }
 
         /* Suggestion Box */
