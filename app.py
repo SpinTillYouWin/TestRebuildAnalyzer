@@ -4066,6 +4066,7 @@ def top_numbers_with_neighbours_tiered():
     return "\n".join(recommendations)
 
 # Line 1: Start of neighbours_of_strong_number function (updated)
+# Line 1: Start of neighbours_of_strong_number function (updated)
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
     """Recommend numbers and their neighbors based on hit frequency, including strategy recommendations with tie information."""
     recommendations = []
@@ -4079,14 +4080,14 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         if strong_numbers_count == 0:
             raise ValueError("Strong numbers count must be at least 1.")
     except (ValueError, TypeError) as e:
-        return f"Error: Invalid input - {str(e)}. Please use positive integers for neighbours and strong numbers."
+        return f"Error: Invalid input - {str(e)}. Please use positive integers for neighbours and strong numbers.", {}
 
     # Check if current_neighbors is valid
     if not isinstance(current_neighbors, dict):
-        return "Error: Neighbor data is not properly configured. Contact support."
+        return "Error: Neighbor data is not properly configured. Contact support.", {}
     for key, value in current_neighbors.items():
         if not isinstance(key, int) or not isinstance(value, tuple) or len(value) != 2:
-            return "Error: Neighbor data is malformed. Contact support."
+            return "Error: Neighbor data is malformed. Contact support.", {}
 
     try:
         print(f"neighbours_of_strong_number: Starting with neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
@@ -4095,7 +4096,7 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         
         if not numbers_hits:
             recommendations.append("Neighbours of Strong Number: No numbers have hit yet.")
-            return "\n".join(recommendations)
+            return "\n".join(recommendations), {}
 
         # Limit strong_numbers_count to available hits
         strong_numbers_count = min(strong_numbers_count, len(numbers_hits))
@@ -4232,6 +4233,13 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
             else:
                 two_winners_suggestion = "Play Two Columns: Not enough hits to suggest two columns."
 
+        # Create the suggestions dictionary
+        suggestions = {
+            "best_even_money": f"{best_even_money_name}: {best_even_money_hits}{even_money_tie_text}",
+            "best_bet": f"{suggestion}{best_bet_tie_text}",
+            "play_two": f"{two_winners_suggestion}{two_winners_tie_text}"
+        }
+
         # Append the Suggestions section first
         recommendations.append("Suggestions:")
         recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}{even_money_tie_text}")
@@ -4252,11 +4260,11 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         else:
             recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
 
-        return "\n".join(recommendations)
+        return "\n".join(recommendations), suggestions
 
     except Exception as e:
         print(f"neighbours_of_strong_number: Unexpected error: {str(e)}")
-        return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support."
+        return f"Error in Neighbours of Strong Number: Unexpected issue - {str(e)}. Please try again or contact support.", {}
 
 # Line 3: Start of dozen_tracker function (unchanged)
 def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled, sequence_length, follow_up_spins, sequence_alert_enabled):
