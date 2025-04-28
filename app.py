@@ -6323,6 +6323,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
             background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
             transform: scale(1.1) !important; /* Make winners slightly larger */
+            animation: pulse 1.5s infinite ease-in-out !important; /* Add pulsing animation */
+        }
+        
+        /* Pulsing animation for winners */
+        @keyframes pulse {
+            0% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1.1); }
         }
 
         /* Suggestion Box */
