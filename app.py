@@ -1501,10 +1501,11 @@ def validate_spins_input(spins_input):
     print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
     return spins_display_value, formatted_html
 
-def add_spin(number, current_spins, num_to_show):
+# Line 1: Start of add_spin function (updated)
+def add_spin(number, current_spins, num_to_show, strategy_name, neighbours_count, strong_numbers_count):
     import time
     start_time = time.time()
-    print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
+    print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}, strategy_name='{strategy_name}', neighbours_count={neighbours_count}, strong_numbers_count={strong_numbers_count}")
     spins = current_spins.split(", ") if current_spins else []
     if spins == [""]:
         spins = []
@@ -1514,7 +1515,7 @@ def add_spin(number, current_spins, num_to_show):
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         print("add_spin: No valid numbers provided.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display(), "<p>Please analyze some spins first to see highlights on the dynamic table.</p>", "<p>Please select a strategy to see recommendations.</p>"
 
     errors = []
     valid_spins = []
@@ -1533,7 +1534,7 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display(), "<p>Please analyze some spins first to see highlights on the dynamic table.</p>", "<p>Please select a strategy to see recommendations.</p>"
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -1556,19 +1557,25 @@ def add_spin(number, current_spins, num_to_show):
         state.selected_numbers.add(num)
 
     print(f"add_spin: Time to update state: {time.time() - start_time:.2f} seconds")
-    new_spins_str = ", ".join(new_spins)
+    newcombinationsnew_spins_str = ", ".join(new_spins)
     if errors:
         success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
         error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
+        dynamic_table_html = "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
+        strategy_output = "<p>Please select a strategy to see recommendations.</p>"
     else:
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
-        print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
+        # Update the Dynamic Roulette Table and Strategy Recommendations
+        dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count)
+        strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count)
+
+    print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
+    return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display(), dynamic_table_html, strategy_output
         
 # Function to clear spins
 def clear_spins():
