@@ -5076,7 +5076,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             elem_classes=["traits-container"]
         )
 
-# Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5104,22 +5103,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             )
                             btn.click(
                                 fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            ).then(
-                                fn=format_spins_as_html,
-                                inputs=[spins_display, last_spin_count],
-                                outputs=[last_spin_display]
-                            ).then(
-                                fn=summarize_spin_traits,
-                                inputs=[last_spin_count],
-                                outputs=[traits_display]
-                            ).then(
-                                fn=lambda: print("btn.click: Updated traits_display"),
-                                inputs=[],
-                                outputs=[]
+                                inputs=[gr.State(value=num), spins_display, last_spin_count, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, dynamic_table_output, strategy_output]
                             )
-
+                
 # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
