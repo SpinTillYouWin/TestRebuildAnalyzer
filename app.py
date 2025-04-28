@@ -2378,6 +2378,75 @@ def reset_casino_data():
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
+    
+    # Handle "Neighbours of Strong Number" strategy without requiring analyze_spins
+    if strategy_name == "Neighbours of Strong Number":
+        # Call the strategy function directly to get the highlighted numbers
+        try:
+            neighbours_count = int(neighbours_count)
+            strong_numbers_count = int(strong_numbers_count)
+        except (ValueError, TypeError):
+            neighbours_count = 2
+            strong_numbers_count = 1
+        
+        # Get the strategy recommendations
+        recommendations, suggestions = neighbours_of_strong_number(neighbours_count, strong_numbers_count)
+        
+        # Extract highlighted numbers from the strategy output
+        number_highlights = {}
+        top_numbers = set()
+        neighbors_set = set()
+        
+        # Parse the recommendations to extract strong numbers and neighbors
+        lines = recommendations.split("\n")
+        in_strong_numbers = False
+        in_neighbors = False
+        for line in lines:
+            if "Strongest Numbers (Yellow):" in line:
+                in_strong_numbers = True
+                in_neighbors = False
+                continue
+            elif "Neighbours (" in line:
+                in_strong_numbers = False
+                in_neighbors = True
+                continue
+            elif line.strip() == "":
+                in_strong_numbers = False
+                in_neighbors = False
+                continue
+            
+            if in_strong_numbers and line.strip():
+                # Extract number from "1. Number 5 (Score: 3)"
+                num_str = line.split("Number ")[1].split(" ")[0]
+                num = int(num_str)
+                top_numbers.add(num)
+                number_highlights[num] = "top-tier"
+            elif in_neighbors and line.strip() and "None" not in line:
+                # Extract number from "1. Number 4"
+                num_str = line.split("Number ")[1]
+                num = int(num_str)
+                neighbors_set.add(num)
+                number_highlights[num] = "middle-tier"
+
+        # Default values for other highlights
+        trending_even_money = None
+        second_even_money = None
+        third_even_money = None
+        trending_dozen = None
+        second_dozen = None
+        trending_column = None
+        second_column = None
+        top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
+        middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
+        lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
+        
+        return render_dynamic_table_html(
+            trending_even_money, second_even_money, third_even_money,
+            trending_dozen, second_dozen, trending_column, second_column,
+            number_highlights, top_color, middle_color, lower_color, suggestions
+        )
+
+    # Existing logic for other strategies
     sorted_sections = calculate_trending_sections()
     
     # If no spins yet, initialize with default even money focus
