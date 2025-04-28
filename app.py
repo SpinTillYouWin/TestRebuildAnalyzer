@@ -5113,21 +5113,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[last_spin_count],
                                 outputs=[traits_display]
                             ).then(
-                                # Conditionally trigger analyze_spins for Neighbours of Strong Number
-                                fn=lambda strategy, spins_display, reset_scores, neighbours_count, strong_numbers_count: analyze_spins(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count) if strategy == "Neighbours of Strong Number" else (None,) * 15,
-                                inputs=[strategy_dropdown, spins_display, reset_scores_checkbox, neighbours_count_slider, strong_numbers_count_slider],
-                                outputs=[
-                                    spin_analysis_output, even_money_output, dozens_output, columns_output,
-                                    streets_output, corners_output, six_lines_output, splits_output,
-                                    sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                                    dynamic_table_output, strategy_output, sides_of_zero_display
-                                ]
-                            ).then(
-                                fn=lambda: print("btn.click: Updated traits_display and possibly analyzed spins"),
+                                fn=lambda: print("btn.click: Updated traits_display"),
                                 inputs=[],
                                 outputs=[]
                             )
-                  
 
 # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -6901,6 +6890,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            # Conditionally trigger analyze_spins for Neighbours of Strong Number
+            fn=lambda strategy, spins_display, reset_scores, neighbours_count, strong_numbers_count: analyze_spins(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count) if strategy == "Neighbours of Strong Number" else (None,) * 15,
+            inputs=[strategy_dropdown, spins_display, reset_scores_checkbox, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
