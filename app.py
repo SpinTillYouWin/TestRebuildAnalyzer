@@ -4833,7 +4833,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+    with gr.Accordion(open=False, elem_id="spin-trend-radar"):
+        gr.Markdown("<h3 style='font-weight: bold; color: #ff9800; margin: 0;'>SpinTrend Radar 🌀</h3>")
         traits_display = gr.HTML(
             label="Spin Traits",
             value=summarize_spin_traits(36),
