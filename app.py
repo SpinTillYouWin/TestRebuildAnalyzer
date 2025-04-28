@@ -5014,7 +5014,6 @@ def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
     return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
 
-
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 1. Row 1: Header (Moved to the top)
@@ -5076,6 +5075,70 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             elem_classes=["traits-container"]
         )
 
+    # Define strategy categories and choices (moved earlier)
+    strategy_categories = {
+        "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
+        "Even Money Strategies": ["Best Even Money Bets", "Best Even Money Bets + Top Pick 18 Numbers", "Fibonacci To Fortune"],
+        "Dozen Strategies": ["1 Dozen +1 Column Strategy", "Best Dozens", "Best Dozens + Top Pick 18 Numbers", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Dozens + Best Streets", "Fibonacci Strategy", "Romanowksy Missing Dozen"],
+        "Column Strategies": ["1 Dozen +1 Column Strategy", "Best Columns", "Best Columns + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Streets"],
+        "Street Strategies": ["3-8-6 Rising Martingale", "Best Streets", "Best Columns + Best Streets", "Best Dozens + Best Streets"],
+        "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
+        "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
+        "Split Strategies": ["Best Splits"],
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
+        "Neighbours Strategies": ["Neighbours of Strong Number"]
+    }
+    category_choices = ["None"] + sorted(strategy_categories.keys())
+
+    # Define components needed for btn.click() earlier
+    with gr.Row(visible=False):  # Hide this row since we'll display these components later
+        with gr.Column(scale=1, min_width=200):
+            category_dropdown = gr.Dropdown(
+                label="Select Category",
+                choices=category_choices,
+                value="Even Money Strategies",
+                allow_custom_value=False,
+                elem_id="select-category"
+            )
+            strategy_dropdown = gr.Dropdown(
+                label="Select Strategy",
+                choices=strategy_categories["Even Money Strategies"],
+                value="Best Even Money Bets",
+                allow_custom_value=False
+            )
+            neighbours_count_slider = gr.Slider(
+                label="Number of Neighbours (Left + Right)",
+                minimum=1,
+                maximum=5,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            strong_numbers_count_slider = gr.Slider(
+                label="Strong Numbers to Highlight (Neighbours Strategy)",
+                minimum=1,
+                maximum=18,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+        with gr.Column(scale=3):
+            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+            dynamic_table_output = gr.HTML(
+                label="Dynamic Table",
+                value=create_dynamic_table(strategy_name="Best Even Money Bets")
+            )
+        with gr.Column(scale=1):
+            gr.Markdown("### Strategy Recommendations")
+            strategy_output = gr.HTML(
+                label="Strategy Recommendations",
+                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
+            )
+
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5106,6 +5169,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[gr.State(value=num), spins_display, last_spin_count, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, dynamic_table_output, strategy_output]
                             )
+                          
                 
 # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -5283,52 +5347,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-            dynamic_table_output = gr.HTML(
-                label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")
-            )
+            dynamic_table_output  # Already defined, just place it here for display
         with gr.Column(scale=1):
             gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(
-                label="Strategy Recommendations",
-                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-            )
-            # Removed Casino Data Insights accordion from this column
+            strategy_output  # Already defined, just place it here for display
         with gr.Column(scale=1, min_width=200):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
+            category_dropdown  # Already defined, just place it here for display
+            strategy_dropdown  # Already defined, just place it here for display
             reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
+            neighbours_count_slider  # Already defined, just place it here for display
+            strong_numbers_count_slider  # Already defined, just place it here for display
             reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
     
     # 7.1. Row 7.1: Dozen Tracker
