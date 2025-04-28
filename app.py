@@ -3954,6 +3954,7 @@ def update_spin_counter():
     spin_count = len(state.last_spins)
     return f'<span class="spin-counter">Total Spins: {spin_count}</span>'
     
+# Lines before (context, unchanged)
 def top_numbers_with_neighbours_tiered():
     recommendations = []
     straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
@@ -4130,10 +4131,13 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
 
         # Compare dozens vs. columns for the stronger section
         suggestion = ""
+        winner_category = ""
         if best_dozen_hits > best_column_hits:
             suggestion = f"{best_dozen_name}: {best_dozen_hits}"
+            winner_category = "dozen"
         elif best_column_hits > best_dozen_hits:
             suggestion = f"{best_column_name}: {best_column_hits}"
+            winner_category = "column"
         else:
             # Check for two dozens or two columns tying at the highest hit count
             sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
@@ -4141,17 +4145,38 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
             if len(sorted_dozens) >= 2 and sorted_dozens[0][1] == sorted_dozens[1][1] and sorted_dozens[0][1] > 0:
                 # Two dozens tie at the highest hit count
                 suggestion = f"{sorted_dozens[0][0]} and {sorted_dozens[1][0]}: {sorted_dozens[0][1]}"
+                winner_category = "dozen"
             elif len(sorted_columns) >= 2 and sorted_columns[0][1] == sorted_columns[1][1] and sorted_columns[0][1] > 0:
                 # Two columns tie at the highest hit count
                 suggestion = f"{sorted_columns[0][0]} and {sorted_columns[1][0]}: {sorted_columns[0][1]}"
+                winner_category = "column"
             else:
                 # Default to the best dozen (alphabetically if tied)
                 suggestion = f"{best_dozen_name}: {best_dozen_hits}"
+                winner_category = "dozen"
+
+        # Determine the top two winners in the winning category (dozens or columns)
+        two_winners_suggestion = ""
+        if winner_category == "dozen":
+            sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
+            top_two_dozens = sorted_dozens[:2]  # Take top two dozens
+            if top_two_dozens[0][1] > 0:  # Only suggest if there are hits
+                two_winners_suggestion = f"Play Two Dozens: {top_two_dozens[0][0]} ({top_two_dozens[0][1]}) and {top_two_dozens[1][0]} ({top_two_dozens[1][1]})"
+            else:
+                two_winners_suggestion = "Play Two Dozens: Not enough hits to suggest two dozens."
+        elif winner_category == "column":
+            sorted_columns = sorted(column_scores.items(), key=lambda x: (-x[1], x[0]))
+            top_two_columns = sorted_columns[:2]  # Take top two columns
+            if top_two_columns[0][1] > 0:  # Only suggest if there are hits
+                two_winners_suggestion = f"Play Two Columns: {top_two_columns[0][0]} ({top_two_columns[0][1]}) and {top_two_columns[1][0]} ({top_two_columns[1][1]})"
+            else:
+                two_winners_suggestion = "Play Two Columns: Not enough hits to suggest two columns."
 
         # Append the suggestions to the recommendations
         recommendations.append("\nSuggestions:")
         recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}")
         recommendations.append(f"Best Bet: {suggestion}")
+        recommendations.append(two_winners_suggestion)
 
         return "\n".join(recommendations)
 
