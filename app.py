@@ -4077,7 +4077,6 @@ def top_numbers_with_neighbours_tiered():
     return "\n".join(recommendations)
 
 # Line 1: Start of neighbours_of_strong_number function (updated)
-# Line 1: Start of neighbours_of_strong_number function (updated)
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
     """Recommend numbers and their neighbors based on hit frequency, including strategy recommendations with tie information."""
     recommendations = []
@@ -6319,10 +6318,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .trait-badge.winner {
             font-weight: bold !important;
             color: #333 !important; /* Dark gray text for better contrast */
-            border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
-            transform: scale(1.1) !important; /* Make winners slightly larger */
+            border: 2px solid #ff4500 !important; /* Vibrant orange border */
+            box-shadow: 0 0 8px #ff4500 !important; /* Vibrant orange glow */
+            background-color: rgba(255, 69, 0, 0.2) !important; /* Slightly transparent orange background */
+            transform: scale(1.5) !important; /* Larger base size */
+            animation: pulse 0.8s infinite ease-in-out !important; /* Add pulsing animation */
+        }
+        
+        /* Pulsing animation for winners */
+        @keyframes pulse {
+            0% { 
+                transform: scale(1.5); 
+                box-shadow: 0 0 8px #ff4500; 
+            }
+            50% { 
+                transform: scale(1.6); 
+                box-shadow: 0 0 12px #ff4500; 
+            }
+            100% { 
+                transform: scale(1.5); 
+                box-shadow: 0 0 8px #ff4500; 
+            }
         }
 
         /* Suggestion Box */
