@@ -250,6 +250,7 @@ class RouletteState:
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
 
+    # Line 1: Start of reset method (unchanged)
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -276,8 +277,36 @@ class RouletteState:
         self.use_casino_winners = False
         self.reset_progression()
 
-    # ... (other methods like update_progression, reset_progression unchanged) ...
+    # New method: Calculate Aggregated Scores for a list of numbers
+    def calculate_aggregated_scores_for_spins(self, numbers):
+        """Calculate Aggregated Scores for a list of numbers (simulated spins)."""
+        even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
+        dozen_scores = {name: 0 for name in DOZENS.keys()}
+        column_scores = {name: 0 for name in COLUMNS.keys()}
 
+        for number in numbers:
+            # Skip 0 for category counts (consistent with scoring logic)
+            if number == 0:
+                continue
+
+            # Even Money Bets
+            for name, numbers_set in EVEN_MONEY.items():
+                if number in numbers_set:
+                    even_money_scores[name] += 1
+
+            # Dozens
+            for name, numbers_set in DOZENS.items():
+                if number in numbers_set:
+                    dozen_scores[name] += 1
+
+            # Columns
+            for name, numbers_set in COLUMNS.items():
+                if number in numbers_set:
+                    column_scores[name] += 1
+
+        return even_money_scores, dozen_scores, column_scores
+
+    # Line 3: Start of reset_progression method (unchanged)
     def reset_progression(self):
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
@@ -287,6 +316,7 @@ class RouletteState:
         self.status = "Active"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
 
+    # Lines after (context, unchanged)
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
         if won:
