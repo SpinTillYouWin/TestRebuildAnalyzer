@@ -4853,6 +4853,8 @@ STRATEGIES = {
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
+
+# Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     try:
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
@@ -4890,6 +4892,23 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
             return recommendations
+        # Special handling for "Neighbours of Strong Number" to format Suggestions section
+        elif strategy_name == "Neighbours of Strong Number":
+            lines = recommendations.split("\n")
+            html_lines = []
+            in_suggestions = False
+            for line in lines:
+                if line.strip() == "Suggestions:":
+                    in_suggestions = True
+                    html_lines.append('<p style="margin: 2px 0; font-weight: bold;">Suggestions:</p>')
+                elif line.strip() == "" and in_suggestions:
+                    in_suggestions = False
+                    html_lines.append('<p style="margin: 2px 0;"></p>')
+                elif in_suggestions:
+                    html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
+                else:
+                    html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
+            return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
         # Otherwise, convert plain text to HTML with proper line breaks
         else:
             # Split the output into lines, removing any empty lines
@@ -4901,12 +4920,15 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         print(f"show_strategy_recommendations: Error: {str(e)}")
         return f"<p>Error generating strategy recommendations: {str(e)}</p>"
 
+# Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
+# Lines after (context, unchanged)
 def toggle_checkboxes(strategy_name):
     return (gr.update(visible=strategy_name == "Kitchen Martingale"),
             gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
+
 def reset_colors():
     """Reset color pickers to default values and update the dynamic table."""
     default_top = "rgba(255, 255, 0, 0.5)"  # Yellow
