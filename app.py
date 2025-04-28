@@ -4033,7 +4033,7 @@ def top_numbers_with_neighbours_tiered():
 
 # Line 1: Start of neighbours_of_strong_number function (updated)
 def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
-    """Recommend numbers and their neighbors based on hit frequency, including strategy recommendations."""
+    """Recommend numbers and their neighbors based on hit frequency, including strategy recommendations with tie information."""
     recommendations = []
     
     # Validate inputs
@@ -4105,9 +4105,15 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         # Calculate Aggregated Scores for the bet numbers (needed for Suggestions)
         even_money_scores, dozen_scores, column_scores = state.calculate_aggregated_scores_for_spins(bet_numbers)
 
-        # Determine the best even money bet
-        best_even_money = max(even_money_scores.items(), key=lambda x: x[1], default=("None", 0))
+        # Determine the best even money bet and check for ties
+        sorted_even_money = sorted(even_money_scores.items(), key=lambda x: (-x[1], x[0]))
+        best_even_money = sorted_even_money[0] if sorted_even_money else ("None", 0)
         best_even_money_name, best_even_money_hits = best_even_money
+        # Check for ties in even money bets
+        even_money_ties = []
+        if sorted_even_money and best_even_money_hits > 0:
+            even_money_ties = [f"{name}: {score}" for name, score in sorted_even_money if score == best_even_money_hits and name != best_even_money_name]
+        even_money_tie_text = f" (Tied with {', '.join(even_money_ties)})" if even_money_ties else ""
 
         # Determine the best dozen and best column
         best_dozen = max(dozen_scores.items(), key=lambda x: x[1], default=("None", 0))
@@ -4115,39 +4121,67 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
         best_column = max(column_scores.items(), key=lambda x: x[1], default=("None", 0))
         best_column_name, best_column_hits = best_column
 
-        # Compare dozens vs. columns for the stronger section
+        # Compare dozens vs. columns for the stronger section and check for ties
         suggestion = ""
         winner_category = ""
+        best_bet_tie_text = ""
         if best_dozen_hits > best_column_hits:
             suggestion = f"{best_dozen_name}: {best_dozen_hits}"
             winner_category = "dozen"
+            # Check if the best dozen ties with others
+            sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
+            dozen_ties = [f"{name}: {score}" for name, score in sorted_dozens if score == best_dozen_hits and name != best_dozen_name]
+            if dozen_ties:
+                best_bet_tie_text = f" (Tied with {', '.join(dozen_ties)})"
         elif best_column_hits > best_dozen_hits:
             suggestion = f"{best_column_name}: {best_column_hits}"
             winner_category = "column"
+            # Check if the best column ties with others
+            sorted_columns = sorted(column_scores.items(), key=lambda x: (-x[1], x[0]))
+            column_ties = [f"{name}: {score}" for name, score in sorted_columns if score == best_column_hits and name != best_column_name]
+            if column_ties:
+                best_bet_tie_text = f" (Tied with {', '.join(column_ties)})"
         else:
-            # Check for two dozens or two columns tying at the highest hit count
+            # Check for ties between dozens and columns at the top level
             sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
             sorted_columns = sorted(column_scores.items(), key=lambda x: (-x[1], x[0]))
             if len(sorted_dozens) >= 2 and sorted_dozens[0][1] == sorted_dozens[1][1] and sorted_dozens[0][1] > 0:
                 # Two dozens tie at the highest hit count
                 suggestion = f"{sorted_dozens[0][0]} and {sorted_dozens[1][0]}: {sorted_dozens[0][1]}"
                 winner_category = "dozen"
+                # Check for additional dozen ties
+                dozen_ties = [f"{name}: {score}" for name, score in sorted_dozens[2:] if score == sorted_dozens[0][1]]
+                if dozen_ties:
+                    best_bet_tie_text = f" (Tied with {', '.join(dozen_ties)})"
             elif len(sorted_columns) >= 2 and sorted_columns[0][1] == sorted_columns[1][1] and sorted_columns[0][1] > 0:
                 # Two columns tie at the highest hit count
                 suggestion = f"{sorted_columns[0][0]} and {sorted_columns[1][0]}: {sorted_columns[0][1]}"
                 winner_category = "column"
+                # Check for additional column ties
+                column_ties = [f"{name}: {score}" for name, score in sorted_columns[2:] if score == sorted_columns[0][1]]
+                if column_ties:
+                    best_bet_tie_text = f" (Tied with {', '.join(column_ties)})"
             else:
-                # Default to the best dozen (alphabetically if tied)
+                # Default to the best dozen (alphabetically if tied), check for ties with columns
                 suggestion = f"{best_dozen_name}: {best_dozen_hits}"
                 winner_category = "dozen"
+                if best_dozen_hits == best_column_hits and best_column_hits > 0:
+                    best_bet_tie_text = f" (Tied with {best_column_name}: {best_column_hits})"
 
-        # Determine the top two winners in the winning category (dozens or columns)
+        # Determine the top two winners in the winning category (dozens or columns) and check for ties
         two_winners_suggestion = ""
+        two_winners_tie_text = ""
         if winner_category == "dozen":
             sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
             top_two_dozens = sorted_dozens[:2]  # Take top two dozens
             if top_two_dozens[0][1] > 0:  # Only suggest if there are hits
                 two_winners_suggestion = f"Play Two Dozens: {top_two_dozens[0][0]} ({top_two_dozens[0][1]}) and {top_two_dozens[1][0]} ({top_two_dozens[1][1]})"
+                # Check if the second dozen ties with others
+                if len(sorted_dozens) > 2:
+                    second_score = top_two_dozens[1][1]
+                    ties = [f"{name}: {score}" for name, score in sorted_dozens[2:] if score == second_score]
+                    if ties:
+                        two_winners_tie_text = f" (Tied with {', '.join(ties)})"
             else:
                 two_winners_suggestion = "Play Two Dozens: Not enough hits to suggest two dozens."
         elif winner_category == "column":
@@ -4155,14 +4189,20 @@ def neighbours_of_strong_number(neighbours_count, strong_numbers_count):
             top_two_columns = sorted_columns[:2]  # Take top two columns
             if top_two_columns[0][1] > 0:  # Only suggest if there are hits
                 two_winners_suggestion = f"Play Two Columns: {top_two_columns[0][0]} ({top_two_columns[0][1]}) and {top_two_columns[1][0]} ({top_two_columns[1][1]})"
+                # Check if the second column ties with others
+                if len(sorted_columns) > 2:
+                    second_score = top_two_columns[1][1]
+                    ties = [f"{name}: {score}" for name, score in sorted_columns[2:] if score == second_score]
+                    if ties:
+                        two_winners_tie_text = f" (Tied with {', '.join(ties)})"
             else:
                 two_winners_suggestion = "Play Two Columns: Not enough hits to suggest two columns."
 
         # Append the Suggestions section first
         recommendations.append("Suggestions:")
-        recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}")
-        recommendations.append(f"Best Bet: {suggestion}")
-        recommendations.append(two_winners_suggestion)
+        recommendations.append(f"Best Even Money Bet: {best_even_money_name}: {best_even_money_hits}{even_money_tie_text}")
+        recommendations.append(f"Best Bet: {suggestion}{best_bet_tie_text}")
+        recommendations.append(f"{two_winners_suggestion}{two_winners_tie_text}")
 
         # Now append the Strongest Numbers and Neighbours section
         recommendations.append(f"\nTop {strong_numbers_count} Strongest Numbers and Their Neighbours:")
