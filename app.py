@@ -4788,8 +4788,14 @@ def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners."""
     print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
     try:
-        last_spins = state.last_spins[-int(last_spin_count):] if state.last_spins else []
+        # Ensure last_spin_count is a valid integer
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+
+        # Use state.last_spins directly and ensure it's not empty
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
+            print("summarize_spin_traits: No spins available in state.last_spins")
             return "<p>No spins available for analysis.</p>"
 
         # Initialize counters
@@ -6286,11 +6292,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .badge-group {
             margin: 5px 0 !important;
         }
-        .badge-group h4 {
-            color: #ffd700 !important; /* Gold text */
-            font-size: 14px !important;
-            margin: 5px 0 !important;
-        }
+        .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
+        .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
+        .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
+        .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
         .trait-badge {
             background-color: #444 !important;
             color: #fff !important;
@@ -6317,7 +6322,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border: 2px solid #ffd700 !important; /* Gold border */
             box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
             background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
+            transform: scale(1.1) !important; /* Make winners slightly larger */
         }
+
         /* Suggestion Box */
         .suggestion-box {
             background-color: #f0f8ff !important;
@@ -6860,9 +6867,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=format_spins_as_html,
+            fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
@@ -6964,7 +6975,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 # Line 1: Slider change handler (updated)
     try:
         last_spin_count.change(
-            fn=format_spins_as_html,
+            fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
         ).then(
