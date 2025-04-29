@@ -1501,7 +1501,8 @@ def validate_spins_input(spins_input):
     print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
     return spins_display_value, formatted_html
 
-def add_spin(number, current_spins, num_to_show):
+# Line 1: Start of add_spin function (updated)
+def add_spin(number, current_spins, num_to_show, strategy_name, neighbours_count, strong_numbers_count, top_color, middle_color, lower_color):
     import time
     start_time = time.time()
     print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
@@ -1514,7 +1515,8 @@ def add_spin(number, current_spins, num_to_show):
     if not numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         print("add_spin: No valid numbers provided.")
-        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
+        # New: Return dynamic_table_output to maintain casino winner highlights
+        return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display(), create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count, num_to_show, top_color, middle_color, lower_color)
 
     errors = []
     valid_spins = []
@@ -1533,7 +1535,8 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        # New: Return dynamic_table_output to maintain casino winner highlights
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display(), create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count, num_to_show, top_color, middle_color, lower_color)
 
     # Batch update scores
     action_log = update_scores_batch(valid_spins)
@@ -1562,13 +1565,16 @@ def add_spin(number, current_spins, num_to_show):
         error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
         gr.Warning(error_msg)
         print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
+        # New: Return dynamic_table_output to maintain casino winner highlights
+        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display(), create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count, num_to_show, top_color, middle_color, lower_color)
     else:
         success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
+        # New: Return dynamic_table_output to maintain casino winner highlights
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display(), create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count, num_to_show, top_color, middle_color, lower_color)
+
         
 # Function to clear spins
 def clear_spins():
@@ -2112,6 +2118,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
 # Line 1: Start of render_dynamic_table_html function (updated)
+# Line 1: Start of render_dynamic_table_html function (updated)
 def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None):
     """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
@@ -2176,14 +2183,19 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     ]
 
     html = '<table border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
-    # New: Add CSS to ensure casino-winner borders persist
+    # Modified: Strengthened casino-winner CSS to prevent override
     html += '''
     <style>
         .casino-winner {
             border: 3px dashed #FFD700 !important;
             box-sizing: border-box !important;
+            transition: none !important;
         }
         .casino-winner:hover, .casino-winner:active, .casino-winner:focus {
+            border: 3px dashed #FFD700 !important;
+            outline: none !important;
+        }
+        td.casino-winner {
             border: 3px dashed #FFD700 !important;
         }
     </style>
@@ -2203,10 +2215,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             else:
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
-                # New: Determine if the number is a casino winner and apply the casino-winner class
+                # Determine if the number is a casino winner and apply the casino-winner class
                 is_casino_winner = num in casino_winners["hot_numbers"] or num in casino_winners["cold_numbers"]
                 css_class = "casino-winner" if is_casino_winner else ""
-                # Modified: Use the CSS class instead of inline border style for casino winners
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
                 html += f'<td class="{css_class}" style="height: 40px; background-color: {highlight_color}; {text_style} border: 3px solid black; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
         if row_idx == 0:
@@ -2269,6 +2280,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     html += "</table>"
     return html
+
 
 # Line 3: Start of update_casino_data function (unchanged)
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
@@ -5112,8 +5124,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             )
                             btn.click(
                                 fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
-                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
+                                inputs=[gr.State(value=num), spins_display, last_spin_count, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_color_picker, middle_color_picker, lower_color_picker],
+                                outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display, dynamic_table_output]
                             ).then(
                                 fn=format_spins_as_html,
                                 inputs=[spins_display, last_spin_count],
@@ -5127,6 +5139,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[],
                                 outputs=[]
                             )
+            
+            
 
 # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
