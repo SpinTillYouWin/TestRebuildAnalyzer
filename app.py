@@ -2258,17 +2258,17 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
-# Surrounding lines before Line 1
     html += "</table>"
     return html
     
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners, hot_numbers_input, cold_numbers_input):  # Line 1
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
+        print("update_casino_data: Initializing with spins_count=%s, use_winners=%s", spins_count, use_winners)
         state.casino_data["spins_count"] = int(spins_count)
         state.use_casino_winners = use_winners
 
-        # Updated: Parse hot/cold numbers from UI inputs
+        # Parse hot/cold numbers from UI inputs
         def parse_numbers(input_str, type_label):
             if not input_str or not input_str.strip():
                 return []
@@ -2282,7 +2282,6 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
             except ValueError as e:
                 raise ValueError(f"Invalid {type_label} numbers: {str(e)}")
 
-        # Parse hot and cold numbers
         hot_numbers = parse_numbers(hot_numbers_input, "hot")
         cold_numbers = parse_numbers(cold_numbers_input, "cold")
         state.casino_data["hot_numbers"] = {str(num): state.scores.get(num, 0) for num in hot_numbers}
@@ -5369,7 +5368,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            # Updated: Add Casino Data Insights accordion
             with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
                 spins_count_dropdown = gr.Dropdown(
                     label="Past Spins Count",
@@ -7687,10 +7685,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in even_money_tracker_alert_checkbox.change handler: {str(e)}")
     
     # Casino data event handlers
-    inputs_list = [
+    inputs_list = [  # Line 1
         spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
         low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
-        col1_percent, col2_percent, col3_percent, use_winners_checkbox
+        col1_percent, col2_percent, col3_percent, use_winners_checkbox,
+        hot_numbers_input, cold_numbers_input
     ]
     try:
         spins_count_dropdown.change(
@@ -7792,8 +7791,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in col1_percent.change handler: {str(e)}")
     
     try:
+        col2_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    except Exception as e:
+        print(f"Error in col2_percent.change handler: {str(e)}")
+    
+    try:
         col3_percent.change(
-
             fn=update_casino_data,
             inputs=inputs_list,
             outputs=[casino_data_output]
@@ -7803,7 +7810,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         use_winners_checkbox.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("use_winners_checkbox: Updating casino data and dynamic table"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         ).then(
@@ -7812,13 +7819,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[dynamic_table_output]
         )
     except Exception as e:
-        print(f"Error in use_winners_checkbox.change handler: {str(e)}")    
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")  # Line 3
     
     try:
         reset_casino_data_button.click(
             fn=lambda: (
                 "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
-                "", "", "<p>Casino data reset to defaults.</p>"  # Added hot_numbers_input, cold_numbers_input
+                "", "", "<p>Casino data reset to defaults.</p>"
+            ),
 # Surrounding lines before Line 1
         col3_percent.change(
             fn=update_casino_data,
