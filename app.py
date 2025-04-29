@@ -2259,18 +2259,25 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
+# Surrounding lines before Line 1 (context from Part 2)
     html += "</table>"
     return html
-
-def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
+    
+def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):  # Line 1
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
         state.casino_data["spins_count"] = int(spins_count)
         state.use_casino_winners = use_winners
 
-        # Remove Hot/Cold Numbers parsing
+        # Updated: Restore hot/cold numbers parsing
         state.casino_data["hot_numbers"] = {}
         state.casino_data["cold_numbers"] = {}
+        hot_numbers = state.casino_data.get("hot_numbers_list", [])  # Assume stored as list from UI
+        cold_numbers = state.casino_data.get("cold_numbers_list", [])
+        for num in hot_numbers:
+            state.casino_data["hot_numbers"][str(num)] = state.scores.get(num, 0)  # Use current scores or 0
+        for num in cold_numbers:
+            state.casino_data["cold_numbers"][str(num)] = state.scores.get(num, 0)
 
         # Parse percentages from dropdowns
         def parse_percent(value, category, key):
@@ -2312,9 +2319,10 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
         has_columns = c1_val > 0 or c2_val > 0 or c3_val > 0
 
         # Check for empty data when highlighting is enabled
-        if use_winners and not any([has_even_odd, has_red_black, has_low_high, has_dozens, has_columns]):
-            gr.Warning("Highlight Casino Winners is enabled, but no casino data is provided. Enter percentages to see highlights.")
-            return "<p>Warning: No casino data provided for highlighting. Please enter percentages for Even/Odd, Red/Black, Low/High, Dozens, or Columns.</p>"
+        has_hot_cold = bool(state.casino_data["hot_numbers"] or state.casino_data["cold_numbers"])
+        if use_winners and not any([has_even_odd, has_red_black, has_low_high, has_dozens, has_columns, has_hot_cold]):
+            gr.Warning("Highlight Casino Winners is enabled, but no casino data is provided. Enter percentages or hot/cold numbers to see highlights.")
+            return "<p>Warning: No casino data provided for highlighting. Please enter percentages for Even/Odd, Red/Black, Low/High, Dozens, Columns, or hot/cold numbers.</p>"
 
         # Generate HTML Output
         output = f"<h4>Casino Data Insights (Last {spins_count} Spins):</h4>"
@@ -2341,14 +2349,21 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
                 ) + f" (Winner: {winner})</p>"
             else:
                 output += f"<p>{name}: Not set</p>"
+        # Updated: Add hot/cold numbers to output
+        if has_hot_cold:
+            output += "<p>Hot Numbers: " + ", ".join(f"{num} ({score})" for num, score in state.casino_data["hot_numbers"].items()) + "</p>"
+            output += "<p>Cold Numbers: " + ", ".join(f"{num} ({score})" for num, score in state.casino_data["cold_numbers"].items()) + "</p>"
+        else:
+            output += "<p>Hot/Cold Numbers: Not set</p>"
         print(f"Generated HTML Output: {output}")
-        return output
+        return output  # Line 3
     except ValueError as e:
         return f"<p>Error: {str(e)}</p>"
     except Exception as e:
         return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
         
 def reset_casino_data():
+# Surrounding lines after Line 3 (context from Part 2)
     """Reset casino data to defaults and clear UI inputs."""
     state.casino_data = {
         "spins_count": 100,
