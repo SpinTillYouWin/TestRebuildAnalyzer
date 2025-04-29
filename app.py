@@ -2258,26 +2258,37 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
-
-# Surrounding lines before Line 1 (context from Part 2)
+# Surrounding lines before Line 1
     html += "</table>"
     return html
     
-def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):  # Line 1
+def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners, hot_numbers_input, cold_numbers_input):  # Line 1
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
         state.casino_data["spins_count"] = int(spins_count)
         state.use_casino_winners = use_winners
 
-        # Updated: Restore hot/cold numbers parsing
-        state.casino_data["hot_numbers"] = {}
-        state.casino_data["cold_numbers"] = {}
-        hot_numbers = state.casino_data.get("hot_numbers_list", [])  # Assume stored as list from UI
-        cold_numbers = state.casino_data.get("cold_numbers_list", [])
-        for num in hot_numbers:
-            state.casino_data["hot_numbers"][str(num)] = state.scores.get(num, 0)  # Use current scores or 0
-        for num in cold_numbers:
-            state.casino_data["cold_numbers"][str(num)] = state.scores.get(num, 0)
+        # Updated: Parse hot/cold numbers from UI inputs
+        def parse_numbers(input_str, type_label):
+            if not input_str or not input_str.strip():
+                return []
+            try:
+                numbers = [int(n.strip()) for n in input_str.split(",") if n.strip()]
+                if len(numbers) < 1 or len(numbers) > 10:
+                    raise ValueError(f"Enter 1 to 10 {type_label} numbers (entered {len(numbers)})")
+                if not all(0 <= n <= 36 for n in numbers):
+                    raise ValueError(f"All {type_label} numbers must be between 0 and 36")
+                return numbers
+            except ValueError as e:
+                raise ValueError(f"Invalid {type_label} numbers: {str(e)}")
+
+        # Parse hot and cold numbers
+        hot_numbers = parse_numbers(hot_numbers_input, "hot")
+        cold_numbers = parse_numbers(cold_numbers_input, "cold")
+        state.casino_data["hot_numbers"] = {str(num): state.scores.get(num, 0) for num in hot_numbers}
+        state.casino_data["cold_numbers"] = {str(num): state.scores.get(num, 0) for num in cold_numbers}
+        state.casino_data["hot_numbers_list"] = hot_numbers
+        state.casino_data["cold_numbers_list"] = cold_numbers
 
         # Parse percentages from dropdowns
         def parse_percent(value, category, key):
@@ -2349,13 +2360,12 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
                 ) + f" (Winner: {winner})</p>"
             else:
                 output += f"<p>{name}: Not set</p>"
-        # Updated: Add hot/cold numbers to output
         if has_hot_cold:
             output += "<p>Hot Numbers: " + ", ".join(f"{num} ({score})" for num, score in state.casino_data["hot_numbers"].items()) + "</p>"
             output += "<p>Cold Numbers: " + ", ".join(f"{num} ({score})" for num, score in state.casino_data["cold_numbers"].items()) + "</p>"
         else:
             output += "<p>Hot/Cold Numbers: Not set</p>"
-        print(f"Generated HTML Output: {output}")
+        print(f"update_casino_data: Generated HTML Output: {output}")
         return output  # Line 3
     except ValueError as e:
         return f"<p>Error: {str(e)}</p>"
@@ -2363,12 +2373,14 @@ def update_casino_data(spins_count, even_percent, odd_percent, red_percent, blac
         return f"<p>Unexpected error parsing casino data: {str(e)}</p>"
         
 def reset_casino_data():
-# Surrounding lines after Line 3 (context from Part 2)
+# Surrounding lines after Line 3
     """Reset casino data to defaults and clear UI inputs."""
     state.casino_data = {
         "spins_count": 100,
         "hot_numbers": {},
         "cold_numbers": {},
+        "hot_numbers_list": [],
+        "cold_numbers_list": [],
         "even_odd": {"Even": 0.0, "Odd": 0.0},
         "red_black": {"Red": 0.0, "Black": 0.0},
         "low_high": {"Low": 0.0, "High": 0.0},
@@ -5321,7 +5333,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
             # Removed Casino Data Insights accordion from this column
-        with gr.Column(scale=1, min_width=200):
+        with gr.Column(scale=1, min_width=200):  # Line 1
+            gr.Markdown("### Strategy Selection")
             category_dropdown = gr.Dropdown(
                 label="Select Category",
                 choices=category_choices,
@@ -5356,7 +5369,151 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
+            # Updated: Add Casino Data Insights accordion
+            with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
+                spins_count_dropdown = gr.Dropdown(
+                    label="Past Spins Count",
+                    choices=["30", "50", "100", "200", "300", "500"],
+                    value="100",
+                    interactive=True
+                )
+                with gr.Row():
+                    even_percent = gr.Dropdown(
+                        label="Even %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    odd_percent = gr.Dropdown(
+                        label="Odd %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    red_percent = gr.Dropdown(
+                        label="Red %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    black_percent = gr.Dropdown(
+                        label="Black %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    low_percent = gr.Dropdown(
+                        label="Low %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    high_percent = gr.Dropdown(
+                        label="High %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    dozen1_percent = gr.Dropdown(
+                        label="1st Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    dozen2_percent = gr.Dropdown(
+                        label="2nd Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    dozen3_percent = gr.Dropdown(
+                        label="3rd Dozen %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                with gr.Row():
+                    col1_percent = gr.Dropdown(
+                        label="1st Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    col2_percent = gr.Dropdown(
+                        label="2nd Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                    col3_percent = gr.Dropdown(
+                        label="3rd Column %",
+                        choices=[f"{i:02d}" for i in range(100)],
+                        value="00",
+                        interactive=True
+                    )
+                use_winners_checkbox = gr.Checkbox(
+                    label="Highlight Casino Winners",
+                    value=False,
+                    interactive=True
+                )
+                reset_casino_data_button = gr.Button(
+                    "Reset Casino Data",
+                    elem_classes=["action-button"]
+                )
+                casino_data_output = gr.HTML(
+                    label="Casino Data Insights",
+                    value="<p>No casino data entered yet.</p>",
+                    elem_classes=["fade-in"]
+                )
+                with gr.Accordion("Hot and Cold Numbers", open=False, elem_id="hot-cold-numbers"):
+                    with gr.Row():
+                        gr.HTML('<span class="hot-icon">🔥</span>')
+                        hot_numbers_input = gr.Textbox(
+                            label="Hot Numbers (1 to 10 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
+                            value="",
+                            interactive=True,
+                            placeholder="Enter 1 to 10 hot numbers"
+                        )
+                    hot_suggestions = gr.Textbox(
+                        label="Suggested Hot Numbers (based on recent spins)",
+                        value="",
+                        interactive=False,
+                        elem_classes=["suggestion-box"]
+                    )
+                    gr.Button("Use Suggested Hot Numbers", elem_classes=["action-button", "suggestion-btn"]).click(
+                        fn=lambda: state.hot_suggestions,
+                        inputs=[],
+                        outputs=[hot_numbers_input]
+                    )
+                    with gr.Row():
+                        gr.HTML('<span class="cold-icon">❄️</span>')
+                        cold_numbers_input = gr.Textbox(
+                            label="Cold Numbers (1 to 10 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
+                            value="",
+                            interactive=True,
+                            placeholder="Enter 1 to 10 cold numbers"
+                        )
+                    cold_suggestions = gr.Textbox(
+                        label="Suggested Cold Numbers (based on recent spins)",
+                        value="",
+                        interactive=False,
+                        elem_classes=["suggestion-box"]
+                    )
+                    gr.Button("Use Suggested Cold Numbers", elem_classes=["action-button", "suggestion-btn"]).click(
+                        fn=lambda: state.cold_suggestions,
+                        inputs=[],
+                        outputs=[cold_numbers_input]
+                    )
+                    with gr.Row():
+                        play_hot_button = gr.Button("Play Hot Numbers", elem_classes=["action-button", "play-btn"])
+                        play_cold_button = gr.Button("Play Cold Numbers", elem_classes=["action-button", "play-btn"])
+                    with gr.Row():
+                        clear_hot_button = gr.Button("Clear Hot Picks", elem_classes=["action-button", "clear-btn"])
+                        clear_cold_button = gr.Button("Clear Cold Picks", elem_classes=["action-button", "clear-btn"])
+            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)  # Line 3
     
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -5489,154 +5646,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+# Surrounding lines before Row 8.1
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
          
-    # 8.1. Row 8.1: Casino Data Insights
-    with gr.Row():
-        with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
-            spins_count_dropdown = gr.Dropdown(
-                label="Past Spins Count",
-                choices=["30", "50", "100", "200", "300", "500"],
-                value="100",
-                interactive=True
-            )
-            with gr.Row():
-                even_percent = gr.Dropdown(
-                    label="Even %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                odd_percent = gr.Dropdown(
-                    label="Odd %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-            with gr.Row():
-                red_percent = gr.Dropdown(
-                    label="Red %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                black_percent = gr.Dropdown(
-                    label="Black %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-            with gr.Row():
-                low_percent = gr.Dropdown(
-                    label="Low %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                high_percent = gr.Dropdown(
-                    label="High %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-            with gr.Row():
-                dozen1_percent = gr.Dropdown(
-                    label="1st Dozen %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                dozen2_percent = gr.Dropdown(
-                    label="2nd Dozen %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                dozen3_percent = gr.Dropdown(
-                    label="3rd Dozen %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-            with gr.Row():
-                col1_percent = gr.Dropdown(
-                    label="1st Column %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                col2_percent = gr.Dropdown(
-                    label="2nd Column %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-                col3_percent = gr.Dropdown(
-                    label="3rd Column %",
-                    choices=[f"{i:02d}" for i in range(100)],
-                    value="00",
-                    interactive=True
-                )
-            use_winners_checkbox = gr.Checkbox(
-                label="Highlight Casino Winners",
-                value=False,
-                interactive=True
-            )
-            reset_casino_data_button = gr.Button(
-                "Reset Casino Data",
-                elem_classes=["action-button"]
-            )
-            casino_data_output = gr.HTML(
-                label="Casino Data Insights",
-                value="<p>No casino data entered yet.</p>",
-                elem_classes=["fade-in"]
-            )
-            # Hot and Cold Numbers Section
-            with gr.Accordion("Hot and Cold Numbers", open=False, elem_id="hot-cold-numbers"):
-                with gr.Row():
-                    gr.HTML('<span class="hot-icon">🔥</span>')
-                    hot_numbers_input = gr.Textbox(
-                        label="Hot Numbers (1 to 10 comma-separated numbers, e.g., 1, 3, 5, 7, 9)",
-                        value="",
-                        interactive=True,
-                        placeholder="Enter 1 to 10 hot numbers"
-                    )
-                hot_suggestions = gr.Textbox(
-                    label="Suggested Hot Numbers (based on recent spins)",
-                    value="",
-                    interactive=False,
-                    elem_classes=["suggestion-box"]
-                )
-                gr.Button("Use Suggested Hot Numbers", elem_classes=["action-button", "suggestion-btn"]).click(
-                    fn=lambda: state.hot_suggestions,
-                    inputs=[],
-                    outputs=[hot_numbers_input]
-                )
-                with gr.Row():
-                    gr.HTML('<span class="cold-icon">❄️</span>')
-                    cold_numbers_input = gr.Textbox(
-                        label="Cold Numbers (1 to 10 comma-separated numbers, e.g., 2, 4, 6, 8, 10)",
-                        value="",
-                        interactive=True,
-                        placeholder="Enter 1 to 10 cold numbers"
-                    )
-                cold_suggestions = gr.Textbox(
-                    label="Suggested Cold Numbers (based on recent spins)",
-                    value="",
-                    interactive=False,
-                    elem_classes=["suggestion-box"]
-                )
-                gr.Button("Use Suggested Cold Numbers", elem_classes=["action-button", "suggestion-btn"]).click(
-                    fn=lambda: state.cold_suggestions,
-                    inputs=[],
-                    outputs=[cold_numbers_input]
-                )
-                with gr.Row():
-                    play_hot_button = gr.Button("Play Hot Numbers", elem_classes=["action-button", "play-btn"])
-                    play_cold_button = gr.Button("Play Cold Numbers", elem_classes=["action-button", "play-btn"])
-                with gr.Row():
-                    clear_hot_button = gr.Button("Clear Hot Picks", elem_classes=["action-button", "clear-btn"])
-                    clear_cold_button = gr.Button("Clear Cold Picks", elem_classes=["action-button", "clear-btn"])
+    # 8.1. Row 8.1: Casino Data Insights (Removed)
+    # Moved to Row 7, Column 2
     
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
@@ -7778,16 +7792,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in col1_percent.change handler: {str(e)}")
     
     try:
-        col2_percent.change(
-            fn=update_casino_data,
-            inputs=inputs_list,
-            outputs=[casino_data_output]
-        )
-    except Exception as e:
-        print(f"Error in col2_percent.change handler: {str(e)}")
-    
-    try:
         col3_percent.change(
+
             fn=update_casino_data,
             inputs=inputs_list,
             outputs=[casino_data_output]
@@ -7807,6 +7813,31 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in use_winners_checkbox.change handler: {str(e)}")    
+    
+    try:
+        reset_casino_data_button.click(
+            fn=lambda: (
+                "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
+                "", "", "<p>Casino data reset to defaults.</p>"  # Added hot_numbers_input, cold_numbers_input
+# Surrounding lines before Line 1
+        col3_percent.change(
+            fn=update_casino_data,
+            inputs=inputs_list,
+            outputs=[casino_data_output]
+        )
+    
+    try:
+        use_winners_checkbox.change(
+            fn=lambda *args: (print("use_winners_checkbox: Updating casino data and dynamic table"), update_casino_data(*args))[1],
+            inputs=[spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners_checkbox, hot_numbers_input, cold_numbers_input],  # Line 1
+            outputs=[casino_data_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")  # Line 3
     
     try:
         reset_casino_data_button.click(
