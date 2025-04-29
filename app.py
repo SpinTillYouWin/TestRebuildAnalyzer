@@ -1457,6 +1457,7 @@ def render_sides_of_zero_display():
     </script>
     """
 
+# Lines before (context, unchanged)
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -1501,14 +1502,12 @@ def validate_spins_input(spins_input):
     print(f"validate_spins_input: Valid spins processed, spins_display_value='{spins_display_value}'")
     return spins_display_value, formatted_html
 
+# Line 1: Start of updated add_spin function
 def add_spin(number, current_spins, num_to_show):
     import time
     start_time = time.time()
     print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
-    spins = current_spins.split(", ") if current_spins else []
-    if spins == [""]:
-        spins = []
-
+    
     # Split input on commas and process each number
     numbers = [n.strip() for n in number.split(",") if n.strip()]
     if not numbers:
@@ -1535,27 +1534,27 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Errors encountered - {error_msg}")
         return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
 
-    # Batch update scores
+    # Parse current_spins only once and avoid duplication
+    current_spins_list = current_spins.split(", ") if current_spins and current_spins.strip() else []
+    if current_spins_list == [""]:
+        current_spins_list = []
+
+    # Batch update scores for new spins only
     action_log = update_scores_batch(valid_spins)
     print(f"add_spin: Time to update scores: {time.time() - start_time:.2f} seconds")
 
-    # Update state with new spins
-    new_spins = spins.copy()
-    for num_str in valid_spins:
-        num = int(num_str)
-        new_spins.append(str(num))
-        state.last_spins.append(str(num))
-        state.spin_history.append(action_log.pop(0))
-        # Limit spin history to 100 spins
-        if len(state.spin_history) > 100:
-            state.spin_history.pop(0)
-        # Limit last_spins to 100 spins
-        if len(state.last_spins) > 100:
-            state.last_spins.pop(0)
-        # Update selected_numbers incrementally
-        state.selected_numbers.add(num)
-
+    # Update state.last_spins without duplication
+    new_spins = current_spins_list + valid_spins
+    state.last_spins = new_spins  # Replace state.last_spins to avoid incremental appends
+    state.spin_history.extend(action_log)  # Add action log entries
+    # Limit spin history to 100 spins
+    if len(state.spin_history) > 100:
+        state.spin_history = state.spin_history[-100:]
+    
+    # Rebuild selected_numbers from scratch to avoid duplicates
+    state.selected_numbers = set(int(s) for s in new_spins if s.strip().isdigit())
     print(f"add_spin: Time to update state: {time.time() - start_time:.2f} seconds")
+
     new_spins_str = ", ".join(new_spins)
     if errors:
         success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
@@ -1568,9 +1567,9 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
         formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
         print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display() 
-        
-# Function to clear spins
+        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()
+
+# Line 3: Start of next function (unchanged)
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
@@ -1579,6 +1578,7 @@ def clear_spins():
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
+# Lines after (context, unchanged)
 # Function to save the session
 # In Part 1, replace save_session and load_session with:
 
