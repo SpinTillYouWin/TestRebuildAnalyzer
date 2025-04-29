@@ -249,9 +249,8 @@ class RouletteState:
         self.alerted_patterns = set()
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
-        self.processed_spins = []  # New: Track spins that have been processed for analysis
 
-    # Line 1: Start of reset method (updated to include processed_spins)
+    # Line 1: Start of reset method (updated to remove processed_spins)
     def reset(self):
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -276,7 +275,6 @@ class RouletteState:
             "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
         }
         self.use_casino_winners = False
-        self.processed_spins = []  # Reset processed spins
         self.reset_progression()
 
     # New method: Calculate Aggregated Scores for a list of numbers
@@ -492,6 +490,7 @@ class RouletteState:
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
         
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        
 
 # Lines before (context, unchanged)
 state = RouletteState()
@@ -2433,19 +2432,16 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *checkbox_args):
-    """Analyze the spins and return formatted results for all sections."""
+def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
+    """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
         
         # Handle empty spins case
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
-            if reset_scores:
-                state.reset()
-                print("analyze_spins: Scores reset due to empty spins and reset_scores=True.")
-            else:
-                print("analyze_spins: No reset, maintaining existing scores for empty spins.")
+            state.reset()  # Always reset scores
+            print("analyze_spins: Scores reset due to empty spins.")
             return ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
@@ -2470,45 +2466,23 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
 
         if not spins:
             print("analyze_spins: No valid spins found.")
-            if reset_scores:
-                state.reset()
-                print("analyze_spins: Scores reset due to no valid spins and reset_scores=True.")
+            state.reset()  # Always reset scores
+            print("analyze_spins: Scores reset due to no valid spins.")
             return ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
 
-        # Determine new spins to process
-        if reset_scores:
-            state.reset()
-            new_spins = spins
-            print("analyze_spins: Scores reset, processing all spins.")
-        else:
-            # Compare current spins with previously processed spins
-            new_spins = [spin for spin in spins if spin not in state.processed_spins]
-            print(f"analyze_spins: No reset, new spins to process: {new_spins}")
+        # Always reset scores
+        state.reset()
+        print("analyze_spins: Scores reset.")
 
-        # Update scores only for new spins
-        if new_spins:
-            action_log = update_scores_batch(new_spins)
-            # Add new spins to processed_spins
-            state.processed_spins.extend(new_spins)
-            # Limit processed_spins to avoid excessive memory usage
-            if len(state.processed_spins) > 1000:
-                state.processed_spins = state.processed_spins[-1000:]
-            print(f"analyze_spins: Updated scores for new spins, processed_spins count: {len(state.processed_spins)}")
-        else:
-            action_log = []  # No new spins to process, but we need action_log for the loop below
-            print("analyze_spins: No new spins to process.")
+        # Batch update scores for all spins
+        action_log = update_scores_batch(spins)
 
-        # Since we're not resetting last_spins or spin_history unless reset_scores=True,
-        # we need to ensure consistency with the displayed spins_input
-        if reset_scores:
-            state.last_spins = spins  # Replace last_spins with current spins
-            state.spin_history = []  # Clear history since we reset
-        else:
-            # Append new spins to last_spins if they aren't already there
-            current_spins_set = set(state.last_spins)
-            for spin in spins:
-                if spin not in current_spins_set:
-                    state.last_spins.append(spin)
+        # Update state.last_spins and spin_history
+        state.last_spins = spins  # Replace last_spins with current spins
+        state.spin_history = action_log  # Replace spin_history with current action_log
+        # Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history = state.spin_history[-100:]
 
         # Generate spin analysis output
         spin_results = []
@@ -2516,49 +2490,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         for idx, spin in enumerate(spins):
             spin_value = int(spin)
             hit_sections = []
-            # Use action_log for new spins; for existing spins, recompute hit sections
-            if idx < len(action_log):
-                action = action_log[idx]
-            else:
-                # Spin was already processed; recompute hit sections for display
-                action = {"increments": {
-                    "even_money_scores": {},
-                    "dozen_scores": {},
-                    "column_scores": {},
-                    "street_scores": {},
-                    "corner_scores": {},
-                    "six_line_scores": {},
-                    "split_scores": {},
-                    "scores": {},
-                    "side_scores": {}
-                }}
-                # Recompute increments for this spin
-                for name, numbers in EVEN_MONEY.items():
-                    if spin_value in numbers:
-                        action["increments"]["even_money_scores"][name] = 1
-                for name, numbers in DOZENS.items():
-                    if spin_value in numbers:
-                        action["increments"]["dozen_scores"][name] = 1
-                for name, numbers in COLUMNS.items():
-                    if spin_value in numbers:
-                        action["increments"]["column_scores"][name] = 1
-                for name, numbers in STREETS.items():
-                    if spin_value in numbers:
-                        action["increments"]["street_scores"][name] = 1
-                for name, numbers in CORNERS.items():
-                    if spin_value in numbers:
-                        action["increments"]["corner_scores"][name] = 1
-                for name, numbers in SIX_LINES.items():
-                    if spin_value in numbers:
-                        action["increments"]["six_line_scores"][name] = 1
-                for name, numbers in SPLITS.items():
-                    if spin_value in numbers:
-                        action["increments"]["split_scores"][name] = 1
-                action["increments"]["scores"][spin_value] = 1
-                if spin_value in LEFT_OF_ZERO_EUROPEAN:
-                    action["increments"]["side_scores"]["Left Side of Zero"] = 1
-                if spin_value in RIGHT_OF_ZERO_EUROPEAN:
-                    action["increments"]["side_scores"]["Right Side of Zero"] = 1
+            action = action_log[idx]
 
             # Reconstruct hit sections from increments
             for name, increment in action["increments"].get("even_money_scores", {}).items():
@@ -2595,12 +2527,6 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
                 hit_sections.append(f"Right Neighbor: {right}")
 
             spin_results.append(f"Spin {spin} hits: {', '.join(hit_sections)}\nTotal sections hit: {len(hit_sections)}")
-            # Only append to spin_history for new spins
-            if idx < len(action_log):
-                state.spin_history.append(action)
-                # Limit spin history to 100 spins
-                if len(state.spin_history) > 100:
-                    state.spin_history.pop(0)
         state.selected_numbers = set(int(s) for s in state.last_spins if s.isdigit())  # Sync with last_spins
 
         spin_analysis_output = "\n".join(spin_results)
@@ -2661,7 +2587,7 @@ def analyze_spins(spins_input, reset_scores, strategy_name, neighbours_count, *c
         print(f"analyze_spins: Unexpected error: {str(e)}")
         return (f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
 
-# Function to reset scores
+# Function to reset scores (no longer needed, but kept for compatibility)
 def reset_scores():
     state.reset()
     return "Scores reset!"
@@ -2924,7 +2850,7 @@ def cold_bet_strategy():
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
     if even_money_non_hits:
         recommendations.append("Even Money (Not Hit):")
-        recommendations.append(", ".join(item[0] for item in even_money_non_hits))
+        recommendationsече.append(", ".join(item[0] for item in even_money_non_hits))
     if even_money_hits:
         recommendations.append("\nEven Money (Lowest Scores):")
         for i, (name, score) in enumerate(even_money_hits[:2], 1):
@@ -5377,6 +5303,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
+    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -5426,7 +5353,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
-            reset_scores_checkbox = gr.Checkbox(label="Reset Scores on Analysis", value=True)
     
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -6910,7 +6836,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[spins_display, last_spin_display]
         ).then(
             fn=analyze_spins,
-            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
@@ -7106,20 +7032,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
 
     # New: Orchestrating function to combine analysis steps
-    def orchestrate_analysis(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
-        """Orchestrate analysis, caching results and producing all outputs in one pass."""
+    def orchestrate_analysis(spins_display, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
+        """Orchestrate analysis, producing all outputs in one pass with scores always reset."""
         import time
         start_time = time.time()
         
-        # Check cache
-        cache_key = f"{spins_display}_{reset_scores}_{strategy}"
-        if cache_key in analysis_cache.value and not reset_scores:
-            cached = analysis_cache.value[cache_key]
-            spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = cached
-        else:
-            # Run analysis if not cached or reset requested
-            spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = analyze_spins(spins_display, reset_scores, strategy, neighbours_count, strong_numbers_count)
-            analysis_cache.value[cache_key] = (spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers)
+        # Run analysis (scores are always reset in analyze_spins)
+        spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = analyze_spins(spins_display, strategy, neighbours_count, strong_numbers_count)
         
         # Run trackers and dynamic table
         dozen_text, dozen_html, dozen_sequence_html = dozen_tracker(
@@ -7166,7 +7085,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         analyze_button.click(
             fn=analyze_spins,
-            inputs=[spins_display, reset_scores_checkbox, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
