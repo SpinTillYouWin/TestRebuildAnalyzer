@@ -2029,9 +2029,8 @@ def calculate_trending_sections():
         "splits": sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     }
 
-# Line 1: Start of apply_strategy_highlights function (updated)
-# Line 1: Start of apply_strategy_highlights function (updated)
-# Line 1: Start of apply_strategy_highlights function (updated with neighbor highlights)
+
+# Lines before (context, unchanged)
 def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None, suggestions=None):
     """Apply highlights based on the selected strategy with custom colors, passing suggestions for outside bets."""
     if sorted_sections is None:
@@ -2063,7 +2062,6 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
                 recommendations, strategy_suggestions = result
                 suggestions = suggestions if suggestions is not None else strategy_suggestions
             else:
-                # Fallback in case the function doesn't return the expected tuple
                 recommendations = result
                 suggestions = None
         else:
@@ -2178,6 +2176,18 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     ]
 
     html = '<table border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
+    # New: Add CSS to ensure casino-winner borders persist
+    html += '''
+    <style>
+        .casino-winner {
+            border: 3px dashed #FFD700 !important;
+            box-sizing: border-box !important;
+        }
+        .casino-winner:hover, .casino-winner:active, .casino-winner:focus {
+            border: 3px dashed #FFD700 !important;
+        }
+    </style>
+    '''
     html += '<colgroup>'
     html += '<col style="width: 40px;">'
     for _ in range(12):
@@ -2193,14 +2203,12 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             else:
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
-                if num in casino_winners["hot_numbers"]:
-                    border_style = "3px dashed #FFD700"  # Gold for Hot Numbers
-                elif num in casino_winners["cold_numbers"]:
-                    border_style = "3px dashed #C0C0C0"  # Silver for Cold Numbers
-                else:
-                    border_style = "3px solid black"
+                # New: Determine if the number is a casino winner and apply the casino-winner class
+                is_casino_winner = num in casino_winners["hot_numbers"] or num in casino_winners["cold_numbers"]
+                css_class = "casino-winner" if is_casino_winner else ""
+                # Modified: Use the CSS class instead of inline border style for casino winners
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
+                html += f'<td class="{css_class}" style="height: 40px; background-color: {highlight_color}; {text_style} border: 3px solid black; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -2262,6 +2270,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += "</table>"
     return html
 
+# Line 3: Start of update_casino_data function (unchanged)
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
