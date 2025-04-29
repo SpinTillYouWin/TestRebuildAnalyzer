@@ -7693,7 +7693,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     ]
     try:
         spins_count_dropdown.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("spins_count_dropdown: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7702,7 +7702,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         even_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("even_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7711,7 +7711,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         odd_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("odd_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7720,7 +7720,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         red_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("red_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7729,7 +7729,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         black_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("black_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7738,7 +7738,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         low_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("low_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7747,7 +7747,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         high_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("high_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7756,7 +7756,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         dozen1_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("dozen1_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7765,7 +7765,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         dozen2_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("dozen2_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7774,7 +7774,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         dozen3_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("dozen3_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7783,7 +7783,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         col1_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("col1_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7792,7 +7792,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         col2_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("col2_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7801,7 +7801,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     try:
         col3_percent.change(
-            fn=update_casino_data,
+            fn=lambda *args: (print("col3_percent: Updating casino data"), update_casino_data(*args))[1],
             inputs=inputs_list,
             outputs=[casino_data_output]
         )
@@ -7819,55 +7819,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[dynamic_table_output]
         )
     except Exception as e:
-        print(f"Error in use_winners_checkbox.change handler: {str(e)}")  # Line 3
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")
     
     try:
-        reset_casino_data_button.click(
+        reset_casino_data_button.click(  # Line 3
             fn=lambda: (
                 "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
                 "", "", "<p>Casino data reset to defaults.</p>"
-            ),
-# Surrounding lines before Line 1
-        col3_percent.change(
-            fn=update_casino_data,
-            inputs=inputs_list,
-            outputs=[casino_data_output]
-        )
-    
-    try:
-        use_winners_checkbox.change(
-            fn=lambda *args: (print("use_winners_checkbox: Updating casino data and dynamic table"), update_casino_data(*args))[1],
-            inputs=[spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners_checkbox, hot_numbers_input, cold_numbers_input],  # Line 1
-            outputs=[casino_data_output]
-        ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        )
-    except Exception as e:
-        print(f"Error in use_winners_checkbox.change handler: {str(e)}")  # Line 3
-    
-    try:
-        reset_casino_data_button.click(
-            fn=lambda: (
-                "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
-                "", "", "<p>Casino data reset to defaults.</p>"  # Added hot_numbers_input, cold_numbers_input
             ),
             inputs=[],
             outputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
                 low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
                 col1_percent, col2_percent, col3_percent, use_winners_checkbox,
-                hot_numbers_input, cold_numbers_input, casino_data_output  # Added new inputs
+                hot_numbers_input, cold_numbers_input, casino_data_output
             ]
-        ).then(
-            fn=create_dynamic_table,
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
         )
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
-
+    
     try:
         play_hot_button.click(
             fn=play_specific_numbers,
