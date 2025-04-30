@@ -440,161 +440,160 @@ class RouletteState:
         except Exception as e:
             logger.error("Error updating bankroll: %s", e)
             raise
-
-    def update_progression(self, won: bool) -> Tuple[float, float, float, str, str, str]:
-        """
-        Update the betting progression based on win/loss.
-
-        Args:
-            won: True if the bet was won, False otherwise.
-
-        Returns:
-            Tuple of bankroll, current bet, next bet, message, status, and status color.
-        """
-        try:
-            if self.is_stopped:
-                logger.info("Progression stopped, returning current state")
-                return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-
-            self.update_bankroll(won)
-            if self.bankroll < self.current_bet:
-                self.is_stopped = True
-                self.status = "Stopped: Insufficient bankroll"
-                self.status_color = "red"
-                self.message = "Cannot continue: Bankroll too low."
-                gr.Warning(self.message)
-                return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-
-            if self.progression == "Martingale":
-                self.current_bet = self.next_bet
-                self.next_bet = self.base_unit if won else self.current_bet * 2
-                self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-            elif self.progression == "Fibonacci":
-                fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-                if self.progression_state is None:
-                    self.progression_state = 0
-                self.current_bet = self.next_bet
-                if won:
-                    self.progression_state = max(0, self.progression_state - 2)
-                    self.next_bet = fib[self.progression_state] * self.base_unit
-                    self.message = f"Win! Move back to {self.next_bet}"
-                else:
-                    self.progression_state = min(len(fib) - 1, self.progression_state + 1)
-                    self.next_bet = fib[self.progression_state] * self.base_unit
-                    self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
-            elif self.progression == "Triple Martingale":
-                self.current_bet = self.next_bet
-                self.next_bet = self.base_unit if won else self.current_bet * 3
-                self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-            elif self.progression == "Oscar’s Grind":
-                self.current_bet = self.next_bet
-                profit = self.bankroll - self.initial_bankroll
-                if won and profit > 0:
-                    self.next_bet = self.base_unit
-                    self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-                elif won:
-                    self.next_bet = self.current_bet + self.base_unit
-                    self.message = f"Win! Increase to {self.next_bet}"
-                else:
-                    self.next_bet = self.current_bet
-                    self.message = f"Loss! Keep bet at {self.next_bet}"
-            elif self.progression == "Labouchere":
-                if self.progression_state is None:
-                    try:
-                        if self.labouchere_sequence and self.labouchere_sequence.strip():
-                            sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
-                            if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
-                                sequence = [1] * max(1, self.target_profit)
-                        else:
-                            sequence = [1] * max(1, self.target_profit)
-                    except ValueError:
-                        sequence = [1] * max(1, self.target_profit)
-                    self.progression_state = sequence
-
-                self.current_bet = self.next_bet
-
-                if not self.progression_state:
-                    self.progression_state = [1] * max(1, self.target_profit)
-                    self.next_bet = self.base_unit
-                    self.message = f"Sequence cleared! Reset to {self.next_bet}"
-                elif len(self.progression_state) == 1:
-                    self.next_bet = self.progression_state[0] * self.base_unit
-                    if won:
-                        self.progression_state = []
-                        self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
-                    else:
-                        self.message = f"Loss! Next bet: {self.next_bet}"
-                else:
-                    if won:
-                        self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
-                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
-                        self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-                    else:
-                        lost_bet = max(1, self.current_bet // self.base_unit)
-                        self.progression_state.append(lost_bet)
-                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-                        self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-            elif self.progression == "Ladder":
-                self.current_bet = self.next_bet
-                if won:
-                    self.next_bet = self.current_bet + self.base_unit
-                    self.message = f"Win! Increase to {self.next_bet}"
-                else:
-                    self.next_bet = self.base_unit
-                    self.message = f"Loss! Reset to {self.next_bet}"
-            elif self.progression == "D’Alembert":
-                self.current_bet = self.next_bet
-                if won:
-                    self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                    self.message = f"Win! Decrease to {self.next_bet}"
-                else:
-                    self.next_bet = self.current_bet + self.base_unit
-                    self.message = f"Loss! Increase to {self.next_bet}"
-            elif self.progression == "Double After a Win":
-                self.current_bet = self.next_bet
-                if won:
-                    self.next_bet = self.current_bet * 2
-                    self.message = f"Win! Double to {self.next_bet}"
-                else:
-                    self.next_bet = self.base_unit
-                    self.message = f"Loss! Reset to {self.next_bet}"
-            elif self.progression == "+1 Win / -1 Loss":
-                self.current_bet = self.next_bet
-                if won:
-                    self.next_bet = self.current_bet + self.base_unit
-                    self.message = f"Win! Increase to {self.next_bet}"
-                else:
-                    self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                    self.message = f"Loss! Decrease to {self.next_bet}"
-            elif self.progression == "+2 Win / -1 Loss":
-                self.current_bet = self.next_bet
-                if won:
-                    self.next_bet = self.current_bet + (self.base_unit * 2)
-                    self.message = f"Win! Increase by 2 units to {self.next_bet}"
-                else:
-                    self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                    self.message = f"Loss! Decrease to {self.next_bet}"
-
-            profit = self.bankroll - self.initial_bankroll
-            if profit <= self.stop_loss:
-                self.is_stopped = True
-                self.status = "Stopped: Stop Loss Reached"
-                self.status_color = "red"
-                self.message = f"Stop Loss reached at {profit}. Current bankroll: {self.bankroll}"
-                gr.Warning(self.message)
-            elif profit >= self.stop_win:
-                self.is_stopped = True
-                self.status = "Stopped: Stop Win Reached"
-                self.status_color = "green"
-                self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
-                gr.Warning(self.message)
-
-            logger.info("Progression updated: won=%s, next_bet=%.2f, message=%s", won, self.next_bet, self.message)
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        except Exception as e:
-            logger.error("Error updating progression: %s", e)
-            gr.Warning(f"Error in progression: {str(e)}")
-            raise
+     def update_progression(self, won: bool) -> Tuple[float, float, float, str, str, str]:
+         """
+         Update the betting progression based on win/loss.
+    
+         Args:
+             won: True if the bet was won, False otherwise.
+    
+         Returns:
+             Tuple of bankroll, current bet, next bet, message, status, and status color.
+         """
+         try:
+             if self.is_stopped:
+                 logger.info("Progression stopped, returning current state")
+                 return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+    
+             self.update_bankroll(won)
+             if self.bankroll < self.current_bet:
+                 self.is_stopped = True
+                 self.status = "Stopped: Insufficient bankroll"
+                 self.status_color = "red"
+                 self.message = "Cannot continue: Bankroll too low."
+                 gr.Warning(self.message)
+                 return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+    
+             if self.progression == "Martingale":
+                 self.current_bet = self.next_bet
+                 self.next_bet = self.base_unit if won else self.current_bet * 2
+                 self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+             elif self.progression == "Fibonacci":
+                 fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+                 if self.progression_state is None:
+                     self.progression_state = 0
+                 self.current_bet = self.next_bet
+                 if won:
+                     self.progression_state = max(0, self.progression_state - 2)
+                     self.next_bet = fib[self.progression_state] * self.base_unit
+                     self.message = f"Win! Move back to {self.next_bet}"
+                 else:
+                     self.progression_state = min(len(fib) - 1, self.progression_state + 1)
+                     self.next_bet = fib[self.progression_state] * self.base_unit
+                     self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+             elif self.progression == "Triple Martingale":
+                 self.current_bet = self.next_bet
+                 self.next_bet = self.base_unit if won else self.current_bet * 3
+                 self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+             elif self.progression == "Oscar’s Grind":
+                 self.current_bet = self.next_bet
+                 profit = self.bankroll - self.initial_bankroll
+                 if won and profit > 0:
+                     self.next_bet = self.base_unit
+                     self.message = f"Win! Profit achieved, reset to {self.next_bet}"
+                 elif won:
+                     self.next_bet = self.current_bet + self.base_unit
+                     self.message = f"Win! Increase to {self.next_bet}"
+                 else:
+                     self.next_bet = self.current_bet
+                     self.message = f"Loss! Keep bet at {self.next_bet}"
+             elif self.progression == "Labouchere":
+                 if self.progression_state is None:
+                     try:
+                         if self.labouchere_sequence and self.labouchere_sequence.strip():
+                             sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
+                             if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
+                                 sequence = [1] * max(1, self.target_profit)
+                         else:
+                             sequence = [1] * max(1, self.target_profit)
+                     except ValueError:
+                         sequence = [1] * max(1, self.target_profit)
+                     self.progression_state = sequence
+    
+                 self.current_bet = self.next_bet
+    
+                 if not self.progression_state:
+                     self.progression_state = [1] * max(1, self.target_profit)
+                     self.next_bet = self.base_unit
+                     self.message = f"Sequence cleared! Reset to {self.next_bet}"
+                 elif len(self.progression_state) == 1:
+                     self.next_bet = self.progression_state[0] * self.base_unit
+                     if won:
+                         self.progression_state = []
+                         self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
+                     else:
+                         self.message = f"Loss! Next bet: {self.next_bet}"
+                 else:
+                     if won:
+                         self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
+                         self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
+                         self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
+                     else:
+                         lost_bet = max(1, self.current_bet // self.base_unit)
+                         self.progression_state.append(lost_bet)
+                         self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
+                         self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
+             elif self.progression == "Ladder":
+                 self.current_bet = self.next_bet
+                 if won:
+                     self.next_bet = self.current_bet + self.base_unit
+                     self.message = f"Win! Increase to {self.next_bet}"
+                 else:
+                     self.next_bet = self.base_unit
+                     self.message = f"Loss! Reset to {self.next_bet}"
+             elif self.progression == "D’Alembert":
+                 self.current_bet = self.next_bet
+                 if won:
+                     self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
+                     self.message = f"Win! Decrease to {self.next_bet}"
+                 else:
+                     self.next_bet = self.current_bet + self.base_unit
+                     self.message = f"Loss! Increase to {self.next_bet}"
+             elif self.progression == "Double After a Win":
+                 self.current_bet = self.next_bet
+                 if won:
+                     self.next_bet = self.current_bet * 2
+                     self.message = f"Win! Double to {self.next_bet}"
+                 else:
+                     self.next_bet = self.base_unit
+                     self.message = f"Loss! Reset to {self.next_bet}"
+             elif self.progression == "+1 Win / -1 Loss":
+                 self.current_bet = self.next_bet
+                 if won:
+                     self.next_bet = self.current_bet + self.base_unit
+                     self.message = f"Win! Increase to {self.next_bet}"
+                 else:
+                     self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
+                     self.message = f"Loss! Decrease to {self.next_bet}"
+             elif self.progression == "+2 Win / -1 Loss":
+                 self.current_bet = self.next_bet
+                 if won:
+                     self.next_bet = self.current_bet + (self.base_unit * 2)
+                     self.message = f"Win! Increase by 2 units to {self.next_bet}"
+                 else:
+                     self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
+                     self.message = f"Loss! Decrease to {self.next_bet}"
+    
+             profit = self.bankroll - self.initial_bankroll
+             if profit <= self.stop_loss:
+                 self.is_stopped = True
+                 self.status = "Stopped: Stop Loss Reached"
+                 self.status_color = "red"
+                 self.message = f"Stop Loss reached at {profit}. Current bankroll: {self.bankroll}"
+                 gr.Warning(self.message)
+             elif profit >= self.stop_win:
+                 self.is_stopped = True
+                 self.status = "Stopped: Stop Win Reached"
+                 self.status_color = "green"
+                 self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
+                 gr.Warning(self.message)
+    
+             logger.info("Progression updated: won=%s, next_bet=%.2f, message=%s", won, self.next_bet, self.message)
+             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+         except Exception as e:
+             logger.error("Error updating progression: %s", e)
+             gr.Warning(f"Error in progression: {str(e)}")
+             raise
 
 # Initialize global state
 state = RouletteState()
