@@ -1625,7 +1625,6 @@ def best_dozens_and_streets() -> str:
     except Exception as e:
         logger.error("Error in best_dozens_and_streets: %s", e)
         gr.Warning(f"Error generating recommendations: {str(e)}")
-```python
         return "<p>Error generating recommendations.</p>"
 
 def best_columns_and_streets() -> str:
@@ -3182,7 +3181,6 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
         outputs=[spins_textbox, spins_textbox, last_spins_output, spin_counter_output, sides_of_zero_output]
     )
     play_numbers_button.click(
-```python
         fn=play_specific_numbers,
         inputs=[specific_numbers_input],
         outputs=[analysis_output, bankroll_output, current_bet_output, next_bet_output, message_output, status_output, status_output]
