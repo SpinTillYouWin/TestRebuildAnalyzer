@@ -1448,7 +1448,7 @@ def render_sides_of_zero_display():
     </script>
     """
 
-# Lines before (context, unchanged)
+# Line 1: Start of updated validate_spins_input function
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -1459,21 +1459,21 @@ def validate_spins_input(spins_input):
 
     raw_spins = [s.strip() for s in spins_input.split(",") if s.strip()]
     valid_spins = []
-    errors = []
+    error_msg = ""  # Changed: Use a single string instead of a list
 
     for spin in raw_spins:
         try:
             num = int(spin)
             if not (0 <= num <= 36):
-                errors.append(f"'{spin}' is out of range (0-36)")
+                error_msg += f"'{spin}' is out of range (0-36)\n"  # Changed: Append to string
                 continue
             valid_spins.append(str(num))
         except ValueError:
-            errors.append(f"'{spin}' is not a valid number")
+            error_msg += f"'{spin}' is not a valid number\n"  # Changed: Append to string
             continue
 
     if not valid_spins:
-        error_msg = "Invalid input:\n- " + "\n- ".join(errors)
+        error_msg = f"Invalid input:\n{error_msg}" if error_msg else "No valid spins entered."
         gr.Warning(error_msg)
         print(f"validate_spins_input: Errors - {error_msg}")
         return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
