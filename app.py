@@ -53,111 +53,72 @@ def initialize_betting_mappings():
         for num in numbers_set:
             BETTING_MAPPINGS[num]["splits"].append(name)
 
+# Line 1: Start of updated update_scores_batch function
 def update_scores_batch(spins):
     """Update scores for a batch of spins and return actions for undo."""
+    # UNCHANGED: Initialize action log for undo
     action_log = []
-    # Temporary dictionaries to aggregate increments
-    increments = {
-        "even_money_scores": {},
-        "dozen_scores": {},
-        "column_scores": {},
-        "street_scores": {},
-        "corner_scores": {},
-        "six_line_scores": {},
-        "split_scores": {},
-        "scores": {},
-        "side_scores": {}
-    }
-
+    
+    # CHANGED: Directly update state dictionaries and build minimal action_log
     for spin in spins:
         spin_value = int(spin)
         action = {"spin": spin_value, "increments": {}}
-
+        
         # Get all betting categories for this number from precomputed mappings
         categories = BETTING_MAPPINGS[spin_value]
-
+        
         # Update even money scores
         for name in categories["even_money"]:
-            increments["even_money_scores"].setdefault(name, 0)
-            increments["even_money_scores"][name] += 1
+            state.even_money_scores[name] += 1
             action["increments"].setdefault("even_money_scores", {})[name] = 1
-
+        
         # Update dozens scores
         for name in categories["dozens"]:
-            increments["dozen_scores"].setdefault(name, 0)
-            increments["dozen_scores"][name] += 1
+            state.dozen_scores[name] += 1
             action["increments"].setdefault("dozen_scores", {})[name] = 1
-
+        
         # Update columns scores
         for name in categories["columns"]:
-            increments["column_scores"].setdefault(name, 0)
-            increments["column_scores"][name] += 1
+            state.column_scores[name] += 1
             action["increments"].setdefault("column_scores", {})[name] = 1
-
+        
         # Update streets scores
         for name in categories["streets"]:
-            increments["street_scores"].setdefault(name, 0)
-            increments["street_scores"][name] += 1
+            state.street_scores[name] += 1
             action["increments"].setdefault("street_scores", {})[name] = 1
-
+        
         # Update corners scores
         for name in categories["corners"]:
-            increments["corner_scores"].setdefault(name, 0)
-            increments["corner_scores"][name] += 1
+            state.corner_scores[name] += 1
             action["increments"].setdefault("corner_scores", {})[name] = 1
-
+        
         # Update six lines scores
         for name in categories["six_lines"]:
-            increments["six_line_scores"].setdefault(name, 0)
-            increments["six_line_scores"][name] += 1
+            state.six_line_scores[name] += 1
             action["increments"].setdefault("six_line_scores", {})[name] = 1
-
+        
         # Update splits scores
         for name in categories["splits"]:
-            increments["split_scores"].setdefault(name, 0)
-            increments["split_scores"][name] += 1
+            state.split_scores[name] += 1
             action["increments"].setdefault("split_scores", {})[name] = 1
-
+        
         # Update straight-up scores
-        increments["scores"].setdefault(spin_value, 0)
-        increments["scores"][spin_value] += 1
+        state.scores[spin_value] += 1
         action["increments"].setdefault("scores", {})[spin_value] = 1
-
+        
         # Update side scores
         if spin_value in current_left_of_zero:
-            increments["side_scores"].setdefault("Left Side of Zero", 0)
-            increments["side_scores"]["Left Side of Zero"] += 1
+            state.side_scores["Left Side of Zero"] += 1
             action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
         if spin_value in current_right_of_zero:
-            increments["side_scores"].setdefault("Right Side of Zero", 0)
-            increments["side_scores"]["Right Side of Zero"] += 1
+            state.side_scores["Right Side of Zero"] += 1
             action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-
+        
         action_log.append(action)
-
-    # Apply aggregated increments to state
-    for name, count in increments["even_money_scores"].items():
-        state.even_money_scores[name] += count
-    for name, count in increments["dozen_scores"].items():
-        state.dozen_scores[name] += count
-    for name, count in increments["column_scores"].items():
-        state.column_scores[name] += count
-    for name, count in increments["street_scores"].items():
-        state.street_scores[name] += count
-    for name, count in increments["corner_scores"].items():
-        state.corner_scores[name] += count
-    for name, count in increments["six_line_scores"].items():
-        state.six_line_scores[name] += count
-    for name, count in increments["split_scores"].items():
-        state.split_scores[name] += count
-    for num, count in increments["scores"].items():
-        state.scores[num] += count
-    for name, count in increments["side_scores"].items():
-        state.side_scores[name] += count
-
+    
+    # UNCHANGED: Return the action log for undo functionality
     return action_log
 
-# Line 3: Start of next function (unchanged)
 def validate_roulette_data():
     """Validate that all required constants from roulette_data.py are present and correctly formatted."""
     required_dicts = {
