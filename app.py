@@ -2073,7 +2073,7 @@ def even_money_tracker(
             categories_to_track.append("Odd")
         if track_low:
             categories_to_track.append("Low")
-        if track_high designating
+        if track_high:
             categories_to_track.append("High")
         if not categories_to_track:
             categories_to_track = ["Red", "Black", "Even", "Odd", "Low", "High"]
@@ -2126,7 +2126,7 @@ def even_money_tracker(
                     if identical_streak >= consecutive_identical_count:
                         identical_matches.append((i - identical_streak + 1, trait_combinations[i]))
                 else:
-                    identical_streak = 1
+                    identical_streak =  boot
                     identical_streak_start = i
             if identical_matches:
                 latest_match = max(identical_matches, key=lambda x: x[0])
