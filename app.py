@@ -1,10 +1,3 @@
-# Roulette Spin Analyzer
-# Complete codebase (~8,135 lines) combining Parts 1-9
-# Fixes IndentationError at reset method and removes duplicate imports
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-# Deployment: Save as roulette_spin_analyzer.py or app.py (if required by platform, e.g., Heroku).
-# Ensure roulette_data.py is in the same directory and requirements.txt includes: gradio, pandas.
-
 import gradio as gr
 import math
 import pandas as pd
@@ -17,7 +10,6 @@ from typing import Dict, List, Set, Optional, Any, Tuple
 from datetime import datetime
 import html
 
-# Setup logging for error tracking
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -28,80 +20,50 @@ try:
     )
 except ImportError as e:
     logger.error("Failed to import roulette_data: %s", e)
-    raise ImportError("roulette_data.py is missing or corrupted. Ensure it exists in the same directory.")
+    raise ImportError("roulette_data.py is missing or corrupted.")
 
-# Initialize betting category mappings for faster lookups
 BETTING_MAPPINGS: Dict[int, Dict[str, List[str]]] = {}
-
-# Cache for spin analysis results
 ANALYSIS_CACHE: Dict[str, Any] = {}
-
-# Maximum spin history length to manage memory
 MAX_SPIN_HISTORY = 1000
 
 def initialize_betting_mappings() -> None:
-    """
-    Initialize a mapping of numbers to their betting categories for efficient lookups.
-    Populates BETTING_MAPPINGS with mappings for even money, dozens, columns, etc.
-    """
     global BETTING_MAPPINGS
     try:
         BETTING_MAPPINGS = {i: {"even_money": [], "dozens": [], "columns": [], "streets": [], "corners": [], "six_lines": [], "splits": []} for i in range(37)}
-        
         for name, numbers in EVEN_MONEY.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["even_money"].append(name)
-        
         for name, numbers in DOZENS.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["dozens"].append(name)
-        
         for name, numbers in COLUMNS.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["columns"].append(name)
-        
         for name, numbers in STREETS.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["streets"].append(name)
-        
         for name, numbers in CORNERS.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["corners"].append(name)
-        
         for name, numbers in SIX_LINES.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["six_lines"].append(name)
-        
         for name, numbers in SPLITS.items():
             numbers_set = set(numbers)
             for num in numbers_set:
                 BETTING_MAPPINGS[num]["splits"].append(name)
-        
         logger.info("Betting mappings initialized successfully.")
     except Exception as e:
         logger.error("Error initializing betting mappings: %s", e)
         raise
 
 def update_scores_batch(spins: List[str]) -> List[Dict[str, Any]]:
-    """
-    Update scores for a batch of spins and return actions for undo.
-    Uses BETTING_MAPPINGS for efficient category lookups.
-    
-    Args:
-        spins: List of spin values as strings (0-36).
-    
-    Returns:
-        List of action logs for undoing the updates.
-    
-    Raises:
-        ValueError: If spins contain invalid numbers.
-    """
     try:
         action_log = []
         increments = {
@@ -115,55 +77,44 @@ def update_scores_batch(spins: List[str]) -> List[Dict[str, Any]]:
             "scores": {},
             "side_scores": {}
         }
-
         for spin in spins:
             try:
                 spin_value = int(spin)
                 if not 0 <= spin_value <= 36:
                     raise ValueError(f"Invalid spin value: {spin}")
                 action = {"spin": spin_value, "increments": {}}
-
                 categories = BETTING_MAPPINGS.get(spin_value, {})
-
                 for name in categories.get("even_money", []):
                     increments["even_money_scores"].setdefault(name, 0)
                     increments["even_money_scores"][name] += 1
                     action["increments"].setdefault("even_money_scores", {})[name] = 1
-
                 for name in categories.get("dozens", []):
                     increments["dozen_scores"].setdefault(name, 0)
                     increments["dozen_scores"][name] += 1
                     action["increments"].setdefault("dozen_scores", {})[name] = 1
-
                 for name in categories.get("columns", []):
                     increments["column_scores"].setdefault(name, 0)
                     increments["column_scores"][name] += 1
                     action["increments"].setdefault("column_scores", {})[name] = 1
-
                 for name in categories.get("streets", []):
                     increments["street_scores"].setdefault(name, 0)
                     increments["street_scores"][name] += 1
                     action["increments"].setdefault("street_scores", {})[name] = 1
-
                 for name in categories.get("corners", []):
                     increments["corner_scores"].setdefault(name, 0)
                     increments["corner_scores"][name] += 1
                     action["increments"].setdefault("corner_scores", {})[name] = 1
-
                 for name in categories.get("six_lines", []):
                     increments["six_line_scores"].setdefault(name, 0)
                     increments["six_line_scores"][name] += 1
                     action["increments"].setdefault("six_line_scores", {})[name] = 1
-
                 for name in categories.get("splits", []):
                     increments["split_scores"].setdefault(name, 0)
                     increments["split_scores"][name] += 1
                     action["increments"].setdefault("split_scores", {})[name] = 1
-
                 increments["scores"].setdefault(spin_value, 0)
                 increments["scores"][spin_value] += 1
                 action["increments"].setdefault("scores", {})[spin_value] = 1
-
                 if spin_value in current_left_of_zero:
                     increments["side_scores"].setdefault("Left Side of Zero", 0)
                     increments["side_scores"]["Left Side of Zero"] += 1
@@ -172,12 +123,10 @@ def update_scores_batch(spins: List[str]) -> List[Dict[str, Any]]:
                     increments["side_scores"].setdefault("Right Side of Zero", 0)
                     increments["side_scores"]["Right Side of Zero"] += 1
                     action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-
                 action_log.append(action)
             except ValueError as ve:
                 logger.warning("Skipping invalid spin: %s", ve)
                 continue
-
         for name, count in increments["even_money_scores"].items():
             state.even_money_scores[name] += count
         for name, count in increments["dozen_scores"].items():
@@ -196,7 +145,6 @@ def update_scores_batch(spins: List[str]) -> List[Dict[str, Any]]:
             state.scores[num] += count
         for name, count in increments["side_scores"].items():
             state.side_scores[name] += count
-
         logger.info("Updated scores for %d spins", len(spins))
         return action_log
     except Exception as e:
@@ -204,15 +152,6 @@ def update_scores_batch(spins: List[str]) -> List[Dict[str, Any]]:
         raise
 
 def validate_roulette_data() -> Optional[List[str]]:
-    """
-    Validate that all required constants from roulette_data.py are present and correctly formatted.
-
-    Returns:
-        List of error messages if validation fails, None if successful.
-
-    Raises:
-        ValueError: If critical validation errors are found.
-    """
     try:
         required_dicts = {
             "EVEN_MONEY": EVEN_MONEY,
@@ -228,9 +167,7 @@ def validate_roulette_data() -> Optional[List[str]]:
             "LEFT_OF_ZERO_EUROPEAN": LEFT_OF_ZERO_EUROPEAN,
             "RIGHT_OF_ZERO_EUROPEAN": RIGHT_OF_ZERO_EUROPEAN
         }
-
         errors = []
-
         for name, data in required_dicts.items():
             if not isinstance(data, dict):
                 errors.append(f"{name} must be a dictionary.")
@@ -238,7 +175,6 @@ def validate_roulette_data() -> Optional[List[str]]:
             for key, value in data.items():
                 if not isinstance(key, str) or not isinstance(value, (list, set, tuple)) or not all(isinstance(n, int) for n in value):
                     errors.append(f"{name}['{key}'] must map to a list/set/tuple of integers.")
-
         for name, data in required_neighbors.items():
             if name == "NEIGHBORS_EUROPEAN":
                 if not isinstance(data, dict):
@@ -250,7 +186,6 @@ def validate_roulette_data() -> Optional[List[str]]:
             else:
                 if not isinstance(data, (list, set, tuple)) or not all(isinstance(n, int) for n in data):
                     errors.append(f"{name} must be a list/set/tuple of integers.")
-
         if errors:
             logger.error("Roulette data validation failed: %s", errors)
             return errors
@@ -313,9 +248,6 @@ class RouletteState:
             raise
 
     def reset(self) -> None:
-        """
-        Reset the game state, preserving casino data and use_casino_winners.
-        """
         try:
             use_casino_winners = self.use_casino_winners
             casino_data = self.casino_data.copy()
@@ -340,25 +272,14 @@ class RouletteState:
             raise
 
     def calculate_aggregated_scores_for_spins(self, numbers: List[int]) -> Tuple[Dict[str, int], Dict[str, int], Dict[str, int]]:
-        """
-        Calculate aggregated scores for a list of numbers (simulated spins).
-
-        Args:
-            numbers: List of numbers to analyze.
-
-        Returns:
-            Tuple of dictionaries for even money, dozen, and column scores.
-        """
         try:
             cache_key = f"agg_scores_{hash(tuple(numbers))}"
             if cache_key in ANALYSIS_CACHE:
                 logger.info("Returning cached aggregated scores for %d numbers", len(numbers))
                 return ANALYSIS_CACHE[cache_key]
-
             even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
             dozen_scores = {name: 0 for name in DOZENS.keys()}
             column_scores = {name: 0 for name in COLUMNS.keys()}
-
             for number in numbers:
                 if number == 0:
                     continue
@@ -371,7 +292,6 @@ class RouletteState:
                 for name, numbers_set in COLUMNS.items():
                     if number in numbers_set:
                         column_scores[name] += 1
-
             result = (even_money_scores, dozen_scores, column_scores)
             ANALYSIS_CACHE[cache_key] = result
             logger.info("Calculated aggregated scores for %d numbers", len(numbers))
@@ -381,12 +301,6 @@ class RouletteState:
             raise
 
     def reset_progression(self) -> Tuple[float, float, float, str, str]:
-        """
-        Reset the betting progression to initial values.
-
-        Returns:
-            Tuple of bankroll, current bet, next bet, message, and status.
-        """
         try:
             self.current_bet = self.base_unit
             self.next_bet = self.base_unit
@@ -402,12 +316,6 @@ class RouletteState:
             raise
 
     def update_bankroll(self, won: bool) -> None:
-        """
-        Update bankroll based on win/loss outcome.
-
-        Args:
-            won: True if the bet was won, False otherwise.
-        """
         try:
             payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
             if won:
@@ -432,177 +340,153 @@ class RouletteState:
         except Exception as e:
             logger.error("Error updating bankroll: %s", e)
             raise
-     def update_progression(self, won: bool) -> Tuple[float, float, float, str, str, str]:
-         """
-         Update the betting progression based on win/loss.
-    
-         Args:
-             won: True if the bet was won, False otherwise.
-    
-         Returns:
-             Tuple of bankroll, current bet, next bet, message, status, and status color.
-         """
-         try:
-             if self.is_stopped:
-                 logger.info("Progression stopped, returning current state")
-                 return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    
-             self.update_bankroll(won)
-             if self.bankroll < self.current_bet:
-                 self.is_stopped = True
-                 self.status = "Stopped: Insufficient bankroll"
-                 self.status_color = "red"
-                 self.message = "Cannot continue: Bankroll too low."
-                 gr.Warning(self.message)
-                 return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    
-             if self.progression == "Martingale":
-                 self.current_bet = self.next_bet
-                 self.next_bet = self.base_unit if won else self.current_bet * 2
-                 self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-             elif self.progression == "Fibonacci":
-                 fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-                 if self.progression_state is None:
-                     self.progression_state = 0
-                 self.current_bet = self.next_bet
-                 if won:
-                     self.progression_state = max(0, self.progression_state - 2)
-                     self.next_bet = fib[self.progression_state] * self.base_unit
-                     self.message = f"Win! Move back to {self.next_bet}"
-                 else:
-                     self.progression_state = min(len(fib) - 1, self.progression_state + 1)
-                     self.next_bet = fib[self.progression_state] * self.base_unit
-                     self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
-             elif self.progression == "Triple Martingale":
-                 self.current_bet = self.next_bet
-                 self.next_bet = self.base_unit if won else self.current_bet * 3
-                 self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
-             elif self.progression == "Oscar’s Grind":
-                 self.current_bet = self.next_bet
-                 profit = self.bankroll - self.initial_bankroll
-                 if won and profit > 0:
-                     self.next_bet = self.base_unit
-                     self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-                 elif won:
-                     self.next_bet = self.current_bet + self.base_unit
-                     self.message = f"Win! Increase to {self.next_bet}"
-                 else:
-                     self.next_bet = self.current_bet
-                     self.message = f"Loss! Keep bet at {self.next_bet}"
-             elif self.progression == "Labouchere":
-                 if self.progression_state is None:
-                     try:
-                         if self.labouchere_sequence and self.labouchere_sequence.strip():
-                             sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
-                             if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
-                                 sequence = [1] * max(1, self.target_profit)
-                         else:
-                             sequence = [1] * max(1, self.target_profit)
-                     except ValueError:
-                         sequence = [1] * max(1, self.target_profit)
-                     self.progression_state = sequence
-    
-                 self.current_bet = self.next_bet
-    
-                 if not self.progression_state:
-                     self.progression_state = [1] * max(1, self.target_profit)
-                     self.next_bet = self.base_unit
-                     self.message = f"Sequence cleared! Reset to {self.next_bet}"
-                 elif len(self.progression_state) == 1:
-                     self.next_bet = self.progression_state[0] * self.base_unit
-                     if won:
-                         self.progression_state = []
-                         self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
-                     else:
-                         self.message = f"Loss! Next bet: {self.next_bet}"
-                 else:
-                     if won:
-                         self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
-                         self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
-                         self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-                     else:
-                         lost_bet = max(1, self.current_bet // self.base_unit)
-                         self.progression_state.append(lost_bet)
-                         self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-                         self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-             elif self.progression == "Ladder":
-                 self.current_bet = self.next_bet
-                 if won:
-                     self.next_bet = self.current_bet + self.base_unit
-                     self.message = f"Win! Increase to {self.next_bet}"
-                 else:
-                     self.next_bet = self.base_unit
-                     self.message = f"Loss! Reset to {self.next_bet}"
-             elif self.progression == "D’Alembert":
-                 self.current_bet = self.next_bet
-                 if won:
-                     self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                     self.message = f"Win! Decrease to {self.next_bet}"
-                 else:
-                     self.next_bet = self.current_bet + self.base_unit
-                     self.message = f"Loss! Increase to {self.next_bet}"
-             elif self.progression == "Double After a Win":
-                 self.current_bet = self.next_bet
-                 if won:
-                     self.next_bet = self.current_bet * 2
-                     self.message = f"Win! Double to {self.next_bet}"
-                 else:
-                     self.next_bet = self.base_unit
-                     self.message = f"Loss! Reset to {self.next_bet}"
-             elif self.progression == "+1 Win / -1 Loss":
-                 self.current_bet = self.next_bet
-                 if won:
-                     self.next_bet = self.current_bet + self.base_unit
-                     self.message = f"Win! Increase to {self.next_bet}"
-                 else:
-                     self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                     self.message = f"Loss! Decrease to {self.next_bet}"
-             elif self.progression == "+2 Win / -1 Loss":
-                 self.current_bet = self.next_bet
-                 if won:
-                     self.next_bet = self.current_bet + (self.base_unit * 2)
-                     self.message = f"Win! Increase by 2 units to {self.next_bet}"
-                 else:
-                     self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                     self.message = f"Loss! Decrease to {self.next_bet}"
-    
-             profit = self.bankroll - self.initial_bankroll
-             if profit <= self.stop_loss:
-                 self.is_stopped = True
-                 self.status = "Stopped: Stop Loss Reached"
-                 self.status_color = "red"
-                 self.message = f"Stop Loss reached at {profit}. Current bankroll: {self.bankroll}"
-                 gr.Warning(self.message)
-             elif profit >= self.stop_win:
-                 self.is_stopped = True
-                 self.status = "Stopped: Stop Win Reached"
-                 self.status_color = "green"
-                 self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
-                 gr.Warning(self.message)
-    
-             logger.info("Progression updated: won=%s, next_bet=%.2f, message=%s", won, self.next_bet, self.message)
-             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-         except Exception as e:
-             logger.error("Error updating progression: %s", e)
-             gr.Warning(f"Error in progression: {str(e)}")
-             raise
 
-# Initialize global state
+    def update_progression(self, won: bool) -> Tuple[float, float, float, str, str, str]:
+        try:
+            if self.is_stopped:
+                logger.info("Progression stopped, returning current state")
+                return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+            self.update_bankroll(won)
+            if self.bankroll < self.current_bet:
+                self.is_stopped = True
+                self.status = "Stopped: Insufficient bankroll"
+                self.status_color = "red"
+                self.message = "Cannot continue: Bankroll too low."
+                gr.Warning(self.message)
+                return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+            if self.progression == "Martingale":
+                self.current_bet = self.next_bet
+                self.next_bet = self.base_unit if won else self.current_bet * 2
+                self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+            elif self.progression == "Fibonacci":
+                fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+                if self.progression_state is None:
+                    self.progression_state = 0
+                self.current_bet = self.next_bet
+                if won:
+                    self.progression_state = max(0, self.progression_state - 2)
+                    self.next_bet = fib[self.progression_state] * self.base_unit
+                    self.message = f"Win! Move back to {self.next_bet}"
+                else:
+                    self.progression_state = min(len(fib) - 1, self.progression_state + 1)
+                    self.next_bet = fib[self.progression_state] * self.base_unit
+                    self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+            elif self.progression == "Triple Martingale":
+                self.current_bet = self.next_bet
+                self.next_bet = self.base_unit if won else self.current_bet * 3
+                self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+            elif self.progression == "Oscar’s Grind":
+                self.current_bet = self.next_bet
+                profit = self.bankroll - self.initial_bankroll
+                if won and profit > 0:
+                    self.next_bet = self.base_unit
+                    self.message = f"Win! Profit achieved, reset to {self.next_bet}"
+                elif won:
+                    self.next_bet = self.current_bet + self.base_unit
+                    self.message = f"Win! Increase to {self.next_bet}"
+                else:
+                    self.next_bet = self.current_bet
+                    self.message = f"Loss! Keep bet at {self.next_bet}"
+            elif self.progression == "Labouchere":
+                if self.progression_state is None:
+                    try:
+                        if self.labouchere_sequence and self.labouchere_sequence.strip():
+                            sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
+                            if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
+                                sequence = [1] * max(1, self.target_profit)
+                        else:
+                            sequence = [1] * max(1, self.target_profit)
+                    except ValueError:
+                        sequence = [1] * max(1, self.target_profit)
+                    self.progression_state = sequence
+                self.current_bet = self.next_bet
+                if not self.progression_state:
+                    self.progression_state = [1] * max(1, self.target_profit)
+                    self.next_bet = self.base_unit
+                    self.message = f"Sequence cleared! Reset to {self.next_bet}"
+                elif len(self.progression_state) == 1:
+                    self.next_bet = self.progression_state[0] * self.base_unit
+                    if won:
+                        self.progression_state = []
+                        self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
+                    else:
+                        self.message = f"Loss! Next bet: {self.next_bet}"
+                else:
+                    if won:
+                        self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
+                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
+                        self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
+                    else:
+                        lost_bet = max(1, self.current_bet // self.base_unit)
+                        self.progression_state.append(lost_bet)
+                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
+                        self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
+            elif self.progression == "Ladder":
+                self.current_bet = self.next_bet
+                if won:
+                    self.next_bet = self.current_bet + self.base_unit
+                    self.message = f"Win! Increase to {self.next_bet}"
+                else:
+                    self.next_bet = self.base_unit
+                    self.message = f"Loss! Reset to {self.next_bet}"
+            elif self.progression == "D’Alembert":
+                self.current_bet = self.next_bet
+                if won:
+                    self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
+                    self.message = f"Win! Decrease to {self.next_bet}"
+                else:
+                    self.next_bet = self.current_bet + self.base_unit
+                    self.message = f"Loss! Increase to {self.next_bet}"
+            elif self.progression == "Double After a Win":
+                self.current_bet = self.next_bet
+                if won:
+                    self.next_bet = self.current_bet * 2
+                    self.message = f"Win! Double to {self.next_bet}"
+                else:
+                    self.next_bet = self.base_unit
+                    self.message = f"Loss! Reset to {self.next_bet}"
+            elif self.progression == "+1 Win / -1 Loss":
+                self.current_bet = self.next_bet
+                if won:
+                    self.next_bet = self.current_bet + self.base_unit
+                    self.message = f"Win! Increase to {self.next_bet}"
+                else:
+                    self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
+                    self.message = f"Loss! Decrease to {self.next_bet}"
+            elif self.progression == "+2 Win / -1 Loss":
+                self.current_bet = self.next_bet
+                if won:
+                    self.next_bet = self.current_bet + (self.base_unit * 2)
+                    self.message = f"Win! Increase by 2 units to {self.next_bet}"
+                else:
+                    self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
+                    self.message = f"Loss! Decrease to {self.next_bet}"
+            profit = self.bankroll - self.initial_bankroll
+            if profit <= self.stop_loss:
+                self.is_stopped = True
+                self.status = "Stopped: Stop Loss Reached"
+                self.status_color = "red"
+                self.message = f"Stop Loss reached at {profit}. Current bankroll: {self.bankroll}"
+                gr.Warning(self.message)
+            elif profit >= self.stop_win:
+                self.is_stopped = True
+                self.status = "Stopped: Stop Win Reached"
+                self.status_color = "green"
+                self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
+                gr.Warning(self.message)
+            logger.info("Progression updated: won=%s, next_bet=%.2f, message=%s", won, self.next_bet, self.message)
+            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        except Exception as e:
+            logger.error("Error updating progression: %s", e)
+            gr.Warning(f"Error in progression: {str(e)}")
+            raise
+
 state = RouletteState()
 current_neighbors = NEIGHBORS_EUROPEAN
 current_left_of_zero = set(LEFT_OF_ZERO_EUROPEAN)
 current_right_of_zero = set(RIGHT_OF_ZERO_EUROPEAN)
 TABLE_TYPE = "European"
 
-# Placeholder for unit tests (to be implemented)
-"""
-def test_roulette_state():
-    assert state.scores == {n: 0 for n in range(37)}
-    assert state.bankroll == 1000
-    logger.info("RouletteState tests passed")
-"""
-
-# Global variables
 colors = {
     "0": "green",
     "1": "red", "3": "red", "5": "red", "7": "red", "9": "red",
@@ -616,36 +500,21 @@ colors = {
 }
 
 def add_spin(spin: str, current_spins: str, last_spin_count: int) -> Tuple[str, str, str, str, str]:
-    """
-    Add a new spin to the game state and update displays.
-
-    Args:
-        spin: The spin number (0-36) as a string.
-        current_spins: Current spins as a comma-separated string.
-        last_spin_count: Number of spins to display.
-
-    Returns:
-        Tuple of updated spins, spins textbox, last spins HTML, spin counter, and sides of zero display.
-    """
     try:
         spin = spin.strip()
         if not spin.isdigit() or not 0 <= int(spin) <= 36:
             gr.Warning(f"Invalid spin: {spin}. Must be a number between 0 and 36.")
             return current_spins, current_spins, format_spins_as_html(current_spins, last_spin_count), update_spin_counter(), render_sides_of_zero_display()
-
         new_spins = [spin]
         update_scores_batch(new_spins)
-
         if current_spins and current_spins.strip():
             current_spins_list = current_spins.split(", ")
             updated_spins = current_spins_list + new_spins
         else:
             updated_spins = new_spins
-
         if len(updated_spins) > MAX_SPIN_HISTORY:
             updated_spins = updated_spins[-MAX_SPIN_HISTORY:]
             gr.Warning(f"Spin history truncated to {MAX_SPIN_HISTORY} spins to manage memory.")
-
         state.last_spins = updated_spins
         spins_text = ", ".join(updated_spins)
         logger.info("Added spin: %s, total spins: %d", spin, len(updated_spins))
@@ -662,21 +531,11 @@ def add_spin(spin: str, current_spins: str, last_spin_count: int) -> Tuple[str, 
         return current_spins, current_spins, format_spins_as_html(current_spins, last_spin_count), update_spin_counter(), render_sides_of_zero_display()
 
 def validate_spins_input(spins_input: str) -> Tuple[str, str]:
-    """
-    Validate and process spins input from textbox.
-
-    Args:
-        spins_input: Comma-separated string of spins.
-
-    Returns:
-        Tuple of validated spins string and last spins HTML.
-    """
     try:
         if not spins_input or not spins_input.strip():
             state.last_spins = []
             logger.info("Spins input cleared")
             return "", "<h4>Last Spins</h4><p>No spins entered.</p>"
-
         spins = [s.strip() for s in spins_input.split(",") if s.strip()]
         valid_spins = []
         for spin in spins:
@@ -684,15 +543,12 @@ def validate_spins_input(spins_input: str) -> Tuple[str, str]:
                 gr.Warning(f"Invalid spin: {spin}. Must be between 0 and 36.")
                 continue
             valid_spins.append(spin)
-
         if not valid_spins:
             logger.warning("No valid spins provided")
             return "", "<h4>Last Spins</h4><p>No valid spins entered.</p>"
-
         if len(valid_spins) > MAX_SPIN_HISTORY:
             valid_spins = valid_spins[-MAX_SPIN_HISTORY:]
             gr.Warning(f"Spin history truncated to {MAX_SPIN_HISTORY} spins.")
-
         update_scores_batch(valid_spins)
         state.last_spins = valid_spins
         spins_text = ", ".join(valid_spins)
@@ -704,36 +560,22 @@ def validate_spins_input(spins_input: str) -> Tuple[str, str]:
         return "", "<h4>Last Spins</h4><p>Error processing spins.</p>"
 
 def format_spins_as_html(spins_input: str, last_spin_count: int) -> str:
-    """
-    Format spins as HTML with color-coded badges and animations.
-
-    Args:
-        spins_input: Comma-separated string of spins.
-        last_spin_count: Number of spins to display.
-
-    Returns:
-        HTML string for last spins display.
-    """
     try:
         cache_key = f"format_spins_{hash(spins_input)}_{last_spin_count}"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached spins HTML")
             return ANALYSIS_CACHE[cache_key]
-
         if not spins_input or not spins_input.strip():
             result = "<h4>Last Spins</h4><p>No spins to display.</p>"
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         spins = spins_input.split(", ")
         last_spin_count = min(int(last_spin_count), MAX_SPIN_HISTORY)
         spins_to_show = spins[-last_spin_count:] if len(spins) > last_spin_count else spins
-
         if not spins_to_show:
             result = "<h4>Last Spins</h4><p>No spins to display.</p>"
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         html_output = '<h4>Last Spins</h4><div class="fade-in" style="display: flex; flex-wrap: wrap; gap: 5px;">'
         for i, spin in enumerate(spins_to_show):
             color = colors.get(spin, "black")
@@ -753,35 +595,24 @@ def format_spins_as_html(spins_input: str, last_spin_count: int) -> str:
         return "<h4>Last Spins</h4><p>Error displaying spins.</p>"
 
 def render_sides_of_zero_display() -> str:
-    """
-    Render an SVG-based roulette wheel showing left/right side hits and hot/cold numbers.
-
-    Returns:
-        HTML string with SVG visualization.
-    """
     try:
         cache_key = "sides_of_zero_display"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached sides of zero display")
             return ANALYSIS_CACHE[cache_key]
-
         left_count = state.side_scores.get("Left Side of Zero", 0)
         right_count = state.side_scores.get("Right Side of Zero", 0)
         total_spins = left_count + right_count
-
         sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
         cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score >= 0]
-
         hot_numbers_safe = [html.escape(num) for num in hot_numbers]
         cold_numbers_safe = [html.escape(num) for num in cold_numbers]
-
         svg_width = 300
         svg_height = 300
         center_x = svg_width / 2
         center_y = svg_height / 2
         radius = 100
-
         html_output = (
             '<div class="sides-of-zero-container" style="text-align: center; '
             'max-width: 100%; overflow-x: auto;">'
@@ -800,13 +631,11 @@ def render_sides_of_zero_display() -> str:
             '<animateTransform attributeName="transform" type="rotate" from="0 150 150" to="360 150 150" dur="10s" repeatCount="indefinite" />'
             '</svg>'
         )
-
         betting_sections = {
             "Voisins du Zero": list(set([0, 2, 3, 4, 7, 12, 15, 18, 19, 21, 22, 25, 26, 28, 29, 32, 35])),
             "Tiers du Cylindre": list(set([5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36])),
             "Orphelins": list(set([1, 6, 9, 14, 17, 20, 31, 34]))
         }
-
         html_output += '<h4>Betting Sections</h4><ul style="list-style-type: none; padding: 0;">'
         for name, numbers in betting_sections.items():
             hits = sum(state.scores.get(num, 0) for num in numbers)
@@ -816,7 +645,6 @@ def render_sides_of_zero_display() -> str:
                 f'<li>{name_safe}: {hits} hits (Numbers: {", ".join(numbers_safe)})</li>'
             )
         html_output += '</ul></div>'
-
         ANALYSIS_CACHE[cache_key] = html_output
         logger.debug("Rendered sides of zero display")
         return html_output
@@ -825,12 +653,6 @@ def render_sides_of_zero_display() -> str:
         return "<h4>Dealer’s Spin Tracker</h4><p>Error rendering wheel.</p>"
 
 def update_spin_counter() -> str:
-    """
-    Return the current number of spins as formatted HTML.
-
-    Returns:
-        HTML string with spin count.
-    """
     try:
         spin_count = len(state.last_spins)
         spin_count_safe = html.escape(str(spin_count))
@@ -845,17 +667,6 @@ def update_spin_counter() -> str:
         return '<span class="spin-counter">Error</span>'
 
 def generate_random_spins(num_spins: str, current_spins: str, last_spin_count: int) -> Tuple[str, str, str, str, str]:
-    """
-    Generate random spins and update displays.
-
-    Args:
-        num_spins: Number of spins to generate.
-        current_spins: Current spins as a comma-separated string.
-        last_spin_count: Number of spins to display.
-
-    Returns:
-        Tuple of updated spins, spins textbox, analysis output, spin counter, and sides of zero display.
-    """
     try:
         try:
             num_spins = int(num_spins)
@@ -864,20 +675,16 @@ def generate_random_spins(num_spins: str, current_spins: str, last_spin_count: i
         except (ValueError, TypeError) as e:
             gr.Warning(f"Invalid number of spins: {num_spins}. Using default of 5.")
             num_spins = 5
-
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
         update_scores_batch(new_spins)
-
         if current_spins and current_spins.strip():
             current_spins_list = current_spins.split(", ")
             updated_spins = current_spins_list + new_spins
         else:
             updated_spins = new_spins
-
         if len(updated_spins) > MAX_SPIN_HISTORY:
             updated_spins = updated_spins[-MAX_SPIN_HISTORY:]
             gr.Warning(f"Spin history truncated to {MAX_SPIN_HISTORY} spins.")
-
         state.last_spins = updated_spins
         spins_text = ", ".join(updated_spins)
         analysis = f"Generated {num_spins} random spins: {', '.join(new_spins)}"
@@ -901,12 +708,6 @@ def generate_random_spins(num_spins: str, current_spins: str, last_spin_count: i
         )
 
 def clear_spins() -> Tuple[str, str, str, str, str, str]:
-    """
-    Clear all spins and reset state.
-
-    Returns:
-        Tuple of cleared spins, spins textbox, analysis output, last spins HTML, spin counter, and sides of zero display.
-    """
     try:
         state.reset()
         logger.info("Cleared all spins")
@@ -931,12 +732,6 @@ def clear_spins() -> Tuple[str, str, str, str, str, str]:
         )
 
 def undo_last_spin() -> Tuple[str, str, str, str, str]:
-    """
-    Undo the last spin and update displays.
-
-    Returns:
-        Tuple of updated spins, spins textbox, last spins HTML, spin counter, and sides of zero display.
-    """
     try:
         if not state.spin_history:
             gr.Warning("No spins to undo.")
@@ -947,15 +742,12 @@ def undo_last_spin() -> Tuple[str, str, str, str, str]:
                 update_spin_counter(),
                 render_sides_of_zero_display()
             )
-
         last_action = state.spin_history.pop()
         spin_value = last_action["spin"]
         increments = last_action["increments"]
-
         for category, updates in increments.items():
             for name, count in updates.items():
                 getattr(state, category)[name] -= count
-
         state.last_spins = state.last_spins[:-1]
         spins_text = ", ".join(state.last_spins) if state.last_spins else ""
         logger.info("Undid spin: %d", spin_value)
@@ -977,31 +769,15 @@ def undo_last_spin() -> Tuple[str, str, str, str, str]:
             render_sides_of_zero_display()
         )
 
-# Placeholder for unit tests (to be implemented)
-"""
-def test_spin_functions():
-    assert validate_spins_input("1, 2, 3")[0] == "1, 2, 3"
-    assert format_spins_as_html("", 36) == "<h4>Last Spins</h4><p>No spins to display.</p>"
-    logger.info("Spin function tests passed")
-"""
-
 def best_even_money_bets() -> str:
-    """
-    Recommend the top even money bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_even_money_bets"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best even money bets")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_scores = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_scores if item[1] > 0]
-
         if not hits:
             recommendations.append("No even money bets have hit yet.")
         else:
@@ -1009,7 +785,6 @@ def best_even_money_bets() -> str:
             for i, (name, score) in enumerate(hits[:3], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best even money bets: %s", result)
@@ -1020,22 +795,14 @@ def best_even_money_bets() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def hot_bet_strategy() -> str:
-    """
-    Recommend bets on the hottest numbers and categories.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "hot_bet_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached hot bet strategy")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         hot_numbers = [item for item in sorted_scores if item[1] > 0]
-
         if not hot_numbers:
             recommendations.append("Hot Bet Strategy: No numbers have hit yet.")
         else:
@@ -1043,12 +810,10 @@ def hot_bet_strategy() -> str:
             for i, (num, score) in enumerate(hot_numbers[:5], 1):
                 num_safe = html.escape(str(num))
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
-
             even_money_hits = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
             if even_money_hits and even_money_hits[0][1] > 0:
                 name_safe = html.escape(even_money_hits[0][0])
                 recommendations.append(f"Top Even Money: {name_safe}: {even_money_hits[0][1]} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated hot bet strategy")
@@ -1059,22 +824,14 @@ def hot_bet_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def cold_bet_strategy() -> str:
-    """
-    Recommend bets on the coldest numbers and categories.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "cold_bet_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached cold bet strategy")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_scores = sorted(state.scores.items(), key=lambda x: x[1])
         cold_numbers = [item for item in sorted_scores if item[1] >= 0]
-
         if not cold_numbers:
             recommendations.append("Cold Bet Strategy: No data available.")
         else:
@@ -1082,12 +839,10 @@ def cold_bet_strategy() -> str:
             for i, (num, score) in enumerate(cold_numbers[:5], 1):
                 num_safe = html.escape(str(num))
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
-
             even_money_hits = sorted(state.even_money_scores.items(), key=lambda x: x[1])
             if even_money_hits:
                 name_safe = html.escape(even_money_hits[0][0])
                 recommendations.append(f"Coldest Even Money: {name_safe}: {even_money_hits[0][1]} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated cold bet strategy")
@@ -1098,22 +853,14 @@ def cold_bet_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_dozens() -> str:
-    """
-    Recommend the top dozen bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_dozens"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best dozens")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_dozens if item[1] > 0]
-
         if not hits:
             recommendations.append("No dozen bets have hit yet.")
         else:
@@ -1121,7 +868,6 @@ def best_dozens() -> str:
             for i, (name, score) in enumerate(hits[:2], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best dozens")
@@ -1132,22 +878,14 @@ def best_dozens() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_columns() -> str:
-    """
-    Recommend the top column bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_columns"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best columns")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_columns if item[1] > 0]
-
         if not hits:
             recommendations.append("No column bets have hit yet.")
         else:
@@ -1155,7 +893,6 @@ def best_columns() -> str:
             for i, (name, score) in enumerate(hits[:2], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best columns")
@@ -1166,18 +903,11 @@ def best_columns() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_even_money_and_top_18() -> str:
-    """
-    Recommend top even money bets and top 18 numbers.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_even_money_and_top_18"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best even money and top 18")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
         even_money_hits = [item for item in sorted_even_money if item[1] > 0]
@@ -1188,7 +918,6 @@ def best_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No even money bets have hit yet.")
-
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         top_numbers = [item for item in sorted_numbers if item[1] > 0]
         if top_numbers:
@@ -1198,7 +927,6 @@ def best_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
         else:
             recommendations.append("No numbers have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best even money and top 18")
@@ -1209,18 +937,11 @@ def best_even_money_and_top_18() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_dozens_and_top_18() -> str:
-    """
-    Recommend top dozen bets and top 18 numbers.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_dozens_and_top_18"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best dozens and top 18")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         dozen_hits = [item for item in sorted_dozens if item[1] > 0]
@@ -1231,7 +952,6 @@ def best_dozens_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No dozen bets have hit yet.")
-
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         top_numbers = [item for item in sorted_numbers if item[1] > 0]
         if top_numbers:
@@ -1241,7 +961,6 @@ def best_dozens_and_top_18() -> str:
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
         else:
             recommendations.append("No numbers have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best dozens and top 18")
@@ -1252,18 +971,11 @@ def best_dozens_and_top_18() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_columns_and_top_18() -> str:
-    """
-    Recommend top column bets and top 18 numbers.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_columns_and_top_18"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best columns and top 18")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         column_hits = [item for item in sorted_columns if item[1] > 0]
@@ -1274,7 +986,6 @@ def best_columns_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No column bets have hit yet.")
-
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         top_numbers = [item for item in sorted_numbers if item[1] > 0]
         if top_numbers:
@@ -1284,7 +995,6 @@ def best_columns_and_top_18() -> str:
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
         else:
             recommendations.append("No numbers have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best columns and top 18")
@@ -1295,18 +1005,11 @@ def best_columns_and_top_18() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_dozens_even_money_and_top_18() -> str:
-    """
-    Recommend top dozen, even money bets, and top 18 numbers.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_dozens_even_money_and_top_18"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best dozens, even money, and top 18")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         dozen_hits = [item for item in sorted_dozens if item[1] > 0]
@@ -1317,7 +1020,6 @@ def best_dozens_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No dozen bets have hit yet.")
-
         sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
         even_money_hits = [item for item in sorted_even_money if item[1] > 0]
         if even_money_hits:
@@ -1327,7 +1029,6 @@ def best_dozens_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No even money bets have hit yet.")
-
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         top_numbers = [item for item in sorted_numbers if item[1] > 0]
         if top_numbers:
@@ -1337,7 +1038,6 @@ def best_dozens_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
         else:
             recommendations.append("No numbers have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best dozens, even money, and top 18")
@@ -1348,18 +1048,11 @@ def best_dozens_even_money_and_top_18() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_columns_even_money_and_top_18() -> str:
-    """
-    Recommend top column, even money bets, and top 18 numbers.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_columns_even_money_and_top_18"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best columns, even money, and top 18")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         column_hits = [item for item in sorted_columns if item[1] > 0]
@@ -1370,7 +1063,6 @@ def best_columns_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No column bets have hit yet.")
-
         sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
         even_money_hits = [item for item in sorted_even_money if item[1] > 0]
         if even_money_hits:
@@ -1380,7 +1072,6 @@ def best_columns_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No even money bets have hit yet.")
-
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         top_numbers = [item for item in sorted_numbers if item[1] > 0]
         if top_numbers:
@@ -1390,7 +1081,6 @@ def best_columns_even_money_and_top_18() -> str:
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
         else:
             recommendations.append("No numbers have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best columns, even money, and top 18")
@@ -1401,18 +1091,11 @@ def best_columns_even_money_and_top_18() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def fibonacci_strategy() -> str:
-    """
-    Recommend bets using the Fibonacci strategy on dozens or columns.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "fibonacci_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached Fibonacci strategy")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         dozen_hits = [item for item in sorted_dozens if item[1] > 0]
@@ -1421,7 +1104,6 @@ def fibonacci_strategy() -> str:
             recommendations.append(f"Bet on {name_safe} (Fibonacci Progression): {dozen_hits[0][1]} hits")
         else:
             recommendations.append("No dozen hits yet for Fibonacci strategy.")
-
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         column_hits = [item for item in sorted_columns if item[1] > 0]
         if column_hits:
@@ -1429,7 +1111,6 @@ def fibonacci_strategy() -> str:
             recommendations.append(f"Bet on {name_safe} (Fibonacci Progression): {column_hits[0][1]} hits")
         else:
             recommendations.append("No column hits yet for Fibonacci strategy.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated Fibonacci strategy")
@@ -1440,22 +1121,14 @@ def fibonacci_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_streets() -> str:
-    """
-    Recommend the top street bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_streets"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best streets")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_streets if item[1] > 0]
-
         if not hits:
             recommendations.append("No street bets have hit yet.")
         else:
@@ -1463,7 +1136,6 @@ def best_streets() -> str:
             for i, (name, score) in enumerate(hits[:3], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best streets")
@@ -1474,22 +1146,14 @@ def best_streets() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_double_streets() -> str:
-    """
-    Recommend the top double street bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_double_streets"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best double streets")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_six_lines if item[1] > 0]
-
         if not hits:
             recommendations.append("No double street bets have hit yet.")
         else:
@@ -1497,7 +1161,6 @@ def best_double_streets() -> str:
             for i, (name, score) in enumerate(hits[:3], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best double streets")
@@ -1508,22 +1171,14 @@ def best_double_streets() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_corners() -> str:
-    """
-    Recommend the top corner bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_corners"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best corners")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_corners if item[1] > 0]
-
         if not hits:
             recommendations.append("No corner bets have hit yet.")
         else:
@@ -1531,7 +1186,6 @@ def best_corners() -> str:
             for i, (name, score) in enumerate(hits[:3], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best corners")
@@ -1542,22 +1196,14 @@ def best_corners() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_splits() -> str:
-    """
-    Recommend the top split bets based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_splits"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best splits")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_splits if item[1] > 0]
-
         if not hits:
             recommendations.append("No split bets have hit yet.")
         else:
@@ -1565,7 +1211,6 @@ def best_splits() -> str:
             for i, (name, score) in enumerate(hits[:3], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best splits")
@@ -1576,18 +1221,11 @@ def best_splits() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_dozens_and_streets() -> str:
-    """
-    Recommend top dozen and street bets.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_dozens_and_streets"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best dozens and streets")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         dozen_hits = [item for item in sorted_dozens if item[1] > 0]
@@ -1598,7 +1236,6 @@ def best_dozens_and_streets() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No dozen bets have hit yet.")
-
         sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
         street_hits = [item for item in sorted_streets if item[1] > 0]
         if street_hits:
@@ -1608,7 +1245,6 @@ def best_dozens_and_streets() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No street bets have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best dozens and streets")
@@ -1619,18 +1255,11 @@ def best_dozens_and_streets() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def best_columns_and_streets() -> str:
-    """
-    Recommend top column and street bets.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "best_columns_and_streets"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached best columns and streets")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         column_hits = [item for item in sorted_columns if item[1] > 0]
@@ -1641,7 +1270,6 @@ def best_columns_and_streets() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No column bets have hit yet.")
-
         sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
         street_hits = [item for item in sorted_streets if item[1] > 0]
         if street_hits:
@@ -1651,7 +1279,6 @@ def best_columns_and_streets() -> str:
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
         else:
             recommendations.append("No street bets have hit yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated best columns and streets")
@@ -1662,22 +1289,14 @@ def best_columns_and_streets() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def non_overlapping_double_street_strategy() -> str:
-    """
-    Recommend non-overlapping double street bets.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "non_overlapping_double_street_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached non-overlapping double street strategy")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_six_lines if item[1] > 0]
-
         if not hits:
             recommendations.append("No double street bets have hit yet.")
         else:
@@ -1693,7 +1312,6 @@ def non_overlapping_double_street_strategy() -> str:
                     selected.append(name)
                 if len(selected) >= 3:
                     break
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated non-overlapping double street strategy")
@@ -1704,22 +1322,14 @@ def non_overlapping_double_street_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def non_overlapping_corner_strategy() -> str:
-    """
-    Recommend non-overlapping corner bets.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "non_overlapping_corner_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached non-overlapping corner strategy")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_corners if item[1] > 0]
-
         if not hits:
             recommendations.append("No corner bets have hit yet.")
         else:
@@ -1735,7 +1345,6 @@ def non_overlapping_corner_strategy() -> str:
                     selected.append(name)
                 if len(selected) >= 5:
                     break
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated non-overlapping corner strategy")
@@ -1746,18 +1355,11 @@ def non_overlapping_corner_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def romanowksy_missing_dozen_strategy() -> str:
-    """
-    Recommend bets on numbers not in the least hit dozen.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "romanowksy_missing_dozen_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached Romanowksy missing dozen strategy")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1])
         recommendations = []
         if not sorted_dozens or sorted_dozens[0][1] == 0:
@@ -1771,7 +1373,6 @@ def romanowksy_missing_dozen_strategy() -> str:
                 num_safe = html.escape(str(num))
                 score = state.scores.get(num, 0)
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated Romanowksy missing dozen strategy")
@@ -1782,42 +1383,30 @@ def romanowksy_missing_dozen_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def fibonacci_to_fortune_strategy() -> str:
-    """
-    Recommend bets combining Fibonacci progression with multiple bet types.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "fibonacci_to_fortune_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached Fibonacci to Fortune strategy")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
         if sorted_even_money and sorted_even_money[0][1] > 0:
             name_safe = html.escape(sorted_even_money[0][0])
             recommendations.append(f"Even Money (Fibonacci): {name_safe}: {sorted_even_money[0][1]} hits")
-
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         if sorted_dozens and sorted_dozens[0][1] > 0:
             name_safe = html.escape(sorted_dozens[0][0])
             recommendations.append(f"Dozen (Fibonacci): {name_safe}: {sorted_dozens[0][1]} hits")
-
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         if sorted_columns and sorted_columns[0][1] > 0:
             name_safe = html.escape(sorted_columns[0][0])
             recommendations.append(f"Column (Fibonacci): {name_safe}: {sorted_columns[0][1]} hits")
-
         sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
         if sorted_six_lines and sorted_six_lines[0][1] > 0:
             name_safe = html.escape(sorted_six_lines[0][0])
             recommendations.append(f"Double Street (Fibonacci): {name_safe}: {sorted_six_lines[0][1]} hits")
-
         if not recommendations:
             recommendations.append("Fibonacci to Fortune: No data available.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated Fibonacci to Fortune strategy")
@@ -1828,22 +1417,14 @@ def fibonacci_to_fortune_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def three_eight_six_rising_martingale() -> str:
-    """
-    Recommend street bets using a rising Martingale progression.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "three_eight_six_rising_martingale"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached 3-8-6 Rising Martingale strategy")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         hits = [item for item in sorted_streets if item[1] > 0]
-
         if not hits:
             recommendations.append("3-8-6 Rising Martingale: No street bets have hit yet.")
         else:
@@ -1851,7 +1432,6 @@ def three_eight_six_rising_martingale() -> str:
             for i, (name, score) in enumerate(hits[:3], 1):
                 name_safe = html.escape(name)
                 recommendations.append(f"{i}. {name_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated 3-8-6 Rising Martingale strategy")
@@ -1862,18 +1442,11 @@ def three_eight_six_rising_martingale() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def one_dozen_one_column_strategy() -> str:
-    """
-    Recommend one dozen and one column bet based on hit frequency.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "one_dozen_one_column_strategy"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached 1 Dozen + 1 Column strategy")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
         if sorted_dozens and sorted_dozens[0][1] > 0:
@@ -1881,14 +1454,12 @@ def one_dozen_one_column_strategy() -> str:
             recommendations.append(f"Bet on Dozen: {name_safe}: {sorted_dozens[0][1]} hits")
         else:
             recommendations.append("No dozen hits yet.")
-
         sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
         if sorted_columns and sorted_columns[0][1] > 0:
             name_safe = html.escape(sorted_columns[0][0])
             recommendations.append(f"Bet on Column: {name_safe}: {sorted_columns[0][1]} hits")
         else:
             recommendations.append("No column hits yet.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated 1 Dozen + 1 Column strategy")
@@ -1899,22 +1470,14 @@ def one_dozen_one_column_strategy() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def top_pick_18_numbers_without_neighbours() -> str:
-    """
-    Recommend the top 18 numbers without including neighbors.
-
-    Returns:
-        HTML string with recommendations.
-    """
     try:
         cache_key = "top_pick_18_numbers_without_neighbours"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached top 18 numbers without neighbors")
             return ANALYSIS_CACHE[cache_key]
-
         sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         recommendations = []
         top_numbers = [item for item in sorted_numbers if item[1] > 0]
-
         if not top_numbers:
             recommendations.append("Top Pick 18 Numbers: No numbers have hit yet.")
         else:
@@ -1922,7 +1485,6 @@ def top_pick_18_numbers_without_neighbours() -> str:
             for i, (num, score) in enumerate(top_numbers[:18], 1):
                 num_safe = html.escape(str(num))
                 recommendations.append(f"{i}. Number {num_safe}: {score} hits")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated top 18 numbers without neighbors")
@@ -1933,32 +1495,23 @@ def top_pick_18_numbers_without_neighbours() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def top_numbers_with_neighbours_tiered() -> str:
-    """
-    Recommend top numbers with their neighbors in a tiered format.
-
-    Returns:
-        HTML string with recommendations and table.
-    """
     try:
         cache_key = "top_numbers_with_neighbours_tiered"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached top numbers with neighbors tiered")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
         straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
         straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
-
         if straight_up_df.empty:
             recommendations.append("<p>Top Numbers with Neighbours (Tiered): No numbers have hit yet.</p>")
             result = "\n".join(recommendations)
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         table_html = (
             '<table border="1" style="border-collapse: collapse; text-align: center; '
             'font-family: Arial, sans-serif; width: 100%; max-width: 300px;">'
-            '<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>'
+            '<tr><th>Hit</th><th>Left N.</th><th>Right N.</tr>'
         )
         for _, row in straight_up_df.iterrows():
             num = str(row["Number"])
@@ -1968,13 +1521,10 @@ def top_numbers_with_neighbours_tiered() -> str:
             num_safe = html.escape(num)
             table_html += f"<tr><td>{num_safe}</td><td>{left_safe}</td><td>{right_safe}</td></tr>"
         table_html += "</table>"
-
         recommendations.append("<h3>Strongest Numbers:</h3>")
         recommendations.append(table_html)
-
         num_to_take = min(8, len(straight_up_df))
         top_numbers = straight_up_df["Number"].head(num_to_take).tolist()
-
         all_numbers = set()
         number_scores = {}
         for num in top_numbers:
@@ -1986,7 +1536,6 @@ def top_numbers_with_neighbours_tiered() -> str:
                 all_numbers.add(left)
             if right is not None:
                 all_numbers.add(right)
-
         number_groups = []
         for num in top_numbers:
             left, right = current_neighbors.get(num, (None, None))
@@ -1996,17 +1545,14 @@ def top_numbers_with_neighbours_tiered() -> str:
             if right is not None:
                 group.append(right)
             number_groups.append((state.scores[num], group))
-
         number_groups.sort(key=lambda x: x[0], reverse=True)
         ordered_numbers = []
         for _, group in number_groups:
             ordered_numbers.extend(group)
-
         ordered_numbers = ordered_numbers[:24]
         top_8 = ordered_numbers[:8]
         next_8 = ordered_numbers[8:16]
         last_8 = ordered_numbers[16:24]
-
         recommendations.append("<h3>Top Numbers with Neighbours (Tiered):</h3>")
         recommendations.append("<p><strong>Top Tier (Yellow):</strong></p>")
         for i, num in enumerate(top_8, 1):
@@ -2014,21 +1560,18 @@ def top_numbers_with_neighbours_tiered() -> str:
             num_safe = html.escape(str(num))
             score_safe = html.escape(str(score))
             recommendations.append(f"<p>{i}. Number {num_safe} (Score: {score_safe})</p>")
-
         recommendations.append("<p><strong>Second Tier (Blue):</strong></p>")
         for i, num in enumerate(next_8, 1):
             score = number_scores.get(num, "Neighbor")
             num_safe = html.escape(str(num))
             score_safe = html.escape(str(score))
             recommendations.append(f"<p>{i}. Number {num_safe} (Score: {score_safe})</p>")
-
         recommendations.append("<p><strong>Third Tier (Green):</strong></p>")
         for i, num in enumerate(last_8, 1):
             score = number_scores.get(num, "Neighbor")
             num_safe = html.escape(str(num))
             score_safe = html.escape(str(score))
             recommendations.append(f"<p>{i}. Number {num_safe} (Score: {score_safe})</p>")
-
         result = "\n".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated top numbers with neighbors tiered")
@@ -2039,24 +1582,12 @@ def top_numbers_with_neighbours_tiered() -> str:
         return "<p>Error generating recommendations.</p>"
 
 def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int) -> Tuple[str, Dict[str, str]]:
-    """
-    Recommend numbers and their neighbors based on hit frequency, including strategy suggestions.
-
-    Args:
-        neighbours_count: Number of neighbors to include on each side.
-        strong_numbers_count: Number of strong numbers to highlight.
-
-    Returns:
-        Tuple of HTML recommendations and suggestions dictionary.
-    """
     try:
         cache_key = f"neighbours_of_strong_number_{neighbours_count}_{strong_numbers_count}"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached neighbours of strong number")
             return ANALYSIS_CACHE[cache_key]
-
         recommendations = []
-
         try:
             neighbours_count = int(neighbours_count)
             strong_numbers_count = int(strong_numbers_count)
@@ -2070,7 +1601,6 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
                 f"Error: Invalid input - {html.escape(str(e))}. Please use positive integers.",
                 {}
             )
-
         if not isinstance(current_neighbors, dict):
             gr.Warning("Neighbor data is not properly configured.")
             return (
@@ -2084,26 +1614,18 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
                     "Error: Neighbor data is malformed. Contact support.",
                     {}
                 )
-
-        logger.debug(
-            "neighbours_of_strong_number: Starting with neighbours_count=%d, strong_numbers_count=%d",
-            neighbours_count, strong_numbers_count
-        )
         sorted_numbers = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
         numbers_hits = [item for item in sorted_numbers if item[1] > 0]
-
         if not numbers_hits:
             recommendations.append("Neighbours of Strong Number: No numbers have hit yet.")
             result = ("\n".join(recommendations), {})
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         strong_numbers_count = min(strong_numbers_count, len(numbers_hits))
         top_numbers = [item[0] for item in numbers_hits[:strong_numbers_count]]
         top_scores = {item[0]: item[1] for item in numbers_hits[:strong_numbers_count]}
         selected_numbers = set(top_numbers)
         neighbors_set = set()
-
         for strong_number in top_numbers:
             if strong_number not in current_neighbors:
                 strong_number_safe = html.escape(str(strong_number))
@@ -2127,14 +1649,9 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
                     current_number = right
                 else:
                     break
-
         neighbors_set = neighbors_set - selected_numbers
-        logger.debug("Strong numbers: %s", sorted(list(selected_numbers)))
-        logger.debug("Neighbors: %s", sorted(list(neighbors_set)))
-
         bet_numbers = list(selected_numbers) + list(neighbors_set)
         even_money_scores, dozen_scores, column_scores = state.calculate_aggregated_scores_for_spins(bet_numbers)
-
         sorted_even_money = sorted(even_money_scores.items(), key=lambda x: (-x[1], x[0]))
         best_even_money = sorted_even_money[0] if sorted_even_money else ("None", 0)
         best_even_money_name, best_even_money_hits = best_even_money
@@ -2144,18 +1661,15 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
         ]
         even_money_tie_text = f" (Tied with {', '.join(even_money_ties)})" if even_money_ties else ""
         best_even_money_name_safe = html.escape(best_even_money_name)
-
         best_dozen = max(dozen_scores.items(), key=lambda x: x[1], default=("None", 0))
         best_dozen_name, best_dozen_hits = best_dozen
         best_column = max(column_scores.items(), key=lambda x: x[1], default=("None", 0))
         best_column_name, best_column_hits = best_column
-
         suggestion = ""
         winner_category = ""
         best_bet_tie_text = ""
         sorted_dozens = sorted(dozen_scores.items(), key=lambda x: (-x[1], x[0]))
         sorted_columns = sorted(column_scores.items(), key=lambda x: (-x[1], x[0]))
-
         if best_dozen_hits > best_column_hits:
             suggestion = f"{html.escape(best_dozen_name)}: {best_dozen_hits}"
             winner_category = "dozen"
@@ -2194,7 +1708,6 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
                 winner_category = "dozen"
                 if best_dozen_hits == best_column_hits and best_column_hits > 0:
                     best_bet_tie_text = f" (Tied with {html.escape(best_column_name)}: {best_column_hits})"
-
         two_winners_suggestion = ""
         two_winners_tie_text = ""
         if winner_category == "dozen":
@@ -2229,25 +1742,21 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
                     two_winners_tie_text = f" (Tied with {', '.join(ties)})" if ties else ""
             else:
                 two_winners_suggestion = "Play Two Columns: Not enough hits to suggest two columns."
-
         suggestions = {
             "best_even_money": f"{best_even_money_name_safe}: {best_even_money_hits}{even_money_tie_text}",
             "best_bet": f"{suggestion}{best_bet_tie_text}",
             "play_two": f"{two_winners_suggestion}{two_winners_tie_text}"
         }
-
         recommendations.append("Suggestions:")
         recommendations.append(f"Best Even Money Bet: {best_even_money_name_safe}: {best_even_money_hits}{even_money_tie_text}")
         recommendations.append(f"Best Bet: {suggestion}{best_bet_tie_text}")
         recommendations.append(f"{two_winners_suggestion}{two_winners_tie_text}")
-
         recommendations.append(f"\nTop {strong_numbers_count} Strongest Numbers and Their Neighbours:")
         recommendations.append("\nStrongest Numbers (Yellow):")
         for i, num in enumerate(sorted(top_numbers), 1):
             score = top_scores[num]
             num_safe = html.escape(str(num))
             recommendations.append(f"{i}. Number {num_safe} (Score: {score})")
-
         if neighbors_set:
             recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan):")
             for i, num in enumerate(sorted(list(neighbors_set)), 1):
@@ -2255,7 +1764,6 @@ def neighbours_of_strong_number(neighbours_count: int, strong_numbers_count: int
                 recommendations.append(f"{i}. Number {num_safe}")
         else:
             recommendations.append(f"\nNeighbours ({neighbours_count} Left + {neighbours_count} Right, Cyan): None")
-
         result = ("\n".join(recommendations), suggestions)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated neighbours of strong number")
@@ -2276,26 +1784,11 @@ def dozen_tracker(
     follow_up_spins: int,
     sequence_alert_enabled: bool
 ) -> Tuple[str, str, str]:
-    """
-    Track dozen hits for the last N spins, with alerts for consecutive hits and sequence matching.
-
-    Args:
-        num_spins_to_check: Number of spins to track.
-        consecutive_hits_threshold: Threshold for consecutive hits alert.
-        alert_enabled: Whether to enable consecutive hits alerts.
-        sequence_length: Length of sequence to match.
-        follow_up_spins: Number of follow-up spins to track.
-        sequence_alert_enabled: Whether to enable sequence matching alerts.
-
-    Returns:
-        Tuple of text summary, dozen tracker HTML, and sequence matching HTML.
-    """
     try:
         cache_key = f"dozen_tracker_{num_spins_to_check}_{consecutive_hits_threshold}_{sequence_length}_{follow_up_spins}"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached dozen tracker output")
             return ANALYSIS_CACHE[cache_key]
-
         try:
             num_spins_to_check = int(num_spins_to_check)
             consecutive_hits_threshold = int(consecutive_hits_threshold)
@@ -2315,10 +1808,7 @@ def dozen_tracker(
                 f"<p>Error: Invalid inputs - {html.escape(str(e))}.</p>",
                 f"<p>Error: Invalid inputs - {html.escape(str(e))}.</p>"
             )
-
         recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
-        logger.debug("dozen_tracker: Tracking %d spins, recent_spins length=%d", num_spins_to_check, len(recent_spins))
-
         if not recent_spins:
             result = (
                 "Dozen Tracker: No spins recorded yet.",
@@ -2327,7 +1817,6 @@ def dozen_tracker(
             )
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         dozen_pattern = []
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0, "Not in Dozen": 0}
         for spin in recent_spins:
@@ -2346,7 +1835,6 @@ def dozen_tracker(
                 if not found:
                     dozen_pattern.append("Not in Dozen")
                     dozen_counts["Not in Dozen"] += 1
-
         full_dozen_pattern = []
         for spin in state.last_spins:
             spin_value = int(spin)
@@ -2361,14 +1849,10 @@ def dozen_tracker(
                         break
                 if not found:
                     full_dozen_pattern.append("Not in Dozen")
-
         recommendations = []
         if alert_enabled:
             last_three_spins = state.last_spins[-3:] if len(state.last_spins) >= 3 else state.last_spins
-            logger.debug("dozen_tracker: Checking last 3 spins: %s", last_three_spins)
-
             if len(last_three_spins) < 3:
-                logger.debug("dozen_tracker: Not enough spins for consecutive hits")
                 state.last_dozen_alert_index = -1
                 state.last_alerted_spins = None
             else:
@@ -2386,9 +1870,6 @@ def dozen_tracker(
                                 break
                         if not found:
                             last_three_dozens.append("Not in Dozen")
-
-                logger.debug("dozen_tracker: Last 3 dozens: %s", last_three_dozens)
-
                 if (
                     last_three_dozens[0] == last_three_dozens[1] == last_three_dozens[2]
                     and last_three_dozens[0] != "Not in Dozen"
@@ -2404,7 +1885,6 @@ def dozen_tracker(
                 else:
                     state.last_dozen_alert_index = -1
                     state.last_alerted_spins = None
-
         sequence_matches = []
         sequence_follow_ups = []
         sequence_recommendations = []
@@ -2414,10 +1894,8 @@ def dozen_tracker(
                 if len(full_dozen_pattern) >= sequence_length
                 else full_dozen_pattern
             )
-            logger.debug("dozen_tracker: Checking last %d spins for sequence: %s", sequence_length, last_x_spins)
-
             if len(last_x_spins) < sequence_length:
-                logger.debug("dozen_tracker: Not enough spins for sequence length %d", sequence_length)
+                pass
             else:
                 last_x_pattern = tuple(last_x_spins)
                 sequences = []
@@ -2425,9 +1903,6 @@ def dozen_tracker(
                     seq = tuple(dozen_pattern[i:i + sequence_length])
                     if i + sequence_length <= len(dozen_pattern) - sequence_length:
                         sequences.append((i, seq))
-
-                logger.debug("dozen_tracker: Found %d sequences of length %d", len(sequences), sequence_length)
-
                 for start_idx, seq in sequences:
                     if seq == last_x_pattern and seq not in state.alerted_patterns:
                         sequence_matches.append((start_idx, seq))
@@ -2437,7 +1912,6 @@ def dozen_tracker(
                             follow_up = dozen_pattern[follow_up_start:follow_up_end]
                             sequence_follow_ups.append((start_idx, seq, follow_up))
                         state.alerted_patterns.add(seq)
-
                 if sequence_matches:
                     latest_match = max(sequence_matches, key=lambda x: x[0])
                     latest_start_idx, matched_sequence = latest_match
@@ -2477,7 +1951,6 @@ def dozen_tracker(
                                 )
                 else:
                     state.alerted_patterns.clear()
-
         recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
         dozen_pattern_safe = [html.escape(p) for p in dozen_pattern]
         recommendations.append("Dozen History: " + ", ".join(dozen_pattern_safe))
@@ -2485,7 +1958,6 @@ def dozen_tracker(
         for name, count in dozen_counts.items():
             name_safe = html.escape(name)
             recommendations.append(f"{name_safe}: {count} hits")
-
         html_output = (
             f'<h4>Dozen Tracker (Last {len(recent_spins)} Spins):</h4>'
             '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
@@ -2512,7 +1984,6 @@ def dozen_tracker(
             name_safe = html.escape(name)
             html_output += f'<li>{name_safe}: {count} hits</li>'
         html_output += '</ul>'
-
         sequence_html_output = "<h4>Sequence Matching Results:</h4>"
         if not sequence_alert_enabled:
             sequence_html_output += "<p>Sequence matching is disabled. Enable it to see results.</p>"
@@ -2539,7 +2010,6 @@ def dozen_tracker(
                     else:
                         sequence_html_output += f"<li>{rec_safe}</li>"
                 sequence_html_output += "</ul>"
-
         result = ("\n".join(recommendations), html_output, sequence_html_output)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated dozen tracker output")
@@ -2567,21 +2037,6 @@ def even_money_tracker(
     identical_traits_enabled: bool,
     consecutive_identical_count: int
 ) -> Tuple[str, str]:
-    """
-    Track even money bets and their combinations, with optional identical traits tracking.
-
-    Args:
-        spins_to_check: Number of spins to track.
-        consecutive_hits_threshold: Threshold for consecutive hits alert.
-        alert_enabled: Whether to enable alerts.
-        combination_mode: "And" or "Or" for combining categories.
-        track_red, track_black, track_even, track_odd, track_low, track_high: Categories to track.
-        identical_traits_enabled: Whether to track consecutive identical traits.
-        consecutive_identical_count: Number of consecutive identical traits to alert.
-
-    Returns:
-        Tuple of text summary and HTML output.
-    """
     try:
         cache_key = (
             f"even_money_tracker_{spins_to_check}_{consecutive_hits_threshold}_"
@@ -2590,18 +2045,15 @@ def even_money_tracker(
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached even money tracker output")
             return ANALYSIS_CACHE[cache_key]
-
         spins_to_check = int(spins_to_check) if spins_to_check and str(spins_to_check).strip().isdigit() else 5
         consecutive_hits_threshold = int(consecutive_hits_threshold) if consecutive_hits_threshold and str(consecutive_hits_threshold).strip().isdigit() else 3
         consecutive_identical_count = int(consecutive_identical_count) if consecutive_identical_count and str(consecutive_identical_count).strip().isdigit() else 2
-
         if spins_to_check < 1 or consecutive_hits_threshold < 1 or consecutive_identical_count < 1:
             gr.Warning("Inputs must be at least 1.")
             return (
                 "Error: Inputs must be at least 1.",
                 "<div class='even-money-tracker-container'><p>Error: Inputs must be at least 1.</p></div>"
             )
-
         recent_spins = state.last_spins[-spins_to_check:] if len(state.last_spins) >= spins_to_check else state.last_spins
         if not recent_spins:
             result = (
@@ -2610,7 +2062,6 @@ def even_money_tracker(
             )
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         categories_to_track = []
         if track_red:
             categories_to_track.append("Red")
@@ -2624,10 +2075,8 @@ def even_money_tracker(
             categories_to_track.append("Low")
         if track_high:
             categories_to_track.append("High")
-
         if not categories_to_track:
             categories_to_track = ["Red", "Black", "Even", "Odd", "Low", "High"]
-
         pattern = []
         category_counts = {name: 0 for name in EVEN_MONEY.keys()}
         trait_combinations = []
@@ -2638,24 +2087,21 @@ def even_money_tracker(
                 if spin_value in numbers:
                     spin_categories.append(name)
                     category_counts[name] += 1
-
             if combination_mode == "And":
                 if all(cat in spin_categories for cat in categories_to_track):
                     pattern.append("Hit")
                 else:
                     pattern.append("Miss")
-            else:  # Or mode
+            else:
                 if any(cat in spin_categories for cat in categories_to_track):
                     pattern.append("Hit")
                 else:
                     pattern.append("Miss")
-
             color = "Red" if "Red" in spin_categories else ("Black" if "Black" in spin_categories else "None")
             parity = "Even" if "Even" in spin_categories else ("Odd" if "Odd" in spin_categories else "None")
             range_ = "Low" if "Low" in spin_categories else ("High" if "High" in spin_categories else "None")
             trait_combination = f"{color}, {parity}, {range_}"
             trait_combinations.append(trait_combination)
-
         current_streak = 1 if pattern and pattern[0] == "Hit" else 0
         max_streak = current_streak
         max_streak_start = 0
@@ -2667,7 +2113,6 @@ def even_money_tracker(
                     max_streak_start = i - current_streak + 1
             else:
                 current_streak = 1 if pattern[i] == "Hit" else 0
-
         identical_recommendations = []
         identical_html_output = ""
         betting_recommendation = None
@@ -2683,7 +2128,6 @@ def even_money_tracker(
                 else:
                     identical_streak = 1
                     identical_streak_start = i
-
             if identical_matches:
                 latest_match = max(identical_matches, key=lambda x: x[0])
                 start_idx, matched_traits = latest_match
@@ -2718,7 +2162,6 @@ def even_money_tracker(
                 )
             else:
                 identical_html_output = "<p>No identical trait sequences found yet.</p>"
-
         recommendations = []
         recommendations.append(f"Even Money Tracker (Last {len(recent_spins)} Spins):")
         categories_to_track_safe = [html.escape(cat) for cat in categories_to_track]
@@ -2731,7 +2174,6 @@ def even_money_tracker(
         for name, count in category_counts.items():
             name_safe = html.escape(name)
             recommendations.append(f"{name_safe}: {count} hits")
-
         html_output = (
             f"<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>"
             f"<p>Tracking: {', '.join(categories_to_track_safe)} (Mode: {combination_mode})</p>"
@@ -2752,7 +2194,6 @@ def even_money_tracker(
             name_safe = html.escape(name)
             html_output += f'<li>{name_safe}: {count} hits</li>'
         html_output += '</ul>'
-
         result = ("\n".join(recommendations), html_output)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated even money tracker output")
@@ -2766,24 +2207,15 @@ def even_money_tracker(
         )
 
 def validate_hot_cold_numbers() -> str:
-    """
-    Validate and display hot and cold numbers based on casino data.
-
-    Returns:
-        HTML string with hot and cold number suggestions.
-    """
     try:
         cache_key = "validate_hot_cold_numbers"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached hot/cold numbers")
             return ANALYSIS_CACHE[cache_key]
-
         if not state.use_casino_winners or not state.casino_data.get("hot_numbers") or not state.casino_data.get("cold_numbers"):
             return "<p>No casino data available for hot/cold numbers.</p>"
-
         hot_numbers = state.casino_data["hot_numbers"]
         cold_numbers = state.casino_data["cold_numbers"]
-
         recommendations = []
         recommendations.append("<h4>Hot Numbers (🔥):</h4>")
         if hot_numbers:
@@ -2792,7 +2224,6 @@ def validate_hot_cold_numbers() -> str:
                 recommendations.append(f"Number {num_safe}: {hits} hits")
         else:
             recommendations.append("No hot numbers available.")
-
         recommendations.append("<h4>Cold Numbers (❄️):</h4>")
         if cold_numbers:
             for num, hits in sorted(cold_numbers.items(), key=lambda x: x[1]):
@@ -2800,7 +2231,6 @@ def validate_hot_cold_numbers() -> str:
                 recommendations.append(f"Number {num_safe}: {hits} hits")
         else:
             recommendations.append("No cold numbers available.")
-
         result = "<br>".join(recommendations)
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated hot/cold numbers")
@@ -2811,15 +2241,6 @@ def validate_hot_cold_numbers() -> str:
         return "<p>Error generating hot/cold numbers.</p>"
 
 def play_specific_numbers(numbers: str) -> Tuple[str, float, float, float, str, str, str]:
-    """
-    Simulate betting on specific numbers and update progression.
-
-    Args:
-        numbers: Comma-separated string of numbers to bet on.
-
-    Returns:
-        Tuple of analysis output, bankroll, current bet, next bet, message, status, and status color.
-    """
     try:
         if not numbers or not numbers.strip():
             gr.Warning("No numbers provided to bet on.")
@@ -2832,7 +2253,6 @@ def play_specific_numbers(numbers: str) -> Tuple[str, float, float, float, str, 
                 state.status,
                 state.status_color
             )
-
         bet_numbers = [int(n.strip()) for n in numbers.split(",") if n.strip().isdigit() and 0 <= int(n.strip()) <= 36]
         if not bet_numbers:
             gr.Warning("Invalid numbers provided. Must be between 0 and 36.")
@@ -2845,7 +2265,6 @@ def play_specific_numbers(numbers: str) -> Tuple[str, float, float, float, str, 
                 state.status,
                 state.status_color
             )
-
         if not state.last_spins:
             gr.Warning("No spins recorded to evaluate bet.")
             return (
@@ -2857,16 +2276,13 @@ def play_specific_numbers(numbers: str) -> Tuple[str, float, float, float, str, 
                 state.status,
                 state.status_color
             )
-
         last_spin = int(state.last_spins[-1])
         won = last_spin in bet_numbers
         bankroll, current_bet, next_bet, message, status, status_color = state.update_progression(won)
-
         analysis = f"Bet on numbers: {', '.join(map(str, bet_numbers))}\n"
         analysis += f"Last spin: {last_spin}\n"
         analysis += f"Result: {'Win' if won else 'Loss'}\n"
         analysis += f"Bankroll: {bankroll:.2f}, Next Bet: {next_bet:.2f}"
-
         logger.info("Played specific numbers: won=%s, bankroll=%.2f", won, bankroll)
         return (analysis, bankroll, current_bet, next_bet, message, status, status_color)
     except Exception as e:
@@ -2883,32 +2299,22 @@ def play_specific_numbers(numbers: str) -> Tuple[str, float, float, float, str, 
         )
 
 def summarize_spin_traits() -> str:
-    """
-    Summarize the traits of the last spin (color, parity, range).
-
-    Returns:
-        HTML string with spin traits.
-    """
     try:
         cache_key = "summarize_spin_traits"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached spin traits")
             return ANALYSIS_CACHE[cache_key]
-
         if not state.last_spins:
             result = "<p>No spins recorded yet.</p>"
             ANALYSIS_CACHE[cache_key] = result
             return result
-
         last_spin = int(state.last_spins[-1])
         traits = []
         for name, numbers in EVEN_MONEY.items():
             if last_spin in numbers:
                 traits.append(name)
-
         color = colors.get(str(last_spin), "unknown")
         traits.append(f"Color: {color.capitalize()}")
-
         traits_safe = [html.escape(t) for t in traits]
         result = f"<h4>Last Spin Traits (Spin: {last_spin}):</h4><p>{', '.join(traits_safe)}</p>"
         ANALYSIS_CACHE[cache_key] = result
@@ -2920,18 +2326,11 @@ def summarize_spin_traits() -> str:
         return "<p>Error summarizing spin traits.</p>"
 
 def create_dynamic_table() -> str:
-    """
-    Create a dynamic table of spin statistics (hits per number, category).
-
-    Returns:
-        HTML string with table.
-    """
     try:
         cache_key = "create_dynamic_table"
         if cache_key in ANALYSIS_CACHE:
             logger.info("Returning cached dynamic table")
             return ANALYSIS_CACHE[cache_key]
-
         data = []
         for num in range(37):
             row = {"Number": num, "Hits": state.scores.get(num, 0)}
@@ -2940,7 +2339,6 @@ def create_dynamic_table() -> str:
             row["Dozens"] = ", ".join(categories.get("dozens", []))
             row["Columns"] = ", ".join(categories.get("columns", []))
             data.append(row)
-
         df = pd.DataFrame(data)
         table_html = (
             '<table border="1" style="border-collapse: collapse; width: 100%; max-width: 600px; '
@@ -2958,7 +2356,6 @@ def create_dynamic_table() -> str:
                 f"<td>{dozens_safe}</td><td>{columns_safe}</td></tr>"
             )
         table_html += "</table>"
-
         result = f"<h4>Spin Statistics Table</h4>{table_html}"
         ANALYSIS_CACHE[cache_key] = result
         logger.info("Generated dynamic table")
@@ -2968,7 +2365,6 @@ def create_dynamic_table() -> str:
         gr.Warning(f"Error generating dynamic table: {str(e)}")
         return "<p>Error generating dynamic table.</p>"
 
-# Gradio Interface Setup
 css = """
 body { font-family: Arial, sans-serif; background-color: #f0f0f0; }
 .roulette-button.green { background-color: #2e7d32; }
@@ -3005,7 +2401,6 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
             spin_counter_output = gr.HTML(label="Spin Counter")
             sides_of_zero_output = gr.HTML(label="Sides of Zero Display")
             analysis_output = gr.Textbox(label="Analysis Output", lines=5)
-
     with gr.Row():
         with gr.Column(scale=1):
             gr.Markdown("## Betting Configuration")
@@ -3044,7 +2439,6 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
             next_bet_output = gr.Number(label="Next Bet")
             message_output = gr.Textbox(label="Message", lines=2)
             status_output = gr.Textbox(label="Status", lines=1)
-
     with gr.Row():
         with gr.Column():
             gr.Markdown("## Strategy Recommendations")
@@ -3105,7 +2499,6 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
                     strong_numbers_count_input = gr.Slider(label="Strong Numbers Count", minimum=1, maximum=10, value=5, step=1)
                     neighbors_strong_output = gr.HTML(label="Neighbors of Strong Number")
                     neighbors_strong_button = gr.Button("Generate Neighbors Strategy")
-
     with gr.Row():
         with gr.Column():
             gr.Markdown("## Trackers")
@@ -3137,15 +2530,12 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
                     even_money_tracker_button = gr.Button("Run Even Money Tracker")
                     even_money_tracker_text_output = gr.Textbox(label="Even Money Tracker Summary", lines=5)
                     even_money_tracker_html_output = gr.HTML(label="Even Money Tracker Visualization")
-
     with gr.Row():
         with gr.Column():
             gr.Markdown("## Additional Analysis")
             hot_cold_output = gr.HTML(label="Hot/Cold Numbers")
             spin_traits_output = gr.HTML(label="Last Spin Traits")
             dynamic_table_output = gr.HTML(label="Spin Statistics Table")
-
-    # Event Handlers
     add_spin_button.click(
         fn=add_spin,
         inputs=[spin_input, spins_textbox, last_spin_count],
@@ -3216,8 +2606,6 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
         ],
         outputs=[even_money_tracker_text_output, even_money_tracker_html_output]
     )
-
-    # Auto-update strategy outputs on spin change
     spins_textbox.change(
         fn=lambda: [
             best_even_money_bets(),
@@ -3282,7 +2670,6 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
         ]
     )
 
-# Launch the interface
 if __name__ == "__main__":
     try:
         initialize_betting_mappings()
@@ -3294,14 +2681,5 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error("Failed to launch Gradio interface: %s", e)
         raise
-
-# Placeholder for unit tests (to be implemented)
-"""
-def test_trackers():
-    assert even_money_tracker(5, 3, False, "Or", True, True, True, True, True, True, False, 2)[0].startswith("Even Money Tracker")
-    assert dozen_tracker(5, 3, False, 3, 3, False)[0].startswith("Dozen Tracker")
-    logger.info("Tracker tests passed")
-"""
-
-# End of roulette_spin_analyzer.py
 ```
+        
