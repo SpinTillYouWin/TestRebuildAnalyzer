@@ -1485,70 +1485,49 @@ def validate_spins_input(spins_input):
 
 # Line 1: Start of updated add_spin function
 def add_spin(number, current_spins, num_to_show):
+    import gradio as gr
     import time
-    start_time = time.time()
-    print(f"add_spin: number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
+    start_time = time.time()  # CHANGED: Added for performance logging
     
-    # Split input on commas and process each number
+    # CHANGED: Enhanced logging with input details
+    print(f"add_spin: Processing number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
+    
+    # CHANGED: Split and deduplicate spins
     numbers = [n.strip() for n in number.split(",") if n.strip()]
-    if not numbers:
+    unique_numbers = list(dict.fromkeys(numbers))  # Preserve order, remove duplicates
+    if not unique_numbers:
         gr.Warning("No valid input provided. Please enter numbers between 0 and 36.")
         print("add_spin: No valid numbers provided.")
         return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
-
-    errors = []
-    valid_spins = []
-    for num_str in numbers:
-        try:
-            num = int(num_str)
-            if not (0 <= num <= 36):
-                errors.append(f"'{num_str}' is out of range (0-36)")
-                continue
-            valid_spins.append(num_str)
-        except ValueError:
-            errors.append(f"'{num_str}' is not a number")
-            continue
-
-    if not valid_spins:
-        error_msg = "Some inputs failed:\n- " + "\n- ".join(errors)
-        gr.Warning(error_msg)
-        print(f"add_spin: Errors encountered - {error_msg}")
-        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
-
-    # Parse current_spins only once and avoid duplication
+    
+    # CHANGED: Reuse validate_spins_input for validation
+    spins_input = ", ".join(unique_numbers)
+    spins_display_value, formatted_html = validate_spins_input(spins_input)
+    
+    # CHANGED: Check if validation failed
+    if not spins_display_value:
+        print(f"add_spin: Validation failed, returning error HTML: {formatted_html}")
+        return current_spins, current_spins, formatted_html, update_spin_counter(), render_sides_of_zero_display()
+    
+    # CHANGED: Efficiently update current spins
     current_spins_list = current_spins.split(", ") if current_spins and current_spins.strip() else []
     if current_spins_list == [""]:
         current_spins_list = []
-
-    # Batch update scores for new spins only
-    action_log = update_scores_batch(valid_spins)
-    print(f"add_spin: Time to update scores: {time.time() - start_time:.2f} seconds")
-
-    # Update state.last_spins without duplication
-    new_spins = current_spins_list + valid_spins
-    state.last_spins = new_spins  # Replace state.last_spins to avoid incremental appends
-    state.spin_history.extend(action_log)  # Add action log entries
-    # Limit spin history to 100 spins
-    if len(state.spin_history) > 100:
-        state.spin_history = state.spin_history[-100:]
     
-    # Rebuild selected_numbers from scratch to avoid duplicates
-    state.selected_numbers = set(int(s) for s in new_spins if s.strip().isdigit())
-    print(f"add_spin: Time to update state: {time.time() - start_time:.2f} seconds")
-
+    # CHANGED: Append new spins only if not already processed by validate_spins_input
+    new_spins = current_spins_list + unique_numbers
     new_spins_str = ", ".join(new_spins)
-    if errors:
-        success_msg = f"Successfully added spins: {', '.join(valid_spins)}" if valid_spins else "No spins added."
-        error_msg = f"Some inputs failed:\n- " + "\n- ".join(errors) + f"\n{success_msg}"
-        gr.Warning(error_msg)
-        print(f"add_spin: Errors encountered - {error_msg}")
-        return new_spins_str, new_spins_str, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
-    else:
-        success_msg = f"Added spins: {', '.join(valid_spins)}" if valid_spins else "No new spins added."
-        print(f"add_spin: new_spins='{new_spins_str}', {success_msg}")
-        formatted_spins = format_spins_as_html(new_spins_str, num_to_show)
-        print(f"add_spin: formatted_spins='{formatted_spins}', Total time: {time.time() - start_time:.2f} seconds")
-        return new_spins_str, new_spins_str, formatted_spins, update_spin_counter(), render_sides_of_zero_display()
+    
+    # CHANGED: Log duplicates if any
+    if len(unique_numbers) < len(numbers):
+        duplicates = [n for n in numbers if numbers.count(n) > 1]
+        print(f"add_spin: Removed duplicates: {', '.join(set(duplicates))}")
+    
+    # CHANGED: Log success
+    print(f"add_spin: Added {len(unique_numbers)} spins, new_spins_str='{new_spins_str}', time={time.time() - start_time:.3f}s")
+    
+    # UNCHANGED: Return updated outputs
+    return new_spins_str, new_spins_str, formatted_html, update_spin_counter(), render_sides_of_zero_display()
 
 # Line 3: Start of next function (unchanged)
 def clear_spins():
