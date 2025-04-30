@@ -487,16 +487,32 @@ colors = {
 
 
 # Lines before (context)
-def format_spins_as_html(spins, num_to_show):
+def format_spins_as_html(spins_display, num_to_show):
+    """Format spins as HTML badges with a spin count indicator."""
+    import gradio as gr
+    
+    if not spins_display or not spins_display.strip():
+        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+    
+    spins = spins_display.split(", ")
+    spins = [s.strip() for s in spins if s.strip()][-num_to_show:]
     if not spins:
-        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+        return "<h4>Last Spins</h4><p>No spins to display.</p>"
     
-    # Split the spins string into a list and reverse to get the most recent first
-    spin_list = spins.split(", ") if spins else []
-    spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
+    # CHANGED: Add spin count indicator
+    spin_count = len(spins)
+    html = f'<div class="last-spins-container"><h4>Last Spins</h4><p style="color: #ffd700; font-size: 12px; margin-bottom: 5px;">Showing {spin_count} spin{"s" if spin_count != 1 else ""}</p><div style="display: flex; flex-wrap: wrap; gap: 5px;">'
+    for spin in spins:
+        try:
+            num = int(spin)
+            color = colors.get(spin, "black")
+            status = spin
+            html += f'<span class="spin-badge {color} flip" style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px;">{status}</span>'
+        except ValueError:
+            continue
     
-    if not spin_list:
-        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+    html += '</div></div>'
+    return html
     
     # Define colors for each number (matching the European Roulette Table)
     colors = {
