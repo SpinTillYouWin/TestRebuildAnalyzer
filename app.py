@@ -261,14 +261,6 @@ def validate_roulette_data() -> Optional[List[str]]:
         raise ValueError(f"Failed to validate roulette data: {str(e)}")
 
 class RouletteState:
-    """
-    Manages the state of the roulette game, including scores, bankroll, and progression.
-
-    Attributes:
-        scores: Dict mapping numbers (0-36) to their hit counts.
-        even_money_scores: Dict mapping even money bet names to hit counts.
-        spin_history: Deque storing action logs for spins (limited to MAX_SPIN_HISTORY).
-    """
     def __init__(self):
         try:
             self.scores = {n: 0 for n in range(37)}
