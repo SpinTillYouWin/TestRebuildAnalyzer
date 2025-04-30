@@ -5309,16 +5309,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
         with gr.Column(scale=1):
-# Line 1: Modified Live Screen Sharing column with debug logging
+# Line 1: Modified Live Screen Sharing column with Pusher credentials
             gr.Markdown("### Live Screen Sharing")
-            screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")  # Ensure elem_id matches JavaScript
+            screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")
             screen_share_output = gr.HTML(
                 label="Screen Sharing",
                 value="""
-                <div id="screen-share-container" style="border: 2px solid #ff9800; border-radius: 5px; padding: 10px; background: #1a1a1a;">
+                <div id="screen-share-container" style="border: 2px solid #ff9800; border-radius: 5px; padding: 10px; background: #1a1a1a; position: relative;">
                     <video id="screen-share-video" autoplay style="width: 100%; border-radius: 5px; box-shadow: 0 0 10px #ff9800;"></video>
+                    <div id="connected-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0, 255, 255, 0.2); color: cyan; padding: 5px 10px; border-radius: 5px; box-shadow: 0 0 10px cyan, 0 0 20px cyan; font-family: Arial, sans-serif; font-size: 12px; text-transform: uppercase;">Connected</div>
+                    <div id="loading-spinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border: 4px solid #ff9800; border-top: 4px solid cyan; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                 </div>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+                <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
                 <script>
                     console.log('Screen sharing script loaded');
                     const button = document.querySelector('#screen-share-button');
@@ -5331,10 +5334,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         console.log('Start Screen Sharing button clicked');
                         try {
                             console.log('Requesting screen sharing permissions...');
+                            const spinner = document.querySelector('#loading-spinner');
+                            if (spinner) spinner.style.display = 'block';
                             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
                             console.log('Screen sharing stream obtained:', stream);
                             const peer = new SimplePeer({ initiator: true, trickle: false, stream });
                             const videoElement = document.querySelector('#screen-share-video');
+                            const connectedBadge = document.querySelector('#connected-badge');
                             if (!videoElement) {
                                 console.error('Video element not found');
                                 return;
@@ -5344,35 +5350,57 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             peer.on('stream', remoteStream => {
                                 console.log('Received remote stream:', remoteStream);
                                 videoElement.srcObject = remoteStream;
+                                if (connectedBadge) connectedBadge.style.display = 'block';
+                                if (spinner) spinner.style.display = 'none';
+                                videoElement.classList.add('active-video');
                             });
                             
                             peer.on('error', err => {
                                 console.error('Peer error:', err);
+                                if (spinner) spinner.style.display = 'none';
                             });
                             
-                            console.log('Connecting to signaling server...');
-                            const socket = new WebSocket('ws://localhost:8080');
-                            socket.onopen = () => {
-                                console.log('WebSocket connection opened');
-                            };
-                            socket.onmessage = ({ data }) => {
+                            console.log('Connecting to Pusher...');
+                            const pusher = new Pusher('776f6c89e0220e3e7317', {
+                                cluster: 'us2',
+                                encrypted: true
+                            });
+                            const channel = pusher.subscribe('wheelpulse-channel');
+                            channel.bind('signal', (data) => {
                                 console.log('Received signaling message:', data);
-                                const signal = JSON.parse(data);
-                                peer.signal(signal);
-                            };
-                            socket.onerror = (err) => {
-                                console.error('WebSocket error:', err);
-                            };
-                            socket.onclose = () => {
-                                console.log('WebSocket connection closed');
-                            };
+                                peer.signal(data);
+                            });
+                            channel.bind('pusher:subscription_succeeded', () => {
+                                console.log('Pusher subscription succeeded');
+                            });
+                            channel.bind('pusher:subscription_error', (err) => {
+                                console.error('Pusher subscription error:', err);
+                                if (spinner) spinner.style.display = 'none';
+                            });
                             peer.on('signal', data => {
                                 console.log('Sending signaling data:', data);
-                                socket.send(JSON.stringify(data));
+                                fetch('https://api.pusher.com/apps/1984290/events', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer 6bb3b37a066df9179bfc'
+                                    },
+                                    body: JSON.stringify({
+                                        name: 'signal',
+                                        channel: 'wheelpulse-channel',
+                                        data: JSON.stringify(data)
+                                    })
+                                }).then(response => {
+                                    console.log('Signal sent to Pusher:', response);
+                                }).catch(err => {
+                                    console.error('Error sending signal to Pusher:', err);
+                                    if (spinner) spinner.style.display = 'none';
+                                });
                             });
                         } catch (err) {
                             console.error('Screen sharing error:', err);
                             alert('Failed to start screen sharing. Please allow screen access.');
+                            if (spinner) spinner.style.display = 'none';
                         }
                     });
                 </script>
@@ -5393,6 +5421,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     @keyframes glowPulse {
                         0% { box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800; }
                         100% { box-shadow: 0 0 15px #ff9800, 0 0 30px #ff9800, 0 0 40px #ff9800; }
+                    }
+                    .active-video {
+                        border: 2px solid cyan;
+                        animation: borderPulse 2s infinite alternate;
+                    }
+                    @keyframes borderPulse {
+                        0% { border-color: cyan; box-shadow: 0 0 5px cyan; }
+                        100% { border-color: #00ffff; box-shadow: 0 0 15px #00ffff, 0 0 25px #00ffff; }
+                    }
+                    @keyframes spin {
+                        0% { transform: translate(-50%, -50%) rotate(0deg); }
+                        100% { transform: translate(-50%, -50%) rotate(360deg); }
                     }
                 </style>
                 """
