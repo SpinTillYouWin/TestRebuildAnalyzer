@@ -1511,7 +1511,7 @@ def top_numbers_with_neighbours_tiered() -> str:
         table_html = (
             '<table border="1" style="border-collapse: collapse; text-align: center; '
             'font-family: Arial, sans-serif; width: 100%; max-width: 300px;">'
-            '<tr><th>Hit</th><th>Left N.</th><th>Right N.</tr>'
+            '<tr><th>Hit</th><th>Left N.</th><th>Right N.</th></tr>'
         )
         for _, row in straight_up_df.iterrows():
             num = str(row["Number"])
@@ -2073,7 +2073,7 @@ def even_money_tracker(
             categories_to_track.append("Odd")
         if track_low:
             categories_to_track.append("Low")
-        if track_high:
+        if track_high designating
             categories_to_track.append("High")
         if not categories_to_track:
             categories_to_track = ["Red", "Black", "Even", "Odd", "Low", "High"]
