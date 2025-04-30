@@ -1,6 +1,9 @@
-# Lines 1-1000 (approximate): Imports, Setup, and Start of RouletteState
-# Part 1 of 9, starting fresh with 1000-line splits
+# Roulette Spin Analyzer
+# Complete codebase (~8,135 lines) combining Parts 1-9
+# Fixes IndentationError at reset method and removes duplicate imports
 # Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
+# Deployment: Save as roulette_spin_analyzer.py or app.py (if required by platform, e.g., Heroku).
+# Ensure roulette_data.py is in the same directory and requirements.txt includes: gradio, pandas.
 
 import gradio as gr
 import math
@@ -9,8 +12,10 @@ import json
 from itertools import combinations
 import random
 import logging
-from collections import deque  # Added for circular buffer
-from typing import Dict, List, Set, Optional, Any, Tuple  # Added for type hints
+from collections import deque
+from typing import Dict, List, Set, Optional, Any, Tuple
+from datetime import datetime
+import html
 
 # Setup logging for error tracking
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -310,26 +315,10 @@ class RouletteState:
             self.last_alerted_spins: Optional[tuple] = None
             self.labouchere_sequence: str = ""
             self.is_stopped: bool = False
-
             logger.info("RouletteState initialized successfully.")
         except Exception as e:
             logger.error("Error initializing RouletteState: %s", e)
             raise
-
-# End of Part 1
-# Lines 1001-2000 (approximate): Remainder of RouletteState and Initial Functions
-# Part 2 of 9, continuing from Part 1
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-from collections import deque
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming initial portion of RouletteState is defined in Part 1
 
     def reset(self) -> None:
         """
@@ -622,22 +611,6 @@ def test_roulette_state():
     logger.info("RouletteState tests passed")
 """
 
-# End of Part 2
-# Lines 2001-3000 (approximate): Global Variables and Spin Formatting Functions
-# Part 3 of 9, continuing from Part 2
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-from datetime import datetime
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming RouletteState and initial functions are defined in Parts 1-2
-
 # Global variables
 colors = {
     "0": "green",
@@ -787,22 +760,6 @@ def format_spins_as_html(spins_input: str, last_spin_count: int) -> str:
     except Exception as e:
         logger.error("Error formatting spins as HTML: %s", e)
         return "<h4>Last Spins</h4><p>Error displaying spins.</p>"
-
-# End of Part 3
-# Lines 3001-4000 (approximate): Additional UI Functions
-# Part 4 of 9, continuing from Part 3
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-from datetime import datetime
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming global variables and functions from Parts 1-3 are defined
 
 def render_sides_of_zero_display() -> str:
     """
@@ -1037,22 +994,6 @@ def test_spin_functions():
     logger.info("Spin function tests passed")
 """
 
-# End of Part 4
-# Lines 4001-5000 (approximate): Strategy Functions
-# Part 5 of 9, continuing from Part 4
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-from datetime import datetime
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming global variables and functions from Parts 1-4 are defined
-
 def best_even_money_bets() -> str:
     """
     Recommend the top even money bets based on hit frequency.
@@ -1275,22 +1216,6 @@ def best_even_money_and_top_18() -> str:
         logger.error("Error in best_even_money_and_top_18: %s", e)
         gr.Warning(f"Error generating recommendations: {str(e)}")
         return "<p>Error generating recommendations.</p>"
-
-# End of Part 5
-# Lines 5001-6000 (approximate): Strategy Functions and Trackers
-# Part 6 of 9, continuing from Part 5
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-from datetime import datetime
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming global variables and functions from Parts 1-5 are defined
 
 def best_dozens_and_top_18() -> str:
     """
@@ -1557,22 +1482,6 @@ def best_streets() -> str:
         gr.Warning(f"Error generating street bets: {str(e)}")
         return "<p>Error generating recommendations.</p>"
 
-# End of Part 6
-# Lines 6001-7000 (approximate): Additional Strategy Functions and Start of Trackers
-# Part 7 of 9, regenerated as requested, continuing from Part 6
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-from datetime import datetime
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming global variables and functions from Parts 1-6 are defined
-
 def best_double_streets() -> str:
     """
     Recommend the top double street bets based on hit frequency.
@@ -1716,6 +1625,7 @@ def best_dozens_and_streets() -> str:
     except Exception as e:
         logger.error("Error in best_dozens_and_streets: %s", e)
         gr.Warning(f"Error generating recommendations: {str(e)}")
+```python
         return "<p>Error generating recommendations.</p>"
 
 def best_columns_and_streets() -> str:
@@ -2031,24 +1941,6 @@ def top_pick_18_numbers_without_neighbours() -> str:
         logger.error("Error in top_pick_18_numbers_without_neighbours: %s", e)
         gr.Warning(f"Error generating top 18 numbers: {str(e)}")
         return "<p>Error generating recommendations.</p>"
-
-# End of Part 7
-# Lines 7001-8000 (approximate): Additional Strategy Functions, Trackers, and Start of Gradio Interface
-# Part 8 of 9, continuing from Part 7
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-import json
-from datetime import datetime
-from collections import deque
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming global variables and functions from Parts 1-7 are defined
 
 def top_numbers_with_neighbours_tiered() -> str:
     """
@@ -2671,24 +2563,6 @@ def dozen_tracker(
             f"<p>Error: {html.escape(str(e))}.</p>"
         )
 
-# End of Part 8
-# Lines 8001-8135 (approximate): Remaining Trackers, Gradio Interface, and CSS
-# Part 9 of 9, regenerated as requested, continuing from Part 8
-# Improvements: caching, documentation, error handling, security, mobile responsiveness, memory management
-
-from typing import Dict, List, Set, Optional, Any, Tuple
-import gradio as gr
-import pandas as pd
-import random
-import logging
-import html
-import json
-from datetime import datetime
-from collections import deque
-
-# Assuming logger, BETTING_MAPPINGS, ANALYSIS_CACHE, MAX_SPIN_HISTORY, RouletteState, and roulette_data imports are defined in Part 1
-# Assuming global variables and functions from Parts 1-8 are defined
-
 def even_money_tracker(
     spins_to_check: int,
     consecutive_hits_threshold: int,
@@ -3308,6 +3182,7 @@ with gr.Blocks(css=css, theme=gr.themes.Soft()) as demo:
         outputs=[spins_textbox, spins_textbox, last_spins_output, spin_counter_output, sides_of_zero_output]
     )
     play_numbers_button.click(
+```python
         fn=play_specific_numbers,
         inputs=[specific_numbers_input],
         outputs=[analysis_output, bankroll_output, current_bet_output, next_bet_output, message_output, status_output, status_output]
@@ -3439,4 +3314,5 @@ def test_trackers():
     logger.info("Tracker tests passed")
 """
 
-# End of Part 9
+# End of roulette_spin_analyzer.py
+```
