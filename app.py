@@ -5330,7 +5330,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             });
                             
                             // Use a public signaling server for simplicity
-                            const socket = new WebSocket('wss://signaling-server.example.com');
+                            const socket = new WebSocket('ws://localhost:8080');
                             socket.onmessage = ({ data }) => {
                                 const signal = JSON.parse(data);
                                 peer.signal(signal);
