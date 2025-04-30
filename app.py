@@ -5309,7 +5309,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
         with gr.Column(scale=1):
-# Line 1: Modified Live Screen Sharing column with Pusher credentials
+# Line 1: Modified Live Screen Sharing column with unique client IDs
             gr.Markdown("### Live Screen Sharing")
             screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")
             screen_share_output = gr.HTML(
@@ -5318,7 +5318,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 <div id="screen-share-container" style="border: 2px solid #ff9800; border-radius: 5px; padding: 10px; background: #1a1a1a; position: relative;">
                     <video id="screen-share-video" autoplay style="width: 100%; border-radius: 5px; box-shadow: 0 0 10px #ff9800;"></video>
                     <div id="connected-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0, 255, 255, 0.2); color: cyan; padding: 5px 10px; border-radius: 5px; box-shadow: 0 0 10px cyan, 0 0 20px cyan; font-family: Arial, sans-serif; font-size: 12px; text-transform: uppercase;">Connected</div>
-                    <div id="loading-spinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border: 4px solid #ff9800; border-top: 4px solid cyan; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <div id="loading-spinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 6px solid #ff9800; border-top: 6px solid cyan; border-radius: 50%; box-shadow: 0 0 15px #ff9800, 0 0 30px cyan; animation: spin 1s linear infinite;"></div>
                 </div>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
                 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
@@ -5335,7 +5335,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         try {
                             console.log('Requesting screen sharing permissions...');
                             const spinner = document.querySelector('#loading-spinner');
-                            if (spinner) spinner.style.display = 'block';
+                            const container = document.querySelector('#screen-share-container');
+                            if (spinner) {
+                                console.log('Showing spinner');
+                                spinner.style.display = 'block';
+                                const minSpinnerTime = new Promise(resolve => setTimeout(resolve, 2000));
+                            } else {
+                                console.error('Spinner element not found');
+                            }
                             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
                             console.log('Screen sharing stream obtained:', stream);
                             const peer = new SimplePeer({ initiator: true, trickle: false, stream });
@@ -5347,60 +5354,69 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             }
                             console.log('Video element found:', videoElement);
                             
-                            peer.on('stream', remoteStream => {
+                            peer.on('stream', async remoteStream => {
                                 console.log('Received remote stream:', remoteStream);
+                                await minSpinnerTime;
                                 videoElement.srcObject = remoteStream;
                                 if (connectedBadge) connectedBadge.style.display = 'block';
-                                if (spinner) spinner.style.display = 'none';
+                                if (spinner) {
+                                    console.log('Hiding spinner after stream');
+                                    spinner.style.display = 'none';
+                                }
                                 videoElement.classList.add('active-video');
+                                if (container) container.classList.add('active-container');
                             });
                             
-                            peer.on('error', err => {
+                            peer.on('error', async err => {
                                 console.error('Peer error:', err);
-                                if (spinner) spinner.style.display = 'none';
+                                await minSpinnerTime;
+                                if (spinner) {
+                                    console.log('Hiding spinner after peer error');
+                                    spinner.style.display = 'none';
+                                }
                             });
                             
                             console.log('Connecting to Pusher...');
+                            const clientId = 'client-' + Math.random().toString(36).substr(2, 9);  // Unique client ID
+                            console.log('Client ID:', clientId);
                             const pusher = new Pusher('776f6c89e0220e3e7317', {
                                 cluster: 'us2',
-                                encrypted: true
+                                encrypted: true,
+                                authEndpoint: 'https://your-auth-endpoint',  // Placeholder for production
+                                clientId: clientId
                             });
                             const channel = pusher.subscribe('wheelpulse-channel');
                             channel.bind('signal', (data) => {
-                                console.log('Received signaling message:', data);
-                                peer.signal(data);
+                                if (data.sender !== clientId) {  // Ignore messages from self
+                                    console.log('Received signaling message:', data);
+                                    peer.signal(data.signal);
+                                }
                             });
                             channel.bind('pusher:subscription_succeeded', () => {
                                 console.log('Pusher subscription succeeded');
                             });
-                            channel.bind('pusher:subscription_error', (err) => {
+                            channel.bind('pusher:subscription_error', async (err) => {
                                 console.error('Pusher subscription error:', err);
-                                if (spinner) spinner.style.display = 'none';
+                                await minSpinnerTime;
+                                if (spinner) {
+                                    console.log('Hiding spinner after Pusher error');
+                                    spinner.style.display = 'none';
+                                }
                             });
                             peer.on('signal', data => {
                                 console.log('Sending signaling data:', data);
-                                fetch('https://api.pusher.com/apps/1984290/events', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer 6bb3b37a066df9179bfc'
-                                    },
-                                    body: JSON.stringify({
-                                        name: 'signal',
-                                        channel: 'wheelpulse-channel',
-                                        data: JSON.stringify(data)
-                                    })
-                                }).then(response => {
-                                    console.log('Signal sent to Pusher:', response);
-                                }).catch(err => {
-                                    console.error('Error sending signal to Pusher:', err);
-                                    if (spinner) spinner.style.display = 'none';
+                                channel.trigger('client-signal', {
+                                    signal: data,
+                                    sender: clientId
                                 });
                             });
                         } catch (err) {
                             console.error('Screen sharing error:', err);
                             alert('Failed to start screen sharing. Please allow screen access.');
-                            if (spinner) spinner.style.display = 'none';
+                            if (spinner) {
+                                console.log('Hiding spinner after error');
+                                spinner.style.display = 'none';
+                            }
                         }
                     });
                 </script>
@@ -5433,6 +5449,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     @keyframes spin {
                         0% { transform: translate(-50%, -50%) rotate(0deg); }
                         100% { transform: translate(-50%, -50%) rotate(360deg); }
+                    }
+                    .active-container {
+                        box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+                        animation: neonGlow 1.5s infinite alternate;
+                    }
+                    @keyframes neonGlow {
+                        0% { box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; }
+                        100% { box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff; }
                     }
                 </style>
                 """
