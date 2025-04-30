@@ -5309,7 +5309,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
         with gr.Column(scale=1):
-# Line 1: Modified Live Screen Sharing column with unique client IDs
+# Line 1: Modified Live Screen Sharing column with enhanced debug logs
             gr.Markdown("### Live Screen Sharing")
             screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")
             screen_share_output = gr.HTML(
@@ -5367,6 +5367,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 if (container) container.classList.add('active-container');
                             });
                             
+                            peer.on('connect', () => {
+                                console.log('WebRTC peer connection established');
+                            });
+                            
                             peer.on('error', async err => {
                                 console.error('Peer error:', err);
                                 await minSpinnerTime;
@@ -5376,20 +5380,32 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 }
                             });
                             
+                            peer.on('close', async () => {
+                                console.log('WebRTC peer connection closed');
+                                await minSpinnerTime;
+                                if (spinner) {
+                                    console.log('Hiding spinner after peer close');
+                                    spinner.style.display = 'none';
+                                }
+                            });
+                            
                             console.log('Connecting to Pusher...');
-                            const clientId = 'client-' + Math.random().toString(36).substr(2, 9);  // Unique client ID
+                            const clientId = 'client-' + Math.random().toString(36).substr(2, 9);
                             console.log('Client ID:', clientId);
                             const pusher = new Pusher('776f6c89e0220e3e7317', {
                                 cluster: 'us2',
                                 encrypted: true,
-                                authEndpoint: 'https://your-auth-endpoint',  // Placeholder for production
+                                authEndpoint: 'https://your-auth-endpoint',
                                 clientId: clientId
                             });
                             const channel = pusher.subscribe('wheelpulse-channel');
-                            channel.bind('signal', (data) => {
-                                if (data.sender !== clientId) {  // Ignore messages from self
-                                    console.log('Received signaling message:', data);
+                            channel.bind('client-signal', (data) => {
+                                console.log('Received client-signal event:', data);
+                                if (data.sender !== clientId) {
+                                    console.log('Processing signal from sender:', data.sender);
                                     peer.signal(data.signal);
+                                } else {
+                                    console.log('Ignoring signal from self');
                                 }
                             });
                             channel.bind('pusher:subscription_succeeded', () => {
@@ -5403,6 +5419,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                     spinner.style.display = 'none';
                                 }
                             });
+                            channel.bind('pusher:member_added', (member) => {
+                                console.log('Member added:', member);
+                            });
+                            channel.bind('pusher:member_removed', (member) => {
+                                console.log('Member removed:', member);
+                            });
                             peer.on('signal', data => {
                                 console.log('Sending signaling data:', data);
                                 channel.trigger('client-signal', {
@@ -5410,6 +5432,327 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                     sender: clientId
                                 });
                             });
+                        } catch (err) {
+                            console.error('Screen sharing error:', err);
+                            alert('Failed to start screen sharing. Please allow screen access.');
+                            if (spinner) {
+                                console.log('Hiding spinner after error');
+                                spinner.style.display = 'none';
+                            }
+                        }
+                    });
+                </script>
+                <style>
+                    .glow-button {
+                        background: linear-gradient(135deg, #ff9800, #e65100);
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800;
+                        animation: glowPulse 1.5s infinite alternate;
+                    }
+                    .glow-button:hover {
+                        box-shadow: 0 0 15px #ff9800, 0 0 30px #ff9800, 0 0 40px #ff9800;
+                        transform: scale(1.05);
+                    }
+                    @keyframes glowPulse {
+                        0% { box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800; }
+                        100% { box-shadow: 0 0 15px #ff9800, 0 0 30px #ff9800, 0 0 40px #ff9800; }
+                    }
+                    .active-video {
+                        border: 2px solid cyan;
+                        animation: borderPulse 2s infinite alternate;
+                    }
+                    @keyframes borderPulse {
+                        0% { border-color: cyan; box-shadow: 0 0 5px cyan; }
+                        100% { border-color: #00ffff; box-shadow: 0 0 15px #00ffff, 0 0 25px #00ffff; }
+                    }
+                    @keyframes spin {
+                        0% { transform: translate(-50%, -50%) rotate(0deg); }
+                        100% { transform: translate(-50%, -50%) rotate(360deg); }
+                    }
+                    .active-container {
+                        box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+                        animation: neonGlow 1.5s infinite alternate;
+                    }
+                    @keyframes neonGlow {
+                        0% { box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; }
+                        100% { box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff; }
+                    }
+                </style>
+                """
+            )
+# Line 3: Start of next column (unchanged)
+        with gr.Column(scale=1, min_width=200):  # Restored column for strategy selection
+            category_dropdown = gr.Dropdown(
+                label="Select Category",
+                choices=category_choices,
+                value="Even Money Strategies",
+                allow_custom_value=False,
+                elem_id="select-category"
+            )
+```
+
+#### Changes Made
+1. **Added More Debug Logs:**
+   - Added logs for WebRTC events (`peer.on('connect')`, `peer.on('close')`) to trace the connection lifecycle.
+   - Added logs for Pusher presence events (`pusher:member_added`, `pusher:member_removed`) to track clients joining/leaving the channel.
+   - Enhanced logs for the `client-signal` event to trace the sender and processing of signaling data.
+2. **Retained Existing Features:**
+   - Kept the unique client ID logic, Pusher configuration, and visual enhancements (spinner, connected badge, pulsing border, neon glow).
+
+#### Integration Steps
+1. **Locate the Insertion Point:**
+   - Open your Part 2 code in your editor.
+   - Search for `screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")`.
+
+2. **Replace the Screen Sharing Section:**
+   - Copy the entire updated code from the `<xaiArtifact>` block above.
+   - Replace the existing “Live Screen Sharing” column code (from `gr.Markdown("### Live Screen Sharing")` to before the next `with gr.Column(scale=1, min_width=200):`) with the copied code.
+
+3. **Save and Redeploy:**
+   - Save your updated Part 2 file.
+   - Redeploy the app on Hugging Face Spaces (e.g., push the changes to your repository).
+
+---
+
+### Step 2: Retest Browser-to-Browser Screen Sharing
+With the updated debug logs, let’s retest the screen-sharing feature to identify why the connection is stuck and ensure the video feeds work.
+
+#### 2.1 Stop Any Existing Screen Sharing
+- In both browser tabs, click **Stop sharing** at the top to stop the current screen-sharing session (as seen in your screenshot).
+
+#### 2.2 Open Two Browser Tabs
+- **Open the First Browser Tab (Tab 1):**
+  - Use Chrome.
+  - Navigate to your WheelPulse app URL on Hugging Face Spaces (e.g., `https://your-space-name.huggingface.co`).
+- **Open the Second Browser Tab (Tab 2):**
+  - Open a new tab (Ctrl+T) or a new window (Ctrl+N) in Chrome.
+  - Navigate to the same WheelPulse app URL.
+- **Optional: Use Incognito Mode for Tab 2:**
+  - Open Tab 2 in Incognito mode (Ctrl+Shift+N) to avoid session conflicts.
+
+#### 2.3 Start Screen Sharing in Both Tabs
+- **Tab 1:**
+  - Go to the “Live Screen Sharing” section (Row 7).
+  - Click “Start Screen Sharing.”
+  - In the screen-sharing prompt, select the WheelPulse tab and click **Share**.
+  - The orange spinner should appear for at least 2 seconds.
+- **Tab 2:**
+  - Go to the “Live Screen Sharing” section.
+  - Click “Start Screen Sharing.”
+  - Select the WheelPulse tab in Tab 2 and click **Share**.
+  - The spinner should appear in this tab as well.
+
+#### 2.4 Verify Screen Sharing Works
+- **Tab 1:**
+  - The video feed in the “Live Screen Sharing” section should show Tab 2’s WheelPulse interface (e.g., the roulette table, buttons, etc.).
+  - The spinner should disappear once the connection is established.
+  - The “Connected” badge should appear in the top-right corner of the video feed.
+  - The pulsing cyan border animation and neon glow effect should be visible around the video feed.
+- **Tab 2:**
+  - The video feed should show Tab 1’s WheelPulse interface.
+  - The spinner should disappear, and the “Connected” badge, pulsing border, and neon glow should be visible.
+- **Interact and Test:**
+  - In Tab 1, interact with the app (e.g., click “Generate Random Spins” or “Analyze Spins”) and confirm Tab 2’s video feed updates in real-time.
+  - In Tab 2, do the same and confirm Tab 1’s video feed updates.
+
+#### 2.5 Check for Errors
+- **Browser Consoles:**
+  - Open the console in both tabs (F12 > Console) and look for debug logs or errors:
+    - **Expected Logs (if successful):**
+      ```
+      Screen sharing script loaded
+      Button found: [button element]
+      Start Screen Sharing button clicked
+      Showing spinner
+      Requesting screen sharing permissions...
+      Screen sharing stream obtained: [stream object]
+      Video element found: [video element]
+      Connecting to Pusher...
+      Client ID: [unique ID]
+      Pusher subscription succeeded
+      Member added: [client data]
+      Sending signaling data: [SDP data]
+      Received client-signal event: [data]
+      Processing signal from sender: [other client ID]
+      WebRTC peer connection established
+      Received remote stream: [stream object]
+      Hiding spinner after stream
+      ```
+    - **If Logs Stop at a Certain Point:**
+      - **Stops at “Pusher subscription succeeded”:** Pusher is connected, but no signaling messages are being received.
+      - **Stops at “Sending signaling data”:** The `client-signal` event isn’t being triggered or received by the other client.
+      - **Stops at “Received client-signal event”:** The signal is received, but WebRTC isn’t connecting (possible SimplePeer issue).
+- **If Issues Persist:**
+  - Share the console logs from both tabs, and I’ll help debug further.
+
+---
+
+### Step 3: Test with a Different Browser or Device (Optional)
+If the connection is still stuck on buffering, it might be due to a same-device limitation with WebRTC or Pusher. Let’s test with a different browser or device to rule this out:
+- **Different Browser:**
+  - Open Tab 1 in Chrome and Tab 2 in Firefox (or vice versa).
+  - Repeat the screen-sharing steps above.
+- **Different Device:**
+  - Open Tab 1 on your computer and Tab 2 on your cell phone (as described in previous responses).
+  - Ensure both devices are connected to the internet and navigate to the same WheelPulse app URL.
+  - Start screen sharing on both devices and check if the video feeds work.
+
+---
+
+### Step 4: Adjust Spinner Timeout and Add Fallback Message (Optional)
+If the WebRTC connection continues to fail, the spinner will remain stuck on buffering, which isn’t ideal for user experience. Let’s adjust the spinner to timeout after a longer period (e.g., 10 seconds) and display a fallback message if the connection doesn’t establish.
+
+#### Updated Code (With Spinner Timeout and Fallback Message)
+<xaiArtifact artifact_id="40e8fb36-b35a-4090-95f0-cfbfcacbdae8" artifact_version_id="2a3786ee-5947-4f68-9745-561a53d52e04" title="screen_share_spinner_timeout.py" contentType="text/python">
+# Line 1: Modified Live Screen Sharing column with spinner timeout and fallback message
+            gr.Markdown("### Live Screen Sharing")
+            screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")
+            screen_share_output = gr.HTML(
+                label="Screen Sharing",
+                value="""
+                <div id="screen-share-container" style="border: 2px solid #ff9800; border-radius: 5px; padding: 10px; background: #1a1a1a; position: relative;">
+                    <video id="screen-share-video" autoplay style="width: 100%; border-radius: 5px; box-shadow: 0 0 10px #ff9800;"></video>
+                    <div id="connected-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0, 255, 255, 0.2); color: cyan; padding: 5px 10px; border-radius: 5px; box-shadow: 0 0 10px cyan, 0 0 20px cyan; font-family: Arial, sans-serif; font-size: 12px; text-transform: uppercase;">Connected</div>
+                    <div id="loading-spinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 6px solid #ff9800; border-top: 6px solid cyan; border-radius: 50%; box-shadow: 0 0 15px #ff9800, 0 0 30px cyan; animation: spin 1s linear infinite;"></div>
+                    <div id="error-message" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ff4444; font-family: Arial, sans-serif; font-size: 14px; text-align: center;">Failed to connect. Please try again.</div>
+                </div>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+                <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+                <script>
+                    console.log('Screen sharing script loaded');
+                    const button = document.querySelector('#screen-share-button');
+                    if (!button) {
+                        console.error('Button with ID "screen-share-button" not found');
+                    } else {
+                        console.log('Button found:', button);
+                    }
+                    button.addEventListener('click', async () => {
+                        console.log('Start Screen Sharing button clicked');
+                        try {
+                            console.log('Requesting screen sharing permissions...');
+                            const spinner = document.querySelector('#loading-spinner');
+                            const errorMessage = document.querySelector('#error-message');
+                            const container = document.querySelector('#screen-share-container');
+                            if (spinner) {
+                                console.log('Showing spinner');
+                                spinner.style.display = 'block';
+                                const minSpinnerTime = new Promise(resolve => setTimeout(resolve, 2000));
+                                const maxSpinnerTime = new Promise(resolve => setTimeout(resolve, 10000));  // 10 seconds timeout
+                            } else {
+                                console.error('Spinner element not found');
+                            }
+                            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                            console.log('Screen sharing stream obtained:', stream);
+                            const peer = new SimplePeer({ initiator: true, trickle: false, stream });
+                            const videoElement = document.querySelector('#screen-share-video');
+                            const connectedBadge = document.querySelector('#connected-badge');
+                            if (!videoElement) {
+                                console.error('Video element not found');
+                                return;
+                            }
+                            console.log('Video element found:', videoElement);
+                            
+                            let connectionEstablished = false;
+                            peer.on('stream', async remoteStream => {
+                                console.log('Received remote stream:', remoteStream);
+                                connectionEstablished = true;
+                                await minSpinnerTime;
+                                videoElement.srcObject = remoteStream;
+                                if (connectedBadge) connectedBadge.style.display = 'block';
+                                if (spinner) {
+                                    console.log('Hiding spinner after stream');
+                                    spinner.style.display = 'none';
+                                }
+                                if (errorMessage) errorMessage.style.display = 'none';
+                                videoElement.classList.add('active-video');
+                                if (container) container.classList.add('active-container');
+                            });
+                            
+                            peer.on('connect', () => {
+                                console.log('WebRTC peer connection established');
+                            });
+                            
+                            peer.on('error', async err => {
+                                console.error('Peer error:', err);
+                                connectionEstablished = true;  // Treat error as a connection attempt
+                                await minSpinnerTime;
+                                if (spinner) {
+                                    console.log('Hiding spinner after peer error');
+                                    spinner.style.display = 'none';
+                                }
+                                if (errorMessage) errorMessage.style.display = 'block';
+                            });
+                            
+                            peer.on('close', async () => {
+                                console.log('WebRTC peer connection closed');
+                                connectionEstablished = true;
+                                await minSpinnerTime;
+                                if (spinner) {
+                                    console.log('Hiding spinner after peer close');
+                                    spinner.style.display = 'none';
+                                }
+                                if (errorMessage) errorMessage.style.display = 'block';
+                            });
+                            
+                            console.log('Connecting to Pusher...');
+                            const clientId = 'client-' + Math.random().toString(36).substr(2, 9);
+                            console.log('Client ID:', clientId);
+                            const pusher = new Pusher('776f6c89e0220e3e7317', {
+                                cluster: 'us2',
+                                encrypted: true,
+                                authEndpoint: 'https://your-auth-endpoint',
+                                clientId: clientId
+                            });
+                            const channel = pusher.subscribe('wheelpulse-channel');
+                            channel.bind('client-signal', (data) => {
+                                console.log('Received client-signal event:', data);
+                                if (data.sender !== clientId) {
+                                    console.log('Processing signal from sender:', data.sender);
+                                    peer.signal(data.signal);
+                                } else {
+                                    console.log('Ignoring signal from self');
+                                }
+                            });
+                            channel.bind('pusher:subscription_succeeded', () => {
+                                console.log('Pusher subscription succeeded');
+                            });
+                            channel.bind('pusher:subscription_error', async (err) => {
+                                console.error('Pusher subscription error:', err);
+                                connectionEstablished = true;
+                                await minSpinnerTime;
+                                if (spinner) {
+                                    console.log('Hiding spinner after Pusher error');
+                                    spinner.style.display = 'none';
+                                }
+                                if (errorMessage) errorMessage.style.display = 'block';
+                            });
+                            channel.bind('pusher:member_added', (member) => {
+                                console.log('Member added:', member);
+                            });
+                            channel.bind('pusher:member_removed', (member) => {
+                                console.log('Member removed:', member);
+                            });
+                            peer.on('signal', data => {
+                                console.log('Sending signaling data:', data);
+                                channel.trigger('client-signal', {
+                                    signal: data,
+                                    sender: clientId
+                                });
+                            });
+                            
+                            // Fallback if connection doesn't establish within 10 seconds
+                            await Promise.race([minSpinnerTime, maxSpinnerTime]);
+                            if (!connectionEstablished) {
+                                console.log('Connection timeout after 10 seconds');
+                                if (spinner) {
+                                    console.log('Hiding spinner after timeout');
+                                    spinner.style.display = 'none';
+                                }
+                                if (errorMessage) errorMessage.style.display = 'block';
+                            }
                         } catch (err) {
                             console.error('Screen sharing error:', err);
                             alert('Failed to start screen sharing. Please allow screen access.');
