@@ -250,8 +250,10 @@ class RouletteState:
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
 
-    # Line 1: Start of reset method (updated to remove processed_spins)
     def reset(self):
+        # Preserve use_casino_winners and casino_data before resetting
+        use_casino_winners = self.use_casino_winners
+        casino_data = self.casino_data.copy()  # Create a deep copy to preserve the data
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -264,20 +266,11 @@ class RouletteState:
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
-        self.casino_data = {
-            "spins_count": 100,
-            "hot_numbers": [],  # Reset to empty list
-            "cold_numbers": [],  # Reset to empty list
-            "even_odd": {"Even": 0.0, "Odd": 0.0},
-            "red_black": {"Red": 0.0, "Black": 0.0},
-            "low_high": {"Low": 0.0, "High": 0.0},
-            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
-            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
-        }
-        self.use_casino_winners = False
+        # Restore use_casino_winners and casino_data
+        self.use_casino_winners = use_casino_winners
+        self.casino_data = casino_data
         self.reset_progression()
 
-    # New method: Calculate Aggregated Scores for a list of numbers
     def calculate_aggregated_scores_for_spins(self, numbers):
         """Calculate Aggregated Scores for a list of numbers (simulated spins)."""
         even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
@@ -306,7 +299,6 @@ class RouletteState:
 
         return even_money_scores, dozen_scores, column_scores
 
-    # Line 3: Start of reset_progression method (unchanged)
     def reset_progression(self):
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
@@ -378,7 +370,6 @@ class RouletteState:
             else:
                 self.next_bet = self.current_bet
                 self.message = f"Loss! Keep bet at {self.next_bet}"
-        # Line 1: Start of updated Labouchere block
         elif self.progression == "Labouchere":
             # Initialize the sequence if not set
             if self.progression_state is None:
@@ -434,7 +425,6 @@ class RouletteState:
                 self.progression_state = [1] * self.target_profit
                 self.next_bet = self.base_unit
                 self.message = f"Error in Labouchere progression: {str(e)}. Resetting sequence to {self.progression_state}, next bet: {self.next_bet}"
-        # Line 2: End of updated Labouchere block
         elif self.progression == "Ladder":
             self.current_bet = self.next_bet
             if won:
@@ -490,6 +480,7 @@ class RouletteState:
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
         
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        
         
 
 # Lines before (context, unchanged)
@@ -7081,7 +7072,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
-    
+
     try:
         analyze_button.click(
             fn=analyze_spins,
@@ -7092,6 +7083,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
                 dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
             ]
+        ).then(
+            # Update state.casino_data with current UI inputs before rendering the dynamic table
+            fn=update_casino_data,
+            inputs=[
+                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+                col1_percent, col2_percent, col3_percent, use_winners_checkbox
+            ],
+            outputs=[casino_data_output]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
@@ -7123,7 +7123,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")
+        print(f"Error in analyze_button.click handler: {str(e)}")    
     
     try:
         save_button.click(
@@ -7863,18 +7863,61 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
 
     try:
-        # Update suggestions on spin changes
         spins_textbox.change(
-            fn=suggest_hot_cold_numbers,
-            inputs=[],
-            outputs=[hot_suggestions, cold_suggestions]
+            fn=validate_spins_input,
+            inputs=[spins_textbox],
+            outputs=[spins_display, last_spin_display]
         ).then(
-            fn=lambda hot, cold: (setattr(state, 'hot_suggestions', hot), setattr(state, 'cold_suggestions', cold), hot, cold)[2:],
-            inputs=[hot_suggestions, cold_suggestions],
-            outputs=[hot_suggestions, cold_suggestions]
+            fn=analyze_spins,
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            # Update state.casino_data with current UI inputs before rendering the dynamic table
+            fn=update_casino_data,
+            inputs=[
+                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+                col1_percent, col2_percent, col3_percent, use_winners_checkbox
+            ],
+            outputs=[casino_data_output]
+        ).then(
+            # Re-render the dynamic table to reflect the updated casino data
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
-        print(f"Error in spins_textbox.change for suggestions: {str(e)}")
+        print(f"Error in spins_textbox.change handler: {str(e)}")
     
     try:
         play_hot_button.click(
