@@ -5293,8 +5293,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
-# Line 1: Modified Row 7 with screen-sharing column
-    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Screen Sharing
+# Line 1: Modified Row 7 with all columns restored
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, Screen Sharing, and Strategy Selection
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -5329,7 +5329,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 videoElement.srcObject = remoteStream;
                             });
                             
-                            // Use a public signaling server for simplicity
+                            // Use the signaling server URL (updated to your local server or a public one)
                             const socket = new WebSocket('ws://localhost:8080');
                             socket.onmessage = ({ data }) => {
                                 const signal = JSON.parse(data);
@@ -5345,6 +5345,41 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     });
                 </script>
                 """
+            )
+        with gr.Column(scale=1, min_width=200):  # Restored column for strategy selection
+            category_dropdown = gr.Dropdown(
+                label="Select Category",
+                choices=category_choices,
+                value="Even Money Strategies",
+                allow_custom_value=False,
+                elem_id="select-category"
+            )
+            strategy_dropdown = gr.Dropdown(
+                label="Select Strategy",
+                choices=strategy_categories["Even Money Strategies"],
+                value="Best Even Money Bets",
+                allow_custom_value=False
+            )
+            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+            neighbours_count_slider = gr.Slider(
+                label="Number of Neighbors (Left + Right)",
+                minimum=1,
+                maximum=5,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+            strong_numbers_count_slider = gr.Slider(
+                label="Strong Numbers to Highlight (Neighbours Strategy)",
+                minimum=1,
+                maximum=18,
+                step=1,
+                value=1,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
             )
 # Line 3: Start of next row (unchanged)
     # 7.1. Row 7.1: Dozen Tracker
