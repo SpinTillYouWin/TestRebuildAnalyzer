@@ -5293,8 +5293,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
-    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
+# Line 1: Modified Row 7 with screen-sharing column
+    # 7. Row 7: Dynamic Roulette Table, Strategy Recommendations, and Screen Sharing
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -5308,43 +5308,45 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 label="Strategy Recommendations",
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
-            # Removed Casino Data Insights accordion from this column
-        with gr.Column(scale=1, min_width=200):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
+        with gr.Column(scale=1):
+            gr.Markdown("### Live Screen Sharing")
+            screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button"])
+            screen_share_output = gr.HTML(
+                label="Screen Sharing",
+                value="""
+                <div id="screen-share-container" style="border: 2px solid #ff9800; border-radius: 5px; padding: 10px; background: #1a1a1a;">
+                    <video id="screen-share-video" autoplay style="width: 100%; border-radius: 5px; box-shadow: 0 0 10px #ff9800;"></video>
+                </div>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+                <script>
+                    document.querySelector('#screen-share-button').addEventListener('click', async () => {
+                        try {
+                            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                            const peer = new SimplePeer({ initiator: true, trickle: false, stream });
+                            const videoElement = document.querySelector('#screen-share-video');
+                            
+                            peer.on('stream', remoteStream => {
+                                videoElement.srcObject = remoteStream;
+                            });
+                            
+                            // Use a public signaling server for simplicity
+                            const socket = new WebSocket('wss://signaling-server.example.com');
+                            socket.onmessage = ({ data }) => {
+                                const signal = JSON.parse(data);
+                                peer.signal(signal);
+                            };
+                            peer.on('signal', data => {
+                                socket.send(JSON.stringify(data));
+                            });
+                        } catch (err) {
+                            console.error('Screen sharing error:', err);
+                            alert('Failed to start screen sharing. Please allow screen access.');
+                        }
+                    });
+                </script>
+                """
             )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-    
+# Line 3: Start of next row (unchanged)
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
