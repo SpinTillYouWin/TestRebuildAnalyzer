@@ -5309,8 +5309,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
             )
         with gr.Column(scale=1):
+# Line 1: Modified Live Screen Sharing column with debug logging
             gr.Markdown("### Live Screen Sharing")
-            screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button"])
+            screen_share_button = gr.Button("Start Screen Sharing", elem_classes=["action-button", "glow-button"], elem_id="screen-share-button")  # Ensure elem_id matches JavaScript
             screen_share_output = gr.HTML(
                 label="Screen Sharing",
                 value="""
@@ -5319,23 +5320,54 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </div>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
                 <script>
-                    document.querySelector('#screen-share-button').addEventListener('click', async () => {
+                    console.log('Screen sharing script loaded');
+                    const button = document.querySelector('#screen-share-button');
+                    if (!button) {
+                        console.error('Button with ID "screen-share-button" not found');
+                    } else {
+                        console.log('Button found:', button);
+                    }
+                    button.addEventListener('click', async () => {
+                        console.log('Start Screen Sharing button clicked');
                         try {
+                            console.log('Requesting screen sharing permissions...');
                             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                            console.log('Screen sharing stream obtained:', stream);
                             const peer = new SimplePeer({ initiator: true, trickle: false, stream });
                             const videoElement = document.querySelector('#screen-share-video');
+                            if (!videoElement) {
+                                console.error('Video element not found');
+                                return;
+                            }
+                            console.log('Video element found:', videoElement);
                             
                             peer.on('stream', remoteStream => {
+                                console.log('Received remote stream:', remoteStream);
                                 videoElement.srcObject = remoteStream;
                             });
                             
-                            // Use the signaling server URL (updated to your local server or a public one)
+                            peer.on('error', err => {
+                                console.error('Peer error:', err);
+                            });
+                            
+                            console.log('Connecting to signaling server...');
                             const socket = new WebSocket('ws://localhost:8080');
+                            socket.onopen = () => {
+                                console.log('WebSocket connection opened');
+                            };
                             socket.onmessage = ({ data }) => {
+                                console.log('Received signaling message:', data);
                                 const signal = JSON.parse(data);
                                 peer.signal(signal);
                             };
+                            socket.onerror = (err) => {
+                                console.error('WebSocket error:', err);
+                            };
+                            socket.onclose = () => {
+                                console.log('WebSocket connection closed');
+                            };
                             peer.on('signal', data => {
+                                console.log('Sending signaling data:', data);
                                 socket.send(JSON.stringify(data));
                             });
                         } catch (err) {
@@ -5344,6 +5376,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         }
                     });
                 </script>
+                <style>
+                    .glow-button {
+                        background: linear-gradient(135deg, #ff9800, #e65100);
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800;
+                        animation: glowPulse 1.5s infinite alternate;
+                    }
+                    .glow-button:hover {
+                        box-shadow: 0 0 15px #ff9800, 0 0 30px #ff9800, 0 0 40px #ff9800;
+                        transform: scale(1.05);
+                    }
+                    @keyframes glowPulse {
+                        0% { box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800; }
+                        100% { box-shadow: 0 0 15px #ff9800, 0 0 30px #ff9800, 0 0 40px #ff9800; }
+                    }
+                </style>
                 """
             )
         with gr.Column(scale=1, min_width=200):  # Restored column for strategy selection
