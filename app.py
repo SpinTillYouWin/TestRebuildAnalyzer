@@ -487,59 +487,145 @@ colors = {
 
 
 # Lines before (context)
-def format_spins_as_html(spins, num_to_show):
+def format_spins_as_html(spins_display, num_to_show, show_streaks=False):
+    """Format spins as HTML badges with optional streak indicators."""
+    # CHANGED: Added show_streaks parameter
+    import gradio as gr
+    
+    if not spins_display or not spins_display.strip():
+        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+    
+    # Split spins and limit to num_to_show
+    spins = spins_display.split(", ")
+    spins = [s.strip() for s in spins if s.strip()][-num_to_show:]
     if not spins:
-        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+        return "<h4>Last Spins</h4><p>No spins to display.</p>"
     
-    # Split the spins string into a list and reverse to get the most recent first
-    spin_list = spins.split(", ") if spins else []
-    spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
+    # CHANGED: Detect streaks for Even Money and Dozens
+    streaks = {}
+    if show_streaks:
+        current_streak = {}
+        for i, spin in enumerate(spins):
+            try:
+                num = int(spin)
+                # Get traits
+                traits = []
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        traits.append(name)
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        traits.append(name)
+                # Update streaks
+                for trait in traits:
+                    if trait in current_streak and current_streak[trait]["last_index"] == i - 1:
+                        current_streak[trait]["length"] += 1
+                        current_streak[trait]["end_index"] = i + 1
+                    else:
+                        current_streak[trait] = {"length": 1, "start_index": i + 1, "end_index": i + 1, "last_index": i}
+                # Clear streaks for non-matching traits
+                for trait in list(current_streak.keys()):
+                    if trait not in traits:
+                        if current_streak[trait]["length"] >= 2:
+                            streaks[current_streak[trait]["end_index"] - 1] = current_streak[trait].copy()
+                        del current_streak[trait]
+            except ValueError:
+                continue
+        # Store final streaks
+        for trait, data in current_streak.items():
+            if data["length"] >= 2:
+                streaks[data["end_index"] - 1] = data.copy()
     
-    if not spin_list:
-        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+    html = '<div class="last-spins-container"><h4>Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">'
+    for i, spin in enumerate(spins):
+        try:
+            num = int(spin)
+            color = colors.get(spin, "black")
+            status = spin
+            html += f'<span class="spin-badge {color} flip" style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px;">{status}</span>'
+            # CHANGED: Add streak badge if applicable
+            if show_streaks and i in streaks:
+                streak = streaks[i]
+                trait = streak["trait"]
+                length = streak["length"]
+                start_index = streak["start_index"]
+                end_index = streak["end_index"]
+                # Abbreviate trait
+                abbreviations = {
+                    "Red": "R", "Black": "B", "Even": "E", "Odd": "O", "Low": "L", "High": "H",
+                    "1st Dozen": "D1", "2nd Dozen": "D2", "3rd Dozen": "D3"
+                }
+                abbr = abbreviations.get(trait, trait[:2])
+                # Get other traits
+                other_traits = [t for t in (EVEN_MONEY.keys() | DOZENS.keys()) if t != trait and num in (EVEN_MONEY.get(t, []) + DOZENS.get(t, []))]
+                other_traits_str = ", ".join(other_traits) if other_traits else "None"
+                # Get hit count
+                hit_count = state.even_money_scores.get(trait, state.dozen_scores.get(trait, 0))
+                tooltip = f"{trait} streak: {length} spins, spins #{start_index}-{end_index}. Also {other_traits_str}. {trait} has hit {hit_count} times."
+                color_class = "red" if trait in EVEN_MONEY else "green"
+                html += f'<span class="streak-badge {color_class}" data-tooltip="{tooltip}" style="background-color: #ffd700; color: black; font-size: 10px; padding: 1px 3px; margin-left: 2px; border: 1px solid {color_class}; border-radius: 3px;">{abbr}{length}</span>'
+        except ValueError:
+            continue
     
-    # Define colors for each number (matching the European Roulette Table)
-    colors = {
-        "0": "green",
-        "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
-        "19": "red", "21": "red", "23": "red", "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
-        "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black", "13": "black", "15": "black", "17": "black",
-        "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
-    }
-    
-    # Format each spin as a colored span
-    html_spins = []
-    for i, spin in enumerate(spin_list):
-        color = colors.get(spin.strip(), "black")  # Default to black if not found
-        # Apply flip and flash classes to the newest spin(s) (last in the list)
-        class_attr = f'fade-in flip flash {color}' if i == len(spin_list) - 1 else 'fade-in'
-        html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
-    
-    # Wrap the spins in a div with flexbox to enable wrapping, and add a title
-    html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
-    
-    # Add JavaScript to remove fade-in, flash, and flip classes after animations
-    html_output += '''
+    html += '</div>'
+    # CHANGED: Add JavaScript for tooltips
+    html += '''
     <script>
-        document.querySelectorAll('.fade-in').forEach(element => {
-            setTimeout(() => {
-                element.classList.remove('fade-in');
-            }, 500);
-        });
-        document.querySelectorAll('.flash').forEach(element => {
-            setTimeout(() => {
-                element.classList.remove('flash');
-            }, 300);
-        });
-        document.querySelectorAll('.flip').forEach(element => {
-            setTimeout(() => {
-                element.classList.remove('flip');
-            }, 500);
+        document.querySelectorAll('.streak-badge').forEach(element => {
+            element.addEventListener('mouseover', (e) => {
+                const tooltipText = element.getAttribute('data-tooltip');
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                tooltip.style.backgroundColor = '#2e7d32';
+                tooltip.style.color = 'white';
+                tooltip.style.border = '1px solid #ffd700';
+                tooltip.style.padding = '5px';
+                tooltip.style.borderRadius = '3px';
+                tooltip.style.fontSize = '12px';
+                tooltip.style.position = 'absolute';
+                tooltip.style.zIndex = '1000';
+                document.body.appendChild(tooltip);
+                const rect = element.getBoundingClientRect();
+                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltip.clientWidth / 2)) + 'px';
+                tooltip.style.top = (rect.top + window.scrollY - tooltip.clientHeight - 5) + 'px';
+                tooltip.style.opacity = '1';
+                tooltip.style.transition = 'opacity 0.2s';
+            });
+            element.addEventListener('mouseout', () => {
+                const tooltip = document.querySelector('.tooltip');
+                if (tooltip) tooltip.remove();
+            });
+            element.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const tooltipText = element.getAttribute('data-tooltip');
+                let tooltip = document.querySelector('.tooltip');
+                if (tooltip) tooltip.remove();
+                tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = tooltipText;
+                tooltip.style.backgroundColor = '#2e7d32';
+                tooltip.style.color = 'white';
+                tooltip.style.border = '1px solid #ffd700';
+                tooltip.style.padding = '5px';
+                tooltip.style.borderRadius = '3px';
+                tooltip.style.fontSize = '12px';
+                tooltip.style.position = 'absolute';
+                tooltip.style.zIndex = '1000';
+                document.body.appendChild(tooltip);
+                const rect = element.getBoundingClientRect();
+                tooltip.style.left = (rect.left + window.scrollX + (rect.width / 2) - (tooltip.clientWidth / 2)) + 'px';
+                tooltip.style.top = (rect.top + window.scrollY - tooltip.clientHeight - 5) + 'px';
+                tooltip.style.opacity = '1';
+                setTimeout(() => {
+                    if (tooltip) tooltip.remove();
+                }, 3000);
+            });
         });
     </script>
     '''
-    
-    return html_output
+    html += '</div>'
+    return html
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
@@ -5039,6 +5125,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+    # CHANGED: Add streak indicators toggle
+    streaks_checkbox = gr.Checkbox(
+        label="Show Streak Indicators",
+        value=False,
+        interactive=True,
+        elem_classes=["streak-checkbox"]
+    )
+
+# Surrounding lines (context, UNCHANGED)
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         traits_display = gr.HTML(
             label="Spin Traits",
@@ -6058,9 +6153,39 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
             transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
-        .spin-counter:hover {
+        .spin-counter:hover {.spin-counter:hover {
             transform: scale(1.05) !important;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+
+    # CHANGED: Add streak badge and tooltip styles
+        .streak-badge {
+            display: inline-block !important;
+            font-size: 10px !important;
+            padding: 1px 3px !important;
+            margin-left: 2px !important;
+            border-radius: 3px !important;
+            background-color: #ffd700 !important; /* Gold background */
+            color: black !important;
+            border: 1px solid !important;
+        }
+        .streak-badge.red {
+            border-color: red !important;
+        }
+        .streak-badge.green {
+            border-color: #388e3c !important; /* Matches dozen badges */
+        }
+        .tooltip {
+            position: absolute !important;
+            z-index: 1000 !important;
+            opacity: 0 !important;
+            transition: opacity 0.2s !important;
+        }
+        @media (max-width: 600px) {
+            .streak-badge {
+                font-size: 8px !important;
+                padding: 0px 2px !important;
+            }
         }
         
         .sides-of-zero-container {
@@ -6941,13 +7066,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[traits_display]
         )
     except Exception as e:
-        print(f"Error in generate_spins_button.click handler: {str(e)}")
+        print(f"Error in clear_last_spins_button.click handler: {str(e)}")
+
+    # CHANGED: Add new handler for streaks_checkbox
+    try:
+        streaks_checkbox.change(
+            fn=lambda spins_display, count, show_streaks: format_spins_as_html(spins_display, count, show_streaks),
+            inputs=[spins_display, last_spin_count, streaks_checkbox],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in streaks_checkbox.change handler: {str(e)}")
 
 # Line 1: Slider change handler (updated)
     try:
         last_spin_count.change(
-            fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
-            inputs=[spins_display, last_spin_count],
+            fn=lambda spins_display, count, show_streaks: format_spins_as_html(spins_display, count, show_streaks),
+            inputs=[spins_display, last_spin_count, streaks_checkbox],
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
@@ -6956,6 +7091,36 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
+
+    try:
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=lambda spins_display, count, show_streaks: format_spins_as_html(spins_display, count, show_streaks),
+            inputs=[spins_display, last_spin_count, streaks_checkbox],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        )
+    except Exception as e:
+        print(f"Error in spins_display.change handler: {str(e)}")
+
+    try:
+        clear_last_spins_button.click(
+            fn=clear_last_spins_display,
+            inputs=[],
+            outputs=[last_spin_display, spin_counter]
+        ).then(
+            fn=lambda spins_display, count, show_streaks: format_spins_as_html(spins_display, count, show_streaks),
+            inputs=[spins_display, last_spin_count, streaks_checkbox],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in clear_last_spins_button.click handler: {str(e)}")
     
     def update_strategy_dropdown(category):
         if category == "None":
