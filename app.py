@@ -5255,6 +5255,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
+        with gr.Column(scale=1):
+            celebrate_win_button = gr.Button("Celebrate Win 🎉", elem_classes=["action-button", "celebrate-btn"])
 
 # Surrounding lines after (unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
@@ -6219,6 +6221,146 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .new-spin.spin-green {
             --highlight-color: rgba(0, 255, 0, 0.8) !important;
+        }
+        /* Celebrate Win Button Styling */
+        .celebrate-btn {
+            background-color: #FFD700 !important; /* Gold color */
+            color: #333 !important;
+            border: 1px solid #DAA520 !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        
+        .celebrate-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* Money Coins Celebration Animation */
+        #celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .coin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #FFD700, #DAA520); /* Gold coin gradient */
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            animation: fall 3s linear forwards;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Fade-In Animation for Output */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in !important;
+        }
+        
+        /* Celebrate Win Button Styling */
+        .celebrate-btn {
+            background-color: #FFD700 !important; /* Gold color */
+            color: #333 !important;
+            border: 1px solid #DAA520 !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        
+        .celebrate-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* Money Coins Celebration Animation */
+        #celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .coin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #FFD700, #DAA520); /* Gold coin gradient */
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            animation: fall 3s linear forwards;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        </style>
+        
+        <!-- Insert the JavaScript here -->
+        <script>
+        function triggerMoneyRain() {
+            // Create overlay if it doesn't exist
+            let overlay = document.getElementById('celebration-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'celebration-overlay';
+                document.body.appendChild(overlay);
+            }
+        
+            // Create 50 coins
+            for (let i = 0; i < 50; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'coin';
+                coin.style.left = Math.random() * 100 + 'vw'; // Random horizontal position
+                coin.style.animationDelay = Math.random() * 2 + 's'; // Random delay for staggered fall
+                overlay.appendChild(coin);
+        
+                // Remove coin after animation ends
+                coin.addEventListener('animationend', () => {
+                    coin.remove();
+                });
+            }
+        }
+        </script>
+        
+        <style>
+        /* Spin Counter Styling */
+        .spin-counter {
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+            padding: 4px 8px !important;
+            border: 2px solid #3498DB !important;
+            border-radius: 6px !important;
+            margin-top: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
     
         /* Spin Counter Styling */
@@ -7541,6 +7683,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
+
+    try:
+        celebrate_win_button.click(
+            fn=lambda: None,  # No Python logic needed; JavaScript handles the animation
+            inputs=[],
+            outputs=[],
+            _js="() => { triggerMoneyRain(); }"
+        )
+    except Exception as e:
+        print(f"Error in celebrate_win_button.click handler: {str(e)}")
     
     try:
         neighbours_count_slider.change(
