@@ -4926,6 +4926,8 @@ def summarize_spin_traits(last_spin_count):
                             dozen_streaks[name]["current"] = 0
 
                 # Repeat Numbers
+                # Lines before (unchanged)
+                # Repeat Numbers
                 number_counts[num] = number_counts.get(num, 0) + 1
             except ValueError:
                 continue
@@ -4935,7 +4937,7 @@ def summarize_spin_traits(last_spin_count):
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # TITLE: Build HTML Badges (UPDATED FOR CHANGE 5)
+        # TITLE: Build HTML Badges (UPDATED FOR CHANGE 6)
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
@@ -4943,11 +4945,14 @@ def summarize_spin_traits(last_spin_count):
         html += '<div class="badge-group">'
         html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
+        total_spins = len(last_spins)
         for name, count in even_money_counts.items():
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
             streak = even_money_streaks[name]["max"]
             streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
-            html += f'<span class="{badge_class}" title="{streak_title}">{name}: {count}</span>'
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#b71c1c" if name in ["Red", "Even", "Low"] else "#000000" if name in ["Black", "Odd", "High"] else "#666"
+            html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         # Columns
         html += '<div class="badge-group">'
@@ -4957,7 +4962,9 @@ def summarize_spin_traits(last_spin_count):
             badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
             streak = column_streaks[name]["max"]
             streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
-            html += f'<span class="{badge_class}" title="{streak_title}">{name}: {count}</span>'
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#1565c0"  # Blue for columns
+            html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         # Dozens
         html += '<div class="badge-group">'
@@ -4967,7 +4974,9 @@ def summarize_spin_traits(last_spin_count):
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
             streak = dozen_streaks[name]["max"]
             streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
-            html += f'<span class="{badge_class}" title="{streak_title}">{name}: {count}</span>'
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#388e3c"  # Green for dozens
+            html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         # Repeat Numbers (no streak tracking for repeats)
         html += '<div class="badge-group">'
@@ -6305,8 +6314,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
         }
+        /* TITLE: Percentage Item Styles */
         .percentage-item {
-            background-color: #444 !important; /* Match SpinTrend Radar badge background */
+            background-color: #444 !important;
             color: #fff !important;
             padding: 5px 10px !important;
             border-radius: 12px !important;
@@ -6320,29 +6330,31 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transform: scale(1.1) !important;
             box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
         }
-        .percentage-item.even-money { background-color: #b71c1c !important; } /* Red for even money */
-        .percentage-item.column { background-color: #1565c0 !important; } /* Blue for columns */
-        .percentage-item.dozen { background-color: #388e3c !important; } /* Green for dozens */
+        .percentage-item.even-money { background-color: #b71c1c !important; }
+        .percentage-item.column { background-color: #1565c0 !important; }
+        .percentage-item.dozen { background-color: #388e3c !important; }
         .percentage-item.winner {
             font-weight: bold !important;
-            color: #333 !important; /* Dark gray text for better contrast */
-            border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
-            transform: scale(1.1) !important; /* Make winners slightly larger */
+            color: #333 !important;
+            border: 2px solid #ffd700 !important;
+            box-shadow: 0 0 8px #ffd700 !important;
+            background-color: rgba(255, 215, 0, 0.2) !important;
+            transform: scale(1.1) !important;
         }
         .percentage-with-bar {
             display: inline-block !important;
             text-align: center !important;
             margin: 0 3px !important;
         }
+        
+        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 6) */
         .progress-bar {
             width: 100% !important;
             height: 6px !important;
             min-height: 6px !important; /* Ensure bar renders */
-            background-color: #d3d3d3 !important; /* Light gray background for unfilled portion */
+            background-color: #d3d3d3 !important; /* Light gray background */
             border-radius: 3px !important;
-            margin-top: 2px !important;
+            margin-top: 4px !important; /* Increased for spacing */
             overflow: hidden !important;
             display: block !important; /* Force display */
         }
@@ -6351,6 +6363,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 3px !important;
             transition: width 0.3s ease !important;
             display: block !important; /* Force display */
+        }
+        
+        /* Lines after (unchanged) */
+        /* TITLE: Hot/Cold Icons */
+        .hot-icon {
+            font-size: 24px !important;
+            margin-right: 10px !important;
+            animation: flicker 1.5s infinite alternate !important;
         }
         
         /* Responsive Design */
