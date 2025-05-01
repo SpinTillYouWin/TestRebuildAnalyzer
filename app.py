@@ -5247,7 +5247,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             last_spin_count
             
 
-    # 4. Row 4: Spin Controls
+# 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
@@ -7222,10 +7222,36 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }, 2000);
       }
     
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
-      });
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("triggerMoneyRain script loaded");
+        function triggerMoneyRain() {
+            console.log("triggerMoneyRain called");
+            // Create overlay if it doesn't exist
+            let overlay = document.getElementById('celebration-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'celebration-overlay';
+                document.body.appendChild(overlay);
+            }
+    
+            // Create 50 coins
+            for (let i = 0; i < 50; i++) {
+                console.log(`Creating coin ${i}`);
+                const coin = document.createElement('div');
+                coin.className = 'coin';
+                coin.style.left = Math.random() * 100 + 'vw'; // Random horizontal position
+                coin.style.animationDelay = Math.random() * 2 + 's'; // Random delay for staggered fall
+                overlay.appendChild(coin);
+    
+                // Remove coin after animation ends
+                coin.addEventListener('animationend', () => {
+                    coin.remove();
+                });
+            }
+        }
+        // Expose triggerMoneyRain to the global scope
+        window.triggerMoneyRain = triggerMoneyRain;
+    });
     </script>
     """)
     
@@ -7689,7 +7715,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda: None,  # No Python logic needed; JavaScript handles the animation
             inputs=[],
             outputs=[],
-            _js="() => { triggerMoneyRain(); }"
+            _js="() => { console.log('Celebrate Win button clicked'); window.triggerMoneyRain(); }"
         )
     except Exception as e:
         print(f"Error in celebrate_win_button.click handler: {str(e)}")
