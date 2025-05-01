@@ -4935,7 +4935,7 @@ def summarize_spin_traits(last_spin_count):
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # Build HTML badges with winner highlighting and hot streak indicators
+        # TITLE: Build HTML Badges (REVERTED FOR COUNTS)
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
@@ -4943,14 +4943,11 @@ def summarize_spin_traits(last_spin_count):
         html += '<div class="badge-group">'
         html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
-        total_spins = len(last_spins)
         for name, count in even_money_counts.items():
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
             streak = even_money_streaks[name]["max"]
-            percentage = (count / total_spins * 100) if total_spins > 0 else 0
-            bar_color = "#b71c1c" if name in ["Red", "Even", "Low"] else "#000000" if name in ["Black", "Odd", "High"] else "#666"
             streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
-            html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}">{name}: {percentage:.1f}%{streak_indicator}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
         html += '</div></div>'
         # Columns
         html += '<div class="badge-group">'
@@ -4959,10 +4956,8 @@ def summarize_spin_traits(last_spin_count):
         for name, count in column_counts.items():
             badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
             streak = column_streaks[name]["max"]
-            percentage = (count / total_spins * 100) if total_spins > 0 else 0
-            bar_color = "#1565c0"  # Blue for columns
             streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
-            html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%{streak_indicator}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
         html += '</div></div>'
         # Dozens
         html += '<div class="badge-group">'
@@ -4971,10 +4966,8 @@ def summarize_spin_traits(last_spin_count):
         for name, count in dozen_counts.items():
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
             streak = dozen_streaks[name]["max"]
-            percentage = (count / total_spins * 100) if total_spins > 0 else 0
-            bar_color = "#388e3c"  # Green for dozens
             streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
-            html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%{streak_indicator}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
         html += '</div></div>'
         # Repeat Numbers (no streak tracking for repeats)
         html += '<div class="badge-group">'
@@ -5008,7 +5001,7 @@ def suggest_hot_cold_numbers():
             cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
         return ", ".join(hot_numbers), ", ".join(cold_numbers)
     except Exception as e:
-        print(f"summarize_spin_traits: Error: {str(e)}")
+        print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
 STRATEGIES = {
