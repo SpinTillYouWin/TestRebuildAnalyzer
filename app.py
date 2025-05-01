@@ -6313,7 +6313,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .percentage-wrapper {
             width: 100% !important;
-            max-width: 1600px !important; /* Kept to fit all percentages */
             box-sizing: border-box !important; /* Ensure consistent width calculation */
         }
         .percentage-group {
@@ -6402,7 +6401,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
         .traits-wrapper {
             width: 100% !important;
-            max-width: 1600px !important; /* Match percentage-wrapper */
             box-sizing: border-box !important; /* Ensure consistent width calculation */
         }
         .badge-group {
@@ -6479,6 +6477,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
         /* Placeholder Section for Hit Percentage and SpinTrend Radar */
         .placeholder-section {
+            flex: 1 !important; /* Ensure equal width with the content */
             background-color: #000 !important;
             min-height: 200px !important; /* Ensure a minimum height to match the left side */
             height: 100% !important;
@@ -6494,8 +6493,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
         /* Ensure the columns are truly 50/50 and aligned */
         .hit-percentage-container, .traits-container {
+            flex: 1 !important; /* Ensure equal width with the placeholder */
             width: 100% !important;
-            max-width: none !important; /* Remove max-width to allow full column width */
             margin: 0 !important;
         }
 
