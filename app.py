@@ -6349,14 +6349,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-bottom: 6px !important; /* Add vertical spacing below each badge + bar */
         }
         
-        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
+        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 8) */
         .progress-bar {
             width: 100% !important;
             height: 6px !important;
             min-height: 6px !important;
             background-color: #d3d3d3 !important;
             border-radius: 3px !important;
-            margin-top: 6px !important; /* Increased for more spacing */
+            margin-top: 8px !important; /* Increased for more spacing */
             overflow: hidden !important;
             display: block !important;
         }
@@ -6366,6 +6366,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transition: width 0.3s ease !important;
             display: block !important;
         }
+        
               
         /* Responsive Design */
         @media (max-width: 600px) {
