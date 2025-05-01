@@ -5185,17 +5185,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             elem_classes=["sides-of-zero-container"]
         )
         with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
-            hit_percentage_display = gr.HTML(
-                label="Hit Percentages",
-                value=calculate_hit_percentages(36),
-                elem_classes=["hit-percentage-container"]
-            )
+            with gr.Row():
+                with gr.Column(scale=1):
+                    hit_percentage_display = gr.HTML(
+                        label="Hit Percentages",
+                        value=calculate_hit_percentages(36),
+                        elem_classes=["hit-percentage-container"]
+                    )
+                with gr.Column(scale=1):
+                    hit_percentage_placeholder = gr.HTML(
+                        label="Hit Percentage Placeholder",
+                        value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
+                        elem_classes=["placeholder-section"]
+                    )
         with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-            traits_display = gr.HTML(
-                label="Spin Traits",
-                value=summarize_spin_traits(36),
-                elem_classes=["traits-container"]
-            )
+            with gr.Row():
+                with gr.Column(scale=1):
+                    traits_display = gr.HTML(
+                        label="Spin Traits",
+                        value=summarize_spin_traits(36),
+                        elem_classes=["traits-container"]
+                    )
+                with gr.Column(scale=1):
+                    traits_placeholder = gr.HTML(
+                        label="SpinTrend Radar Placeholder",
+                        value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
+                        elem_classes=["placeholder-section"]
+                    )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -6294,7 +6310,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
-            /* Hit Percentage Overview */
+        /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
             background-color: #f5f5dc !important; /* Light beige */
@@ -6381,125 +6397,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 3px !important;
             transition: width 0.3s ease !important;
             display: block !important;
-        }
-              
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
-            td, th { padding: 5px; font-size: 12px; }
-            .gr-textbox { font-size: 12px; }
-            .scrollable-table { max-height: 200px; }
-            .long-slider { width: 100% !important; }
-            .header-title { font-size: 1.8em !important; }
-        }
-        
-        #strongest-numbers-dropdown select {
-            -webkit-appearance: menulist !important;
-            -moz-appearance: menulist !important;
-            appearance: menulist !important;
-        }
-        #strategy-dropdown select {
-            font-size: 14px;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        #strategy-dropdown select option:checked {
-            font-weight: bold;
-            background-color: #e0e0ff;
-            color: #000;
-        }
-        .betting-progression .gr-textbox { width: 100%; margin: 5px 0; }
-        .betting-progression .gr-button { width: 100px; margin: 5px; }
-        .betting-progression .gr-row { display: flex; flex-wrap: wrap; gap: 10px; }
-        
-        /* Top Strategies Accordion */
-        #top-strategies summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* TITLE: Video Section */
-        #top-strategies .gr-box {
-            background-color: #f5c6cb !important;
-            padding: 15px !important;
-            border-radius: 5px !important;
-        }
-        #video-category-dropdown label, #video-dropdown label {
-            background-color: #87CEEB !important;
-            color: black !important;
-            padding: 5px !important;
-            border-radius: 3px !important;
-        }
-        #video-output {
-            margin-top: 15px !important;
-            width: 100% !important;
-            display: flex !important;
-            justify-content: center !important;
-        }
-        #video-output iframe {
-            max-width: 100% !important;
-            border-radius: 5px !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-        }
-        
-        /* TITLE: Responsive Design for Video */
-        @media (max-width: 600px) {
-            #video-output iframe {
-                height: 200px !important;
-            }
-        }
-        
-        /* TITLE: Hot and Cold Numbers Styling */
-        #hot-cold-numbers .action-button:nth-child(1), #hot-cold-numbers .action-button:nth-child(2) {
-            background-color: #28a745 !important; /* Green for Play buttons */
-            color: white !important;
-            border: 1px solid #000 !important;
-        }
-        #hot-cold-numbers .action-button:nth-child(1):hover, #hot-cold-numbers .action-button:nth-child(2):hover {
-            background-color: #218838 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        #hot-cold-numbers .action-button:nth-child(3), #hot-cold-numbers .action-button:nth-child(4) {
-            background-color: #ff4444 !important; /* Red for Clear buttons */
-            color: white !important;
-            border: 1px solid #000 !important;
-        }
-        #hot-cold-numbers .action-button:nth-child(3):hover, #hot-cold-numbers .action-button:nth-child(4):hover {
-            background-color: #cc0000 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        #hot-cold-numbers .gr-textbox {
-            width: 100% !important;
-            margin: 5px 0 !important;
-            padding: 8px !important;
-            border: 1px solid #d3d3d3 !important;
-            border-radius: 5px !important;
-        }
-
-        /* TITLE: Hot/Cold Icons */
-        .hot-icon {
-            font-size: 24px !important;
-            margin-right: 10px !important;
-            animation: flicker 1.5s infinite alternate !important;
-        }
-        .cold-icon {
-            font-size: 24px !important;
-            margin-right: 10px !important;
-            animation: sparkle 2s infinite alternate !important;
-        }
-        @keyframes flicker {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.7; transform: scale(1.2); }
-        }
-        @keyframes sparkle {
-            0% { opacity: 1; transform: rotate(0deg); }
-            100% { opacity: 0.6; transform: rotate(20deg); }
         }
 
         /* TITLE: Traits Container (Updated in Change 1) */
@@ -6590,6 +6487,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes fadeInTooltip {
             0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
             100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Placeholder Section for Hit Percentage and SpinTrend Radar */
+        .placeholder-section {
+            background-color: #000 !important;
+            min-height: 200px !important; /* Ensure a minimum height to match the left side */
+            height: 100% !important;
+            width: 100% !important;
+            border-radius: 5px !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #fff !important; /* For potential future text */
+            font-family: Arial, sans-serif !important;
+        }
+
+        /* Ensure the columns are truly 50/50 and aligned */
+        .hit-percentage-container, .traits-container {
+            width: 100% !important;
+            max-width: none !important; /* Remove max-width to allow full column width */
+            margin: 0 !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .placeholder-section {
+                min-height: 150px !important; /* Smaller height on mobile */
+            }
+            .hit-percentage-container, .traits-container {
+                padding: 5px !important;
+            }
         }
         
         /* Lines after (unchanged) */
