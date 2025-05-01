@@ -6409,6 +6409,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 5px 0 !important;
             flex: 1 !important;
             min-width: 150px !important; /* Ensure groups don’t collapse */
+            overflow-x: auto !important; /* Enable horizontal scrolling for the group */
         }
         .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
         .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
