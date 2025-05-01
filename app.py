@@ -6265,7 +6265,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 1600px !important; /* Kept to fit all percentages */
+            max-width: 2000px !important; /* Kept to fit all percentages */
             margin-top: 10px !important; /* Space between slider and accordion */
             box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
