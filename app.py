@@ -4936,46 +4936,56 @@ def summarize_spin_traits(last_spin_count):
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
         # Build HTML badges with winner highlighting and hot streak indicators
-        html = '<div class="traits-badges">'
+        html = '<div class="traits-overview">'
+        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
+        html += '<div class="traits-wrapper">'
         # Even Money
-        html += '<div class="badge-group"><h4>Even Money Bets</h4>'
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
+        html += '<div class="percentage-badges">'
         for name, count in even_money_counts.items():
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
             streak = even_money_streaks[name]["max"]
             streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
             html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
-        html += '</div>'
+        html += '</div></div>'
         # Columns
-        html += '<div class="badge-group"><h4>Columns</h4>'
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #1565c0;">Columns</h4>'
+        html += '<div class="percentage-badges">'
         for name, count in column_counts.items():
             badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
             streak = column_streaks[name]["max"]
             streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
             html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
-        html += '</div>'
+        html += '</div></div>'
         # Dozens
-        html += '<div class="badge-group"><h4>Dozens</h4>'
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'
+        html += '<div class="percentage-badges">'
         for name, count in dozen_counts.items():
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
             streak = dozen_streaks[name]["max"]
             streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
             html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
-        html += '</div>'
+        html += '</div></div>'
         # Repeat Numbers (no streak tracking for repeats)
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #7b1fa2;">Repeat Numbers</h4>'
+        html += '<div class="percentage-badges">'
         repeats = {num: count for num, count in number_counts.items() if count > 1}
-        html += '<div class="badge-group"><h4>Repeat Numbers</h4>'
         if repeats:
             for num, count in sorted(repeats.items()):
                 html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
         else:
             html += f'<span class="trait-badge repeat">No repeats</span>'
-        html += '</div></div>'
+        html += '</div></div></div>'
         return html
     except Exception as e:
         print(f"summarize_spin_traits: Error: {str(e)}")
         return "<p>Error analyzing spin traits.</p>"
 
-# Surrounding lines after (unchanged)
+# Lines after (unchanged)
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
@@ -4990,7 +5000,7 @@ def suggest_hot_cold_numbers():
             cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
         return ", ".join(hot_numbers), ", ".join(cold_numbers)
     except Exception as e:
-        print(f"suggest_hot_cold_numbers: Error: {str(e)}")
+        print(f"summarize_spin_traits: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
 STRATEGIES = {
