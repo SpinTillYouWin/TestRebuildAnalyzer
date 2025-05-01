@@ -5227,50 +5227,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
                     elem_classes=["placeholder-section"]
                 )
-    last_spin_display = gr.HTML(
-        label="Last Spins",
-        value='<h4>Last Spins</h4><p>No spins yet.</p>',
-        elem_classes=["last-spins-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
-    # Start of updated section
-    # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                hit_percentage_display = gr.HTML(
-                    label="Hit Percentages",
-                    value=calculate_hit_percentages(36),
-                    elem_classes=["hit-percentage-container"]
-                )
-            with gr.Column(scale=1):
-                hit_percentage_placeholder = gr.HTML(
-                    label="Hit Percentage Placeholder",
-                    value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
-                    elem_classes=["placeholder-section"]
-                )
-    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                traits_display = gr.HTML(
-                    label="Spin Traits",
-                    value=summarize_spin_traits(36),
-                    elem_classes=["traits-container"]
-                )
-            with gr.Column(scale=1):
-                traits_placeholder = gr.HTML(
-                    label="SpinTrend Radar Placeholder",
-                    value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
-                    elem_classes=["placeholder-section"]
-                )
 
 # Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
