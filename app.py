@@ -6314,6 +6314,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
         }
+
         /* TITLE: Percentage Item Styles */
         .percentage-item {
             background-color: #444 !important;
@@ -6345,34 +6346,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             display: inline-block !important;
             text-align: center !important;
             margin: 0 3px !important;
+            margin-bottom: 6px !important; /* Add vertical spacing below each badge + bar */
         }
         
-        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 6) */
+        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
         .progress-bar {
             width: 100% !important;
             height: 6px !important;
-            min-height: 6px !important; /* Ensure bar renders */
-            background-color: #d3d3d3 !important; /* Light gray background */
+            min-height: 6px !important;
+            background-color: #d3d3d3 !important;
             border-radius: 3px !important;
-            margin-top: 4px !important; /* Increased for spacing */
+            margin-top: 6px !important; /* Increased for more spacing */
             overflow: hidden !important;
-            display: block !important; /* Force display */
+            display: block !important;
         }
         .progress-fill {
             height: 100% !important;
             border-radius: 3px !important;
             transition: width 0.3s ease !important;
-            display: block !important; /* Force display */
+            display: block !important;
         }
-        
-        /* Lines after (unchanged) */
-        /* TITLE: Hot/Cold Icons */
-        .hot-icon {
-            font-size: 24px !important;
-            margin-right: 10px !important;
-            animation: flicker 1.5s infinite alternate !important;
-        }
-        
+              
         /* Responsive Design */
         @media (max-width: 600px) {
             .roulette-button { min-width: 30px; font-size: 12px; padding: 5px; }
