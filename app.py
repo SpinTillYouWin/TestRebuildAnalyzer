@@ -5184,6 +5184,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
         )
+        with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+            hit_percentage_display = gr.HTML(
+                label="Hit Percentages",
+                value=calculate_hit_percentages(36),
+                elem_classes=["hit-percentage-container"]
+            )
+        with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+            traits_display = gr.HTML(
+                label="Spin Traits",
+                value=summarize_spin_traits(36),
+                elem_classes=["traits-container"]
+            )
     last_spin_display = gr.HTML(
         label="Last Spins",
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -5254,7 +5266,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[last_spin_count],
                                 outputs=[traits_display]
                             ).then(
-                                fn=lambda: print("btn.click: Updated traits_display"),
+                                fn=calculate_hit_percentages,
+                                inputs=[last_spin_count],
+                                outputs=[hit_percentage_display]
+                            ).then(
+                                fn=lambda: print("btn.click: Updated traits_display and hit_percentage_display"),
                                 inputs=[],
                                 outputs=[]
                             )
