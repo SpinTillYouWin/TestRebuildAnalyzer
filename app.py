@@ -6444,6 +6444,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Hot/Cold Icons */
         
         .hot-icon {
+
             font-size: 24px !important;
             margin-right: 10px !important;
             animation: flicker 1.5s infinite alternate !important;
@@ -6503,6 +6504,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
         .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
         .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
+
         # Existing styles (unchanged)
         /* Hot/Cold Icons */
         .hot-icon {
@@ -6515,18 +6517,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-right: 10px !important;
             animation: sparkle 2s infinite alternate !important;
         }
-
-# Updated styles for traits badges
-        /* Traits Badges */
+        @keyframes flicker {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.2); }
+        }
+        @keyframes sparkle {
+            0% { opacity: 1; transform: rotate(0deg); }
+            100% { opacity: 0.6; transform: rotate(20deg); }
+        }
+        
+        /* Line 1: Start of .traits-container (updated) */
         .traits-container {
             padding: 10px !important;
-            background-color: #f0f0f0 !important; /* Light gray, instead of white */
+            background-color: #f5f5dc !important; /* Light beige, matching hit-percentage-container */
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 600px !important; /* Align with roulette table max-width */
+            max-width: 2000px !important; /* Increased to match hit-percentage-container */
             margin-top: 10px !important; /* Space between slider and accordion */
+            box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
+        
+        /* Line 3: Start of .traits-badges (unchanged) */
         .traits-badges {
             display: flex !important;
             flex-wrap: wrap !important;
@@ -6539,6 +6551,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
         .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
         .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
+        
+        /* Lines after (unchanged) */
         .trait-badge {
             background-color: #444 !important;
             color: #fff !important;
