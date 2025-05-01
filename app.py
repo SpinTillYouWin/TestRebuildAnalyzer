@@ -6165,12 +6165,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
-            background-color: #f5f5dc !important; /* Light beige, matching the desired background */
+            background-color: #f5f5dc !important; /* Light beige */
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 600px !important; /* Align with SpinTrend Radar */
+            max-width: 1200px !important; /* Increased to accommodate all badges in one line */
             margin-top: 10px !important;
+            overflow-x: auto !important; /* Allow horizontal scrolling if needed */
         }
         .hit-percentage-overview {
             display: flex !important;
@@ -6179,9 +6180,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .percentage-badges {
             display: flex !important;
-            flex-wrap: wrap !important;
+            flex-wrap: nowrap !important; /* Prevent wrapping */
             gap: 5px !important;
             align-items: center !important;
+            white-space: nowrap !important; /* Ensure content stays in one line */
         }
         .category-label {
             color: #ffd700 !important; /* Gold text, matching SpinTrend Radar headers */
