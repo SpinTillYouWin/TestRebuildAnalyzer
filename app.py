@@ -6169,14 +6169,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 1200px !important; /* Increased to accommodate all badges in one line */
-            margin-top: 10px !important;
-            overflow-x: auto !important; /* Allow horizontal scrolling if needed */
+            max-width: 1600px !important; /* Increased to fit all percentages */
+            margin-top: 10px !important; /* Space between slider and accordion */
+            box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
         .hit-percentage-overview {
             display: flex !important;
             flex-wrap: wrap !important;
             gap: 10px !important;
+        }
+        .percentage-wrapper {
+            width: 100% !important;
+            max-width: 1600px !important; /* Increased to fit all percentages */
+            box-sizing: border-box !important; /* Ensure consistent width calculation */
         }
         .percentage-badges {
             display: flex !important;
