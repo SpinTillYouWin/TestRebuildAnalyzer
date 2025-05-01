@@ -6327,11 +6327,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important; /* Keep badges in a single row */
+            flex-wrap: nowrap !important; /* Prevent wrapping, match percentage-badges */
             gap: 5px !important;
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
             overflow-x: auto !important; /* Enable horizontal scrolling if badges overflow */
+            overflow-y: visible !important; /* Ensure progress bars are visible vertically */
             -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
         }
 
@@ -6367,6 +6368,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             text-align: center !important;
             margin: 0 3px !important;
             margin-bottom: 6px !important; /* Add vertical spacing below each badge + bar */
+            overflow: visible !important; /* Ensure progress bar isn’t clipped */
         }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
@@ -6409,6 +6411,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 5px 0 !important;
             flex: 1 !important;
             min-width: 150px !important; /* Ensure groups don’t collapse */
+            overflow-x: auto !important; /* Enable horizontal scrolling for the group */
         }
         .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
         .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
@@ -6420,6 +6423,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gap: 5px !important;
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
+            overflow-x: auto !important; /* Enable horizontal scrolling if badges overflow */
+            overflow-y: visible !important; /* Ensure progress bars are visible vertically */
+            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
         }
 
         /* TITLE: Trait Badge Styles */
@@ -6480,7 +6486,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Placeholder Section for Hit Percentage and SpinTrend Radar */
         .placeholder-section {
             background-color: #000 !important;
-            min-height: 200px !important; /* Ensure a minimum height to match the left side */
             height: 100% !important;
             width: 100% !important;
             border-radius: 5px !important;
@@ -6492,11 +6497,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             font-family: Arial, sans-serif !important;
         }
 
-        /* Ensure the columns are truly 50/50 and aligned */
-        .hit-percentage-container, .traits-container {
-            width: 100% !important;
-            max-width: none !important; /* Remove max-width to allow full column width */
-            margin: 0 !important;
+        /* Ensure equal height for Hit Percentage and SpinTrend Radar rows */
+        #hit-percentage-overview .gr-row,
+        #spin-trend-radar .gr-row {
+            display: flex !important;
+            align-items: stretch !important;
+        }
+        #hit-percentage-overview .gr-column,
+        #spin-trend-radar .gr-column {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            height: auto !important;
         }
 
         /* Responsive adjustments */
