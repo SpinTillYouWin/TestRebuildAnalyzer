@@ -2335,33 +2335,108 @@ def reset_casino_data():
     )
 
 # Line 1: Start of create_dynamic_table function (updated)
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=None, top_color="rgba(255, 255, 0, 0.5)", middle_color="rgba(0, 255, 255, 0.5)", lower_color="rgba(0, 255, 0, 0.5)"):
+    """Create an HTML table for the dynamic roulette table based on scores and strategy."""
     print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
     print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
-    sorted_sections = calculate_trending_sections()
-    
-    # If no spins yet, initialize with default even money focus
-    if sorted_sections is None and strategy_name == "Best Even Money Bets":
-        trending_even_money = "Red"  # Default to "Red" as an example
-        second_even_money = "Black"
-        third_even_money = "Even"
-        trending_dozen = None
-        second_dozen = None
-        trending_column = None
-        second_column = None
-        number_highlights = {}
-        top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
-        middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
-        lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
-        suggestions = None
-    else:
-        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
-    
-    # If still no highlights and no sorted_sections, provide a default message
-    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
-    
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
+    # Determine highlighted numbers based on strategy
+    highlighted_numbers = {}
+    if strategy_name and strategy_name in STRATEGIES:
+        strategy_func = STRATEGIES[strategy_name]["function"]
+        if strategy_name == "Neighbours of Strong Number":
+            strategy_output, highlighted_numbers = strategy_func(neighbours_count, strong_numbers_count)
+        else:
+            strategy_func()  # Ensure scores are updated
+            # Map scores to numbers
+            for num in range(37):
+                score = state.scores.get(num, 0)
+                if score > 0:
+                    highlighted_numbers[str(num)] = score
+    # If casino data is provided, override highlighted numbers
+    if state.casino_data.get("use_winners", False):
+        highlighted_numbers = {}
+        # Use casino data to determine highlighted numbers
+        even_numbers = set(range(2, 37, 2))
+        odd_numbers = set(range(1, 37, 2))
+        low_numbers = set(range(1, 19))
+        high_numbers = set(range(19, 37))
+        dozen1_numbers = set(range(1, 13))
+        dozen2_numbers = set(range(13, 25))
+        dozen3_numbers = set(range(25, 37))
+        col1_numbers = set(range(1, 34, 3))
+        col2_numbers = set(range(2, 35, 3))
+        col3_numbers = set(range(3, 37, 3))
+        # Map percentages to scores
+        score_mappings = {
+            "even": (int(state.casino_data.get("even_percent", 0)), even_numbers),
+            "odd": (int(state.casino_data.get("odd_percent", 0)), odd_numbers),
+            "red": (int(state.casino_data.get("red_percent", 0)), set(colors.keys()).intersection(set(map(str, range(1, 37))).difference(set(map(str, range(2, 37, 2))))),
+            "black": (int(state.casino_data.get("black_percent", 0)), set(colors.keys()).intersection(set(map(str, range(2, 37, 2))))),
+            "low": (int(state.casino_data.get("low_percent", 0)), low_numbers),
+            "high": (int(state.casino_data.get("high_percent", 0)), high_numbers),
+            "dozen1": (int(state.casino_data.get("dozen1_percent", 0)), dozen1_numbers),
+            "dozen2": (int(state.casino_data.get("dozen2_percent", 0)), dozen2_numbers),
+            "dozen3": (int(state.casino_data.get("dozen3_percent", 0)), dozen3_numbers),
+            "col1": (int(state.casino_data.get("col1_percent", 0)), col1_numbers),
+            "col2": (int(state.casino_data.get("col2_percent", 0)), col2_numbers),
+            "col3": (int(state.casino_data.get("col3_percent", 0)), col3_numbers),
+        }
+        for key, (percent, number_set) in score_mappings.items():
+            if percent > 0:
+                for num in number_set:
+                    highlighted_numbers[str(num)] = percent
+
+    # Determine recent spins for hit indicator (last 5 spins)
+    recent_spins = state.last_spins[-5:] if len(state.last_spins) >= 5 else state.last_spins
+    recent_hits = {}
+    for i, spin in enumerate(recent_spins):
+        recency_level = i + 1  # 1 for most recent, 5 for least recent
+        recent_hits[spin] = recency_level
+
+    # Define the table layout
+    table_layout = [
+        ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+        ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+        ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+    ]
+
+    # Generate the HTML table
+    html = '<div class="dynamic-roulette-table">'
+    for row in table_layout:
+        html += '<div class="table-row">'
+        for num in row:
+            if num == "":
+                html += '<span class="empty-button"></span>'
+            else:
+                color = colors.get(num, "black")
+                classes = [f"dynamic-roulette-button", color]
+                style = ""
+                # Check if the number is highlighted
+                if num in highlighted_numbers:
+                    score = highlighted_numbers[num]
+                    # Determine the tier based on score
+                    sorted_scores = sorted(highlighted_numbers.values(), reverse=True)
+                    if len(sorted_scores) >= 3:
+                        top_threshold = sorted_scores[2] if len(sorted_scores) > 2 else sorted_scores[0]
+                        middle_threshold = sorted_scores[len(sorted_scores)//2] if len(sorted_scores) > 1 else sorted_scores[0]
+                    else:
+                        top_threshold = sorted_scores[0] if sorted_scores else 0
+                        middle_threshold = top_threshold
+                    if score >= top_threshold:
+                        style = f"background-color: {top_color};"
+                    elif score >= middle_threshold:
+                        style = f"background-color: {middle_color};"
+                    else:
+                        style = f"background-color: {lower_color};"
+                    classes.append("highlighted")
+                # Check if the number was recently hit
+                if num in recent_hits:
+                    recency_level = recent_hits[num]
+                    classes.append(f"recent-hit recent-hit-{recency_level}")
+                html += f'<span class="{" ".join(classes)}" style="{style}">{num}</span>'
+        html += '</div>'
+    html += '</div>'
+    return html
     
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
