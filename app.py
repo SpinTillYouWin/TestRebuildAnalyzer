@@ -6295,7 +6295,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
-        /* Hit Percentage Overview */
+            /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
             background-color: #f5f5dc !important; /* Light beige */
@@ -6320,16 +6320,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 5px 0 !important;
             flex: 1 !important;
             min-width: 150px !important;
+            overflow-x: auto !important; /* Enable horizontal scrolling for the group */
         }
         .percentage-group h4 {
             margin: 5px 0 !important;
         }
         .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important; /* Prevent wrapping */
+            flex-wrap: nowrap !important; /* Keep badges in a single row */
             gap: 5px !important;
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
+            overflow-x: auto !important; /* Enable horizontal scrolling if badges overflow */
+            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
         }
 
         /* TITLE: Percentage Item Styles */
