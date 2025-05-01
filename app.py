@@ -4856,7 +4856,7 @@ def calculate_hit_percentages(last_spin_count):
 
 # Updated function with debug log
 def summarize_spin_traits(last_spin_count):
-    """Summarize traits for the last X spins as HTML badges, highlighting winners."""
+    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
     print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
     try:
         # Ensure last_spin_count is a valid integer
@@ -4875,22 +4875,56 @@ def summarize_spin_traits(last_spin_count):
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
 
-        # Analyze spins
+        # Initialize streak tracking
+        even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in even_money_counts}
+        column_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in column_counts}
+        dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in dozen_counts}
+
+        # Analyze spins and track streaks
         for spin in last_spins:
             try:
                 num = int(spin)
+                # Reset last_hit flags for this spin
+                for key in even_money_streaks:
+                    even_money_streaks[key]["last_hit"] = False
+                for key in column_streaks:
+                    column_streaks[key]["last_hit"] = False
+                for key in dozen_streaks:
+                    dozen_streaks[key]["last_hit"] = False
+
                 # Even Money Bets
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
                         even_money_counts[name] += 1
+                        even_money_streaks[name]["last_hit"] = True
+                        even_money_streaks[name]["current"] += 1
+                        even_money_streaks[name]["max"] = max(even_money_streaks[name]["max"], even_money_streaks[name]["current"])
+                    else:
+                        if not even_money_streaks[name]["last_hit"]:
+                            even_money_streaks[name]["current"] = 0
+
                 # Columns
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
                         column_counts[name] += 1
+                        column_streaks[name]["last_hit"] = True
+                        column_streaks[name]["current"] += 1
+                        column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
+                    else:
+                        if not column_streaks[name]["last_hit"]:
+                            column_streaks[name]["current"] = 0
+
                 # Dozens
                 for name, numbers in DOZENS.items():
                     if num in numbers:
                         dozen_counts[name] += 1
+                        dozen_streaks[name]["last_hit"] = True
+                        dozen_streaks[name]["current"] += 1
+                        dozen_streaks[name]["max"] = max(dozen_streaks[name]["max"], dozen_streaks[name]["current"])
+                    else:
+                        if not dozen_streaks[name]["last_hit"]:
+                            dozen_streaks[name]["current"] = 0
+
                 # Repeat Numbers
                 number_counts[num] = number_counts.get(num, 0) + 1
             except ValueError:
@@ -4901,28 +4935,33 @@ def summarize_spin_traits(last_spin_count):
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # Build HTML badges with winner highlighting
+        # Build HTML badges with winner highlighting and hot streak indicators
         html = '<div class="traits-badges">'
         # Even Money
         html += '<div class="badge-group"><h4>Even Money Bets</h4>'
         for name, count in even_money_counts.items():
-            # Add 'winner' class if this count is the maximum in the section
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
-            html += f'<span class="{badge_class}">{name}: {count}</span>'
+            streak = even_money_streaks[name]["max"]
+            streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
+            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
         html += '</div>'
         # Columns
         html += '<div class="badge-group"><h4>Columns</h4>'
         for name, count in column_counts.items():
             badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
-            html += f'<span class="{badge_class}">{name}: {count}</span>'
+            streak = column_streaks[name]["max"]
+            streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
+            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
         html += '</div>'
         # Dozens
         html += '<div class="badge-group"><h4>Dozens</h4>'
         for name, count in dozen_counts.items():
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
-            html += f'<span class="{badge_class}">{name}: {count}</span>'
+            streak = dozen_streaks[name]["max"]
+            streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
+            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
         html += '</div>'
-        # Repeat Numbers (no highlighting)
+        # Repeat Numbers (no streak tracking for repeats)
         repeats = {num: count for num, count in number_counts.items() if count > 1}
         html += '<div class="badge-group"><h4>Repeat Numbers</h4>'
         if repeats:
@@ -6527,6 +6566,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
             background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
             transform: scale(1.1) !important; /* Make winners slightly larger */
+        }
+        /* Hot Streak Indicator */
+        .hot-streak {
+            margin-left: 5px !important;
+            font-size: 12px !important;
+            cursor: pointer !important;
+            animation: flicker 1.5s infinite alternate !important;
+        }
+        
+        .hot-streak:hover:after {
+            content: attr(title);
+            position: absolute;
+            background-color: #333;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 10;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.2); }
         }
 
         /* Suggestion Box */
