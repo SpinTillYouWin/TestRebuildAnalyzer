@@ -511,14 +511,18 @@ def format_spins_as_html(spins, num_to_show):
     html_spins = []
     for i, spin in enumerate(spin_list):
         color = colors.get(spin.strip(), "black")  # Default to black if not found
-        # Apply flip and flash classes to the newest spin(s) (last in the list)
-        class_attr = f'fade-in flip flash {color}' if i == len(spin_list) - 1 else 'fade-in'
+        # Apply flip, flash, and new-spin classes to the newest spin (last in the list)
+        # Also add a spin-color class for color-coded highlighting
+        if i == len(spin_list) - 1:
+            class_attr = f'fade-in flip flash new-spin spin-{color} {color}'
+        else:
+            class_attr = f'fade-in {color}'
         html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
     
-    # Add JavaScript to remove fade-in, flash, and flip classes after animations
+    # Add JavaScript to remove fade-in, flash, flip, and new-spin classes after animations
     html_output += '''
     <script>
         document.querySelectorAll('.fade-in').forEach(element => {
@@ -535,6 +539,11 @@ def format_spins_as_html(spins, num_to_show):
             setTimeout(() => {
                 element.classList.remove('flip');
             }, 500);
+        });
+        document.querySelectorAll('.new-spin').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('new-spin');
+            }, 1000);
         });
     </script>
     '''
@@ -3966,9 +3975,9 @@ def create_color_code_table():
     return html
     
 def update_spin_counter():
-    """Return the current number of spins as formatted HTML."""
-    spin_count = len(state.last_spins)
-    return f'<span class="spin-counter">Total Spins: {spin_count}</span>'
+    """Update the spin counter HTML with the total number of spins."""
+    total_spins = len(state.last_spins)
+    return f'<span class="spin-counter glow" style="font-size: 14px; padding: 4px 8px;">Total Spins: {total_spins}</span>'
     
 # Lines before (context, unchanged)
 def top_numbers_with_neighbours_tiered():
@@ -6151,6 +6160,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(360deg); }
         }
+        /* New Spin Highlight Effect */
+        .new-spin {
+            position: relative !important;
+            animation: pulse-highlight 1s ease-in-out !important;
+        }
+        
+        @keyframes pulse-highlight {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
+        }
+        
+        /* Color-coded highlights for new spins */
+        .new-spin.spin-red {
+            --highlight-color: rgba(255, 0, 0, 0.8) !important;
+        }
+        .new-spin.spin-black {
+            --highlight-color: rgba(255, 255, 255, 0.8) !important; /* White for visibility */
+        }
+        .new-spin.spin-green {
+            --highlight-color: rgba(0, 255, 0, 0.8) !important;
+        }
     
         /* Spin Counter Styling */
         .spin-counter {
@@ -6172,7 +6202,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transform: scale(1.05) !important;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
         }
+        .spin-counter.glow {
+            animation: counter-glow 0.5s ease-in-out !important;
+        }
         
+        @keyframes counter-glow {
+            0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+            50% { box-shadow: 0 0 10px 5px rgba(52, 152, 219, 0.8); } /* Blue glow matching the counter's gradient */
+        }
         .sides-of-zero-container {
             background-color: #ffffff !important;
             border: 1px solid #d3d3d3 !important;
@@ -6182,7 +6219,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
-                    /* Hit Percentage Overview */
+            /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
             background-color: #f5f5dc !important; /* Light beige */
@@ -6414,12 +6451,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 12px !important;
             font-size: 12px !important;
             margin: 3px !important;
-            transition: transform 0.2s, box-shadow 0.2s !important;
+            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
             cursor: pointer !important;
         }
+        
         .trait-badge:hover {
             transform: scale(1.1) !important;
             box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            filter: brightness(1.2) !important; /* Slight brightness increase */
         }
         .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
         .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
