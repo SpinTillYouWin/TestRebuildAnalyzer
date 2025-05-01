@@ -4799,34 +4799,40 @@ def calculate_hit_percentages(last_spin_count):
         # Build HTML output
         html = '<div class="hit-percentage-overview">'
         html += f'<h4>Hit Percentage Overview (Last {total_spins} Spins):</h4>'
-        html += '<div class="percentage-badges">'
+        html += '<div class="percentage-wrapper">'
 
         # Even Money Bets
-        html += '<span class="category-label">Even Money Bets:</span> '
+        html += '<div class="percentage-group">'
+        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'  # Burgundy, matching SpinTrend Radar
         even_money_items = []
         for name, count in even_money_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item even-money winner" if count == max_even_money and max_even_money > 0 else "percentage-item even-money"
             even_money_items.append(f'<span class="{badge_class}">{name}: {percentage:.1f}%</span>')
-        html += " ".join(even_money_items)
+        html += '<div class="percentage-badges">' + " ".join(even_money_items) + '</div>'
+        html += '</div>'
 
         # Columns
-        html += '<span class="category-label">Columns:</span> '
+        html += '<div class="percentage-group">'
+        html += '<h4 style="color: #1565c0;">Columns</h4>'  # Blue, matching SpinTrend Radar
         column_items = []
         for name, count in column_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item column winner" if count == max_columns and max_columns > 0 else "percentage-item column"
             column_items.append(f'<span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span>')
-        html += " ".join(column_items)
+        html += '<div class="percentage-badges">' + " ".join(column_items) + '</div>'
+        html += '</div>'
 
         # Dozens
-        html += '<span class="category-label">Dozens:</span> '
+        html += '<div class="percentage-group">'
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'  # Green, matching SpinTrend Radar
         dozen_items = []
         for name, count in dozen_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item dozen winner" if count == max_dozens and max_dozens > 0 else "percentage-item dozen"
             dozen_items.append(f'<span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span>')
-        html += " ".join(dozen_items)
+        html += '<div class="percentage-badges">' + " ".join(dozen_items) + '</div>'
+        html += '</div>'
 
         html += '</div></div>'
         return html
@@ -6169,7 +6175,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 1600px !important; /* Increased to fit all percentages */
+            max-width: 1600px !important; /* Kept to fit all percentages */
             margin-top: 10px !important; /* Space between slider and accordion */
             box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
@@ -6180,8 +6186,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .percentage-wrapper {
             width: 100% !important;
-            max-width: 1600px !important; /* Increased to fit all percentages */
+            max-width: 1600px !important; /* Kept to fit all percentages */
             box-sizing: border-box !important; /* Ensure consistent width calculation */
+        }
+        .percentage-group {
+            margin: 5px 0 !important;
+            flex: 1 !important;
+            min-width: 150px !important;
+        }
+        .percentage-group h4 {
+            margin: 5px 0 !important;
         }
         .percentage-badges {
             display: flex !important;
@@ -6189,12 +6203,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gap: 5px !important;
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
-        }
-        .category-label {
-            color: #ffd700 !important; /* Gold text, matching SpinTrend Radar headers */
-            font-size: 14px !important;
-            font-weight: bold !important;
-            margin-right: 5px !important;
         }
         .percentage-item {
             background-color: #444 !important; /* Match SpinTrend Radar badge background */
@@ -6399,10 +6407,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Traits Badges */
         .traits-container {
             padding: 10px !important;
-            background-color: #2e7d32 !important; /* Casino green felt */
+            background-color: #f0f0f0 !important; /* Light gray, instead of white */
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
-            width: 100% !important; /* Match slider width */
+            width: 100% !important;
             max-width: 600px !important; /* Align with roulette table max-width */
             margin-top: 10px !important; /* Space between slider and accordion */
         }
