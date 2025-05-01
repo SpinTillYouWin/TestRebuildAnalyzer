@@ -4822,7 +4822,8 @@ def calculate_hit_percentages(last_spin_count):
         for name, count in column_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item column winner" if count == max_columns and max_columns > 0 else "percentage-item column"
-            column_items.append(f'<span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span>')
+            bar_color = "#1565c0"  # Blue, matching Columns badge color
+            column_items.append(f'<div class="percentage-with-bar"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(column_items)
         html += '</div></div>'
 
@@ -4834,7 +4835,8 @@ def calculate_hit_percentages(last_spin_count):
         for name, count in dozen_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item dozen winner" if count == max_dozens and max_dozens > 0 else "percentage-item dozen"
-            dozen_items.append(f'<span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span>')
+            bar_color = "#388e3c"  # Green, matching Dozens badge color
+            dozen_items.append(f'<div class="percentage-with-bar"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(dozen_items)
         html += '</div></div>'
 
