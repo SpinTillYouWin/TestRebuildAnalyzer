@@ -6101,6 +6101,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        /* Spin animation for roulette table buttons */
+        .roulette-button:active {
+            animation: spin 0.5s ease-in-out !important;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         
         /* Flash animation for new spins */
         .flash.red {
