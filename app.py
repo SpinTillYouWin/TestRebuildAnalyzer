@@ -4754,6 +4754,89 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
+def calculate_hit_percentages(last_spin_count):
+    """Calculate hit percentages for Even Money Bets, Columns, and Dozens, with winner highlighting."""
+    try:
+        # Ensure last_spin_count is a valid integer
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+
+        # Use state.last_spins directly and ensure it's not empty
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for analysis.</p>"
+
+        total_spins = len(last_spins)
+        # Initialize counters
+        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+
+        # Analyze spins
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                # Even Money Bets
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        even_money_counts[name] += 1
+                # Columns
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        column_counts[name] += 1
+                # Dozens
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts[name] += 1
+            except ValueError:
+                continue
+
+        # Find the maximum counts for highlighting winners
+        max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+        max_columns = max(column_counts.values()) if column_counts else 0
+        max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+
+        # Build HTML output
+        html = '<div class="hit-percentage-overview">'
+        html += f'<h4>Hit Percentage Overview (Last {total_spins} Spins):</h4>'
+        html += '<div class="percentage-grid">'
+
+        # Even Money Bets
+        html += '<div class="percentage-group"><strong>Even Money Bets:</strong> '
+        even_money_items = []
+        for name, count in even_money_counts.items():
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            badge_class = "percentage-item winner" if count == max_even_money and max_even_money > 0 else "percentage-item"
+            even_money_items.append(f'<span class="{badge_class}">{name}: {percentage:.1f}%</span>')
+        html += ", ".join(even_money_items)
+        html += '</div>'
+
+        # Columns
+        html += '<div class="percentage-group"><strong>Columns:</strong> '
+        column_items = []
+        for name, count in column_counts.items():
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            badge_class = "percentage-item winner" if count == max_columns and max_columns > 0 else "percentage-item"
+            column_items.append(f'<span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span>')
+        html += ", ".join(column_items)
+        html += '</div>'
+
+        # Dozens
+        html += '<div class="percentage-group"><strong>Dozens:</strong> '
+        dozen_items = []
+        for name, count in dozen_counts.items():
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            badge_class = "percentage-item winner" if count == max_dozens and max_dozens > 0 else "percentage-item"
+            dozen_items.append(f'<span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span>')
+        html += ", ".join(dozen_items)
+        html += '</div>'
+
+        html += '</div></div>'
+        return html
+    except Exception as e:
+        print(f"calculate_hit_percentages: Error: {str(e)}")
+        return "<p>Error calculating hit percentages.</p>"
+
 # Updated function with debug log
 def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners."""
@@ -5039,8 +5122,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+    # Start of updated section
+    # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+        hit_percentage_display = gr.HTML(
+            label="Hit Percentages",
+            value=calculate_hit_percentages(36),
+            elem_classes=["hit-percentage-container"]
+        )
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+    # Line 2:     traits_display = gr.HTML(
         traits_display = gr.HTML(
+    # Line 3:         label="Spin Traits",
             label="Spin Traits",
             value=summarize_spin_traits(36),
             elem_classes=["traits-container"]
@@ -6071,6 +6164,61 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
+
+        /* Hit Percentage Overview */
+        .hit-percentage-container {
+            padding: 10px !important;
+            background-color: #1b5e20 !important; /* Darker green to differentiate from SpinTrend Radar */
+            border-radius: 5px !important;
+            border: 1px solid #d3d3d3 !important;
+            width: 100% !important;
+            max-width: 600px !important; /* Align with SpinTrend Radar */
+            margin-top: 10px !important;
+        }
+        .hit-percentage-overview {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+        }
+        .percentage-grid {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 15px !important;
+            justify-content: space-between !important;
+        }
+        .percentage-group {
+            flex: 1 !important;
+            min-width: 150px !important;
+            margin: 5px 0 !important;
+        }
+        .percentage-group strong {
+            color: #ffd700 !important; /* Gold text, matching SpinTrend Radar headers */
+            font-size: 14px !important;
+            margin-right: 5px !important;
+        }
+        .percentage-item {
+            background-color: #37474f !important; /* Dark slate gray, different from SpinTrend Radar badges */
+            color: #fff !important;
+            padding: 4px 8px !important;
+            border-radius: 10px !important;
+            font-size: 11px !important;
+            margin: 2px !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+            cursor: pointer !important;
+            display: inline-block !important;
+        }
+        .percentage-item:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+        }
+        .percentage-item.winner {
+            font-weight: bold !important;
+            color: #333 !important; /* Dark gray text for better contrast */
+            border: 2px solid #ffd700 !important; /* Gold border */
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
+            transform: scale(1.1) !important; /* Make winners slightly larger */
+        }
         
         /* Responsive Design */
         @media (max-width: 600px) {
@@ -6845,6 +6993,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
@@ -6858,8 +7010,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         )
-
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
     
@@ -6953,6 +7108,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
