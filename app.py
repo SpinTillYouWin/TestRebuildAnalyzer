@@ -4764,11 +4764,10 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
 def calculate_hit_percentages(last_spin_count):
-    """Calculate hit percentages for Even Money Bets, Columns, and Dozens, with winner highlighting."""
     try:
         # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
-        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+        last_spin_count = max(1, min(last_spin_count, 36))
 
         # Use state.last_spins directly and ensure it's not empty
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
@@ -4785,15 +4784,12 @@ def calculate_hit_percentages(last_spin_count):
         for spin in last_spins:
             try:
                 num = int(spin)
-                # Even Money Bets
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
                         even_money_counts[name] += 1
-                # Columns
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
                         column_counts[name] += 1
-                # Dozens
                 for name, numbers in DOZENS.items():
                     if num in numbers:
                         dozen_counts[name] += 1
@@ -4806,48 +4802,75 @@ def calculate_hit_percentages(last_spin_count):
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
         # Build HTML output
-        html = '<div class="hit-percentage-overview">'
-        html += f'<h4>Hit Percentage Overview (Last {total_spins} Spins):</h4>'
+        html = '<div class="hit-percentage-overview" style="display: flex; justify-content: space-between; align-items: flex-start;">'
         html += '<div class="percentage-wrapper">'
+        html += f'<h4>Hit Percentage Overview (Last {total_spins} Spins):</h4>'
 
-                # Even Money Bets
+        # Even Money Bets
         html += '<div class="percentage-group">'
-        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'  # Burgundy, matching SpinTrend Radar
+        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
         even_money_items = []
         for name, count in even_money_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item even-money winner" if count == max_even_money and max_even_money > 0 else "percentage-item even-money"
-            bar_color = "#b71c1c" if name == "Red" else "#000000" if name == "Black" else "#666"  # Red, Black, or gray
+            bar_color = "#b71c1c" if name == "Red" else "#000000" if name == "Black" else "#666"
             even_money_items.append(f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}">{name}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(even_money_items)
         html += '</div></div>'
 
         # Columns
         html += '<div class="percentage-group">'
-        html += '<h4 style="color: #1565c0;">Columns</h4>'  # Blue, matching SpinTrend Radar
+        html += '<h4 style="color: #1565c0;">Columns</h4>'
         html += '<div class="percentage-badges">'
         column_items = []
         for name, count in column_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item column winner" if count == max_columns and max_columns > 0 else "percentage-item column"
-            bar_color = "#1565c0"  # Blue, matching Columns badge color
+            bar_color = "#1565c0"
             column_items.append(f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(column_items)
         html += '</div></div>'
 
         # Dozens
         html += '<div class="percentage-group">'
-        html += '<h4 style="color: #388e3c;">Dozens</h4>'  # Green, matching SpinTrend Radar
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'
         html += '<div class="percentage-badges">'
         dozen_items = []
         for name, count in dozen_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item dozen winner" if count == max_dozens and max_dozens > 0 else "percentage-item dozen"
-            bar_color = "#388e3c"  # Green, matching Dozens badge color
+            bar_color = "#388e3c"
             dozen_items.append(f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(dozen_items)
         html += '</div></div>'
+
+        # Close percentage-wrapper
+        html += '</div>'
+
+        # Add Mini Roulette Wheel
+        html += '''
+        <div class="mini-roulette-wheel">
+            <div class="wheel">
+                <div class="wheel-section red"></div>
+                <div class="wheel-section black"></div>
+                <div class="wheel-section green"></div>
+                <div class="wheel-section red"></div>
+                <div class="wheel-section black"></div>
+                <div class="wheel-section green"></div>
+                <div class="wheel-section red"></div>
+                <div class="wheel-section black"></div>
+                <div class="wheel-section green"></div>
+                <div class="wheel-section red"></div>
+                <div class="wheel-section black"></div>
+                <div class="wheel-section green"></div>
+                <div class="wheel-center"></div>
+            </div>
+        </div>
+        '''
+
+        # Close hit-percentage-overview
+        html += '</div>'
 
         return html
     except Exception as e:
@@ -6340,6 +6363,77 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 3px !important;
             transition: width 0.3s ease !important;
             display: block !important; /* Force display */
+        }
+        /* Mini Roulette Wheel */
+        .mini-roulette-wheel {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            margin-left: 20px;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 5px solid #d4af37; /* Gold border */
+            animation: spin-wheel 10s infinite linear; /* Subtle spinning animation */
+        }
+        
+        .wheel-section {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
+            transform-origin: 50% 50%;
+        }
+        
+        .wheel-section:nth-child(1) { transform: rotate(0deg); }
+        .wheel-section:nth-child(2) { transform: rotate(30deg); }
+        .wheel-section:nth-child(3) { transform: rotate(60deg); }
+        .wheel-section:nth-child(4) { transform: rotate(90deg); }
+        .wheel-section:nth-child(5) { transform: rotate(120deg); }
+        .wheel-section:nth-child(6) { transform: rotate(150deg); }
+        .wheel-section:nth-child(7) { transform: rotate(180deg); }
+        .wheel-section:nth-child(8) { transform: rotate(210deg); }
+        .wheel-section:nth-child(9) { transform: rotate(240deg); }
+        .wheel-section:nth-child(10) { transform: rotate(270deg); }
+        .wheel-section:nth-child(11) { transform: rotate(300deg); }
+        .wheel-section:nth-child(12) { transform: rotate(330deg); }
+        
+        .wheel-section.red { background-color: #ff0000; }
+        .wheel-section.black { background-color: #000000; }
+        .wheel-section.green { background-color: #008000; }
+        
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background-color: #d4af37; /* Gold center */
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        
+        @keyframes spin-wheel {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustment */
+        @media (max-width: 768px) {
+            .hit-percentage-overview {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            .mini-roulette-wheel {
+                margin-left: 0 !important;
+                margin-top: 20px !important;
+            }
         }
         
         /* Responsive Design */
