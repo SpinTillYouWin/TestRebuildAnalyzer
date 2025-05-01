@@ -4935,7 +4935,7 @@ def summarize_spin_traits(last_spin_count):
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # TITLE: Build HTML Badges (REVERTED FOR COUNTS)
+        # TITLE: Build HTML Badges (UPDATED FOR CHANGE 5)
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
@@ -4946,8 +4946,8 @@ def summarize_spin_traits(last_spin_count):
         for name, count in even_money_counts.items():
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
             streak = even_money_streaks[name]["max"]
-            streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
-            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            html += f'<span class="{badge_class}" title="{streak_title}">{name}: {count}</span>'
         html += '</div></div>'
         # Columns
         html += '<div class="badge-group">'
@@ -4956,8 +4956,8 @@ def summarize_spin_traits(last_spin_count):
         for name, count in column_counts.items():
             badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
             streak = column_streaks[name]["max"]
-            streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
-            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            html += f'<span class="{badge_class}" title="{streak_title}">{name}: {count}</span>'
         html += '</div></div>'
         # Dozens
         html += '<div class="badge-group">'
@@ -4966,8 +4966,8 @@ def summarize_spin_traits(last_spin_count):
         for name, count in dozen_counts.items():
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
             streak = dozen_streaks[name]["max"]
-            streak_indicator = f'<span class="hot-streak" title="{name} Hot Streak: {streak} consecutive hits">🔥</span>' if streak >= 3 else ""
-            html += f'<span class="{badge_class}">{name}: {count}{streak_indicator}</span>'
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            html += f'<span class="{badge_class}" title="{streak_title}">{name}: {count}</span>'
         html += '</div></div>'
         # Repeat Numbers (no streak tracking for repeats)
         html += '<div class="badge-group">'
@@ -6535,33 +6535,34 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
             transform: scale(1.1) !important; /* Make winners slightly larger */
         }
-
-        /* TITLE: Hot Streak Indicator */
+        
+        /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
         .hot-streak {
-            margin-left: 5px !important;
-            font-size: 12px !important;
-            cursor: pointer !important;
-            animation: flicker 1.5s infinite alternate !important;
+            display: none !important; /* Hidden, as streak info is now in tooltip */
         }
         .hot-streak:hover:after {
             content: attr(title);
             position: absolute;
-            background-color: #333;
-            color: white;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            white-space: nowrap;
-            z-index: 10;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
+            background-color: #333 !important;
+            color: white !important;
+            padding: 6px 10px !important;
+            border-radius: 5px !important;
+            font-size: 12px !important;
+            font-family: Arial, sans-serif !important;
+            white-space: nowrap !important;
+            z-index: 20 !important;
+            top: -35px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+            animation: fadeInTooltip 0.3s ease-in !important;
         }
-        @keyframes flicker {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.7; transform: scale(1.2); }
+        @keyframes fadeInTooltip {
+            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-
+        
+        /* Lines after (unchanged) */
         /* TITLE: Suggestion Box */
         .suggestion-box {
             background-color: #f0f8ff !important;
