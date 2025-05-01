@@ -8233,6 +8233,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in play_cold_button.click handler: {str(e)}")
     
     # Betting progression event handlers
+
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
@@ -8241,32 +8242,44 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         state.stop_win = stop_win
         state.bet_type = bet_type
         state.progression = progression
-        # Line 1: Enforce minimum value and reset labouchere_sequence
         target_profit = int(target_profit) if target_profit is not None else 10  # Ensure integer, default to 10
         state.target_profit = max(1, target_profit)  # Enforce minimum value of 1
+        
         if progression == "Labouchere":
             try:
                 # Only use the sequence if it's non-empty and valid; otherwise, auto-generate
                 if sequence and sequence.strip():
                     parsed_sequence = [int(x.strip()) for x in sequence.split(",")]
+                    if len(parsed_sequence) > 10:  # Add length validation
+                        state.progression_state = [1] * state.target_profit
+                        state.labouchere_sequence = ""
+                        gr.Warning("Labouchere sequence too long! Maximum 10 numbers allowed. Using default sequence instead.")
+                        return bankroll, base_unit, base_unit, f"Sequence too long, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
                     if all(isinstance(x, int) and x > 0 for x in parsed_sequence):
                         state.progression_state = parsed_sequence
                         state.labouchere_sequence = sequence  # Keep the user-provided sequence
                     else:
                         state.progression_state = [1] * state.target_profit
-                        state.labouchere_sequence = ""  # Clear the sequence to use auto-generated
+                        state.labouchere_sequence = ""
+                        gr.Warning("Invalid Labouchere sequence! All numbers must be positive integers. Using default sequence instead.")
                         return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
                 else:
                     state.progression_state = [1] * state.target_profit
                     state.labouchere_sequence = ""  # Ensure auto-generated sequence is used
             except ValueError:
                 state.progression_state = [1] * state.target_profit
-                state.labouchere_sequence = ""  # Clear the sequence on error
+                state.labouchere_sequence = ""
+                gr.Warning("Invalid Labouchere sequence format! Use comma-separated positive integers (e.g., 1, 2, 3). Using default sequence instead.")
                 return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
         else:
             state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
-        state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
+            state.reset_progression()
+            return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
+        
+        # Add toggle_labouchere function here
+        def toggle_labouchere(progression):
+            return gr.update(visible=progression == "Labouchere")
+        
     
     try:
         bankroll_input.change(
@@ -8325,7 +8338,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
-    
+
     try:
         labouchere_sequence.change(
             fn=update_config,
