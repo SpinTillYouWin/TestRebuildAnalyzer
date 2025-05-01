@@ -4779,27 +4779,73 @@ def calculate_hit_percentages(last_spin_count):
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        green_count = 0  # Count for zero (green) spins
 
         # Analyze spins
         for spin in last_spins:
             try:
                 num = int(spin)
-                for name, numbers in EVEN_MONEY.items():
-                    if num in numbers:
-                        even_money_counts[name] += 1
-                for name, numbers in COLUMNS.items():
-                    if num in numbers:
-                        column_counts[name] += 1
-                for name, numbers in DOZENS.items():
-                    if num in numbers:
-                        dozen_counts[name] += 1
+                if num == 0:
+                    green_count += 1
+                else:
+                    for name, numbers in EVEN_MONEY.items():
+                        if num in numbers:
+                            even_money_counts[name] += 1
+                    for name, numbers in COLUMNS.items():
+                        if num in numbers:
+                            column_counts[name] += 1
+                    for name, numbers in DOZENS.items():
+                        if num in numbers:
+                            dozen_counts[name] += 1
             except ValueError:
                 continue
+
+        # Calculate percentages for Red, Black, and Green
+        red_percentage = (even_money_counts["Red"] / total_spins * 100) if total_spins > 0 else 0
+        black_percentage = (even_money_counts["Black"] / total_spins * 100) if total_spins > 0 else 0
+        green_percentage = (green_count / total_spins * 100) if total_spins > 0 else 0
+
+        # Normalize percentages to sum to 100% (in case of rounding errors)
+        total_color_percentage = red_percentage + black_percentage + green_percentage
+        if total_color_percentage > 0:
+            red_percentage = (red_percentage / total_color_percentage) * 100
+            black_percentage = (black_percentage / total_color_percentage) * 100
+            green_percentage = (green_percentage / total_color_percentage) * 100
+
+        # Determine number of sections for each color (out of 100 total sections for simplicity)
+        total_sections = 100
+        red_sections = max(1, round(red_percentage * total_sections / 100))  # Ensure at least 1 section
+        black_sections = max(1, round(black_percentage * total_sections / 100))
+        green_sections = max(1, round(green_percentage * total_sections / 100))
+
+        # Adjust to ensure total_sections is exactly 100
+        current_total = red_sections + black_sections + green_sections
+        if current_total != total_sections:
+            diff = total_sections - current_total
+            # Distribute the difference to the largest section
+            if red_sections >= black_sections and red_sections >= green_sections:
+                red_sections += diff
+            elif black_sections >= red_sections and black_sections >= green_sections:
+                black_sections += diff
+            else:
+                green_sections += diff
 
         # Find the maximum counts for highlighting winners
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+
+        # Determine the color of the last spun number
+        last_spin = state.last_spins[-1] if state.last_spins else None
+        last_spin_color = ""
+        if last_spin:
+            last_spin_num = int(last_spin)
+            if last_spin_num == 0:
+                last_spin_color = "green"
+            elif last_spin_num in EVEN_MONEY["Red"]:
+                last_spin_color = "red"
+            elif last_spin_num in EVEN_MONEY["Black"]:
+                last_spin_color = "black"
 
         # Build HTML output
         html = '<div class="hit-percentage-overview" style="display: flex; justify-content: space-between; align-items: flex-start;">'
@@ -4848,26 +4894,39 @@ def calculate_hit_percentages(last_spin_count):
         # Close percentage-wrapper
         html += '</div>'
 
-        # Add Mini Roulette Wheel
-        html += '''
-        <div class="mini-roulette-wheel">
-            <div class="wheel">
-                <div class="wheel-section red"></div>
-                <div class="wheel-section black"></div>
-                <div class="wheel-section green"></div>
-                <div class="wheel-section red"></div>
-                <div class="wheel-section black"></div>
-                <div class="wheel-section green"></div>
-                <div class="wheel-section red"></div>
-                <div class="wheel-section black"></div>
-                <div class="wheel-section green"></div>
-                <div class="wheel-section red"></div>
-                <div class="wheel-section black"></div>
-                <div class="wheel-section green"></div>
-                <div class="wheel-center"></div>
-            </div>
-        </div>
-        '''
+        # Add Mini Roulette Wheel with dynamic sections
+        html += '<div class="mini-roulette-wheel">'
+        html += '<div class="wheel">'
+        # Generate sections dynamically
+        section_html = []
+        current_angle = 0
+        section_angle = 360 / total_sections  # Angle per section
+
+        # Add Red sections
+        for i in range(red_sections):
+            marker = '<div class="last-spin-marker"></div>' if last_spin_color == "red" and i == 0 else ''
+            section_html.append(f'<div class="wheel-section red" style="transform: rotate({current_angle}deg);">{marker}</div>')
+            current_angle += section_angle
+        # Add Black sections
+        for i in range(black_sections):
+            marker = '<div class="last-spin-marker"></div>' if last_spin_color == "black" and i == 0 else ''
+            section_html.append(f'<div class="wheel-section black" style="transform: rotate({current_angle}deg);">{marker}</div>')
+            current_angle += section_angle
+        # Add Green sections
+        for i in range(green_sections):
+            marker = '<div class="last-spin-marker"></div>' if last_spin_color == "green" and i == 0 else ''
+            section_html.append(f'<div class="wheel-section green" style="transform: rotate({current_angle}deg);">{marker}</div>')
+            current_angle += section_angle
+
+        html += ''.join(section_html)
+        html += '<div class="wheel-center"></div>'
+        html += '</div>'
+        html += f'<div class="wheel-legend">'
+        html += f'<p><span class="legend-color red"></span> Red: {red_percentage:.1f}%</p>'
+        html += f'<p><span class="legend-color black"></span> Black: {black_percentage:.1f}%</p>'
+        html += f'<p><span class="legend-color green"></span> Green: {green_percentage:.1f}%</p>'
+        html += '</div>'
+        html += '</div>'
 
         # Close hit-percentage-overview
         html += '</div>'
@@ -6366,10 +6425,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         /* Mini Roulette Wheel */
         .mini-roulette-wheel {
-            width: 150px;
-            height: 150px;
+            width: 200px; /* Increased from 150px */
+            height: 200px; /* Increased from 150px */
             position: relative;
             margin-left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .wheel {
@@ -6378,8 +6440,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 50%;
             position: relative;
             overflow: hidden;
-            border: 5px solid #d4af37; /* Gold border */
-            animation: spin-wheel 10s infinite linear; /* Subtle spinning animation */
+            border: 5px solid #d4af37;
+            animation: spin-wheel 10s infinite linear;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Added shadow */
         }
         
         .wheel-section {
@@ -6389,19 +6452,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clip-path: polygon(50% 50%, 100% 0%, 100% 100%);
             transform-origin: 50% 50%;
         }
-        
-        .wheel-section:nth-child(1) { transform: rotate(0deg); }
-        .wheel-section:nth-child(2) { transform: rotate(30deg); }
-        .wheel-section:nth-child(3) { transform: rotate(60deg); }
-        .wheel-section:nth-child(4) { transform: rotate(90deg); }
-        .wheel-section:nth-child(5) { transform: rotate(120deg); }
-        .wheel-section:nth-child(6) { transform: rotate(150deg); }
-        .wheel-section:nth-child(7) { transform: rotate(180deg); }
-        .wheel-section:nth-child(8) { transform: rotate(210deg); }
-        .wheel-section:nth-child(9) { transform: rotate(240deg); }
-        .wheel-section:nth-child(10) { transform: rotate(270deg); }
-        .wheel-section:nth-child(11) { transform: rotate(300deg); }
-        .wheel-section:nth-child(12) { transform: rotate(330deg); }
         
         .wheel-section.red { background-color: #ff0000; }
         .wheel-section.black { background-color: #000000; }
@@ -6417,6 +6467,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: #d4af37; /* Gold center */
             border-radius: 50%;
             border: 2px solid #fff;
+        }
+        
+        .wheel-legend {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .wheel-legend p {
+            margin: 2px 0;
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        
+        .legend-color.red { background-color: #ff0000; }
+        .legend-color.black { background-color: #000000; }
+        .legend-color.green { background-color: #008000; }
+        
+        /* Add CSS for the Marker */
+        .last-spin-marker {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: #ffd700; /* Gold marker */
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
         
         @keyframes spin-wheel {
@@ -6435,6 +6521,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 margin-top: 20px !important;
             }
         }
+        
         
         /* Responsive Design */
         @media (max-width: 600px) {
