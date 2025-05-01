@@ -5179,7 +5179,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["spin-counter"]
     )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
-    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
@@ -5230,7 +5229,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["traits-container"]
                 )
 
-# Surrounding lines before (unchanged)
+# Surrounding lines after (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5267,9 +5266,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             ).then(
                                 fn=summarize_spin_traits,
                                 inputs=[last_spin_count],
-                                outputs=[traits_display]
+                                outputs=[traits_display, traits_display_mirror]  # Update both
                             ).then(
-                                fn=lambda: print("btn.click: Updated traits_display"),
+                                fn=calculate_hit_percentages,
+                                inputs=[last_spin_count],
+                                outputs=[hit_percentage_display, hit_percentage_display_mirror]  # Update both
+                            ).then(
+                                fn=lambda: print("btn.click: Updated traits_display and hit_percentage_display"),
                                 inputs=[],
                                 outputs=[]
                             )
