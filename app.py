@@ -2409,7 +2409,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
                 html += '<span class="empty-button"></span>'
             else:
                 color = colors.get(num, "black")
-                classes = [f"dynamic-roulette-button", color]
+                classes = ["dynamic-roulette-button", color]
                 style = ""
                 # Check if the number is highlighted
                 if num in highlighted_numbers:
@@ -2433,7 +2433,9 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
                 if num in recent_hits:
                     recency_level = recent_hits[num]
                     classes.append(f"recent-hit recent-hit-{recency_level}")
-                html += f'<span class="{" ".join(classes)}" style="{style}">{num}</span>'
+                # Simplify the f-string by computing the class string separately
+                class_str = " ".join(classes)
+                html += f'<span class="{class_str}" style="{style}">{num}</span>'
         html += '</div>'
     html += '</div>'
     return html
