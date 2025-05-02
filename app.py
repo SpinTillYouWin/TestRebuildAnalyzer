@@ -8301,15 +8301,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
-    try:
-        video_dropdown.change(
-            fn=update_video_display,
-            inputs=[video_dropdown, video_category_dropdown],
-            outputs=[video_output]
-        )
-    except Exception as e:
-        print(f"Error in video_dropdown.change handler: {str(e)}")
-
 
 # Launch the interface
 print("Starting Gradio launch...")
