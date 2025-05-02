@@ -6202,6 +6202,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </script>
                 """)
     
+    
     # Line 1: gr.HTML("""
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
@@ -6224,7 +6225,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
-        /* Line 1: /* General Layout */
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; }
@@ -6780,7 +6780,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             box-sizing: border-box !important;
             display: flex !important;
-            align-items: center !important;
+            align-borne-items: center !important;
             justify-content: center !important;
             color: #fff !important; /* For potential future text */
             font-family: Arial, sans-serif !important;
@@ -6822,13 +6822,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             100% { transform: rotate(360deg); }
         }
         
-        /* Line 3: /* TITLE: Fade-In Animation */
         /* TITLE: Fade-In Animation */
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
         }
     </style>
     """)
+    # Line 3: print("CSS Updated")
     print("CSS Updated")
     
     # Shepherd.js Tour Script
