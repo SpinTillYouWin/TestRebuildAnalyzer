@@ -5242,7 +5242,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["hit-percentage-container"]
                 )
             with gr.Column(scale=1):
-                top_bets_display = gr.HTML(
+                hit_top_bets_display = gr.HTML(
                     label="Top Bet Recommendations",
                     value=get_top_bets(),
                     elem_classes=["hit-percentage-container"]
@@ -5256,7 +5256,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["traits-container"]
                 )
             with gr.Column(scale=1):
-                top_bets_display = gr.HTML(
+                radar_top_bets_display = gr.HTML(
                     label="Top Bet Recommendations",
                     value=get_top_bets(),
                     elem_classes=["hit-percentage-container"]
@@ -5318,7 +5318,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             last_spin_count
             
 
-    # 4. Row 4: Spin Controls
+# 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
             clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
@@ -7100,7 +7100,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=get_top_bets,
             inputs=[],
-            outputs=[top_bets_display]
+            outputs=[hit_top_bets_display, radar_top_bets_display]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
@@ -7118,6 +7118,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=get_top_bets,
+            inputs=[],
+            outputs=[hit_top_bets_display, radar_top_bets_display]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -8144,7 +8148,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=get_top_bets,
             inputs=[],
-            outputs=[top_bets_display]
+            outputs=[hit_top_bets_display, radar_top_bets_display]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
