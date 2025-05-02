@@ -5228,7 +5228,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+    with gr.Accordion("Dealer's Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
@@ -5239,6 +5239,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value='<h4>Last Spins</h4><p>No spins yet.</p>',
         elem_classes=["last-spins-container"]
     )
+    # Line 1: last_spin_count = gr.Slider(
     last_spin_count = gr.Slider(
         label="",  # Remove the label to be safe
         minimum=1,
@@ -5248,6 +5249,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+    # Line 2: Add show_trends_checkbox definition
+    show_trends_checkbox = gr.Checkbox(
+        label="Show Trends",
+        value=True,
+        interactive=True,
+        elem_id="show-trends-checkbox"
+    )
+    # Line 3: with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
     # Start of updated section
     # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
@@ -5258,7 +5267,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-
+    
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -5267,8 +5276,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
-
-# Surrounding lines before (unchanged)
+                
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5315,15 +5323,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[],
                                 outputs=[]
                             )
-
-# Row 3 (keep the accordion here)
+    
+    # Line 1: # Row 3 (keep the accordion here)
+    # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
-            
-
+            # Line 2: Add show_trends_checkbox to the layout
+            show_trends_checkbox
+    # Line 3: # 4. Row 4: Spin Controls
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
