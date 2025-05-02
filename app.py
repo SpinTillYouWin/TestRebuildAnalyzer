@@ -5216,6 +5216,83 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
 
     # Define state and components used across sections
+    Let’s tackle this error with a professional approach. The error message indicates a NameError: name 'show_trends_checkbox' is not defined in the spins_textbox.change event handler at line 5304 in app.py. This suggests that the show_trends_checkbox component is being referenced before it’s defined, or the event handler is trying to access it in a scope where it’s not available. Let’s break this down systematically and fix the issue.
+
+Step 1: Analyze the Error
+The error occurs in the spins_textbox.change event handler, specifically in the line:
+
+python
+
+Copy
+inputs=[spins_display, last_spin_count, show_trends_checkbox],
+This handler is trying to use show_trends_checkbox as an input, but the interpreter cannot find a variable named show_trends_checkbox in the current scope. The error occurs during the Application Startup phase, which suggests that this handler is being set up when the Gradio app initializes, before any user interaction.
+
+Additionally, the logs show:
+
+text
+
+Copy
+summarize_spin_traits: Called with last_spin_count=36
+summarize_spin_traits: No spins available in state.last_spins
+This is a side effect of the spins_display.change handler (immediately before spins_textbox.change in Code 14) attempting to call summarize_spin_traits during startup. However, the primary issue is the NameError with show_trends_checkbox.
+
+Step 2: Locate the Problem in Code 14
+The spins_textbox.change event handler is defined in the "Event Handlers" section of Code 14 Part 2, around lines 1450–1500 (though the exact line number 5304 suggests this is within the full concatenated file). Here’s the original handler in Code 14:
+
+python
+
+Copy
+spins_textbox.change(
+    fn=validate_spins_input,
+    inputs=[spins_textbox],
+    outputs=[spins_display, last_spin_display]
+).then(
+    fn=analyze_spins,
+    inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+    outputs=[
+        spin_analysis_output, even_money_output, dozens_output, columns_output,
+        streets_output, corners_output, six_lines_output, splits_output,
+        sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+        dynamic_table_output, strategy_output, sides_of_zero_display
+    ]
+).then(
+    fn=update_spin_counter,
+    inputs=[],
+    outputs=[spin_counter]
+).then(
+    fn=dozen_tracker,
+    inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+    outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+).then(
+    fn=even_money_tracker,
+    inputs=[
+        even_money_tracker_spins_dropdown,
+        even_money_tracker_consecutive_hits_dropdown,
+        even_money_tracker_alert_checkbox,
+        even_money_tracker_combination_mode_dropdown,
+        even_money_tracker_red_checkbox,
+        even_money_tracker_black_checkbox,
+        even_money_tracker_even_checkbox,
+        even_money_tracker_odd_checkbox,
+        even_money_tracker_low_checkbox,
+        even_money_tracker_high_checkbox,
+        even_money_tracker_identical_traits_checkbox,
+        even_money_tracker_consecutive_identical_dropdown
+    ],
+    outputs=[gr.State(), even_money_tracker_output]
+)
+In my previous update, I modified this handler to include show_trends_checkbox:
+
+python
+
+Copy
+spins_textbox.change(
+    fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins) + (format_spins_as_html(spins, num_to_show, show_trends),),
+    inputs=[spins_textbox, last_spin_count, show_trends_checkbox],
+    outputs=[spins_display, last_spin_display, last_spin_display]
+)
+
+    # Define state and components used across sections
     spins_display = gr.State(value="")
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
     spins_textbox = gr.Textbox(
@@ -5249,6 +5326,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+    show_trends_checkbox = gr.Checkbox(
+        label="Show Trends",
+        value=True,
+        interactive=True,
+        elem_id="show-trends-checkbox"
+    )
+    
     # Start of updated section
     # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
@@ -5324,12 +5408,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column():
             last_spin_display
             last_spin_count
-            show_trends_checkbox = gr.Checkbox(
-                label="Show Trends",
-                value=True,
-                interactive=True,
-                elem_id="show-trends-checkbox"
-            )
+            show_trends_checkbox
             
 
     # 4. Row 4: Spin Controls
@@ -7134,6 +7213,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         )
+        
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
     
@@ -7417,6 +7497,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_checkbox],
             outputs=[last_spin_display]
         )
+        
         
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")    
