@@ -5207,12 +5207,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-            with gr.Column(scale=1):
-                hit_percentage_placeholder = gr.HTML(
-                    label="Hit Percentage Placeholder",
-                    value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
-                    elem_classes=["placeholder-section"]
-                )
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -5220,12 +5214,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Spin Traits",
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
-                )
-            with gr.Column(scale=1):
-                traits_placeholder = gr.HTML(
-                    label="SpinTrend Radar Placeholder",
-                    value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
-                    elem_classes=["placeholder-section"]
                 )
 
 # Surrounding lines before (unchanged)
