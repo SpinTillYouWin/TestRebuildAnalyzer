@@ -6146,7 +6146,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .green-btn:active {
             box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
         }
+        /* NEW CODE: Gradient background for accordions (INSERT HERE) */
         
+        #sides-of-zero-accordion summary {
+            background: linear-gradient(135deg, #dc3545, #a71c2f) !important; /* Red gradient */
+        }
+        .gr-accordion summary:hover, .gr-accordion summary:active {
+            background: linear-gradient(135deg, #ffb300, #ff6f00) !important; /* Brighter orange on hover/tap */
+        }
+        @media (max-width: 600px) {
+            .gr-accordion summary {
+                padding: 8px !important;
+                font-size: 12px !important;
+            }
+            #sides-of-zero-accordion summary {
+                background: linear-gradient(135deg, #dc3545, #a71c2f) !important; /* Maintain red gradient */
+            }
+        }
         /* Ensure columns have appropriate spacing */
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
         
