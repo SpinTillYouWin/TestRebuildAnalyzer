@@ -6124,6 +6124,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
         button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+
+        /* NEW CODE: Add glow effect for buttons (INSERT HERE) */
+        .action-button, .green-btn, .roulette-button {
+            transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+        }
+        
+        .action-button:active, .green-btn:active, .roulette-button:active {
+            box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
+            transform: scale(1.05) !important; /* Slight scale for emphasis */
+        }
+        
+        /* Ensure glow works on mobile touch */
+        @media (max-width: 600px) {
+            .action-button:active, .green-btn:active, .roulette-button:active {
+                box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
+            }
+        }
+        
+        /* Optional: Glow for specific buttons like Analyze Spins */
+        .green-btn:active {
+            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
+        }
         
         /* Ensure columns have appropriate spacing */
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
@@ -6186,6 +6208,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        
         /* Spin animation for roulette table buttons */
         .roulette-button:active {
             animation: spin 0.5s ease-in-out !important;
