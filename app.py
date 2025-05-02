@@ -5216,15 +5216,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
+    # ... (Previous section: Header Row)
+
     # Define state and components used across sections
     spins_display = gr.State(value="")
-    analysis_cache = gr.State(value={})  # New: Cache for analysis results
+    analysis_cache = gr.State(value={})
+    refresh_trigger = gr.State(value=0)
+    last_spin_count_state = gr.State(value=36)  # New state to store last_spin_count
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
         interactive=True,
         elem_id="selected-spins"
     )
+    
+    # ... (Next section: spin_counter)
     spin_counter = gr.HTML(
         label="Total Spins",
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
@@ -5243,11 +5249,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     )
     # Line 1: last_spin_count = gr.Slider(
     last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
+        label="",
         minimum=1,
         maximum=36,
         step=1,
-        value=36,
+        value=last_spin_count_state,  # Use state as initial value
         interactive=True,
         elem_classes="long-slider"
     )
@@ -5591,8 +5597,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         clear_spins_button.click(
             fn=clear_spins,
-            inputs=[],
+            inputs=[show_trends_checkbox],
             outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=lambda trigger: trigger + 1,
+            inputs=[refresh_trigger],
+            outputs=[refresh_trigger]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -5604,14 +5614,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
-    
-    # clear_all_button.click
-    # ... (Previous handler: clear_spins_button.click)
 
     try:
         clear_all_button.click(
             fn=clear_all,
-            inputs=[show_trends_checkbox],  # Added show_trends_checkbox
+            inputs=[show_trends_checkbox],
             outputs=[
                 spins_display,
                 spins_textbox,
@@ -5631,6 +5638,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_counter,
                 sides_of_zero_display
             ]
+        ).then(
+            fn=lambda trigger: trigger + 1,
+            inputs=[refresh_trigger],
+            outputs=[refresh_trigger]
         ).then(
             fn=clear_outputs,
             inputs=[],
@@ -5674,8 +5685,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
     
-    # ... (Next handler: generate_spins_button.click)
-    
     # generate_spins_button.click
     try:
         generate_spins_button.click(
@@ -5697,9 +5706,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # last_spin_count.change
     try:
         last_spin_count.change(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],
-            outputs=[last_spin_display]
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1, count),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox, refresh_trigger],
+            outputs=[last_spin_display, refresh_trigger, last_spin_count_state],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -5713,15 +5723,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in last_spin_count.change handler: {str(e)}")
     
     # Add show_trends_checkbox.change handler
+    # ... (Previous handler: last_spin_count.change)
+
     try:
         show_trends_checkbox.change(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],
-            outputs=[last_spin_display],
-            _js="function(spins_display, count, show_trends) { setTimeout(() => {}, 100); return [spins_display, count, show_trends]; }"  # Add a 100ms delay to debounce
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox, refresh_trigger],
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         )
     except Exception as e:
         print(f"Error in show_trends_checkbox.change handler: {str(e)}")
+    
+    # ... (Next handler: Row 6 button handlers)
     
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
@@ -7726,7 +7740,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 strategy_dropdown,
                 neighbours_count_slider,
                 strong_numbers_count_slider,
-                show_trends_checkbox  # Added show_trends_checkbox as an input
+                show_trends_checkbox
             ],
             outputs=[
                 spin_analysis_output,
@@ -7750,10 +7764,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 sides_of_zero_display
             ]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],
-            outputs=[last_spin_display],
-            _js="function(spins_display, count, show_trends) { setTimeout(() => {}, 100); return [spins_display, count, show_trends]; }"  # Add a slight delay to reduce race conditions
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox, refresh_trigger],
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
                 strategy if strategy != "None" else None,
