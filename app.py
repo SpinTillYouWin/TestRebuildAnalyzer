@@ -7181,6 +7181,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     </script>
     """)
     
+    def sync_state_last_spins(spins_display):
+        """Sync state.last_spins with the current spins_display value."""
+        try:
+            if spins_display:
+                spins = [int(spin.strip()) for spin in spins_display.split(",") if spin.strip()]
+                state.last_spins = spins
+            else:
+                state.last_spins = []
+            print(f"sync_state_last_spins: Updated state.last_spins to {state.last_spins}")
+            return state.last_spins
+        except Exception as e:
+            print(f"sync_state_last_spins: Error: {str(e)}")
+            state.last_spins = []
+            return state.last_spins
+   
     # Event Handlers
     try:
         spins_textbox.change(
@@ -7239,30 +7254,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
         ).then(
-            fn=summarize_spin_traits,
-            inputs=[last_spin_count],
-            outputs=[traits_display]
-        ).then(
-            fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
-            outputs=[hit_percentage_display]
-        ).then(
-            fn=trending_insights,
-            inputs=[last_spin_count],
-            outputs=[hit_percentage_placeholder, traits_placeholder]
-        )
-    except Exception as e:
-        print(f"Error in spins_display.change handler: {str(e)}")
-
-    try:
-        spins_display.change(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
-            inputs=[spins_display, last_spin_count],
-            outputs=[last_spin_display]
+            fn=sync_state_last_spins,
+            inputs=[spins_display],
+            outputs=[]  # No output needed, just updating state
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
