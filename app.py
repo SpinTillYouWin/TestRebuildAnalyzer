@@ -7203,6 +7203,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
+            fn=sync_state_last_spins,
+            inputs=[spins_display],
+            outputs=[]
+        ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
@@ -7279,6 +7283,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
         ).then(
+            fn=sync_state_last_spins,
+            inputs=[spins_display],
+            outputs=[]
+        ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
@@ -7295,69 +7303,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
     
     try:
-        clear_all_button.click(
-            fn=clear_all,
-            inputs=[],
-            outputs=[
-                spins_display,
-                spins_textbox,
-                spin_analysis_output,
-                last_spin_display,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                spin_counter,
-                sides_of_zero_display
-            ]
-        ).then(
-            fn=clear_outputs,
-            inputs=[],
-            outputs=[
-                spin_analysis_output,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                dynamic_table_output,
-                strategy_output,
-                color_code_output
-            ]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[
-                dozen_tracker_spins_dropdown,
-                dozen_tracker_consecutive_hits_dropdown,
-                dozen_tracker_alert_checkbox,
-                dozen_tracker_sequence_length_dropdown,
-                dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox
-            ],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=summarize_spin_traits,
-            inputs=[last_spin_count],
-            outputs=[traits_display]
-        )
- 
-    except Exception as e:
-        print(f"Error in clear_all_button.click handler: {str(e)}")
-    
-    try:
         generate_spins_button.click(
             fn=generate_random_spins,
             inputs=[gr.State(value="5"), spins_display, last_spin_count],
@@ -7366,6 +7311,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=sync_state_last_spins,
+            inputs=[spins_display],
+            outputs=[]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -7384,6 +7333,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=sync_state_last_spins,
+            inputs=[spins_display],
+            outputs=[]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -7496,7 +7449,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Update state.casino_data with current UI inputs before rendering the dynamic table
+            fn=sync_state_last_spins,
+            inputs=[spins_display],
+            outputs=[]
+        ).then(
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -7539,7 +7495,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")    
+        print(f"Error in analyze_button.click handler: {str(e)}")  
     
     try:
         save_button.click(
