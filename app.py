@@ -5313,21 +5313,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             )
                             btn.click(
                                 fn=lambda num, spins_display, num_to_show, show_trends: add_spin(num, spins_display, num_to_show, show_trends),
-                                inputs=[gr.State(value=num), spins_display, last_spin_count, show_trends_checkbox],
+                                inputs=[gr.State(value=num), spins_display, last_spin_count_state, show_trends_checkbox],  # Use last_spin_count_state
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             ).then(
+                                fn=lambda trigger: trigger + 1,
+                                inputs=[refresh_trigger],
+                                outputs=[refresh_trigger]
+                            ).then(
                                 fn=summarize_spin_traits,
-                                inputs=[last_spin_count],
+                                inputs=[last_spin_count_state],  # Use last_spin_count_state
                                 outputs=[traits_display]
                             ).then(
                                 fn=calculate_hit_percentages,
-                                inputs=[last_spin_count],
+                                inputs=[last_spin_count_state],  # Use last_spin_count_state
                                 outputs=[hit_percentage_display]
                             ).then(
                                 fn=lambda: print("btn.click: Updated traits_display and hit_percentage_display"),
                                 inputs=[],
                                 outputs=[]
                             )
+                            
     
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -5554,17 +5559,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],
-            outputs=[last_spin_display],
-            _js="function(spins_display, count, show_trends) { setTimeout(() => {}, 100); return [spins_display, count, show_trends]; }"  # Add a slight delay to reduce race conditions
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[hit_percentage_display]
         )
     except Exception as e:
@@ -5605,11 +5610,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[refresh_trigger]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[hit_percentage_display]
         )
     except Exception as e:
@@ -5675,11 +5680,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[hit_percentage_display]
         )
     except Exception as e:
@@ -5689,16 +5694,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         generate_spins_button.click(
             fn=generate_random_spins,
-            inputs=[gr.State(value="5"), spins_display, last_spin_count],
+            inputs=[gr.State(value="5"), spins_display, last_spin_count_state],  # Use last_spin_count_state
             outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],
-            outputs=[last_spin_display]
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
+            outputs=[hit_percentage_display]
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
@@ -7684,7 +7694,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -7707,9 +7717,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[dynamic_table_output]
         ).then(
-            fn=format_spins_as_html,
-            inputs=[spins_display, last_spin_count],
-            outputs=[last_spin_display]
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=create_color_code_table,
             inputs=[],
@@ -7725,6 +7736,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
+            outputs=[hit_percentage_display]
         )
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
@@ -7765,7 +7784,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ]
         ).then(
             fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox, refresh_trigger],
+            inputs=[spins_display, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
             outputs=[last_spin_display, refresh_trigger],
             _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
@@ -7801,11 +7820,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[hit_percentage_display]
         )
     except Exception as e:
@@ -8371,24 +8390,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         play_hot_button.click(
             fn=play_specific_numbers,
-            inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
+            inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count_state],  # Use last_spin_count_state
             outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],  # Added show_trends_checkbox
-            outputs=[last_spin_display],
-            _js="function(spins_display, count, show_trends) { setTimeout(() => {}, 100); return [spins_display, count, show_trends]; }"
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=suggest_hot_cold_numbers,
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[hit_percentage_display]
         )
     except Exception as e:
@@ -8397,24 +8416,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         play_cold_button.click(
             fn=play_specific_numbers,
-            inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
+            inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count_state],  # Use last_spin_count_state
             outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_checkbox],  # Added show_trends_checkbox
-            outputs=[last_spin_display],
-            _js="function(spins_display, count, show_trends) { setTimeout(() => {}, 100); return [spins_display, count, show_trends]; }"
+            fn=lambda spins_display, count, show_trends, trigger: (format_spins_as_html(spins_display, count, show_trends), trigger + 1),
+            inputs=[spins_display, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
+            outputs=[last_spin_display, refresh_trigger],
+            _js="function(spins_display, count, show_trends, trigger) { setTimeout(() => {}, 100); return [spins_display, count, show_trends, trigger]; }"
         ).then(
             fn=suggest_hot_cold_numbers,
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
             outputs=[hit_percentage_display]
         )
     except Exception as e:
@@ -8442,9 +8461,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     try:
         spins_textbox.change(
-            fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins, num_to_show, show_trends),
-            inputs=[spins_textbox, last_spin_count, show_trends_checkbox],
-            outputs=[spins_display, last_spin_display]
+            fn=lambda spins, num_to_show, show_trends, trigger: (validate_spins_input(spins, num_to_show, show_trends), trigger + 1),
+            inputs=[spins_textbox, last_spin_count_state, show_trends_checkbox, refresh_trigger],  # Use last_spin_count_state
+            outputs=[[spins_display, last_spin_display], refresh_trigger],  # Nested outputs for validate_spins_input
+            _js="function(spins, num_to_show, show_trends, trigger) { setTimeout(() => {}, 100); return [spins, num_to_show, show_trends, trigger]; }"
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -8479,6 +8499,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count_state],  # Use last_spin_count_state
+            outputs=[hit_percentage_display]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
