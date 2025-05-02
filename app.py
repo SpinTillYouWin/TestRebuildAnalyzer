@@ -5266,7 +5266,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
-                
+    
+    # Line 1: # 2. Row 2: European Roulette Table
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5293,13 +5294,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 elem_classes=btn_classes
                             )
                             btn.click(
-                                fn=add_spin,
-                                inputs=[gr.State(value=num), spins_display, last_spin_count],
+                                fn=lambda num, spins_display, num_to_show, show_trends: add_spin(num, spins_display, num_to_show, show_trends),
+                                inputs=[gr.State(value=num), spins_display, last_spin_count, show_trends_checkbox],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
-                            ).then(
-                                fn=format_spins_as_html,
-                                inputs=[spins_display, last_spin_count],
-                                outputs=[last_spin_display]
                             ).then(
                                 fn=summarize_spin_traits,
                                 inputs=[last_spin_count],
@@ -5314,8 +5311,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[]
                             )
     
-    # Line 1: # Row 3 (keep the accordion here)
-    # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
@@ -5323,7 +5318,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             last_spin_count
             # Line 2: Add show_trends_checkbox to the layout
             show_trends_checkbox
-    # Line 3: # 4. Row 4: Spin Controls
+            show_trends_checkbox
+
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
