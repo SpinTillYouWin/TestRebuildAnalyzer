@@ -4876,8 +4876,9 @@ def calculate_hit_percentages(last_spin_count):
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
+# Updated function with debug log
 def summarize_spin_traits(last_spin_count):
-    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
+    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
     print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
     try:
         # Ensure last_spin_count is a valid integer
@@ -4947,8 +4948,6 @@ def summarize_spin_traits(last_spin_count):
                             dozen_streaks[name]["current"] = 0
 
                 # Repeat Numbers
-                # Lines before (unchanged)
-                # Repeat Numbers
                 number_counts[num] = number_counts.get(num, 0) + 1
             except ValueError:
                 continue
@@ -4958,10 +4957,38 @@ def summarize_spin_traits(last_spin_count):
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # TITLE: Build HTML Badges (UPDATED FOR CHANGE 6)
+        # Quick Trends Calculation
+        total_spins = len(last_spins)
+        trends = []
+        if total_spins > 0:
+            # Dominant category
+            all_counts = {**even_money_counts, **column_counts, **dozen_counts}
+            dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
+            if dominant[1] > 0:
+                percentage = (dominant[1] / total_spins * 100)
+                trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
+            # Longest active streak
+            all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
+            longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
+            if longest_streak > 1:
+                streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
+                trends.append(f"{streak_name} on a {longest_streak}-spin streak")
+
+        # TITLE: Build HTML Badges
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
+        # Quick Trends Section
+        html += '<div class="quick-trends">'
+        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
+        if trends:
+            html += '<ul style="list-style-type: none; padding-left: 0;">'
+            for trend in trends:
+                html += f'<li style="color: #333; margin: 5px 0;">{trend}</li>'
+            html += '</ul>'
+        else:
+            html += '<p>No significant trends detected yet.</p>'
+        html += '</div>'
         # Even Money
         html += '<div class="badge-group">'
         html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
@@ -5012,7 +5039,6 @@ def summarize_spin_traits(last_spin_count):
         html += '</div></div></div>'
         return html
 
-# Lines after (unchanged)
     except Exception as e:
         print(f"summarize_spin_traits: Error: {str(e)}")
         return "<p>Error analyzing spin traits.</p>"
@@ -6200,7 +6226,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-        ```css
+
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important;
@@ -6236,6 +6262,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 8px #ffd700 !important;
         }
         
+        /* Quick Trends Section for SpinTrend Radar */
+        .quick-trends {
+            background-color: #fff3e0 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin-bottom: 10px !important;
+            border: 1px solid #ff9800 !important;
+        }
+        .quick-trends h4 {
+            margin: 0 0 5px 0 !important;
+            font-size: 14px !important;
+        }
+        .quick-trends ul {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
         /* Spin animation for roulette table buttons */
         .roulette-button:active {
             animation: spin 0.5s ease-in-out !important;
@@ -6255,6 +6298,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .flash.black {
             animation: flashBlack 0.3s ease-in-out;
+        }
+        @keyframes flashRed {
+            0%, 100% { background-color: red; }
+            50% { background-color: #ff3333; }
         }
         @keyframes flashRed {
             0%, 100% { background-color: red; }
