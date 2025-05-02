@@ -4764,38 +4764,50 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
 # Line 1: New get_top_bets function
+# Line 1: Updated get_top_bets function
 def get_top_bets():
     """Generate HTML for top 3 bet recommendations using existing state data."""
+    print(f"get_top_bets: state.last_spins={state.last_spins}")
+    print(f"get_top_bets: state.even_money_scores={dict(state.even_money_scores)}")
+    print(f"get_top_bets: state.dozen_scores={dict(state.dozen_scores)}")
+    print(f"get_top_bets: state.scores={dict(state.scores)}")
+    
     html = '<div class="hit-percentage-overview" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
     html += '<h4>🔥 Top Bet Recommendations 🔥</h4>'
     html += '<div class="percentage-wrapper">'
 
-    # Get top bets from existing state scores
-    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
-    sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    try:
+        # Get top bets from existing state scores
+        sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True, default=[])
+        sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True, default=[])
+        sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True, default=[])
+        
+        bets = []
+        if sorted_even_money and sorted_even_money[0][1] > 0:
+            bets.append((sorted_even_money[0][0], sorted_even_money[0][1], "Even Money"))
+        if sorted_dozens and sorted_dozens[0][1] > 0:
+            bets.append((sorted_dozens[0][0], sorted_dozens[0][1], "Dozen"))
+        if sorted_numbers and sorted_numbers[0][1] > 0:
+            bets.append((f"Number {sorted_numbers[0][0]}", sorted_numbers[0][1], "Straight Up"))
+        
+        total_spins = len(state.last_spins) or 1  # Avoid division by zero
+        html += '<div class="percentage-group">'
+        html += '<div class="percentage-badges">'
+        if bets:
+            for i, (name, count, bet_type) in enumerate(bets[:3]):
+                percentage = (count / total_spins * 100)
+                badge_class = "percentage-item" + (" winner" if i == 0 else "")
+                bar_color = "#b71c1c" if bet_type == "Even Money" else "#388e3c" if bet_type == "Dozen" else "#7b1fa2"
+                html += f'<div class="percentage-with-bar" data-category="top-bets"><span class="{badge_class}">{name}: {count} Hits ({percentage:.1f}%)</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        else:
+            html += '<span class="percentage-item">No bets hit yet. Add spins to see recommendations. 🔥</span>'
+        html += '</div></div>'
+    except Exception as e:
+        print(f"get_top_bets: Error: {str(e)}")
+        html += '<span class="percentage-item">Error loading top bets. Please try again. ⚠️</span>'
     
-    bets = []
-    if sorted_even_money and sorted_even_money[0][1] > 0:
-        bets.append((sorted_even_money[0][0], sorted_even_money[0][1], "Even Money"))
-    if sorted_dozens and sorted_dozens[0][1] > 0:
-        bets.append((sorted_dozens[0][0], sorted_dozens[0][1], "Dozen"))
-    if sorted_numbers and sorted_numbers[0][1] > 0:
-        bets.append((f"Number {sorted_numbers[0][0]}", sorted_numbers[0][1], "Straight Up"))
-    
-    total_spins = len(state.last_spins) or 1  # Avoid division by zero
-    html += '<div class="percentage-group">'
-    html += '<div class="percentage-badges">'
-    for i, (name, count, bet_type) in enumerate(bets[:3]):
-        percentage = (count / total_spins * 100)
-        badge_class = "percentage-item" + (" winner" if i == 0 else "")
-        bar_color = "#b71c1c" if bet_type == "Even Money" else "#388e3c" if bet_type == "Dozen" else "#7b1fa2"
-        html += f'<div class="percentage-with-bar" data-category="top-bets"><span class="{badge_class}">{name}: {count} Hits ({percentage:.1f}%)</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
-    if not bets:
-        html += '<span class="percentage-item">No bets hit yet 🔥</span>'
     html += '</div></div>'
-
-    html += '</div></div>'
+    print(f"get_top_bets: Generated HTML={html[:100]}...")  # Truncate for brevity
     return html
 
 def calculate_hit_percentages(last_spin_count):
