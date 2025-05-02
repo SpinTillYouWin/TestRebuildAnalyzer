@@ -2104,12 +2104,386 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
 # Line 1: Start of render_dynamic_table_html function (updated)
+Thank you for the confirmation! I understand you’re ready to proceed with integrating the changes from the first suggestion (pattern badges in format_spins_as_html) and the second suggestion (Quick Trends in summarize_spin_traits), and you’ve approved moving to the third suggestion: Visual Enhancement: Dynamic Table Hot/Cold Indicators. You’ve also requested that I include the full Python code from both suggestions for clarity, so I’ll provide:
+
+Recap of First Suggestion: The modified format_spins_as_html with surrounding context (add_spin and render_sides_of_zero_display), as previously provided, to ensure you have it alongside the new suggestion.
+Recap of Second Suggestion: The modified summarize_spin_traits with surrounding context (calculate_hit_percentages and suggest_hot_cold_numbers), as provided in my last response.
+Third Suggestion: The modified render_dynamic_table_html function (part of create_dynamic_table) to add hot/cold indicators (🔥 for hot numbers, ❄️ for cold) to the dynamic table, with surrounding context from Code 13 and necessary CSS additions.
+CSS Updates: A consolidated <style> block snippet including the .pattern-badge (first suggestion), .quick-trends (second suggestion), and new .hot-cold-indicator styles (third suggestion), integrated into your provided CSS section.
+This ensures you have all the code in one place, with clear instructions on where to paste each part, maintaining the detailed, step-by-step approach you prefer. I’ll use the exact CSS block you provided (from .last-spins-container to .sides-of-zero-container) to ensure the styles align perfectly with Code 13.
+
+Recap of Implemented Suggestions
+First Suggestion: Highlight Recent Spin Patterns in Last Spins Display
+Purpose: Add visual badges to last_spin_display to highlight patterns like three consecutive colors (e.g., "3 Reds in a Row") or dozens (e.g., "1st Dozen Streak").
+File: Main script or roulette_functions.py.
+Location: Replace format_spins_as_html between add_spin and render_sides_of_zero_display.
+
+python
+
+Copy
+```python
+def add_spin(spin, current_spins_display, last_spin_count):
+    """Add a new spin to the current spins and update scores."""
+    import gradio as gr
+    try:
+        spin = spin.strip()
+        if not spin or not spin.isdigit() or not (0 <= int(spin) <= 36):
+            gr.Warning("Invalid spin. Please enter a number between 0 and 36.")
+            return current_spins_display, current_spins_display, "<p>Invalid spin. Please enter a number between 0 and 36.</p>", update_spin_counter(), render_sides_of_zero_display()
+        
+        update_scores_batch([spin])
+        
+        if current_spins_display and current_spins_display.strip():
+            current_spins = current_spins_display.split(", ")
+            updated_spins = current_spins + [spin]
+        else:
+            updated_spins = [spin]
+        
+        state.last_spins = updated_spins
+        spins_text = ", ".join(updated_spins)
+        print(f"add_spin: Added spin {spin}, updated spins = {spins_text}")
+        return spins_text, spins_text, f"Added spin: {spin}", update_spin_counter(), render_sides_of_zero_display()
+    except Exception as e:
+        print(f"add_spin: Error: {str(e)}")
+        return current_spins_display, current_spins_display, f"Error adding spin: {str(e)}", update_spin_counter(), render_sides_of_zero_display()
+
+def format_spins_as_html(spins, num_to_show):
+    """Format the spins as HTML with color-coded display, animations, and pattern badges."""
+    if not spins:
+        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+    
+    # Split the spins string into a list and reverse to get the most recent first
+    spin_list = spins.split(", ") if spins else []
+    spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
+    
+    if not spin_list:
+        return "<h4>Last Spins</h4><p>No spins yet.</p>"
+    
+    # Define colors for each number (matching the European Roulette Table)
+    colors = {
+        "0": "green",
+        "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
+        "19": "red", "21": "red", "23": "red", "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
+        "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black", "13": "black", "15": "black", "17": "black",
+        "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
+    }
+    
+    # Pattern detection for consecutive colors and dozens
+    patterns = []
+    for i in range(len(spin_list) - 2):
+        if i >= len(spin_list):
+            break
+        # Check for consecutive colors
+        if colors.get(spin_list[i], "") == colors.get(spin_list[i+1], "") == colors.get(spin_list[i+2], ""):
+            color_name = colors.get(spin_list[i], '').capitalize()
+            if color_name:  # Ensure color_name is not empty
+                patterns.append((i, f"3 {color_name}s in a Row"))
+        # Check for consecutive dozens
+        dozen_hits = [next((name for name, nums in DOZENS.items() if int(spin) in nums), None) for spin in spin_list[i:i+3]]
+        if None not in dozen_hits and len(set(dozen_hits)) == 1:
+            patterns.append((i, f"{dozen_hits[0]} Streak"))
+    
+    # Format each spin as a colored span
+    html_spins = []
+    for i, spin in enumerate(spin_list):
+        color = colors.get(spin.strip(), "black")  # Default to black if not found
+        # Apply flip, flash, and new-spin classes to the newest spin (last in the list)
+        # Also add a spin-color class for color-coded highlighting
+        if i == len(spin_list) - 1:
+            class_attr = f'fade-in flip flash new-spin spin-{color} {color}'
+        else:
+            class_attr = f'fade-in {color}'
+        # Add pattern badge if this spin starts a pattern
+        pattern_badge = ""
+        for start_idx, pattern_text in patterns:
+            if i == start_idx:
+                pattern_badge = f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
+        html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}{pattern_badge}</span>')
+    
+    # Wrap the spins in a div with flexbox to enable wrapping, and add a title
+    html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+    
+    # Add JavaScript to remove fade-in, flash, flip, and new-spin classes after animations
+    html_output += '''
+    <script>
+        document.querySelectorAll('.fade-in').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('fade-in');
+            }, 500);
+        });
+        document.querySelectorAll('.flash').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('flash');
+            }, 300);
+        });
+        document.querySelectorAll('.flip').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('flip');
+            }, 500);
+        });
+        document.querySelectorAll('.new-spin').forEach(element => {
+            setTimeout(() => {
+                element.classList.remove('new-spin');
+            }, 1000);
+        });
+    </script>
+    '''
+    
+    return html_output
+
+def render_sides_of_zero_display():
+    left_hits = state.side_scores["Left Side of Zero"]
+    zero_hits = state.scores[0]
+    right_hits = state.side_scores["Right Side of Zero"]
+    # ... (rest of the function continues)
+Show in sidebar
+Where to Paste:
+
+Replace the existing format_spins_as_html function in your Python script, located between add_spin and render_sides_of_zero_display.
+Second Suggestion: Add a "Quick Trends" Summary in SpinTrend Radar
+Purpose: Add a "Quick Trends" section to traits_display to highlight dominant categories (e.g., "Red dominates with 60% hits") and active streaks (e.g., "1st Dozen on a 4-spin streak").
+File: Main script or roulette_functions.py.
+Location: Replace summarize_spin_traits between calculate_hit_percentages and suggest_hot_cold_numbers.
+
+python
+
+Copy
+```python
+        # Dozens
+        html += '<div class="percentage-group">'
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'  # Green, matching SpinTrend Radar
+        html += '<div class="percentage-badges">'
+        dozen_items = []
+        for name, count in dozen_counts.items():
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            badge_class = "percentage-item dozen winner" if count == max_dozens and max_dozens > 0 else "percentage-item dozen"
+            bar_color = "#388e3c"  # Green, matching Dozens badge color
+            dozen_items.append(f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
+        html += "".join(dozen_items)
+        html += '</div></div>'
+
+        return html
+    except Exception as e:
+        print(f"calculate_hit_percentages: Error: {str(e)}")
+        return "<p>Error calculating hit percentages.</p>"
+
+# Updated function with debug log
+def summarize_spin_traits(last_spin_count):
+    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
+    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
+    try:
+        # Ensure last_spin_count is a valid integer
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+
+        # Use state.last_spins directly and ensure it's not empty
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            print("summarize_spin_traits: No spins available in state.last_spins")
+            return "<p>No spins available for analysis.</p>"
+
+        # Initialize counters
+        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        number_counts = {}
+
+        # Initialize streak tracking
+        even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in even_money_counts}
+        column_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in column_counts}
+        dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in dozen_counts}
+
+        # Analyze spins and track streaks
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                # Reset last_hit flags for this spin
+                for key in even_money_streaks:
+                    even_money_streaks[key]["last_hit"] = False
+                for key in column_streaks:
+                    column_streaks[key]["last_hit"] = False
+                for key in dozen_streaks:
+                    dozen_streaks[key]["last_hit"] = False
+
+                # Even Money Bets
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        even_money_counts[name] += 1
+                        even_money_streaks[name]["last_hit"] = True
+                        even_money_streaks[name]["current"] += 1
+                        even_money_streaks[name]["max"] = max(even_money_streaks[name]["max"], even_money_streaks[name]["current"])
+                    else:
+                        if not even_money_streaks[name]["last_hit"]:
+                            even_money_streaks[name]["current"] = 0
+
+                # Columns
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        column_counts[name] += 1
+                        column_streaks[name]["last_hit"] = True
+                        column_streaks[name]["current"] += 1
+                        column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
+                    else:
+                        if not column_streaks[name]["last_hit"]:
+                            column_streaks[name]["current"] = 0
+
+                # Dozens
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts[name] += 1
+                        dozen_streaks[name]["last_hit"] = True
+                        dozen_streaks[name]["current"] += 1
+                        dozen_streaks[name]["max"] = max(dozen_streaks[name]["max"], dozen_streaks[name]["current"])
+                    else:
+                        if not dozen_streaks[name]["last_hit"]:
+                            dozen_streaks[name]["current"] = 0
+
+                # Repeat Numbers
+                number_counts[num] = number_counts.get(num, 0) + 1
+            except ValueError:
+                continue
+
+        # Find the maximum counts for each section (excluding Repeat Numbers)
+        max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+        max_columns = max(column_counts.values()) if column_counts else 0
+        max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+
+        # Quick Trends Calculation
+        total_spins = len(last_spins)
+        trends = []
+        if total_spins > 0:
+            # Dominant category
+            all_counts = {**even_money_counts, **column_counts, **dozen_counts}
+            dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
+            if dominant[1] > 0:
+                percentage = (dominant[1] / total_spins * 100)
+                trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
+            # Longest active streak
+            all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
+            longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
+            if longest_streak > 1:
+                streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
+                trends.append(f"{streak_name} on a {longest_streak}-spin streak")
+
+        # TITLE: Build HTML Badges
+        html = '<div class="traits-overview">'
+        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
+        html += '<div class="traits-wrapper">'
+        # Quick Trends Section
+        html += '<div class="quick-trends">'
+        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
+        if trends:
+            html += '<ul style="list-style-type: none; padding-left: 0;">'
+            for trend in trends:
+                html += f'<li style="color: #333; margin: 5px 0;">{trend}</li>'
+            html += '</ul>'
+        else:
+            html += '<p>No significant trends detected yet.</p>'
+        html += '</div>'
+        # Even Money
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
+        html += '<div class="percentage-badges">'
+        total_spins = len(last_spins)
+        for name, count in even_money_counts.items():
+            badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
+            streak = even_money_streaks[name]["max"]
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#b71c1c" if name in ["Red", "Even", "Low"] else "#000000" if name in ["Black", "Odd", "High"] else "#666"
+            html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        html += '</div></div>'
+        # Columns
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #1565c0;">Columns</h4>'
+        html += '<div class="percentage-badges">'
+        for name, count in column_counts.items():
+            badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
+            streak = column_streaks[name]["max"]
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#1565c0"  # Blue for columns
+            html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        html += '</div></div>'
+        # Dozens
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'
+        html += '<div class="percentage-badges">'
+        for name, count in dozen_counts.items():
+            badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
+            streak = dozen_streaks[name]["max"]
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#388e3c"  # Green for dozens
+            html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        html += '</div></div>'
+        # Repeat Numbers (no streak tracking for repeats)
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #7b1fa2;">Repeat Numbers</h4>'
+        html += '<div class="percentage-badges">'
+        repeats = {num: count for num, count in number_counts.items() if count > 1}
+        if repeats:
+            for num, count in sorted(repeats.items()):
+                html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
+        else:
+            html += f'<span class="trait-badge repeat">No repeats</span>'
+        html += '</div></div></div>'
+        return html
+
+    except Exception as e:
+        print(f"summarize_spin_traits: Error: {str(e)}")
+        return "<p>Error analyzing spin traits.</p>"
+
+def suggest_hot_cold_numbers():
+    """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
+    try:
+        # Sort scores by value (descending for hot, ascending for cold)
+        sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+        hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
+        cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score >= 0]
+        # Fill with random numbers if not enough data
+        if len(hot_numbers) < 5:
+            hot_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(hot_numbers))])
+        if len(cold_numbers) < 5:
+            cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
+        return ", ".join(hot_numbers), ", ".join(cold_numbers)
+    except Exception as e:
+        print(f"suggest_hot_cold_numbers: Error: {str(e)}")
+        return "", ""  # Fallback to empty suggestions
+Show in sidebar
+Where to Paste:
+
+Replace the existing summarize_spin_traits function in your Python script, located between calculate_hit_percentages and suggest_hot_cold_numbers.
+Third Suggestion: Dynamic Table Hot/Cold Indicators
+Purpose: Add emoji indicators (🔥 for hot numbers, ❄️ for cold) to the Dynamic Roulette Table (dynamic_table_output) to highlight the top 5 hot numbers (highest state.scores) and bottom 5 cold numbers (lowest state.scores), guiding players to focus on trending or underperforming numbers.
+
+Why It Helps: The create_dynamic_table function already highlights numbers and outside bets based on strategies. Hot/cold indicators provide a quick visual cue for number-specific trends, complementing the pattern badges and Quick Trends.
+
+Where It Fits: The change modifies the render_dynamic_table_html function (called by create_dynamic_table), which generates the HTML for the dynamic table. This function is invoked in event handlers like analyze_button.click and strategy_dropdown.change. The CSS addition will be appended to the <style> block after the .quick-trends styles.
+
+Surrounding Context: I’ll include the full render_dynamic_table_html function with the preceding create_color_code_table function (end of it) and the following hot_bet_strategy function (start of it) from Code 13. For CSS, I’ll append the .hot-cold-indicator styles to your provided <style> block, after .quick-trends.
+
+Python Code Modification
+Below is the modified render_dynamic_table_html function, adding hot/cold indicators. I include the end of create_color_code_table and the start of hot_bet_strategy for context.
+
+python
+
+Copy
+```python
+        html += '<tr><td style="background-color: #32CD32; width: 20px; height: 20px;"></td><td>Low Tier</td></tr>'
+        html += '</table>'
+        return html
+
 def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None):
-    """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
+    """Render the dynamic roulette table with highlighted numbers, outside bets, and hot/cold indicators."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
-    # Define casino winners if highlighting is enabled, only for non-zero data
+    # Compute hot/cold numbers
+    sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    hot_numbers = set(str(num) for num, score in sorted_scores[:5] if score > 0)
+    cold_numbers = set(str(num) for num, score in sorted_scores[-5:] if score == 0)
+
     casino_winners = {"hot_numbers": set(), "cold_numbers": set(), "even_money": set(), "dozens": set(), "columns": set()}
     if state.use_casino_winners:
         casino_winners["hot_numbers"] = set(state.casino_data["hot_numbers"].keys())
@@ -2124,42 +2498,32 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             casino_winners["dozens"] = {max(state.casino_data["dozens"], key=state.casino_data["dozens"].get)}
         if any(state.casino_data["columns"].values()):
             casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get)}
-        print(f"Casino Winners Set: Hot={casino_winners['hot_numbers']}, Cold={casino_winners['cold_numbers']}, Even Money={casino_winners['even_money']}, Dozens={casino_winners['dozens']}, Columns={casino_winners['columns']}")
 
-    # Initialize highlights for outside bets using suggestions (for Neighbours of Strong Number strategy)
     suggestion_highlights = {}
     if suggestions:
-        # Parse suggestions to extract recommendations
         best_even_money = None
         best_bet = None
         play_two_first = None
         play_two_second = None
-
         for key, value in suggestions.items():
             if key == "best_even_money" and "(Tied with" not in value:
-                # Extract the even money bet (e.g., "Even: 5" -> "Even")
                 best_even_money = value.split(":")[0].strip()
             elif key == "best_bet" and "(Tied with" not in value:
-                # Extract the best bet (e.g., "2nd Column: 6" -> "2nd Column")
                 best_bet = value.split(":")[0].strip()
             elif key == "play_two" and "(Tied with" not in value:
-                # Extract the two options (e.g., "Play Two Columns: 2nd Column (6) and 1st Column (2)")
                 parts = value.split(":", 1)[1].split(" and ")
-                play_two_first = parts[0].split("(")[0].strip()  # e.g., "2nd Column"
-                play_two_second = parts[1].split("(")[0].strip()  # e.g., "1st Column"
-
-        # Apply highlights based on suggestions (yellow for top tier, green for second in Play Two)
+                play_two_first = parts[0].split("(")[0].strip()
+                play_two_second = parts[1].split("(")[0].strip()
         if best_even_money:
-            suggestion_highlights[best_even_money] = top_color  # Yellow for Best Even Money Bet
+            suggestion_highlights[best_even_money] = top_color
         if best_bet:
-            suggestion_highlights[best_bet] = top_color  # Yellow for Best Bet
+            suggestion_highlights[best_bet] = top_color
         if play_two_first and play_two_second:
-            # Ensure the first option in Play Two matches the Best Bet (if present) and gets yellow
             if best_bet and play_two_first == best_bet:
-                suggestion_highlights[play_two_first] = top_color  # Already set to yellow
+                suggestion_highlights[play_two_first] = top_color
             else:
-                suggestion_highlights[play_two_first] = top_color  # Yellow if not already set
-            suggestion_highlights[play_two_second] = lower_color  # Green for second option
+                suggestion_highlights[play_two_first] = top_color
+            suggestion_highlights[play_two_second] = lower_color
 
     table_layout = [
         ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
@@ -2168,12 +2532,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     ]
 
     html = '<table border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
-    html += '<colgroup>'
-    html += '<col style="width: 40px;">'
-    for _ in range(12):
-        html += '<col style="width: 40px;">'
-    html += '<col style="width: 80px;">'
-    html += '</colgroup>'
+    html += '<colgroup><col style="width: 40px;">' + ''.join('<col style="width: 40px;">' * 12) + '<col style="width: 80px;"></colgroup>'
 
     for row_idx, row in enumerate(table_layout):
         html += "<tr>"
@@ -2184,13 +2543,19 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
                 if num in casino_winners["hot_numbers"]:
-                    border_style = "3px dashed #FFD700"  # Gold for Hot Numbers
+                    border_style = "3px dashed #FFD700"
                 elif num in casino_winners["cold_numbers"]:
-                    border_style = "3px dashed #C0C0C0"  # Silver for Cold Numbers
+                    border_style = "3px dashed #C0C0C0"
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
+                # Add hot/cold indicator
+                indicator = ""
+                if num in hot_numbers:
+                    indicator = '<span class="hot-cold-indicator" style="font-size: 10px;">🔥</span>'
+                elif num in cold_numbers:
+                    indicator = '<span class="hot-cold-indicator" style="font-size: 10px;">❄️</span>'
+                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}{indicator}</td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -2251,6 +2616,16 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     html += "</table>"
     return html
+
+def hot_bet_strategy():
+    """Recommend the top 3 numbers and outside bets based on hit frequency."""
+    recommendations = []
+    sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    numbers_hits = [item for item in sorted_numbers if item[1] > 0]
+    
+    if not numbers_hits:
+        recommendations.append("Hot Bet Strategy: No numbers have hit yet.")
+        return "\n".join(recommendations)
 
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
@@ -6279,6 +6654,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 0 !important;
         }
         
+        /* Hot/Cold Indicator for Dynamic Table */
+        .hot-cold-indicator {
+            display: inline-block !important;
+            margin-left: 2px !important;
+            vertical-align: middle !important;
+            font-size: 10px !important;
+        }
+        
         /* Spin animation for roulette table buttons */
         .roulette-button:active {
             animation: spin 0.5s ease-in-out !important;
@@ -6298,10 +6681,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .flash.black {
             animation: flashBlack 0.3s ease-in-out;
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
         }
         @keyframes flashRed {
             0%, 100% { background-color: red; }
@@ -6391,7 +6770,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-
             /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
