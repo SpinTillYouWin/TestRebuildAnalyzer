@@ -6202,7 +6202,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </script>
                 """)
     
-    # CSS (end of the previous section, for context)
+    /* CSS (end of the previous section, for context) */
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
@@ -6224,6 +6224,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
+        /* Line 1: /* General Layout */
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; }
@@ -6331,6 +6332,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             white-space: nowrap !important;
         }
         
+        /* Add glow effect for roulette buttons */
+        .roulette-button {
+            transition: box-shadow 0.2s ease !important;
+        }
+        .roulette-button:hover {
+            box-shadow: 0 0 5px 2px rgba(255, 215, 0, 0.5) !important; /* Subtle yellow glow on hover */
+        }
+        .roulette-button:active {
+            box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.7) !important; /* Brighter white glow on click */
+            animation: glow-pulse 0.3s ease-in-out !important; /* Pulse animation */
+        }
+        @keyframes glow-pulse {
+            0% { box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.7); }
+            50% { box-shadow: 0 0 15px 8px rgba(255, 255, 255, 0.9); }
+            100% { box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.7); }
+        }
+        /* Adjust glow for mobile devices */
+        @media (max-width: 600px) {
+            .roulette-button:hover {
+                box-shadow: none !important; /* Disable hover glow on mobile */
+            }
+            .roulette-button:active {
+                box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.6) !important; /* Slightly smaller glow for mobile */
+                animation: glow-pulse-mobile 0.3s ease-in-out !important;
+            }
+            @keyframes glow-pulse-mobile {
+                0% { box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.6); }
+                50% { box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.8); }
+                100% { box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.6); }
+            }
+        }
+        
         /* Responsive adjustments for desktop */
         @media (min-width: 768px) {
             .roulette-table {
@@ -6377,29 +6410,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
         button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-
-        /* NEW CODE: Add glow effect for buttons (INSERT HERE) */
-        .action-button, .green-btn, .roulette-button {
-            transition: box-shadow 0.3s ease, transform 0.2s ease !important;
-        }
-        
-        .action-button:active, .green-btn:active, .roulette-button:active {
-            box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
-            transform: scale(1.05) !important; /* Slight scale for emphasis */
-        }
-        
-        /* Ensure glow works on mobile touch */
-        @media (max-width: 600px) {
-            .action-button:active, .green-btn:active, .roulette-button:active {
-                box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
-            }
-        }
-        
-        /* Optional: Glow for specific buttons like Analyze Spins */
-        .green-btn:active {
-            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
-        }
-        
+    
         /* Ensure columns have appropriate spacing */
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
         
@@ -6443,7 +6454,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important;
@@ -6578,8 +6588,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-
-            /* Hit Percentage Overview */
+    
+        /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
             background-color: #f5f5dc !important; /* Light beige */
@@ -6618,7 +6628,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             overflow-x: auto !important; /* Enable horizontal scrolling if badges overflow */
             -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
         }
-
+    
         /* TITLE: Percentage Item Styles */
         .percentage-item {
             background-color: #444 !important;
@@ -6670,7 +6680,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transition: width 0.3s ease !important;
             display: block !important;
         }
-
+    
         /* TITLE: Traits Container (Updated in Change 1) */
         .traits-container {
             padding: 10px !important;
@@ -6682,7 +6692,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-top: 10px !important; /* Space between slider and accordion */
             box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
-
+    
         /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
         .traits-wrapper {
             width: 100% !important;
@@ -6705,7 +6715,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             align-items: center !important;
             white-space: nowrap !important; /* Ensure content stays in one line */
         }
-
+    
         /* TITLE: Trait Badge Styles */
         .trait-badge {
             background-color: #444 !important;
@@ -6760,7 +6770,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
             100% { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-
+    
         /* Placeholder Section for Hit Percentage and SpinTrend Radar */
         .placeholder-section {
             background-color: #000 !important;
@@ -6775,14 +6785,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             color: #fff !important; /* For potential future text */
             font-family: Arial, sans-serif !important;
         }
-
+    
         /* Ensure the columns are truly 50/50 and aligned */
         .hit-percentage-container, .traits-container {
             width: 100% !important;
             max-width: none !important; /* Remove max-width to allow full column width */
             margin: 0 !important;
         }
-
+    
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .placeholder-section {
@@ -6812,6 +6822,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             100% { transform: rotate(360deg); }
         }
         
+        /* Line 3: /* TITLE: Fade-In Animation */
         /* TITLE: Fade-In Animation */
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
