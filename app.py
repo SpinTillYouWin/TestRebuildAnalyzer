@@ -5009,7 +5009,7 @@ def suggest_hot_cold_numbers():
         if len(cold_numbers) < 5:
             cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
         return ", ".join(hot_numbers), ", ".join(cold_numbers)
-    except Exception as e:
+        except Exception as e:
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
@@ -5022,7 +5022,9 @@ def trending_insights(last_spin_count):
 
         # Use state.last_spins directly and ensure it's not empty
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        print(f"trending_insights: last_spin_count={last_spin_count}, state.last_spins={state.last_spins}, last_spins={last_spins}")  # Debug log
         if not last_spins:
+            print("trending_insights: No spins available in state.last_spins")
             return "<div class='trending-insights'><h4>🔥 Trending Insights (Last 0 Spins):</h4><p>No notable trends yet—add more spins to see insights!</p></div>"
 
         total_spins = len(last_spins)
@@ -7203,26 +7205,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        )
-    except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
-    
+        fn=even_money_tracker,
+        inputs=[
+            even_money_tracker_spins_dropdown,
+            even_money_tracker_consecutive_hits_dropdown,
+            even_money_tracker_alert_checkbox,
+            even_money_tracker_combination_mode_dropdown,
+            even_money_tracker_red_checkbox,
+            even_money_tracker_black_checkbox,
+            even_money_tracker_even_checkbox,
+            even_money_tracker_odd_checkbox,
+            even_money_tracker_low_checkbox,
+            even_money_tracker_high_checkbox,
+            even_money_tracker_identical_traits_checkbox,
+            even_money_tracker_consecutive_identical_dropdown
+        ],
+        outputs=[gr.State(), even_money_tracker_output]
+    ).then(
+        fn=trending_insights,
+        inputs=[last_spin_count],
+        outputs=[hit_percentage_placeholder, traits_placeholder]
+    )
+except Exception as e:
+    print(f"Error in spins_textbox.change handler: {str(e)}")
+
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -7240,6 +7246,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
@@ -7257,6 +7267,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -7337,11 +7351,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
-
-# Line 1: Slider change handler (updated)
+    
+    # Line 1: Slider change handler (updated)
     try:
         last_spin_count.change(
             fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
