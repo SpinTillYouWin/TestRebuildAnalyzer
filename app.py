@@ -2103,25 +2103,6 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
 
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
-# Line 1: Start of render_dynamic_table_html function (updated)
-Thank you for the confirmation! I understand you’re ready to proceed with integrating the changes from the first suggestion (pattern badges in format_spins_as_html) and the second suggestion (Quick Trends in summarize_spin_traits), and you’ve approved moving to the third suggestion: Visual Enhancement: Dynamic Table Hot/Cold Indicators. You’ve also requested that I include the full Python code from both suggestions for clarity, so I’ll provide:
-
-Recap of First Suggestion: The modified format_spins_as_html with surrounding context (add_spin and render_sides_of_zero_display), as previously provided, to ensure you have it alongside the new suggestion.
-Recap of Second Suggestion: The modified summarize_spin_traits with surrounding context (calculate_hit_percentages and suggest_hot_cold_numbers), as provided in my last response.
-Third Suggestion: The modified render_dynamic_table_html function (part of create_dynamic_table) to add hot/cold indicators (🔥 for hot numbers, ❄️ for cold) to the dynamic table, with surrounding context from Code 13 and necessary CSS additions.
-CSS Updates: A consolidated <style> block snippet including the .pattern-badge (first suggestion), .quick-trends (second suggestion), and new .hot-cold-indicator styles (third suggestion), integrated into your provided CSS section.
-This ensures you have all the code in one place, with clear instructions on where to paste each part, maintaining the detailed, step-by-step approach you prefer. I’ll use the exact CSS block you provided (from .last-spins-container to .sides-of-zero-container) to ensure the styles align perfectly with Code 13.
-
-Recap of Implemented Suggestions
-First Suggestion: Highlight Recent Spin Patterns in Last Spins Display
-Purpose: Add visual badges to last_spin_display to highlight patterns like three consecutive colors (e.g., "3 Reds in a Row") or dozens (e.g., "1st Dozen Streak").
-File: Main script or roulette_functions.py.
-Location: Replace format_spins_as_html between add_spin and render_sides_of_zero_display.
-
-python
-
-Copy
-```python
 def add_spin(spin, current_spins_display, last_spin_count):
     """Add a new spin to the current spins and update scores."""
     import gradio as gr
@@ -2175,7 +2156,7 @@ def format_spins_as_html(spins, num_to_show):
             break
         # Check for consecutive colors
         if colors.get(spin_list[i], "") == colors.get(spin_list[i+1], "") == colors.get(spin_list[i+2], ""):
-            color_name = colors.get(spin_list[i], '').capitalize()
+            color_name = colors.get(spin_list[i], "").capitalize()
             if color_name:  # Ensure color_name is not empty
                 patterns.append((i, f"3 {color_name}s in a Row"))
         # Check for consecutive dozens
@@ -2190,9 +2171,9 @@ def format_spins_as_html(spins, num_to_show):
         # Apply flip, flash, and new-spin classes to the newest spin (last in the list)
         # Also add a spin-color class for color-coded highlighting
         if i == len(spin_list) - 1:
-            class_attr = f'fade-in flip flash new-spin spin-{color} {color}'
+            class_attr = f"fade-in flip flash new-spin spin-{color} {color}"
         else:
-            class_attr = f'fade-in {color}'
+            class_attr = f"fade-in {color}"
         # Add pattern badge if this spin starts a pattern
         pattern_badge = ""
         for start_idx, pattern_text in patterns:
@@ -2204,7 +2185,7 @@ def format_spins_as_html(spins, num_to_show):
     html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
     
     # Add JavaScript to remove fade-in, flash, flip, and new-spin classes after animations
-    html_output += '''
+    html_output += """
     <script>
         document.querySelectorAll('.fade-in').forEach(element => {
             setTimeout(() => {
@@ -2227,7 +2208,7 @@ def format_spins_as_html(spins, num_to_show):
             }, 1000);
         });
     </script>
-    '''
+    """
     
     return html_output
 
