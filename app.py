@@ -4763,7 +4763,7 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
-  def get_top_bets_and_zero_stats():
+def get_top_bets_and_zero_stats():
       """Generate HTML for top 3 bet recommendations and zero hit probability."""
       html = '<div class="hit-percentage-overview" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
       html += '<h4>🔥 Top Bet Recommendations 🔥</h4>'
