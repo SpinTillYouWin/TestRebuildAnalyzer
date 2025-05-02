@@ -4763,6 +4763,53 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
+  def get_top_bets_and_zero_stats():
+      """Generate HTML for top 3 bet recommendations and zero hit probability."""
+      html = '<div class="hit-percentage-overview" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
+      html += '<h4>🔥 Top Bet Recommendations 🔥</h4>'
+      html += '<div class="percentage-wrapper">'
+
+      # Get top 3 bets from state
+      sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+      sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+      sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+      
+      bets = []
+      if sorted_even_money and sorted_even_money[0][1] > 0:
+          bets.append((sorted_even_money[0][0], sorted_even_money[0][1], "Even Money"))
+      if sorted_dozens and sorted_dozens[0][1] > 0:
+          bets.append((sorted_dozens[0][0], sorted_dozens[0][1], "Dozen"))
+      if sorted_numbers and sorted_numbers[0][1] > 0:
+          bets.append((f"Number {sorted_numbers[0][0]}", sorted_numbers[0][1], "Straight Up"))
+      
+      total_spins = len(state.last_spins) or 1  # Avoid division by zero
+      html += '<div class="percentage-group">'
+      html += '<div class="percentage-badges">'
+      for i, (name, count, bet_type) in enumerate(bets[:3]):
+          percentage = (count / total_spins * 100)
+          badge_class = "percentage-item bet-recommendation" + (" winner" if i == 0 else "")
+          emoji = "🏆" if i == 0 else "🎯" if i == 1 else "⭐"
+          bar_color = "#b71c1c" if bet_type == "Even Money" else "#388e3c" if bet_type == "Dozen" else "#7b1fa2"
+          html += f'<div class="percentage-with-bar" data-category="bet-recommendation"><span class="{badge_class}">{name}: {count} Hits {emoji}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+      if not bets:
+          html += '<span class="percentage-item">No bets hit yet 🔥</span>'
+      html += '</div></div>'
+
+      # Zero Hit Probability
+      html += '<h4 style="margin-top: 10px;">🎰 Zero Hit Probability 🎰</h4>'
+      html += '<div class="percentage-group">'
+      html += '<div class="percentage-badges">'
+      expected_zero = 2.70  # 1/37
+      actual_zero = (state.scores.get(0, 0) / total_spins * 100) if total_spins > 0 else 0
+      zero_diff = abs(actual_zero - expected_zero)
+      bar_color = "#00695c" if zero_diff < 2 else "#ff4444"  # Green if close, red if far
+      badge_class = "percentage-item zero-probability" + (" warning" if zero_diff > 2 else "")
+      html += f'<div class="percentage-with-bar" data-category="zero-probability"><span class="{badge_class}">Expected: {expected_zero:.2f}% | Actual: {actual_zero:.2f}% {"🔴" if zero_diff > 2 else "🟢"}</span><div class="progress-bar"><div class="progress-fill" style="width: {actual_zero}%; background-color: {bar_color};"></div></div></div>'
+      html += '</div></div>'
+
+      html += '</div></div>'
+      return html
+
 def calculate_hit_percentages(last_spin_count):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens, with winner highlighting."""
     try:
@@ -5276,13 +5323,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[]
                             )
 
-# Row 3 (keep the accordion here)
+# Surrounding lines before (context, unchanged)
+    # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
-            
 
     # 4. Row 4: Spin Controls
     with gr.Row():
@@ -5293,14 +5340,48 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
 
-# Surrounding lines after (unchanged)
+# Line 1: Start of Hit Percentage Overview section
+    # Start of updated section
+    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                hit_percentage_display = gr.HTML(
+                    label="Hit Percentages",
+                    value=calculate_hit_percentages(36),
+                    elem_classes=["hit-percentage-container"]
+                )
+            with gr.Column(scale=1):
+                # Replaced black placeholder with Top Bet Recommendations
+                hit_percentage_placeholder = gr.HTML(
+                    label="Top Bet Recommendations",
+                    value=get_top_bets_and_zero_stats(),
+                    elem_classes=["hit-percentage-container"]  # Reuse container style
+                )
+# Line 3: End of Hit Percentage Overview section
+    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                traits_display = gr.HTML(
+                    label="Spin Traits",
+                    value=summarize_spin_traits(36),
+                    elem_classes=["traits-container"]
+                )
+            with gr.Column(scale=1):
+                # Replaced black placeholder with Top Bet Recommendations
+                traits_placeholder = gr.HTML(
+                    label="Top Bet Recommendations",
+                    value=get_top_bets_and_zero_stats(),
+                    elem_classes=["hit-percentage-container"]  # Reuse container style
+                )
+
+# Surrounding lines after (context, unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
-
+            
     # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
@@ -6361,6 +6442,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 8px #ffd700 !important;
             background-color: rgba(255, 215, 0, 0.2) !important;
             transform: scale(1.1) !important;
+        }
+        .percentage-item.bet-recommendation {
+            background-color: #444 !important;
+        }
+        .percentage-item.zero-probability {
+            background-color: #00695c !important;
+        }
+        .percentage-item.zero-probability.warning {
+            background-color: #ff4444 !important;
         }
         .percentage-with-bar {
             display: inline-block !important;
