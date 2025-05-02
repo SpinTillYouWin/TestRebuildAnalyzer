@@ -2749,88 +2749,105 @@ def best_even_money_bets():
     return "\n".join(recommendations)
 
 def hot_bet_strategy():
+    """Recommend top 3 numbers, top even money bet, and top 2 columns with confidence scores."""
     recommendations = []
-    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-    even_money_hits = [item for item in sorted_even_money if item[1] > 0]
-    if even_money_hits:
-        recommendations.append("Even Money (Top 2):")
-        for i, (name, score) in enumerate(even_money_hits[:2], 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("Even Money: No hits yet.")
+    suggestions = {}
+    total_spins = len(state.last_spins) or 1  # Avoid division by zero
 
-    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
-    dozens_hits = [item for item in sorted_dozens if item[1] > 0]
-    if dozens_hits:
-        recommendations.append("\nDozens (Top 2):")
-        for i, (name, score) in enumerate(dozens_hits[:2], 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("\nDozens: No hits yet.")
-
-    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
-    columns_hits = [item for item in sorted_columns if item[1] > 0]
-    if columns_hits:
-        recommendations.append("\nColumns (Top 2):")
-        for i, (name, score) in enumerate(columns_hits[:2], 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("\nColumns: No hits yet.")
-
-    sorted_streets = sorted(state.street_scores.items(), key=lambda x: x[1], reverse=True)
-    streets_hits = [item for item in sorted_streets if item[1] > 0]
-    if streets_hits:
-        recommendations.append("\nStreets (Ranked):")
-        for i, (name, score) in enumerate(streets_hits, 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("\nStreets: No hits yet.")
-
-    sorted_corners = sorted(state.corner_scores.items(), key=lambda x: x[1], reverse=True)
-    corners_hits = [item for item in sorted_corners if item[1] > 0]
-    if corners_hits:
-        recommendations.append("\nCorners (Ranked):")
-        for i, (name, score) in enumerate(corners_hits, 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("\nCorners: No hits yet.")
-
-    sorted_six_lines = sorted(state.six_line_scores.items(), key=lambda x: x[1], reverse=True)
-    six_lines_hits = [item for item in sorted_six_lines if item[1] > 0]
-    if six_lines_hits:
-        recommendations.append("\nDouble Streets (Ranked):")
-        for i, (name, score) in enumerate(six_lines_hits, 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("\nDouble Streets: No hits yet.")
-
-    sorted_splits = sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
-    splits_hits = [item for item in sorted_splits if item[1] > 0]
-    if splits_hits:
-        recommendations.append("\nSplits (Ranked):")
-        for i, (name, score) in enumerate(splits_hits, 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("\nSplits: No hits yet.")
-
-    sorted_sides = sorted(state.side_scores.items(), key=lambda x: x[1], reverse=True)
-    sides_hits = [item for item in sorted_sides if item[1] > 0]
-    if sides_hits:
-        recommendations.append("\nSides of Zero:")
-        recommendations.append(f"1. {sides_hits[0][0]}: {sides_hits[0][1]}")
-    else:
-        recommendations.append("\nSides of Zero: No hits yet.")
-
+    # Top 3 Numbers
     sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
     numbers_hits = [item for item in sorted_numbers if item[1] > 0]
-    if numbers_hits:
-        number_best = numbers_hits[0]
-        left_neighbor, right_neighbor = current_neighbors[number_best[0]]
-        recommendations.append(f"\nStrongest Number: {number_best[0]} (Score: {number_best[1]}) with neighbors {left_neighbor} and {right_neighbor}")
-    else:
-        recommendations.append("\nStrongest Number: No hits yet.")
+    
+    if not numbers_hits:
+        recommendations.append("Hot Bet Strategy: No numbers have hit yet.")
+        return "\n".join(recommendations), suggestions
 
-    return "\n".join(recommendations)
+    top_numbers = []
+    scores_seen = set()
+    for num, score in sorted_numbers:
+        if len(top_numbers) < 3 or score in scores_seen:
+            top_numbers.append((num, score))
+            scores_seen.add(score)
+        else:
+            break
+
+    recommendations.append("Hot Bet Strategy (Top 3 Numbers):")
+    for i, (num, score) in enumerate(top_numbers[:3], 1):
+        confidence = (score / total_spins * 100) if score > 0 else 0
+        recommendations.append(f"{i}. Number {num}: {score} (Confidence: {confidence:.1f}%)")
+
+    if len(top_numbers) > 1:
+        first_score = top_numbers[0][1]
+        tied_first = [str(num) for num, score in top_numbers if score == first_score]
+        if len(tied_first) > 1:
+            confidence = (first_score / total_spins * 100) if first_score > 0 else 0
+            recommendations.append(f"Note: Tie for 1st place among numbers {', '.join(tied_first)} with score {first_score} (Confidence: {confidence:.1f}%)")
+
+        if len(top_numbers) > 1:
+            second_score = top_numbers[1][1]
+            tied_second = [str(num) for num, score in top_numbers if score == second_score]
+            if len(tied_second) > 1:
+                confidence = (second_score / total_spins * 100) if second_score > 0 else 0
+                recommendations.append(f"Note: Tie for 2nd place among numbers {', '.join(tied_second)} with score {second_score} (Confidence: {confidence:.1f}%)")
+
+        if len(top_numbers) > 2:
+            third_score = top_numbers[2][1]
+            tied_third = [str(num) for num, score in top_numbers if score == third_score]
+            if len(tied_third) > 1:
+                confidence = (third_score / total_spins * 100) if third_score > 0 else 0
+                recommendations.append(f"Note: Tie for 3rd place among numbers {', '.join(tied_third)} with score {third_score} (Confidence: {confidence:.1f}%)")
+
+    # Best Even Money Bet
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+    
+    if even_money_hits:
+        best_even_money = even_money_hits[0]
+        confidence = (best_even_money[1] / total_spins * 100) if best_even_money[1] > 0 else 0
+        recommendations.append(f"Best Even Money Bet: {best_even_money[0]} with score {best_even_money[1]} (Confidence: {confidence:.1f}%)")
+        suggestions["best_even_money"] = f"{best_even_money[0]}: {best_even_money[1]}"
+        
+        tied_even_money = [name for name, score in even_money_hits if score == best_even_money[1]]
+        if len(tied_even_money) > 1:
+            confidence = (best_even_money[1] / total_spins * 100) if best_even_money[1] > 0 else 0
+            recommendations.append(f"Note: Tie for best even money bet among {', '.join(tied_even_money)} with score {best_even_money[1]} (Confidence: {confidence:.1f}%)")
+
+    # Top 2 Columns
+    sorted_columns = sorted(state.column_scores.items(), key=lambda x: x[1], reverse=True)
+    column_hits = [item for item in sorted_columns if item[1] > 0]
+    
+    if column_hits:
+        top_columns = []
+        scores_seen = set()
+        for name, score in sorted_columns:
+            if len(top_columns) < 2 or score in scores_seen:
+                top_columns.append((name, score))
+                scores_seen.add(score)
+            else:
+                break
+
+        recommendations.append("Top 2 Columns:")
+        for i, (name, score) in enumerate(top_columns[:2], 1):
+            confidence = (score / total_spins * 100) if score > 0 else 0
+            recommendations.append(f"{i}. {name}: {score} (Confidence: {confidence:.1f}%)")
+        
+        if len(top_columns) > 1:
+            first_score = top_columns[0][1]
+            tied_first = [name for name, score in top_columns if score == first_score]
+            if len(tied_first) > 1:
+                confidence = (first_score / total_spins * 100) if first_score > 0 else 0
+                recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score} (Confidence: {confidence:.1f}%)")
+
+            if len(top_columns) > 1:
+                second_score = top_columns[1][1]
+                tied_second = [name for name, score in top_columns if score == second_score]
+                if len(tied_second) > 1:
+                    confidence = (second_score / total_spins * 100) if second_score > 0 else 0
+                    recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score} (Confidence: {confidence:.1f}%)")
+
+        suggestions["play_two"] = f"Play two columns: {top_columns[0][0]} ({top_columns[0][1]} hits) and {top_columns[1][0]} ({top_columns[1][1]} hits)" if len(top_columns) > 1 else f"Play column: {top_columns[0][0]} ({top_columns[0][1]} hits)"
+
+    return "\n".join(recommendations), suggestions
 
 # Function for Cold Bet Strategy
 def cold_bet_strategy():
@@ -2936,15 +2953,51 @@ def cold_bet_strategy():
     return "\n".join(recommendations)
 
 def best_dozens():
+    """Recommend top 3 dozens based on scores with confidence scores."""
     recommendations = []
     sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
-    dozens_hits = [item for item in sorted_dozens if item[1] > 0]
-    if dozens_hits:
-        recommendations.append("Best Dozens (Top 2):")
-        for i, (name, score) in enumerate(dozens_hits[:2], 1):
-            recommendations.append(f"{i}. {name}: {score}")
-    else:
-        recommendations.append("Best Dozens: No hits yet.")
+    dozen_hits = [item for item in sorted_dozens if item[1] > 0]
+    total_spins = len(state.last_spins) or 1  # Avoid division by zero
+    
+    if not dozen_hits:
+        recommendations.append("Best Dozens: No dozens have hit yet.")
+        return "\n".join(recommendations)
+
+    top_dozens = []
+    scores_seen = set()
+    for name, score in sorted_dozens:
+        if len(top_dozens) < 3 or score in scores_seen:
+            top_dozens.append((name, score))
+            scores_seen.add(score)
+        else:
+            break
+
+    recommendations.append("Best Dozens (Top 3):")
+    for i, (name, score) in enumerate(top_dozens[:3], 1):
+        confidence = (score / total_spins * 100) if score > 0 else 0
+        recommendations.append(f"{i}. {name}: {score} (Confidence: {confidence:.1f}%)")
+
+    if len(top_dozens) > 1:
+        first_score = top_dozens[0][1]
+        tied_first = [name for name, score in top_dozens if score == first_score]
+        if len(tied_first) > 1:
+            confidence = (first_score / total_spins * 100) if first_score > 0 else 0
+            recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score} (Confidence: {confidence:.1f}%)")
+
+        if len(top_dozens) > 1:
+            second_score = top_dozens[1][1]
+            tied_second = [name for name, score in top_dozens if score == second_score]
+            if len(tied_second) > 1:
+                confidence = (second_score / total_spins * 100) if second_score > 0 else 0
+                recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score} (Confidence: {confidence:.1f}%)")
+
+        if len(top_dozens) > 2:
+            third_score = top_dozens[2][1]
+            tied_third = [name for name, score in top_dozens if score == third_score]
+            if len(tied_third) > 1:
+                confidence = (third_score / total_spins * 100) if third_score > 0 else 0
+                recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score} (Confidence: {confidence:.1f}%)")
+
     return "\n".join(recommendations)
 
 def best_columns():
@@ -5091,88 +5144,7 @@ STRATEGIES = {
 
 
 # Line 1: Start of show_strategy_recommendations function (updated)
-def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
-    """Show strategy recommendations as HTML with styled confidence scores."""
-    try:
-        print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
-        print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
-        print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
-        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, args = {args}")
-
-        if strategy_name == "None":
-            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
-        
-        if not any(state.scores.values()) and not any(state.even_money_scores.values()):
-            if strategy_name == "Best Even Money Bets":
-                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
-            return "<p>Please analyze some spins first to generate scores.</p>"
-
-        strategy_info = STRATEGIES[strategy_name]
-        strategy_func = strategy_info["function"]
-
-        if strategy_name == "Neighbours of Strong Number":
-            try:
-                neighbours_count = int(neighbours_count)
-                strong_numbers_count = int(strong_numbers_count)
-                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
-            except (ValueError, TypeError) as e:
-                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
-                neighbours_count = 2
-                strong_numbers_count = 1
-            result = strategy_func(neighbours_count, strong_numbers_count)
-            if isinstance(result, tuple) and len(result) == 2:
-                recommendations, _ = result
-            else:
-                recommendations = result
-        elif strategy_name == "Dozen Tracker":
-            result = strategy_func(*args)
-            if isinstance(result, tuple) and len(result) == 3:
-                recommendations, _, _ = result
-            else:
-                recommendations = result
-        else:
-            recommendations = strategy_func()
-
-        print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
-
-        if strategy_name == "Top Numbers with Neighbours (Tiered)":
-            return recommendations
-        elif strategy_name == "Neighbours of Strong Number":
-            lines = recommendations.split("\n")
-            html_lines = []
-            in_suggestions = False
-            for line in lines:
-                if line.strip() == "Suggestions:":
-                    in_suggestions = True
-                    html_lines.append('<p style="margin: 2px 0; font-weight: bold;">Suggestions:</p>')
-                elif line.strip() == "" and in_suggestions:
-                    in_suggestions = False
-                    html_lines.append('<p style="margin: 2px 0;"></p>')
-                elif in_suggestions:
-                    html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
-                else:
-                    # Highlight confidence scores
-                    if "(Confidence:" in line:
-                        parts = line.split("(Confidence:")
-                        base_text = parts[0].strip()
-                        confidence = parts[1].strip().rstrip(")")
-                        line = f'{base_text}<span class="confidence-score">(Confidence: {confidence})</span>'
-                    html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
-            return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
-        else:
-            lines = [line for line in recommendations.split("\n") if line.strip()]
-            html_lines = []
-            for line in lines:
-                if "(Confidence:" in line:
-                    parts = line.split("(Confidence:")
-                    base_text = parts[0].strip()
-                    confidence = parts[1].strip().rstrip(")")
-                    line = f'{base_text}<span class="confidence-score">(Confidence: {confidence})</span>'
-                html_lines.append(f"<p style='margin: 2px 0;'>{line}</p>")
-            return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
-    except Exception as e:
-        print(f"show_strategy_recommendations: Error: {str(e)}")
-        return f"<p>Error generating strategy recommendations: {str(e)}</p>"
+def show_strategy_recommendations(s
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
@@ -6365,7 +6337,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-
             /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
