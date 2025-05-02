@@ -5328,6 +5328,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["hit-percentage-container"]  # Reuse container style
                 )
 # Line 3: End of Hit Percentage Overview section
+    # Line 1: Start of SpinTrend Radar section
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -5337,14 +5338,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["traits-container"]
                 )
             with gr.Column(scale=1):
-                # Replaced black placeholder with Top Bet Recommendations
                 traits_placeholder = gr.HTML(
                     label="Top Bet Recommendations",
                     value=get_top_bets_and_zero_stats(),
-                    elem_classes=["hit-percentage-container"]  # Reuse container style
+                    elem_classes=["hit-percentage-container"]
                 )
-
-# Surrounding lines after (context, unchanged)
+# Line 3: End of SpinTrend Radar section
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
