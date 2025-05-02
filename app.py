@@ -5233,19 +5233,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes="long-slider"
     )
     # Start of updated section
-    # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+    # Line 1: Updated Hit Percentage Overview and SpinTrend Radar with unique top_bets_display variables
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         with gr.Row():
             with gr.Column(scale=1):
                 hit_percentage_display = gr.HTML(
                     label="Hit Percentages",
                     value=calculate_hit_percentages(36),
-                    elem_classes=["hit-percentage-container"]
-                )
-            with gr.Column(scale=1):
-                top_bets_display = gr.HTML(
-                    label="Top Bet Recommendations",
-                    value=get_top_bets(),
                     elem_classes=["hit-percentage-container"]
                 )
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
