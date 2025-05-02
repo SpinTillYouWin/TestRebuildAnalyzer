@@ -5008,10 +5008,165 @@ def suggest_hot_cold_numbers():
             hot_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(hot_numbers))])
         if len(cold_numbers) < 5:
             cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
-        return ", ".join(hot_numbers), ", ".join(cold_numbers)
+                return ", ".join(hot_numbers), ", ".join(cold_numbers)
     except Exception as e:
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
+
+def trending_insights(last_spin_count):
+    """Generate the Trending Insights section for the placeholders."""
+    try:
+        # Ensure last_spin_count is a valid integer
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+
+        # Use state.last_spins directly and ensure it's not empty
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<div class='trending-insights'><h4>🔥 Trending Insights (Last 0 Spins):</h4><p>No notable trends yet—add more spins to see insights!</p></div>"
+
+        total_spins = len(last_spins)
+
+        # 1. Hot Streak Spotlight (Last 10 Spins)
+        recent_spins = last_spins[-10:] if len(last_spins) >= 10 else last_spins
+        streak_data = {"Even Money": {}, "Dozens": {}, "Columns": {}}
+        
+        # Initialize streak tracking for all categories
+        for name in EVEN_MONEY.keys():
+            streak_data["Even Money"][name] = {"current": 0, "max": 0, "last_hit": False}
+        for name in DOZENS.keys():
+            streak_data["Dozens"][name] = {"current": 0, "max": 0, "last_hit": False}
+        for name in COLUMNS.keys():
+            streak_data["Columns"][name] = {"current": 0, "max": 0, "last_hit": False}
+
+        # Track streaks in the last 10 spins
+        for spin in recent_spins:
+            num = int(spin)
+            # Reset last_hit flags for this spin
+            for category in streak_data.values():
+                for name in category:
+                    category[name]["last_hit"] = False
+
+            # Even Money Bets
+            for name, numbers in EVEN_MONEY.items():
+                if num in numbers:
+                    streak_data["Even Money"][name]["last_hit"] = True
+                    streak_data["Even Money"][name]["current"] += 1
+                    streak_data["Even Money"][name]["max"] = max(
+                        streak_data["Even Money"][name]["max"],
+                        streak_data["Even Money"][name]["current"]
+                    )
+                else:
+                    if not streak_data["Even Money"][name]["last_hit"]:
+                        streak_data["Even Money"][name]["current"] = 0
+
+            # Dozens
+            for name, numbers in DOZENS.items():
+                if num in numbers:
+                    streak_data["Dozens"][name]["last_hit"] = True
+                    streak_data["Dozens"][name]["current"] += 1
+                    streak_data["Dozens"][name]["max"] = max(
+                        streak_data["Dozens"][name]["max"],
+                        streak_data["Dozens"][name]["current"]
+                    )
+                else:
+                    if not streak_data["Dozens"][name]["last_hit"]:
+                        streak_data["Dozens"][name]["current"] = 0
+
+            # Columns
+            for name, numbers in COLUMNS.items():
+                if num in numbers:
+                    streak_data["Columns"][name]["last_hit"] = True
+                    streak_data["Columns"][name]["current"] += 1
+                    streak_data["Columns"][name]["max"] = max(
+                        streak_data["Columns"][name]["max"],
+                        streak_data["Columns"][name]["current"]
+                    )
+                else:
+                    if not streak_data["Columns"][name]["last_hit"]:
+                        streak_data["Columns"][name]["current"] = 0
+
+        # Find the longest streak across all categories
+        longest_streak = 0
+        hottest_category = None
+        hottest_name = None
+        for category, streaks in streak_data.items():
+            for name, data in streaks.items():
+                if data["max"] > longest_streak:
+                    longest_streak = data["max"]
+                    hottest_category = category
+                    hottest_name = name
+
+        if longest_streak >= 2:
+            streak_text = f"🔥 <b>Hottest Streak</b>: {hottest_name} - {longest_streak} spins in a row"
+        else:
+            streak_text = "🔥 <b>Hottest Streak</b>: No streaks of 2+ spins"
+
+        # 2. Zero Impact Snapshot
+        zero_count = sum(1 for spin in last_spins if int(spin) == 0)
+        zero_percentage = (zero_count / total_spins * 100) if total_spins > 0 else 0
+        expected_percentage = (1 / 37) * 100  # Expected probability of zero: 1/37 ≈ 2.7%
+        zero_text = f"⚠️ <b>Zero Hits</b>: {zero_percentage:.1f}% ({zero_count} spins, Expected: ~{expected_percentage:.1f}%)"
+
+        # 3. Top Numbers in Hottest Section
+        # Find the hottest Dozen and Column
+        dozen_counts = {name: 0 for name in DOZENS.keys()}
+        column_counts = {name: 0 for name in COLUMNS.keys()}
+        number_hits_in_section = {}  # Track hits per number in each section
+
+        for spin in last_spins:
+            num = int(spin)
+            # Dozens
+            for name, numbers in DOZENS.items():
+                if num in numbers:
+                    dozen_counts[name] += 1
+                    if name not in number_hits_in_section:
+                        number_hits_in_section[name] = {}
+                    number_hits_in_section[name][num] = number_hits_in_section[name].get(num, 0) + 1
+            # Columns
+            for name, numbers in COLUMNS.items():
+                if num in numbers:
+                    column_counts[name] += 1
+                    if name not in number_hits_in_section:
+                        number_hits_in_section[name] = {}
+                    number_hits_in_section[name][num] = number_hits_in_section[name].get(num, 0) + 1
+
+        # Determine the hottest section (Dozen or Column)
+        max_dozen = max(dozen_counts.items(), key=lambda x: x[1], default=("1st Dozen", 0))
+        max_column = max(column_counts.items(), key=lambda x: x[1], default=("1st Column", 0))
+        
+        if max_dozen[1] >= max_column[1]:
+            hottest_section = "Dozen"
+            section_name = max_dozen[0]
+            section_hits = max_dozen[1]
+        else:
+            hottest_section = "Column"
+            section_name = max_column[0]
+            section_hits = max_column[1]
+
+        # Get the top 2 numbers in the hottest section
+        if section_hits > 0:
+            section_numbers = number_hits_in_section.get(section_name, {})
+            sorted_numbers = sorted(section_numbers.items(), key=lambda x: (-x[1], x[0]))
+            top_numbers = sorted_numbers[:2]  # Top 2 numbers
+            top_numbers_text = ", ".join(f"{num} ({hits})" for num, hits in top_numbers)
+            section_text = f"🎯 <b>Hottest {hottest_section} ({section_name}, {section_hits} hits)</b>: {top_numbers_text}"
+        else:
+            section_text = f"🎯 <b>Hottest {hottest_section}</b>: No hits in Dozens/Columns"
+
+        # Combine into HTML
+        html = f"""
+        <div class='trending-insights'>
+            <h4>🔥 Trending Insights (Last {total_spins} Spins):</h4>
+            <p>{streak_text}</p>
+            <p>{zero_text}</p>
+            <p>{section_text}</p>
+        </div>
+        """
+        return html
+    except Exception as e:
+        print(f"trending_insights: Error: {str(e)}")
+        return "<div class='trending-insights'><h4>🔥 Trending Insights (Last 0 Spins):</h4><p>Error generating insights.</p></div>"
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -5199,7 +5354,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     )
     # Start of updated section
     # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+        with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         with gr.Row():
             with gr.Column(scale=1):
                 hit_percentage_display = gr.HTML(
@@ -5210,7 +5365,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 hit_percentage_placeholder = gr.HTML(
                     label="Hit Percentage Placeholder",
-                    value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
+                    value=trending_insights(36),
                     elem_classes=["placeholder-section"]
                 )
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
@@ -5224,7 +5379,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 traits_placeholder = gr.HTML(
                     label="SpinTrend Radar Placeholder",
-                    value='<div class="placeholder-section" style="background-color: black; height: 100%; width: 100%; border-radius: 5px;"></div>',
+                    value=trending_insights(36),
                     elem_classes=["placeholder-section"]
                 )
 
@@ -6527,11 +6682,34 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        /* TITLE: Fade-In Animation */
+        /* Fade-In Animation */
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
         }
+
+/* Trending Insights Section */
+.trending-insights {
+    padding: 10px !important;
+    background-color: #f5f5dc !important; /* Light beige, matching the main sections */
+    border-radius: 5px !important;
+    border: 1px solid #d3d3d3 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.trending-insights h4 {
+    margin: 0 0 5px 0 !important;
+    font-size: 14px !important;
+    color: #333 !important;
+}
+.trending-insights p {
+    margin: 2px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important; /* Prevent wrapping, keep it compact */
+}
+.trending-insights b {
+    color: #555 !important;
+}     
     </style>
     """)
     print("CSS Updated")
@@ -7178,6 +7356,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
@@ -7275,7 +7457,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             # Update state.casino_data with current UI inputs before rendering the dynamic table
@@ -7315,6 +7497,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")    
@@ -8109,6 +8295,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
