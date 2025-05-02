@@ -487,8 +487,8 @@ colors = {
 
 
 # Lines before (context)
-def format_spins_as_html(spins, num_to_show):
-    """Format the spins as HTML with color-coded display, animations, and pattern badges."""
+def format_spins_as_html(spins, num_to_show, show_trends=True):
+    """Format the spins as HTML with color-coded display, animations, and optional trend badges."""
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
     
@@ -508,7 +508,7 @@ def format_spins_as_html(spins, num_to_show):
         "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
     }
     
-    # Pattern detection for consecutive colors and dozens
+    # Pattern detection for consecutive colors and dozens (always compute for consistency)
     patterns = []
     for i in range(len(spin_list) - 2):
         if i >= len(spin_list):
@@ -533,18 +533,19 @@ def format_spins_as_html(spins, num_to_show):
             class_attr = f'fade-in flip flash new-spin spin-{color} {color}'
         else:
             class_attr = f'fade-in {color}'
-        # Add pattern badge if this spin starts a pattern
+        # Add pattern badge if this spin starts a pattern and show_trends is True
         pattern_badge = ""
-        for start_idx, pattern_text in patterns:
-            if i == start_idx:
-                pattern_badge = f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
+        if show_trends:
+            for start_idx, pattern_text in patterns:
+                if i == start_idx:
+                    pattern_badge = f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
         html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}{pattern_badge}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
     
     # Add JavaScript to remove fade-in, flash, flip, and new-spin classes after animations
-    html_output += '''
+    html_output += """
     <script>
         document.querySelectorAll('.fade-in').forEach(element => {
             setTimeout(() => {
@@ -567,7 +568,7 @@ def format_spins_as_html(spins, num_to_show):
             }, 1000);
         });
     </script>
-    '''
+    """
     
     return html_output
 
@@ -5299,8 +5300,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             ).then(
-                                fn=format_spins_as_html,
-                                inputs=[spins_display, last_spin_count],
+                                fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+                                inputs=[spins_display, last_spin_count, show_trends_checkbox],
                                 outputs=[last_spin_display]
                             ).then(
                                 fn=summarize_spin_traits,
@@ -5315,6 +5316,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[],
                                 outputs=[]
                             )
+                            
 
 # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
@@ -5322,6 +5324,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column():
             last_spin_display
             last_spin_count
+            show_trends_checkbox = gr.Checkbox(
+                label="Show Trends",
+                value=True,
+                interactive=True,
+                elem_id="show-trends-checkbox"
+            )
             
 
     # 4. Row 4: Spin Controls
@@ -7076,9 +7084,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # Event Handlers
     try:
         spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
+            fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins) + (format_spins_as_html(spins, num_to_show, show_trends),),
+            inputs=[spins_textbox, last_spin_count, show_trends_checkbox],
+            outputs=[spins_display, last_spin_display, last_spin_display]
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -7088,6 +7096,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
+        ).then(
+            fn=update_casino_data,
+            inputs=[
+                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+                col1_percent, col2_percent, col3_percent, use_winners_checkbox
+            ],
+            outputs=[casino_data_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=update_spin_counter,
             inputs=[],
@@ -7238,8 +7258,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 # Line 1: Slider change handler (updated)
     try:
         last_spin_count.change(
-            fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
-            inputs=[spins_display, last_spin_count],
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
@@ -7250,6 +7270,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
         )
+        # show_trends_checkbox.change
+        show_trends_checkbox.change(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
+        )
+        
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
     
@@ -7346,10 +7373,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Update state.casino_data with current UI inputs before rendering the dynamic table
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -7386,7 +7412,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
         )
+        
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")    
     
