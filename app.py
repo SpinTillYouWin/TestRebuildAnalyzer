@@ -4763,6 +4763,41 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
+# Line 1: New get_top_bets function
+def get_top_bets():
+    """Generate HTML for top 3 bet recommendations using existing state data."""
+    html = '<div class="hit-percentage-overview" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
+    html += '<h4>🔥 Top Bet Recommendations 🔥</h4>'
+    html += '<div class="percentage-wrapper">'
+
+    # Get top bets from existing state scores
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    
+    bets = []
+    if sorted_even_money and sorted_even_money[0][1] > 0:
+        bets.append((sorted_even_money[0][0], sorted_even_money[0][1], "Even Money"))
+    if sorted_dozens and sorted_dozens[0][1] > 0:
+        bets.append((sorted_dozens[0][0], sorted_dozens[0][1], "Dozen"))
+    if sorted_numbers and sorted_numbers[0][1] > 0:
+        bets.append((f"Number {sorted_numbers[0][0]}", sorted_numbers[0][1], "Straight Up"))
+    
+    total_spins = len(state.last_spins) or 1  # Avoid division by zero
+    html += '<div class="percentage-group">'
+    html += '<div class="percentage-badges">'
+    for i, (name, count, bet_type) in enumerate(bets[:3]):
+        percentage = (count / total_spins * 100)
+        badge_class = "percentage-item" + (" winner" if i == 0 else "")
+        bar_color = "#b71c1c" if bet_type == "Even Money" else "#388e3c" if bet_type == "Dozen" else "#7b1fa2"
+        html += f'<div class="percentage-with-bar" data-category="top-bets"><span class="{badge_class}">{name}: {count} Hits ({percentage:.1f}%)</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+    if not bets:
+        html += '<span class="percentage-item">No bets hit yet 🔥</span>'
+    html += '</div></div>'
+
+    html += '</div></div>'
+    return html
+
 def calculate_hit_percentages(last_spin_count):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens, with winner highlighting."""
     try:
@@ -5207,6 +5242,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
+            with gr.Column(scale=1):
+                top_bets_display = gr.HTML(
+                    label="Top Bet Recommendations",
+                    value=get_top_bets(),
+                    elem_classes=["hit-percentage-container"]
+                )
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -5214,6 +5255,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Spin Traits",
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
+                )
+            with gr.Column(scale=1):
+                top_bets_display = gr.HTML(
+                    label="Top Bet Recommendations",
+                    value=get_top_bets(),
+                    elem_classes=["hit-percentage-container"]
                 )
 
 # Surrounding lines before (unchanged)
@@ -7051,6 +7098,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=get_top_bets,
+            inputs=[],
+            outputs=[top_bets_display]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
@@ -8059,20 +8110,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Update state.casino_data with current UI inputs before rendering the dynamic table
-            fn=update_casino_data,
-            inputs=[
-                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
-                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
-                col1_percent, col2_percent, col3_percent, use_winners_checkbox
-            ],
-            outputs=[casino_data_output]
-        ).then(
-            # Re-render the dynamic table to reflect the updated casino data
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        ).then(
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
@@ -8097,6 +8134,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
+            fn=get_top_bets,
+            inputs=[],
+            outputs=[top_bets_display]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
