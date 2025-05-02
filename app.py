@@ -5013,18 +5013,22 @@ def suggest_hot_cold_numbers():
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
-def trending_insights(last_spin_count):
-    """Generate the Trending Insights section for the placeholders."""
+def trending_insights(last_spin_count, spins_display):
+    """Generate the Trending Insights section for the placeholders using spins_display."""
     try:
         # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
 
-        # Use state.last_spins directly and ensure it's not empty
-        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
-        print(f"trending_insights: last_spin_count={last_spin_count}, state.last_spins={state.last_spins}, last_spins={last_spins}")  # Debug log
+        # Parse spins from spins_display
+        last_spins = []
+        if spins_display:
+            last_spins = [int(spin.strip()) for spin in spins_display.split(",") if spin.strip()]
+        last_spins = last_spins[-last_spin_count:] if last_spins else []
+        print(f"trending_insights: last_spin_count={last_spin_count}, spins_display='{spins_display}', last_spins={last_spins}")
+
         if not last_spins:
-            print("trending_insights: No spins available in state.last_spins")
+            print("trending_insights: No spins available in spins_display")
             return "<div class='trending-insights'><h4>🔥 Trending Insights (Last 0 Spins):</h4><p>No notable trends yet—add more spins to see insights!</p></div>"
 
         total_spins = len(last_spins)
@@ -5367,7 +5371,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 hit_percentage_placeholder = gr.HTML(
                     label="Hit Percentage Placeholder",
-                    value=trending_insights(36),
+                    value=trending_insights(36, ""),  # spins_display is empty at initialization
                     elem_classes=["placeholder-section"]
                 )
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
@@ -5381,7 +5385,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 traits_placeholder = gr.HTML(
                     label="SpinTrend Radar Placeholder",
-                    value=trending_insights(36),
+                    value=trending_insights(36, ""),  # spins_display is empty at initialization
                     elem_classes=["placeholder-section"]
                 )
 
@@ -7203,10 +7207,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
-            fn=sync_state_last_spins,
-            inputs=[spins_display],
-            outputs=[]
-        ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
@@ -7242,12 +7242,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-
+    
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -7258,10 +7258,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
         ).then(
-            fn=sync_state_last_spins,
-            inputs=[spins_display],
-            outputs=[]  # No output needed, just updating state
-        ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
@@ -7271,7 +7267,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[hit_percentage_display]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
@@ -7283,10 +7279,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
         ).then(
-            fn=sync_state_last_spins,
-            inputs=[spins_display],
-            outputs=[]
-        ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
@@ -7296,7 +7288,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[hit_percentage_display]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
@@ -7312,16 +7304,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
         ).then(
-            fn=sync_state_last_spins,
-            inputs=[spins_display],
-            outputs=[]
-        ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
@@ -7334,10 +7322,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
         ).then(
-            fn=sync_state_last_spins,
-            inputs=[spins_display],
-            outputs=[]
-        ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
@@ -7347,7 +7331,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[hit_percentage_display]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
@@ -7386,7 +7370,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gr.update(visible=is_visible),
             gr.update(visible=is_visible)
         )
-
+    
     # New: Orchestrating function to combine analysis steps
     def orchestrate_analysis(spins_display, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
         """Orchestrate analysis, producing all outputs in one pass with scores always reset."""
@@ -7437,7 +7421,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
-
+    
     try:
         analyze_button.click(
             fn=analyze_spins,
@@ -7448,10 +7432,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
-        ).then(
-            fn=sync_state_last_spins,
-            inputs=[spins_display],
-            outputs=[]
         ).then(
             fn=update_casino_data,
             inputs=[
@@ -7491,11 +7471,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")  
+        print(f"Error in analyze_button.click handler: {str(e)}")
     
     try:
         save_button.click(
@@ -8167,7 +8147,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[dynamic_table_output]
         )
     except Exception as e:
-        print(f"Error in use_winners_checkbox.change handler: {str(e)}")    
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")
     
     try:
         reset_casino_data_button.click(
@@ -8189,7 +8169,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
-
+    
     try:
         play_hot_button.click(
             fn=play_specific_numbers,
@@ -8199,6 +8179,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count, spins_display],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
@@ -8212,6 +8200,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=format_spins_as_html,
             inputs=[spins_display, last_spin_count],
             outputs=[last_spin_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count, spins_display],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in play_cold_button.click handler: {str(e)}")
@@ -8233,7 +8229,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
-
+    
     try:
         spins_textbox.change(
             fn=validate_spins_input,
@@ -8249,7 +8245,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Update state.casino_data with current UI inputs before rendering the dynamic table
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -8258,7 +8253,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[casino_data_output]
         ).then(
-            # Re-render the dynamic table to reflect the updated casino data
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
@@ -8289,7 +8283,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
             fn=trending_insights,
-            inputs=[last_spin_count],
+            inputs=[last_spin_count, spins_display],
             outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
@@ -8308,6 +8302,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=suggest_hot_cold_numbers,
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count, spins_display],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
@@ -8325,6 +8323,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=suggest_hot_cold_numbers,
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=trending_insights,
+            inputs=[last_spin_count, spins_display],
+            outputs=[hit_percentage_placeholder, traits_placeholder]
         )
     except Exception as e:
         print(f"Error in play_cold_button.click handler: {str(e)}")
@@ -8468,7 +8470,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gr.update(choices=choices, value=default_value),
             gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
         )
-    
+     
     def update_video_display(video_title, category):
         videos = video_categories.get(category, [])
         selected_video = next((video for video in videos if video["title"] == video_title), None)
