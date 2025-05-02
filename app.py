@@ -5215,9 +5215,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections
-    Let’s tackle this error with a professional approach. The error message indicates a NameError: name 'show_trends_checkbox' is not defined in the spins_textbox.change event handler at line 5304 in app.py. This suggests that the show_trends_checkbox component is being referenced before it’s defined, or the event handler is trying to access it in a scope where it’s not available. Let’s break this down systematically and fix the issue.
-
+   
 Step 1: Analyze the Error
 The error occurs in the spins_textbox.change event handler, specifically in the line:
 
@@ -5306,7 +5304,7 @@ spins_textbox.change(
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+    with gr.Accordion("Dealer's Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
@@ -5332,7 +5330,6 @@ spins_textbox.change(
         interactive=True,
         elem_id="show-trends-checkbox"
     )
-    
     # Start of updated section
     # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
@@ -5343,7 +5340,7 @@ spins_textbox.change(
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-
+    
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -5352,8 +5349,8 @@ spins_textbox.change(
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
-
-# Surrounding lines before (unchanged)
+    
+    # Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5400,17 +5397,15 @@ spins_textbox.change(
                                 inputs=[],
                                 outputs=[]
                             )
-                            
-
-# Row 3 (keep the accordion here)
+    
+    # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
             show_trends_checkbox
-            
-
+    
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
@@ -7176,6 +7171,7 @@ spins_textbox.change(
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
+            # Update state.casino_data with current UI inputs before rendering the dynamic table
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -7184,6 +7180,7 @@ spins_textbox.change(
             ],
             outputs=[casino_data_output]
         ).then(
+            # Re-render the dynamic table to reflect the updated casino data
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
@@ -7212,31 +7209,14 @@ spins_textbox.change(
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
         )
-        
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
     
-    try:
-        spins_display.change(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=lambda spins_display, count: format_spins_as_html(spins_display, count),
-            inputs=[spins_display, last_spin_count],
-            outputs=[last_spin_display]
-        ).then(
-            fn=summarize_spin_traits,
-            inputs=[last_spin_count],
-            outputs=[traits_display]
-        ).then(
-            fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
-            outputs=[hit_percentage_display]
-        )
-    except Exception as e:
-        print(f"Error in spins_display.change handler: {str(e)}")
     
     try:
         clear_spins_button.click(
@@ -7350,15 +7330,18 @@ spins_textbox.change(
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
         )
-        # show_trends_checkbox.change
+    except Exception as e:
+        print(f"Error in last_spin_count.change handler: {str(e)}")
+    
+    # show_trends_checkbox.change
+    try:
         show_trends_checkbox.change(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_checkbox],
             outputs=[last_spin_display]
         )
-        
     except Exception as e:
-        print(f"Error in last_spin_count.change handler: {str(e)}")
+        print(f"Error in show_trends_checkbox.change handler: {str(e)}")
     
     def update_strategy_dropdown(category):
         if category == "None":
@@ -7497,10 +7480,9 @@ spins_textbox.change(
             inputs=[spins_display, last_spin_count, show_trends_checkbox],
             outputs=[last_spin_display]
         )
-        
-        
     except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")    
+        print(f"Error in analyze_button.click handler: {str(e)}")
+     
     
     try:
         save_button.click(
