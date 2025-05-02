@@ -5215,31 +5215,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-   
-Step 1: Analyze the Error
-The error occurs in the spins_textbox.change event handler, specifically in the line:
-
-python
-
-Copy
-inputs=[spins_display, last_spin_count, show_trends_checkbox],
-This handler is trying to use show_trends_checkbox as an input, but the interpreter cannot find a variable named show_trends_checkbox in the current scope. The error occurs during the Application Startup phase, which suggests that this handler is being set up when the Gradio app initializes, before any user interaction.
-
-Additionally, the logs show:
-
-text
-
-Copy
-summarize_spin_traits: Called with last_spin_count=36
-summarize_spin_traits: No spins available in state.last_spins
-This is a side effect of the spins_display.change handler (immediately before spins_textbox.change in Code 14) attempting to call summarize_spin_traits during startup. However, the primary issue is the NameError with show_trends_checkbox.
-
-Step 2: Locate the Problem in Code 14
-The spins_textbox.change event handler is defined in the "Event Handlers" section of Code 14 Part 2, around lines 1450–1500 (though the exact line number 5304 suggests this is within the full concatenated file). Here’s the original handler in Code 14:
-
-python
-
-Copy
 spins_textbox.change(
     fn=validate_spins_input,
     inputs=[spins_textbox],
@@ -5279,11 +5254,7 @@ spins_textbox.change(
     ],
     outputs=[gr.State(), even_money_tracker_output]
 )
-In my previous update, I modified this handler to include show_trends_checkbox:
 
-python
-
-Copy
 spins_textbox.change(
     fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins) + (format_spins_as_html(spins, num_to_show, show_trends),),
     inputs=[spins_textbox, last_spin_count, show_trends_checkbox],
