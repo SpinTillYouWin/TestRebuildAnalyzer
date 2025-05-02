@@ -4764,51 +4764,51 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
 def get_top_bets_and_zero_stats():
-      """Generate HTML for top 3 bet recommendations and zero hit probability."""
-      html = '<div class="hit-percentage-overview" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
-      html += '<h4>🔥 Top Bet Recommendations 🔥</h4>'
-      html += '<div class="percentage-wrapper">'
+    """Generate HTML for top 3 bet recommendations and zero hit probability."""
+    html = '<div class="hit-percentage-overview" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
+    html += '<h4>🔥 Top Bet Recommendations 🔥</h4>'
+    html += '<div class="percentage-wrapper">'
 
-      # Get top 3 bets from state
-      sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
-      sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
-      sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
-      
-      bets = []
-      if sorted_even_money and sorted_even_money[0][1] > 0:
-          bets.append((sorted_even_money[0][0], sorted_even_money[0][1], "Even Money"))
-      if sorted_dozens and sorted_dozens[0][1] > 0:
-          bets.append((sorted_dozens[0][0], sorted_dozens[0][1], "Dozen"))
-      if sorted_numbers and sorted_numbers[0][1] > 0:
-          bets.append((f"Number {sorted_numbers[0][0]}", sorted_numbers[0][1], "Straight Up"))
-      
-      total_spins = len(state.last_spins) or 1  # Avoid division by zero
-      html += '<div class="percentage-group">'
-      html += '<div class="percentage-badges">'
-      for i, (name, count, bet_type) in enumerate(bets[:3]):
-          percentage = (count / total_spins * 100)
-          badge_class = "percentage-item bet-recommendation" + (" winner" if i == 0 else "")
-          emoji = "🏆" if i == 0 else "🎯" if i == 1 else "⭐"
-          bar_color = "#b71c1c" if bet_type == "Even Money" else "#388e3c" if bet_type == "Dozen" else "#7b1fa2"
-          html += f'<div class="percentage-with-bar" data-category="bet-recommendation"><span class="{badge_class}">{name}: {count} Hits {emoji}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
-      if not bets:
-          html += '<span class="percentage-item">No bets hit yet 🔥</span>'
-      html += '</div></div>'
+    # Get top 3 bets from state
+    sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_dozens = sorted(state.dozen_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_numbers = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+    
+    bets = []
+    if sorted_even_money and sorted_even_money[0][1] > 0:
+        bets.append((sorted_even_money[0][0], sorted_even_money[0][1], "Even Money"))
+    if sorted_dozens and sorted_dozens[0][1] > 0:
+        bets.append((sorted_dozens[0][0], sorted_dozens[0][1], "Dozen"))
+    if sorted_numbers and sorted_numbers[0][1] > 0:
+        bets.append((f"Number {sorted_numbers[0][0]}", sorted_numbers[0][1], "Straight Up"))
+    
+    total_spins = len(state.last_spins) or 1  # Avoid division by zero
+    html += '<div class="percentage-group">'
+    html += '<div class="percentage-badges">'
+    for i, (name, count, bet_type) in enumerate(bets[:3]):
+        percentage = (count / total_spins * 100)
+        badge_class = "percentage-item bet-recommendation" + (" winner" if i == 0 else "")
+        emoji = "🏆" if i == 0 else "🎯" if i == 1 else "⭐"
+        bar_color = "#b71c1c" if bet_type == "Even Money" else "#388e3c" if bet_type == "Dozen" else "#7b1fa2"
+        html += f'<div class="percentage-with-bar" data-category="bet-recommendation"><span class="{badge_class}">{name}: {count} Hits {emoji}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+    if not bets:
+        html += '<span class="percentage-item">No bets hit yet 🔥</span>'
+    html += '</div></div>'
 
-      # Zero Hit Probability
-      html += '<h4 style="margin-top: 10px;">🎰 Zero Hit Probability 🎰</h4>'
-      html += '<div class="percentage-group">'
-      html += '<div class="percentage-badges">'
-      expected_zero = 2.70  # 1/37
-      actual_zero = (state.scores.get(0, 0) / total_spins * 100) if total_spins > 0 else 0
-      zero_diff = abs(actual_zero - expected_zero)
-      bar_color = "#00695c" if zero_diff < 2 else "#ff4444"  # Green if close, red if far
-      badge_class = "percentage-item zero-probability" + (" warning" if zero_diff > 2 else "")
-      html += f'<div class="percentage-with-bar" data-category="zero-probability"><span class="{badge_class}">Expected: {expected_zero:.2f}% | Actual: {actual_zero:.2f}% {"🔴" if zero_diff > 2 else "🟢"}</span><div class="progress-bar"><div class="progress-fill" style="width: {actual_zero}%; background-color: {bar_color};"></div></div></div>'
-      html += '</div></div>'
+    # Zero Hit Probability
+    html += '<h4 style="margin-top: 10px;">🎰 Zero Hit Probability 🎰</h4>'
+    html += '<div class="percentage-group">'
+    html += '<div class="percentage-badges">'
+    expected_zero = 2.70  # 1/37
+    actual_zero = (state.scores.get(0, 0) / total_spins * 100) if total_spins > 0 else 0
+    zero_diff = abs(actual_zero - expected_zero)
+    bar_color = "#00695c" if zero_diff < 2 else "#ff4444"  # Green if close, red if far
+    badge_class = "percentage-item zero-probability" + (" warning" if zero_diff > 2 else "")
+    html += f'<div class="percentage-with-bar" data-category="zero-probability"><span class="{badge_class}">Expected: {expected_zero:.2f}% | Actual: {actual_zero:.2f}% {"🔴" if zero_diff > 2 else "🟢"}</span><div class="progress-bar"><div class="progress-fill" style="width: {actual_zero}%; background-color: {bar_color};"></div></div></div>'
+    html += '</div></div>'
 
-      html += '</div></div>'
-      return html
+    html += '</div></div>'
+    return html
 
 def calculate_hit_percentages(last_spin_count):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens, with winner highlighting."""
