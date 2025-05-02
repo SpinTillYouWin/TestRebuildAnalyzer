@@ -6202,7 +6202,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </script>
                 """)
     
-    /* CSS (end of the previous section, for context) */
+    # Line 1: gr.HTML("""
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
