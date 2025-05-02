@@ -5009,7 +5009,7 @@ def suggest_hot_cold_numbers():
         if len(cold_numbers) < 5:
             cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
         return ", ".join(hot_numbers), ", ".join(cold_numbers)
-        except Exception as e:
+    except Exception as e:
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
