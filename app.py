@@ -507,39 +507,76 @@ def format_spins_as_html(spins, num_to_show):
         "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
     }
     
-    # Format each spin as a colored span
-    html_spins = []
-    for i, spin in enumerate(spin_list):
-        color = colors.get(spin.strip(), "black")  # Default to black if not found
-        # Apply flip, flash, and new-spin classes to the newest spin (last in the list)
-        # Also add a spin-color class for color-coded highlighting
-        if i == len(spin_list) - 1:
-            class_attr = f'fade-in flip flash new-spin spin-{color} {color}'
+    # Group spins by color with their indices to track newest spins
+    black_spins = []
+    zero_spins = []
+    red_spins = []
+    
+    # Store spins with their indices to determine the newest ones
+    spins_with_index = [(i, spin) for i, spin in enumerate(spin_list)]
+    
+    for i, spin in spins_with_index:
+        color = colors.get(spin.strip(), "black")
+        class_name = f"spin-{color} {color}"
+        spin_html = f'<span class="{class_name}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>'
+        
+        if color == "green":
+            zero_spins.append((i, spin_html))
+        elif color == "red":
+            red_spins.append((i, spin_html))
+        else:  # black
+            black_spins.append((i, spin_html))
+    
+    # Sort each group by index (newest first) and apply new-spin class to the last 3
+    black_spins.sort(key=lambda x: x[0], reverse=True)
+    zero_spins.sort(key=lambda x: x[0], reverse=True)
+    red_spins.sort(key=lambda x: x[0], reverse=True)
+    
+    # Apply new-spin class to the last 3 spins in each group
+    for j, (i, spin_html) in enumerate(black_spins):
+        if j < 3 and len(black_spins) > 3:  # Only apply to the newest 3 if there are more than 3 spins
+            black_spins[j] = spin_html.replace('class="', 'class="new-spin ')
         else:
-            class_attr = f'fade-in {color}'
-        html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}</span>')
+            black_spins[j] = spin_html
     
-    # Wrap the spins in a div with flexbox to enable wrapping, and add a title
-    html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
+    for j, (i, spin_html) in enumerate(zero_spins):
+        if j < 3 and len(zero_spins) > 3:
+            zero_spins[j] = spin_html.replace('class="', 'class="new-spin ')
+        else:
+            zero_spins[j] = spin_html
     
-    # Add JavaScript to remove fade-in, flash, flip, and new-spin classes after animations
+    for j, (i, spin_html) in enumerate(red_spins):
+        if j < 3 and len(red_spins) > 3:
+            red_spins[j] = spin_html.replace('class="', 'class="new-spin ')
+        else:
+            red_spins[j] = spin_html
+    
+    # Build the HTML with three rows in a vertical column layout
+    html_output = '<h4 style="margin-bottom: 5px; color: #fff;">Last Spins</h4><div class="last-spins-board">'
+    
+    # Black numbers (top row)
+    html_output += '<div class="spin-row black-row">'
+    html_output += '<div class="spin-label">Black:</div>'
+    html_output += ''.join(spin for _, spin in black_spins) if black_spins else '<span class="no-spins">None</span>'
+    html_output += '</div>'
+    
+    # Zeros (middle row)
+    html_output += '<div class="spin-row zero-row">'
+    html_output += '<div class="spin-label">Zero:</div>'
+    html_output += ''.join(spin for _, spin in zero_spins) if zero_spins else '<span class="no-spins">None</span>'
+    html_output += '</div>'
+    
+    # Red numbers (bottom row)
+    html_output += '<div class="spin-row red-row">'
+    html_output += '<div class="spin-label">Red:</div>'
+    html_output += ''.join(spin for _, spin in red_spins) if red_spins else '<span class="no-spins">None</span>'
+    html_output += '</div>'
+    
+    html_output += '</div>'
+    
+    # Add JavaScript to remove new-spin class after animations (preserving your existing logic)
     html_output += '''
     <script>
-        document.querySelectorAll('.fade-in').forEach(element => {
-            setTimeout(() => {
-                element.classList.remove('fade-in');
-            }, 500);
-        });
-        document.querySelectorAll('.flash').forEach(element => {
-            setTimeout(() => {
-                element.classList.remove('flash');
-            }, 300);
-        });
-        document.querySelectorAll('.flip').forEach(element => {
-            setTimeout(() => {
-                element.classList.remove('flip');
-            }, 500);
-        });
         document.querySelectorAll('.new-spin').forEach(element => {
             setTimeout(() => {
                 element.classList.remove('new-spin');
@@ -549,6 +586,7 @@ def format_spins_as_html(spins, num_to_show):
     '''
     
     return html_output
+
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
@@ -6179,14 +6217,126 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-        /* Last Spins Container */
+        /* Updated Last Spins Container styles (MODIFY THIS BLOCK) */
         .last-spins-container {
-            background-color: #f5f5f5 !important;
-            border: 1px solid #d3d3d3 !important;
+            background-color: #1a1a1a !important; /* Dark background like the casino board */
+            border: 1px solid #444 !important;
             padding: 10px !important;
             border-radius: 5px !important;
             margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* NEW CODE: Styles for the casino-style spins board and pulse animations (INSERT HERE) */
+        .last-spins-board {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .spin-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+        }
+        .spin-label {
+            color: #fff !important;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 5px;
+            width: 40px; /* Fixed width for alignment */
+        }
+        .black-row span.spin-black {
+            background-color: #000 !important;
+            color: #fff !important;
+            padding: 2px 5px !important;
+            margin: 2px !important;
+            border-radius: 3px !important;
+            font-size: 12px !important;
+            display: inline-block !important;
+        }
+        .zero-row span.spin-green {
+            background-color: #008000 !important;
+            color: #fff !important;
+            padding: 2px 5px !important;
+            margin: 2px !important;
+            border-radius: 3px !important;
+            font-size: 12px !important;
+            display: inline-block !important;
+        }
+        .red-row span.spin-red {
+            background-color: #ff0000 !important;
+            color: #fff !important;
+            padding: 2px 5px !important;
+            margin: 2px !important;
+            border-radius: 3px !important;
+            font-size: 12px !important;
+            display: inline-block !important;
+        }
+        .no-spins {
+            color: #888 !important;
+            font-style: italic;
+            font-size: 12px !important;
+            display: inline-block !important;
+        }
+        
+        /* Pulse animations for new spins */
+        .new-spin.spin-red {
+            animation: pulse-red 1s ease-in-out 2 !important;
+        }
+        .new-spin.spin-black {
+            animation: pulse-black 1s ease-in-out 2 !important;
+        }
+        .new-spin.spin-green {
+            animation: pulse-green 1s ease-in-out 2 !important;
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.5); }
+            50% { box-shadow: 0 0 6px 3px rgba(255, 0, 0, 0.5); }
+        }
+        @keyframes pulse-black {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 6px 3px rgba(255, 255, 255, 0.5); }
+        }
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.5); }
+            50% { box-shadow: 0 0 6px 3px rgba(0, 255, 0, 0.5); }
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .last-spins-container {
+                padding: 8px !important;
+                margin: 5px 0 !important;
+            }
+            .last-spins-container h4 {
+                font-size: 14px !important;
+            }
+            .spin-label {
+                font-size: 10px !important;
+                width: 35px !important;
+            }
+            .black-row span.spin-black,
+            .zero-row span.spin-green,
+            .red-row span.spin-red,
+            .no-spins {
+                padding: 1px 4px !important;
+                font-size: 10px !important;
+                margin: 1px !important;
+            }
+            @keyframes pulse-red {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.5); }
+                50% { box-shadow: 0 0 4px 2px rgba(255, 0, 0, 0.5); }
+            }
+            @keyframes pulse-black {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
+                50% { box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.5); }
+            }
+            @keyframes pulse-green {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.5); }
+                50% { box-shadow: 0 0 4px 2px rgba(0, 255, 0, 0.5); }
+            }
         }
         
         /* Fade-in animation for Last Spins */
