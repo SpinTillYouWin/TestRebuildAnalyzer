@@ -2701,15 +2701,16 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
 
 # Strategy functions
 def best_even_money_bets():
+    """Recommend top 3 even money bets based on scores with confidence scores."""
     recommendations = []
     sorted_even_money = sorted(state.even_money_scores.items(), key=lambda x: x[1], reverse=True)
     even_money_hits = [item for item in sorted_even_money if item[1] > 0]
+    total_spins = len(state.last_spins) or 1  # Avoid division by zero
     
     if not even_money_hits:
         recommendations.append("Best Even Money Bets: No hits yet.")
         return "\n".join(recommendations)
 
-    # Collect the top 3 bets, including ties
     top_bets = []
     scores_seen = set()
     for name, score in sorted_even_money:
@@ -2719,32 +2720,31 @@ def best_even_money_bets():
         else:
             break
 
-    # Display the top 3 bets
     recommendations.append("Best Even Money Bets (Top 3):")
     for i, (name, score) in enumerate(top_bets[:3], 1):
-        recommendations.append(f"{i}. {name}: {score}")
+        confidence = (score / total_spins * 100) if score > 0 else 0
+        recommendations.append(f"{i}. {name}: {score} (Confidence: {confidence:.1f}%)")
 
-    # Check for ties among the top 3 positions
     if len(top_bets) > 1:
-        # Check for ties at the 1st position
         first_score = top_bets[0][1]
         tied_first = [name for name, score in top_bets if score == first_score]
         if len(tied_first) > 1:
-            recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score}")
+            confidence = (first_score / total_spins * 100) if first_score > 0 else 0
+            recommendations.append(f"Note: Tie for 1st place among {', '.join(tied_first)} with score {first_score} (Confidence: {confidence:.1f}%)")
 
-        # Check for ties at the 2nd position
         if len(top_bets) > 1:
             second_score = top_bets[1][1]
             tied_second = [name for name, score in top_bets if score == second_score]
             if len(tied_second) > 1:
-                recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score}")
+                confidence = (second_score / total_spins * 100) if second_score > 0 else 0
+                recommendations.append(f"Note: Tie for 2nd place among {', '.join(tied_second)} with score {second_score} (Confidence: {confidence:.1f}%)")
 
-        # Check for ties at the 3rd position
         if len(top_bets) > 2:
             third_score = top_bets[2][1]
             tied_third = [name for name, score in top_bets if score == third_score]
             if len(tied_third) > 1:
-                recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score}")
+                confidence = (third_score / total_spins * 100) if third_score > 0 else 0
+                recommendations.append(f"Note: Tie for 3rd place among {', '.join(tied_third)} with score {third_score} (Confidence: {confidence:.1f}%)")
 
     return "\n".join(recommendations)
 
@@ -5092,7 +5092,7 @@ STRATEGIES = {
 
 # Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
-    """Generate strategy recommendations based on the selected strategy."""
+    """Show strategy recommendations as HTML with styled confidence scores."""
     try:
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
         print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
@@ -5102,7 +5102,6 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         if strategy_name == "None":
             return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
         
-        # If no spins yet, provide a default for "Best Even Money Bets"
         if not any(state.scores.values()) and not any(state.even_money_scores.values()):
             if strategy_name == "Best Even Money Bets":
                 return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
@@ -5121,28 +5120,23 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
                 neighbours_count = 2
                 strong_numbers_count = 1
             result = strategy_func(neighbours_count, strong_numbers_count)
-            # Handle the tuple return value for Neighbours of Strong Number
             if isinstance(result, tuple) and len(result) == 2:
-                recommendations, _ = result  # We only need the recommendations string for display
+                recommendations, _ = result
             else:
                 recommendations = result
         elif strategy_name == "Dozen Tracker":
-            # Dozen Tracker expects multiple arguments and returns a tuple
             result = strategy_func(*args)
             if isinstance(result, tuple) and len(result) == 3:
-                recommendations, _, _ = result  # Unpack the tuple, we only need the first element
+                recommendations, _, _ = result
             else:
                 recommendations = result
         else:
-            # Other strategies return a single string
             recommendations = strategy_func()
 
         print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
 
-        # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
             return recommendations
-        # Special handling for "Neighbours of Strong Number" to format Suggestions section
         elif strategy_name == "Neighbours of Strong Number":
             lines = recommendations.split("\n")
             html_lines = []
@@ -5157,14 +5151,24 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
                 elif in_suggestions:
                     html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
                 else:
+                    # Highlight confidence scores
+                    if "(Confidence:" in line:
+                        parts = line.split("(Confidence:")
+                        base_text = parts[0].strip()
+                        confidence = parts[1].strip().rstrip(")")
+                        line = f'{base_text}<span class="confidence-score">(Confidence: {confidence})</span>'
                     html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
             return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
-        # Otherwise, convert plain text to HTML with proper line breaks
         else:
-            # Split the output into lines, removing any empty lines
             lines = [line for line in recommendations.split("\n") if line.strip()]
-            # Wrap each line in <p> tags and join with <br> for proper spacing
-            html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
+            html_lines = []
+            for line in lines:
+                if "(Confidence:" in line:
+                    parts = line.split("(Confidence:")
+                    base_text = parts[0].strip()
+                    confidence = parts[1].strip().rstrip(")")
+                    line = f'{base_text}<span class="confidence-score">(Confidence: {confidence})</span>'
+                html_lines.append(f"<p style='margin: 2px 0;'>{line}</p>")
             return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
     except Exception as e:
         print(f"show_strategy_recommendations: Error: {str(e)}")
@@ -6246,37 +6250,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             to { opacity: 1; }
         }
         
-        /* Pattern Badge for Spin Patterns */
-        .pattern-badge {
-            background-color: #ffd700 !important;
-            color: #333 !important;
-            padding: 2px 5px !important;
-            border-radius: 3px !important;
-            font-size: 10px !important;
+        /* Confidence Score for Strategy Recommendations */
+        .confidence-score {
+            color: #ff9800 !important;
+            font-weight: bold !important;
             margin-left: 5px !important;
-            cursor: pointer !important;
-            transition: transform 0.2s ease !important;
-        }
-        .pattern-badge:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-        }
-        
-        /* Quick Trends Section for SpinTrend Radar */
-        .quick-trends {
-            background-color: #fff3e0 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-bottom: 10px !important;
-            border: 1px solid #ff9800 !important;
-        }
-        .quick-trends h4 {
-            margin: 0 0 5px 0 !important;
-            font-size: 14px !important;
-        }
-        .quick-trends ul {
-            margin: 0 !important;
-            padding: 0 !important;
         }
         
         /* Spin animation for roulette table buttons */
@@ -6298,10 +6276,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .flash.black {
             animation: flashBlack 0.3s ease-in-out;
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
         }
         @keyframes flashRed {
             0%, 100% { background-color: red; }
