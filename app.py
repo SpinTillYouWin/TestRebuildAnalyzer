@@ -487,7 +487,8 @@ colors = {
 
 
 # Lines before (context)
-def format_spins_as_html(spins, num_to_show):
+# Line 1: def format_spins_as_html(spins, num_to_show):
+def format_spins_as_html(spins, num_to_show, show_trends=True):
     """Format the spins as HTML with color-coded display, animations, and pattern badges."""
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -510,18 +511,19 @@ def format_spins_as_html(spins, num_to_show):
     
     # Pattern detection for consecutive colors and dozens
     patterns = []
-    for i in range(len(spin_list) - 2):
-        if i >= len(spin_list):
-            break
-        # Check for consecutive colors
-        if colors.get(spin_list[i], "") == colors.get(spin_list[i+1], "") == colors.get(spin_list[i+2], ""):
-            color_name = colors.get(spin_list[i], '').capitalize()
-            if color_name:  # Ensure color_name is not empty
-                patterns.append((i, f"3 {color_name}s in a Row"))
-        # Check for consecutive dozens
-        dozen_hits = [next((name for name, nums in DOZENS.items() if int(spin) in nums), None) for spin in spin_list[i:i+3]]
-        if None not in dozen_hits and len(set(dozen_hits)) == 1:
-            patterns.append((i, f"{dozen_hits[0]} Streak"))
+    if show_trends:
+        for i in range(len(spin_list) - 2):
+            if i >= len(spin_list):
+                break
+            # Check for consecutive colors
+            if colors.get(spin_list[i], "") == colors.get(spin_list[i+1], "") == colors.get(spin_list[i+2], ""):
+                color_name = colors.get(spin_list[i], '').capitalize()
+                if color_name:  # Ensure color_name is not empty
+                    patterns.append((i, f"3 {color_name}s in a Row"))
+            # Check for consecutive dozens
+            dozen_hits = [next((name for name, nums in DOZENS.items() if int(spin) in nums), None) for spin in spin_list[i:i+3]]
+            if None not in dozen_hits and len(set(dozen_hits)) == 1:
+                patterns.append((i, f"{dozen_hits[0]} Streak"))
     
     # Format each spin as a colored span
     html_spins = []
@@ -535,9 +537,10 @@ def format_spins_as_html(spins, num_to_show):
             class_attr = f'fade-in {color}'
         # Add pattern badge if this spin starts a pattern
         pattern_badge = ""
-        for start_idx, pattern_text in patterns:
-            if i == start_idx:
-                pattern_badge = f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
+        if show_trends:
+            for start_idx, pattern_text in patterns:
+                if i == start_idx:
+                    pattern_badge = f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
         html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}{pattern_badge}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
@@ -1438,9 +1441,8 @@ def render_sides_of_zero_display():
         }});
     </script>
     """
-
-# Line 1: Start of updated validate_spins_input function
-def validate_spins_input(spins_input):
+# Line 1: def validate_spins_input(spins_input):
+def validate_spins_input(spins_input, num_to_show=36, show_trends=True):
     """Validate manually entered spins and update state."""
     import gradio as gr
     import time
@@ -1496,9 +1498,9 @@ def validate_spins_input(spins_input):
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
 
-    # UNCHANGED: Generate output
+    # CHANGED: Use num_to_show and show_trends in format_spins_as_html
     spins_display_value = ", ".join(valid_spins)
-    formatted_html = format_spins_as_html(spins_display_value, 36)  # Default to showing all spins
+    formatted_html = format_spins_as_html(spins_display_value, num_to_show, show_trends)
     
     # CHANGED: Detailed success logging
     print(f"validate_spins_input: Processed {len(valid_spins)} valid spins, spins_display_value='{spins_display_value}', time={time.time() - start_time:.3f}s")
@@ -1514,13 +1516,14 @@ def validate_spins_input(spins_input):
     return spins_display_value, formatted_html
 
 # Line 1: Start of updated add_spin function
-def add_spin(number, current_spins, num_to_show):
+# Line 1: def add_spin(number, current_spins, num_to_show):
+def add_spin(number, current_spins, num_to_show, show_trends=True):
     import gradio as gr
     import time
     start_time = time.time()  # CHANGED: Added for performance logging
     
     # CHANGED: Enhanced logging with input details
-    print(f"add_spin: Processing number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}")
+    print(f"add_spin: Processing number='{number}', current_spins='{current_spins}', num_to_show={num_to_show}, show_trends={show_trends}")
     
     # CHANGED: Split and deduplicate spins
     numbers = [n.strip() for n in number.split(",") if n.strip()]
@@ -1530,9 +1533,9 @@ def add_spin(number, current_spins, num_to_show):
         print("add_spin: No valid numbers provided.")
         return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
     
-    # CHANGED: Reuse validate_spins_input for validation
+    # CHANGED: Reuse validate_spins_input for validation, passing num_to_show and show_trends
     spins_input = ", ".join(unique_numbers)
-    spins_display_value, formatted_html = validate_spins_input(spins_input)
+    spins_display_value, formatted_html = validate_spins_input(spins_input, num_to_show, show_trends)
     
     # CHANGED: Check if validation failed
     if not spins_display_value:
@@ -1558,19 +1561,6 @@ def add_spin(number, current_spins, num_to_show):
     
     # UNCHANGED: Return updated outputs
     return new_spins_str, new_spins_str, formatted_html, update_spin_counter(), render_sides_of_zero_display()
-
-# Line 3: Start of next function (unchanged)
-def clear_spins():
-    state.selected_numbers.clear()
-    state.last_spins = []
-    state.spin_history = []  # Clear spin history as well
-    state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
-    state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
-    return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
-
-# Lines after (context, unchanged)
-# Function to save the session
-# In Part 1, replace save_session and load_session with:
 
 def save_session():
     session_data = {
@@ -5501,9 +5491,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # spins_textbox.change
     try:
         spins_textbox.change(
-            fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins) + (format_spins_as_html(spins, num_to_show, show_trends),),
+            fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins, num_to_show, show_trends),
             inputs=[spins_textbox, last_spin_count, show_trends_checkbox],
-            outputs=[spins_display, last_spin_display, last_spin_display]
+            outputs=[spins_display, last_spin_display]
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -5541,6 +5531,29 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
+    
+    # Line 3: # spins_display.change
+    # spins_display.change
+    try:
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        )
+    except Exception as e:
+        print(f"Error in spins_display.change handler: {str(e)}")
     
     # Line 2: Update spins_display.change, generate_spins_button.click, last_spin_count.change, and add show_trends_checkbox.change
     # spins_display.change
