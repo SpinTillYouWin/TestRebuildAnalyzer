@@ -5343,14 +5343,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
 
-# Surrounding lines after (unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
-
+    
     # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
@@ -5365,7 +5364,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         "Neighbours Strategies": ["Neighbours of Strong Number"]
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
-
+    
     # Define video categories matching strategy categories
     video_categories = {
         "Trends": [],
@@ -5498,7 +5497,202 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
-    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
+    # Line 1: # spins_textbox.change
+    # spins_textbox.change
+    try:
+        spins_textbox.change(
+            fn=lambda spins, num_to_show, show_trends: validate_spins_input(spins) + (format_spins_as_html(spins, num_to_show, show_trends),),
+            inputs=[spins_textbox, last_spin_count, show_trends_checkbox],
+            outputs=[spins_display, last_spin_display, last_spin_display]
+        ).then(
+            fn=analyze_spins,
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in spins_textbox.change handler: {str(e)}")
+    
+    # Line 2: Update spins_display.change, generate_spins_button.click, last_spin_count.change, and add show_trends_checkbox.change
+    # spins_display.change
+    try:
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        )
+    except Exception as e:
+        print(f"Error in spins_display.change handler: {str(e)}")
+    
+    # clear_spins_button.click
+    try:
+        clear_spins_button.click(
+            fn=clear_spins,
+            inputs=[],
+            outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        )
+    except Exception as e:
+        print(f"Error in clear_spins_button.click handler: {str(e)}")
+    
+    # clear_all_button.click
+    try:
+        clear_all_button.click(
+            fn=clear_all,
+            inputs=[],
+            outputs=[
+                spins_display,
+                spins_textbox,
+                spin_analysis_output,
+                last_spin_display,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                spin_counter,
+                sides_of_zero_display
+            ]
+        ).then(
+            fn=clear_outputs,
+            inputs=[],
+            outputs=[
+                spin_analysis_output,
+                even_money_output,
+                dozens_output,
+                columns_output,
+                streets_output,
+                corners_output,
+                six_lines_output,
+                splits_output,
+                sides_output,
+                straight_up_html,
+                top_18_html,
+                strongest_numbers_output,
+                dynamic_table_output,
+                strategy_output,
+                color_code_output
+            ]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown,
+                dozen_tracker_consecutive_hits_dropdown,
+                dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown,
+                dozen_tracker_follow_up_spins_dropdown,
+                dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        )
+    except Exception as e:
+        print(f"Error in clear_all_button.click handler: {str(e)}")
+    
+    # generate_spins_button.click
+    try:
+        generate_spins_button.click(
+            fn=generate_random_spins,
+            inputs=[gr.State(value="5"), spins_display, last_spin_count],
+            outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        )
+    except Exception as e:
+        print(f"Error in generate_spins_button.click handler: {str(e)}")
+    
+    # last_spin_count.change
+    try:
+        last_spin_count.change(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        )
+    except Exception as e:
+        print(f"Error in last_spin_count.change handler: {str(e)}")
+    
+    # Add show_trends_checkbox.change handler
+    try:
+        show_trends_checkbox.change(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_checkbox],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in show_trends_checkbox.change handler: {str(e)}")
+    
+    
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
     with gr.Row():
         with gr.Column(scale=3):
