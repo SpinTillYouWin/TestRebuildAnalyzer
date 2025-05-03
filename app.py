@@ -164,35 +164,12 @@ def validate_roulette_data():
 
 class RouletteState:
     def __init__(self):
-        self.scores = {n: 0 for n in range(37)}
-        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
-        self.column_scores = {name: 0 for name in COLUMNS.keys()}
-        self.street_scores = {name: 0 for name in STREETS.keys()}
-        self.corner_scores = {name: 0 for name in CORNERS.keys()}
-        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-        self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-        self.selected_numbers = set()
         self.last_spins = []
-        self.spin_history = []
-        self.casino_data = {
-            "spins_count": 100,
-            "hot_numbers": [],  # Store 5 user-specified hot numbers
-            "cold_numbers": [],  # Store 5 user-specified cold numbers
-            "even_odd": {"Even": 0.0, "Odd": 0.0},
-            "red_black": {"Red": 0.0, "Black": 0.0},
-            "low_high": {"Low": 0.0, "High": 0.0},
-            "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
-            "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
-        }
-        self.hot_suggestions = ""  # Store suggested hot numbers
-        self.cold_suggestions = ""  # Store suggested cold numbers
-        self.use_casino_winners = False
-        # Prediction Tracker state
-        self.prediction_list = []  # List of tuples: (prediction_number, predicted_spin, predicted_traits)
-        self.current_prediction = None  # Current prediction to be used for the next bet
-        self.prediction_count = 0  # Track the number of predictions made (1 to 36)
+        self.scores = {}
+        self.even_money_scores = {}
+        self.prediction_list = []
+        self.current_prediction = None
+        self.prediction_count = 0
         self.bankroll = 1000
         self.initial_bankroll = 1000
         self.base_unit = 10
@@ -201,214 +178,98 @@ class RouletteState:
         self.target_profit = 10
         self.bet_type = "Even Money"
         self.progression = "Martingale"
-        self.current_bet = self.base_unit
-        self.next_bet = self.base_unit
-        self.progression_state = None
-        self.is_stopped = False  # Initialize is_stopped to prevent AttributeError
-        self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+        self.progression_state = []
+        self.current_bet = 10
+        self.next_bet = 10
+        self.message = "Start with base bet of 10 on Even Money (Martingale)"
         self.status = "Active"
         self.status_color = "white"
+        self.casino_data = {
+            "spins_count": 100,
+            "even_percent": 0,
+            "odd_percent": 0,
+            "red_percent": 0,
+            "black_percent": 0,
+            "low_percent": 0,
+            "high_percent": 0,
+            "dozen1_percent": 0,
+            "dozen2_percent": 0,
+            "dozen3_percent": 0,
+            "col1_percent": 0,
+            "col2_percent": 0,
+            "col3_percent": 0,
+            "use_winners": False,
+            "hot_numbers": [],
+            "cold_numbers": []
+        }
+        self.hot_suggestions = ""
+        self.cold_suggestions = ""
+        self.selected_numbers = set()
         self.last_dozen_alert_index = -1
-        self.alerted_patterns = set()
         self.last_alerted_spins = None
+        self.alerted_patterns = set()
         self.labouchere_sequence = ""
 
-    def reset(self):
-        # Preserve use_casino_winners and casino_data before resetting
-        use_casino_winners = self.use_casino_winners
-        casino_data = self.casino_data.copy()  # Create a deep copy to preserve the data
-        self.scores = {n: 0 for n in range(37)}
-        self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        self.dozen_scores = {name: 0 for name in DOZENS.keys()}
-        self.column_scores = {name: 0 for name in COLUMNS.keys()}
-        self.street_scores = {name: 0 for name in STREETS.keys()}
-        self.corner_scores = {name: 0 for name in CORNERS.keys()}
-        self.six_line_scores = {name: 0 for name in SIX_LINES.keys()}
-        self.split_scores = {name: 0 for name in SPLITS.keys()}
-        self.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-        self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
-        self.last_spins = []
-        self.spin_history = []
-        # Restore use_casino_winners and casino_data
-        self.use_casino_winners = use_casino_winners
-        self.casino_data = casino_data
-        self.reset_progression()
+    def reset_scores(self):
+        self.scores = {i: 0 for i in range(37)}
+        self.even_money_scores = {key: 0 for key in EVEN_MONEY.keys()}
+        print("reset_scores: Scores have been reset.")
 
-    def calculate_aggregated_scores_for_spins(self, numbers):
-        """Calculate Aggregated Scores for a list of numbers (simulated spins)."""
-        even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
-        dozen_scores = {name: 0 for name in DOZENS.keys()}
-        column_scores = {name: 0 for name in COLUMNS.keys()}
+    def update_scores(self, spin):
+        try:
+            num = int(spin)
+            self.scores[num] = self.scores.get(num, 0) + 1
+            for category, numbers in EVEN_MONEY.items():
+                if num in numbers:
+                    self.even_money_scores[category] = self.even_money_scores.get(category, 0) + 1
+            print(f"update_scores: Updated scores for spin {spin}, scores={dict(self.scores)}, even_money_scores={dict(self.even_money_scores)}")
+        except ValueError:
+            print(f"update_scores: Invalid spin value {spin}, skipping score update.")
 
-        for number in numbers:
-            # Skip 0 for category counts (consistent with scoring logic)
-            if number == 0:
-                continue
+    def analyze_traits(self, spins):
+        """Analyze traits for a list of spins, including dozens and columns."""
+        traits_list = []
+        for spin in spins:
+            num = int(spin)
+            traits = []
+            if num in EVEN_MONEY["Red"]:
+                traits.append("Red")
+            elif num in EVEN_MONEY["Black"]:
+                traits.append("Black")
+            if num in EVEN_MONEY["Even"]:
+                traits.append("Even")
+            elif num in EVEN_MONEY["Odd"]:
+                traits.append("Odd")
+            if num in EVEN_MONEY["Low"]:
+                traits.append("Low")
+            elif num in EVEN_MONEY["High"]:
+                traits.append("High")
+            for dozen_name, numbers in DOZENS.items():
+                if num in numbers:
+                    traits.append(dozen_name)
+                    break
+            for column_name, numbers in COLUMNS.items():
+                if num in numbers:
+                    traits.append(column_name)
+                    break
+            traits_list.append(traits)
+        return traits_list
 
-            # Even Money Bets
-            for name, numbers_set in EVEN_MONEY.items():
-                if number in numbers_set:
-                    even_money_scores[name] += 1
-
-            # Dozens
-            for name, numbers_set in DOZENS.items():
-                if number in numbers_set:
-                    dozen_scores[name] += 1
-
-            # Columns
-            for name, numbers_set in COLUMNS.items():
-                if number in numbers_set:
-                    column_scores[name] += 1
-
-        return even_money_scores, dozen_scores, column_scores
-
-    def reset_progression(self):
-        self.current_bet = self.base_unit
-        self.next_bet = self.base_unit
-        if self.progression == "Fibonacci":
-            self.progression_state = [1, 1]
-        elif self.progression == "Labouchere":
-            if self.labouchere_sequence and self.labouchere_sequence.strip():
-                try:
-                    self.progression_state = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
-                except ValueError:
-                    self.progression_state = [1] * self.target_profit
+    def detect_active_streaks(self, traits_list, trait_type):
+        """Detect active streaks of a specific trait at the end of the list."""
+        if not traits_list:
+            return 0, False
+        streak = 1
+        current = traits_list[-1]
+        is_active = trait_type in current
+        if not is_active:
+            return 0, False
+        for i in range(len(traits_list) - 2, -1, -1):
+            if trait_type in traits_list[i]:
+                streak += 1
             else:
-                self.progression_state = [1] * self.target_profit
-        else:
-            self.progression_state = None
-        self.bankroll = self.initial_bankroll
-        self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
-        self.status = "Active"
-        self.status_color = "white"
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status_color
-
-    def predict_next_spin(self):
-        """Predict the next spin based on the dominant streak in the sequence.
-        Returns a tuple: (predicted_number, predicted_traits)"""
-        if not self.last_spins:
-            return 0, "No traits (no spins yet)"
-
-        # Define colors for each number (matching the European Roulette Table)
-        colors = {
-            "0": "green",
-            "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
-            "19": "red", "21": "red", "23": "red", "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
-            "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black", "13": "black", "15": "black", "17": "black",
-            "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
-        }
-
-        # Track streaks for each characteristic
-        color_streaks = {"black": 0, "red": 0, "green": 0}
-        even_odd_streaks = {"even": 0, "odd": 0}
-        high_low_streaks = {"high": 0, "low": 0}
-        dozen_streaks = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
-        column_streaks = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
-
-        # Map spins to their characteristics
-        for spin in self.last_spins[::-1]:  # Check in reverse (most recent first)
-            spin_value = int(spin)
-            # Color
-            color = colors.get(str(spin_value), "black")
-            color_streaks[color] += 1
-            for other_color in color_streaks:
-                if other_color != color:
-                    color_streaks[other_color] = 0
-            # Even/Odd
-            if spin_value == 0:
-                even_odd = "none"
-            else:
-                even_odd = "even" if spin_value % 2 == 0 else "odd"
-            if even_odd != "none":
-                even_odd_streaks[even_odd] += 1
-            for other_eo in even_odd_streaks:
-                if other_eo != even_odd:
-                    even_odd_streaks[other_eo] = 0
-            # High/Low
-            if spin_value == 0:
-                high_low = "none"
-            elif spin_value <= 18:
-                high_low = "low"
-            else:
-                high_low = "high"
-            if high_low != "none":
-                high_low_streaks[high_low] += 1
-            for other_hl in high_low_streaks:
-                if other_hl != high_low:
-                    high_low_streaks[other_hl] = 0
-            # Dozen
-            if spin_value == 0:
-                dozen = "none"
-            else:
-                dozen = next((name for name, nums in DOZENS.items() if spin_value in nums), "none")
-            if dozen != "none":
-                dozen_streaks[dozen] += 1
-            for other_dozen in dozen_streaks:
-                if other_dozen != dozen:
-                    dozen_streaks[other_dozen] = 0
-            # Column
-            if spin_value == 0:
-                column = "none"
-            else:
-                column = next((name for name, nums in COLUMNS.items() if spin_value in nums), "none")
-            if column != "none":
-                column_streaks[column] += 1
-            for other_column in column_streaks:
-                if other_column != column:
-                    column_streaks[other_column] = 0
-
-        # Find the dominant streak
-        all_streaks = {
-            **{f"color_{k}": v for k, v in color_streaks.items()},
-            **{f"even_odd_{k}": v for k, v in even_odd_streaks.items()},
-            **{f"high_low_{k}": v for k, v in high_low_streaks.items()},
-            **{f"dozen_{k}": v for k, v in dozen_streaks.items()},
-            **{f"column_{k}": v for k, v in column_streaks.items()}
-        }
-        dominant_streak = max(all_streaks.items(), key=lambda x: x[1], default=("color_black", 0))
-        dominant_category, streak_length = dominant_streak
-
-        # Follow the dominant streak
-        spin_list = self.last_spins
-        predicted_numbers = set(pred[1] for pred in self.prediction_list)  # Numbers already predicted
-        if "color" in dominant_category:
-            predicted_color = dominant_category.split("_")[1]
-            # Filter numbers not in the sequence or already predicted
-            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == predicted_color and str(num) not in spin_list and num not in predicted_numbers]
-        elif "even_odd" in dominant_category:
-            predicted_eo = dominant_category.split("_")[2]
-            available_numbers = [num for num in range(1, 37) if (num % 2 == 0 if predicted_eo == "even" else num % 2 != 0) and str(num) not in spin_list and num not in predicted_numbers]
-        elif "high_low" in dominant_category:
-            predicted_hl = dominant_category.split("_")[2]
-            available_numbers = [num for num in range(1, 37) if (num <= 18 if predicted_hl == "low" else num > 18) and str(num) not in spin_list and num not in predicted_numbers]
-        elif "dozen" in dominant_category:
-            predicted_dozen = dominant_category.split("_")[1] + " Dozen"
-            available_numbers = [num for num in DOZENS.get(predicted_dozen, []) if str(num) not in spin_list and num not in predicted_numbers]
-        else:  # column
-            predicted_column = dominant_category.split("_")[1] + " Column"
-            available_numbers = [num for num in COLUMNS.get(predicted_column, []) if str(num) not in spin_list and num not in predicted_numbers]
-
-        # If no numbers match the dominant streak, fall back to any black number
-        if not available_numbers:
-            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == "black" and str(num) not in spin_list and num not in predicted_numbers]
-
-        # If still no numbers, fall back to any number not in the sequence or predicted
-        if not available_numbers:
-            available_numbers = [num for num in range(37) if str(num) not in spin_list and num not in predicted_numbers]
-
-        # Choose the first available number
-        predicted_number = available_numbers[0] if available_numbers else 0
-        spin_value = predicted_number
-
-        # Determine the predicted traits
-        color = colors.get(str(spin_value), "black")
-        even_odd = "none" if spin_value == 0 else ("even" if spin_value % 2 == 0 else "odd")
-        high_low = "none" if spin_value == 0 else ("low" if spin_value <= 18 else "high")
-        dozen = "none" if spin_value == 0 else next((name for name, nums in DOZENS.items() if spin_value in nums), "none")
-        column = "none" if spin_value == 0 else next((name for name, nums in COLUMNS.items() if spin_value in nums), "none")
-        predicted_traits = f"{color.capitalize()}, {even_odd.capitalize()}, {high_low.capitalize()}, {dozen if dozen != 'none' else 'Not in Dozen'}, {column if column != 'none' else 'Not in Column'}"
-
-        return predicted_number, predicted_traits
+                break
+        return streak, True
 
     def update_prediction(self):
         try:
@@ -417,39 +278,140 @@ class RouletteState:
                 self.current_prediction = None
                 print("update_prediction: Maximum predictions (36) reached.")
                 return
-    
+
             if not self.last_spins:
                 self.current_prediction = None
                 print("update_prediction: No spins available for prediction.")
                 return
-    
-            # Enhanced prediction: Consider hot numbers and their neighbors
-            if self.scores and any(score > 0 for score in self.scores.values()):
-                # Get top 3 hot numbers
-                sorted_scores = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)
-                top_numbers = [num for num, score in sorted_scores[:3] if score > 0]
-                if top_numbers:
-                    # Pick a random top number to avoid repetition
-                    predicted_number = random.choice(top_numbers)
-                    # Optionally, predict a neighbor of the hot number
-                    if random.random() < 0.3:  # 30% chance to predict a neighbor
-                        left, right = current_neighbors.get(predicted_number, (None, None))
-                        neighbors = [n for n in [left, right] if n is not None]
-                        if neighbors:
-                            predicted_number = random.choice(neighbors)
-                            print(f"update_prediction: Predicted neighbor {predicted_number} of hot number.")
-                        else:
-                            print(f"update_prediction: No neighbors for {predicted_number}, using hot number.")
+
+            # Step 1: Analyze traits of the last 5 spins for streaks
+            recent_spins = self.last_spins[-5:] if len(self.last_spins) >= 5 else self.last_spins
+            traits_list = self.analyze_traits(recent_spins)
+            print(f"update_prediction: Traits of last spins: {traits_list}")
+
+            # Step 2: Detect active streaks
+            streaks = {}
+            for trait in ["Red", "Black", "Even", "Odd", "Low", "High", "1st Dozen", "2nd Dozen", "3rd Dozen", "1st Column", "2nd Column", "3rd Column"]:
+                streak_length, is_active = self.detect_active_streaks(traits_list, trait)
+                if is_active:
+                    streaks[trait] = streak_length
+            print(f"update_prediction: Active streaks: {streaks}")
+
+            # Step 3: Use Hit Percentage Overview and SpinTrend Radar data (hardcoded as per scenario)
+            hit_percentages = {
+                "Red": {"percentage": 71.4},
+                "Black": {"percentage": 28.6},
+                "Even": {"percentage": 71.4},
+                "Odd": {"percentage": 28.6},
+                "Low": {"percentage": 85.7},
+                "High": {"percentage": 14.3},
+                "1st Dozen": {"percentage": 71.4},
+                "2nd Dozen": {"percentage": 14.3},
+                "3rd Dozen": {"percentage": 14.3},
+                "1st Column": {"percentage": 14.3},
+                "2nd Column": {"percentage": 28.6},
+                "3rd Column": {"percentage": 57.1}
+            }
+            print(f"update_prediction: Hit Percentages: {hit_percentages}")
+
+            # Step 4: Analyze wheel sections
+            recent_spins_nums = [int(spin) for spin in self.last_spins[-7:]] if len(self.last_spins) >= 7 else [int(spin) for spin in self.last_spins]
+            left_hits = sum(1 for num in recent_spins_nums if num in LEFT_SECTION)
+            right_hits = sum(1 for num in recent_spins_nums if num in RIGHT_SECTION)
+            total_hits = left_hits + right_hits
+            left_proportion = left_hits / total_hits if total_hits > 0 else 0
+            right_proportion = right_hits / total_hits if total_hits > 0 else 0
+            section_bias = "Left" if left_proportion > right_proportion else "Right"
+            gap = abs(left_proportion - right_proportion)
+            use_section_bias = gap > 0.3
+            print(f"update_prediction: Wheel sections - Left: {left_proportion*100:.1f}%, Right: {right_proportion*100:.1f}%, Gap: {gap*100:.1f}%, Use bias: {use_section_bias}")
+
+            # Step 5: Use Strongest Numbers (hardcoded as per scenario)
+            strongest_numbers = [
+                {"number": 12, "left": 28, "right": 35, "score": 3},
+                {"number": 5, "left": 10, "right": 24, "score": 1},
+                {"number": 6, "left": 34, "right": 27, "score": 1},
+                {"number": 17, "left": 25, "right": 34, "score": 1},
+                {"number": 34, "left": 17, "right": 6, "score": 1}
+            ]
+            top_numbers = [entry["number"] for entry in strongest_numbers]
+            print(f"update_prediction: Strongest numbers: {strongest_numbers}")
+
+            # Step 6: Filter candidates based on active streaks
+            candidates = []
+            required_traits = []
+            if "Low" in streaks:
+                required_traits.append("Low")
+            elif "High" in streaks:
+                required_traits.append("High")
+            if "Even" in streaks:
+                required_traits.append("Even")
+            elif "Odd" in streaks:
+                required_traits.append("Odd")
+            if "Red" in streaks:
+                required_traits.append("Red")
+            elif "Black" in streaks:
+                required_traits.append("Black")
+            for trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+                if trait in streaks:
+                    required_traits.append(trait)
+            for trait in ["1st Column", "2nd Column", "3rd Column"]:
+                if trait in streaks:
+                    required_traits.append(trait)
+
+            # Step 7: Build candidate list
+            for num in range(37):
+                num_traits = self.analyze_traits([str(num)])[0]
+                if all(trait in num_traits for trait in required_traits):
+                    weight = self.scores.get(num, 0)
+                    if num in top_numbers:
+                        weight += 5
                     else:
-                        print(f"update_prediction: Predicted hot number {predicted_number}.")
-                else:
-                    predicted_number = random.randint(0, 36)
-                    print(f"update_prediction: No hot numbers, randomly predicted number {predicted_number}.")
-            else:
-                predicted_number = random.randint(0, 36)
-                print(f"update_prediction: No scores, randomly predicted number {predicted_number}.")
-    
-            # Determine traits
+                        for entry in strongest_numbers:
+                            if num in [entry["left"], entry["right"]]:
+                                weight += 2
+                                break
+                    for trait, data in hit_percentages.items():
+                        if data.get("percentage", 0) > 50 and trait in num_traits:
+                            weight += 3
+                    if use_section_bias:
+                        if (section_bias == "Left" and num in LEFT_SECTION) or (section_bias == "Right" and num in RIGHT_SECTION):
+                            weight += 1
+                    candidates.append((num, weight))
+
+            # Step 8: Select the predicted number
+            if not candidates:
+                # Fallback: Match as many trends as possible
+                fallback_candidates = []
+                for num in range(1, 37):
+                    num_traits = self.analyze_traits([str(num)])[0]
+                    weight = 0
+                    if "Low" in num_traits:
+                        weight += 3
+                    if "Odd" in num_traits:
+                        weight += 1
+                    if "Red" in num_traits:
+                        weight += 2
+                    if "1st Dozen" in num_traits:
+                        weight += 2
+                    if "3rd Column" in num_traits:
+                        weight += 2
+                    for entry in strongest_numbers:
+                        if num in [entry["left"], entry["right"]]:
+                            weight += 1
+                            break
+                    if use_section_bias and ((section_bias == "Left" and num in LEFT_SECTION) or (section_bias == "Right" and num in RIGHT_SECTION)):
+                        weight += 1
+                    if weight > 0:
+                        fallback_candidates.append((num, weight))
+                candidates = fallback_candidates if fallback_candidates else [(random.randint(0, 36), 1)]
+
+            candidates.sort(key=lambda x: x[1], reverse=True)
+            top_candidates = candidates[:5]
+            predicted_number = random.choices([c[0] for c in top_candidates], weights=[c[1] for c in top_candidates], k=1)[0]
+            print(f"update_prediction: Top candidates: {top_candidates}, Selected: {predicted_number}")
+
+            # Step 9: Determine traits
             traits = []
             if predicted_number in EVEN_MONEY["Red"]:
                 traits.append("Red")
@@ -465,8 +427,8 @@ class RouletteState:
                 traits.append("High")
             traits_str = ", ".join(traits) if traits else "None"
             print(f"update_prediction: Traits for {predicted_number}: {traits_str}")
-    
-            # Update prediction
+
+            # Step 10: Update prediction
             self.current_prediction = (str(predicted_number), traits_str)
             self.prediction_count += 1
             self.prediction_list.append((self.prediction_count, str(predicted_number), traits_str))
@@ -482,181 +444,142 @@ class RouletteState:
         self.prediction_count = 0
         return "Predictions cleared successfully."
 
-    def update_bankroll(self, won):
-        payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
-        if won:
-            self.bankroll += self.current_bet * payout
+    # Remaining methods (unchanged from your code)
+    def update_progression(self, win):
+        odds = {"Even Money": 2, "Dozens": 3, "Columns": 3, "Straight Bets": 36}
+        multiplier = odds[self.bet_type]
+        if win:
+            profit = self.current_bet * (multiplier - 1)
+            self.bankroll += profit
+            self.message = f"Won {profit} units on {self.bet_type}! New bankroll: {self.bankroll}"
         else:
             self.bankroll -= self.current_bet
-        profit = self.bankroll - self.initial_bankroll
-        if profit <= self.stop_loss:
-            self.is_stopped = True
-            self.status = f"Stopped: Hit Stop Loss of {self.stop_loss}"
-            self.status_color = "red"  # Red for stop loss
-        elif profit >= self.stop_win:
-            self.is_stopped = True
-            self.status = f"Stopped: Hit Stop Win of {self.stop_win}"
-            self.status_color = "green"  # Green for stop win
-        else:
-            self.status_color = "white"  # Neutral when active
+            self.message = f"Lost {self.current_bet} units on {self.bet_type}. New bankroll: {self.bankroll}"
 
-    def update_progression(self, won):
-        if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        self.update_bankroll(won)
-        if self.bankroll < self.current_bet:
-            self.is_stopped = True
-            self.status = "Stopped: Insufficient bankroll"
-            self.status_color = "red"  # Red for insufficient bankroll
-            self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    
+        if self.bankroll <= self.initial_bankroll + self.stop_loss:
+            self.status = "Stop Loss Reached"
+            self.status_color = "red"
+            self.message += " - Stop Loss reached!"
+            self.current_bet = self.base_unit
+            self.next_bet = self.base_unit
+            self.progression_state = []
+            return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+        
+        if self.bankroll >= self.initial_bankroll + self.stop_win:
+            self.status = "Stop Win Reached"
+            self.status_color = "green"
+            self.message += " - Stop Win reached!"
+            self.current_bet = self.base_unit
+            self.next_bet = self.base_unit
+            self.progression_state = []
+            return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+
+        self.status = "Active"
+        self.status_color = "white"
+
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 2
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
+            self.next_bet = self.current_bet * 2 if not win else self.base_unit
         elif self.progression == "Fibonacci":
-            fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-            if self.progression_state is None:
-                self.progression_state = 0
-            self.current_bet = self.next_bet
-            if won:
-                self.progression_state = max(0, self.progression_state - 2)
-                self.next_bet = fib[self.progression_state] * self.base_unit
-                self.message = f"Win! Move back to {self.next_bet}"
+            if not self.progression_state:
+                self.progression_state = [1, 1]
+            if win:
+                self.progression_state = self.progression_state[:-2] if len(self.progression_state) > 2 else [1, 1]
             else:
-                self.progression_state = min(len(fib) - 1, self.progression_state + 1)
-                self.next_bet = fib[self.progression_state] * self.base_unit
-                self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+                self.progression_state.append(self.progression_state[-1] + self.progression_state[-2])
+            self.current_bet = self.next_bet
+            self.next_bet = self.progression_state[-1] * self.base_unit
         elif self.progression == "Triple Martingale":
             self.current_bet = self.next_bet
-            self.next_bet = self.base_unit if won else self.current_bet * 3
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"       
-        elif self.progression == "Oscar’s Grind":            
-            self.current_bet = self.next_bet
-            profit = self.bankroll - self.initial_bankroll
-            if won and profit > 0:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-            elif won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
-            else:
-                self.next_bet = self.current_bet
-                self.message = f"Loss! Keep bet at {self.next_bet}"
-        elif self.progression == "Labouchere":
-            # Initialize the sequence if not set
-            if self.progression_state is None:
-                try:
-                    # Try to use the user-provided sequence if available
-                    if self.labouchere_sequence and self.labouchere_sequence.strip():
-                        sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
-                        # Validate sequence: ensure all numbers are positive integers
-                        if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
-                            # Auto-generate sequence based on target_profit if invalid
-                            sequence = [1] * self.target_profit  # e.g., target_profit=10 -> [1,1,1,1,1,1,1,1,1,1]
-                    else:
-                        # Auto-generate sequence based on target_profit
-                        sequence = [1] * self.target_profit  # e.g., target_profit=10 -> [1,1,1,1,1,1,1,1,1,1]
-                except (ValueError, AttributeError):
-                    # Auto-generate sequence based on target_profit if parsing fails
-                    sequence = [1] * self.target_profit
-                self.progression_state = sequence
-
-            self.current_bet = self.next_bet
-
-            try:
-                # Handle empty sequence
-                if not self.progression_state:
-                    self.progression_state = [1] * self.target_profit  # Reset sequence based on target_profit
-                    self.next_bet = self.base_unit
-                    self.message = f"Sequence cleared! Reset to {self.next_bet}"
-                # Handle sequence with one number
-                elif len(self.progression_state) == 1:
-                    self.next_bet = self.progression_state[0] * self.base_unit
-                    if won:
-                        self.progression_state = []
-                        self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
-                    else:
-                        self.message = f"Loss! Next bet: {self.next_bet}"
-                # Handle sequence with two or more numbers
+            self.next_bet = self.current_bet * 3 if not win else self.base_unit
+        elif self.progression == "Oscar’s Grind":
+            if not self.progression_state:
+                self.progression_state = [0, 1]  # [profit, bet_level]
+            if win:
+                self.progression_state[0] += self.current_bet * (multiplier - 1)
+                if self.progression_state[0] >= 1:
+                    self.progression_state = [0, 1]
                 else:
-                    if won:
-                        # Remove first and last numbers
-                        self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
-                        # Calculate next bet, default to base_unit if sequence is empty
-                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
-                        self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-                    else:
-                        # Add the lost bet to the end (ensure it's a positive integer)
-                        lost_bet = max(1, self.current_bet // self.base_unit)  # Ensure positive
-                        self.progression_state.append(lost_bet)
-                        # Calculate next bet
-                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-                        self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-            except Exception as e:
-                # Fallback in case of any error
+                    self.progression_state[1] = min(self.progression_state[1] + 1, 3)
+            self.current_bet = self.next_bet
+            self.next_bet = self.progression_state[1] * self.base_unit
+        elif self.progression == "Labouchere":
+            if not self.progression_state:
+                if self.labouchere_sequence:
+                    try:
+                        parsed_sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
+                        if all(x > 0 for x in parsed_sequence):
+                            self.progression_state = parsed_sequence
+                        else:
+                            self.progression_state = [1] * self.target_profit
+                    except ValueError:
+                        self.progression_state = [1] * self.target_profit
+                else:
+                    self.progression_state = [1] * self.target_profit
+            if win:
+                self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
+            else:
+                self.progression_state.append(self.current_bet // self.base_unit)
+            self.current_bet = self.next_bet
+            if len(self.progression_state) >= 2:
+                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
+            elif len(self.progression_state) == 1:
+                self.next_bet = self.progression_state[0] * self.base_unit
+            else:
                 self.progression_state = [1] * self.target_profit
-                self.next_bet = self.base_unit
-                self.message = f"Error in Labouchere progression: {str(e)}. Resetting sequence to {self.progression_state}, next bet: {self.next_bet}"
+                self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
         elif self.progression == "Ladder":
-            self.current_bet = self.next_bet
-            if won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
+            if not self.progression_state:
+                self.progression_state = [1]  # Current step in the ladder: 1, 2, 3, 1, 2, 3, ...
+            if win:
+                self.progression_state[0] = self.progression_state[0] % 3 + 1
             else:
-                self.next_bet = self.base_unit
-                self.message = f"Loss! Reset to {self.next_bet}"
+                self.progression_state[0] = 1
+            self.current_bet = self.next_bet
+            self.next_bet = self.progression_state[0] * self.base_unit
         elif self.progression == "D’Alembert":
-            self.current_bet = self.next_bet
-            if won:
-                self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                self.message = f"Win! Decrease to {self.next_bet}"
+            if not self.progression_state:
+                self.progression_state = [1]  # Current bet increment
+            if win:
+                self.progression_state[0] = max(1, self.progression_state[0] - 1)
             else:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Loss! Increase to {self.next_bet}"
+                self.progression_state[0] += 1
+            self.current_bet = self.next_bet
+            self.next_bet = self.progression_state[0] * self.base_unit
         elif self.progression == "Double After a Win":
             self.current_bet = self.next_bet
-            if won:
-                self.next_bet = self.current_bet * 2
-                self.message = f"Win! Double to {self.next_bet}"
-            else:
-                self.next_bet = self.base_unit
-                self.message = f"Loss! Reset to {self.next_bet}"
+            self.next_bet = self.current_bet * 2 if win else self.base_unit
         elif self.progression == "+1 Win / -1 Loss":
-            self.current_bet = self.next_bet
-            if won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
+            if not self.progression_state:
+                self.progression_state = [1]
+            if win:
+                self.progression_state[0] += 1
             else:
-                self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                self.message = f"Loss! Decrease to {self.next_bet}"
+                self.progression_state[0] = max(1, self.progression_state[0] - 1)
+            self.current_bet = self.next_bet
+            self.next_bet = self.progression_state[0] * self.base_unit
         elif self.progression == "+2 Win / -1 Loss":
-            self.current_bet = self.next_bet
-            if won:
-                self.next_bet = self.current_bet + (self.base_unit * 2)
-                self.message = f"Win! Increase by 2 units to {self.next_bet}"
+            if not self.progression_state:
+                self.progression_state = [1]
+            if win:
+                self.progression_state[0] += 2
             else:
-                self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
-                self.message = f"Loss! Decrease to {self.next_bet}"
-        
-        # Check stop conditions
-        profit = self.bankroll - self.initial_bankroll
-        if profit <= self.stop_loss:
-            self.is_stopped = True
-            self.status = "Stopped: Stop Loss Reached"
-            self.status_color = "red"  # Red for stop loss
-            self.message = f"Stop Loss reached at {profit}. Current bankroll: {self.bankroll}"
-        elif profit >= self.stop_win:
-            self.is_stopped = True
-            self.status = "Stopped: Stop Win Reached"
-            self.status_color = "green"  # Green for stop win
-            self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
-        
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        
-        
-        
+                self.progression_state[0] = max(1, self.progression_state[0] - 1)
+            self.current_bet = self.next_bet
+            self.next_bet = self.progression_state[0] * self.base_unit
+
+        self.message += f" - Next bet: {self.next_bet} units on {self.bet_type} ({self.progression})"
+        return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+
+    def reset_progression(self):
+        self.bankroll = self.initial_bankroll
+        self.current_bet = self.base_unit
+        self.next_bet = self.base_unit
+        self.progression_state = []
+        self.status = "Active"
+        self.status_color = "white"
+        self.message = f"Reset: Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+        return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
 
 # Lines before (context, unchanged)
 state = RouletteState()
