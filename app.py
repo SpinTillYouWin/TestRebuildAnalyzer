@@ -7609,22 +7609,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in reset_colors_button.click handler: {str(e)}")
     
     try:
-        clear_last_spins_button.click(
-            fn=clear_last_spins_display,
-            inputs=[],
-            outputs=[last_spin_display, spin_counter]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        )
-
-    except Exception as e:
-        print(f"Error in clear_last_spins_button.click handler: {str(e)}")
-
-        def toggle_trends(show_trends):
-            return not show_trends
-        
+    clear_last_spins_button.click(
+        fn=clear_last_spins_display,
+        inputs=[],
+        outputs=[last_spin_display, spin_counter]
+    ).then(
+        fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+        inputs=[spins_display, last_spin_count, show_trends_state],
+        outputs=[last_spin_display]
+    )
+    
+    # Define the toggle_trends function
+    def toggle_trends(show_trends):
+        return not show_trends
+    
+    # Event handler for toggle_trends_button (at the top level, not indented under the function)
+    try:
         toggle_trends_button.click(
             fn=toggle_trends,
             inputs=[show_trends_state],
@@ -7634,6 +7634,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         )
+    except Exception as e:
+        print(f"Error in toggle_trends_button.click handler: {str(e)}")
+    
     
     try:
         top_color_picker.change(
