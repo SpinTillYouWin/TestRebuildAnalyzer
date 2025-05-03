@@ -508,7 +508,7 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
         "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
     }
     
-    # Pattern detection for consecutive colors, dozens, and columns (only if show_trends is True)
+    # Pattern detection for consecutive colors, dozens, columns, even/odd, and high/low (only if show_trends is True)
     patterns_by_index = {}  # Dictionary to store all patterns starting at each index
     if show_trends:
         for i in range(len(spin_list) - 2):
@@ -533,6 +533,18 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
                 if i not in patterns_by_index:
                     patterns_by_index[i] = []
                 patterns_by_index[i].append(f"{column_hits[0]} Streak")
+            # Check for consecutive even/odd
+            even_odd_hits = [next((name for name, nums in EVEN_MONEY.items() if name in ["Even", "Odd"] and int(spin) in nums), None) for spin in spin_list[i:i+3]]
+            if None not in even_odd_hits and len(set(even_odd_hits)) == 1:
+                if i not in patterns_by_index:
+                    patterns_by_index[i] = []
+                patterns_by_index[i].append(f"3 {even_odd_hits[0]}s in a Row")
+            # Check for consecutive high/low
+            high_low_hits = [next((name for name, nums in EVEN_MONEY.items() if name in ["High", "Low"] and int(spin) in nums), None) for spin in spin_list[i:i+3]]
+            if None not in high_low_hits and len(set(high_low_hits)) == 1:
+                if i not in patterns_by_index:
+                    patterns_by_index[i] = []
+                patterns_by_index[i].append(f"3 {high_low_hits[0]}s in a Row")
     
     # Format each spin as a colored span
     html_spins = []
