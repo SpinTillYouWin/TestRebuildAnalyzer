@@ -2449,13 +2449,14 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
     """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
-        
+
+# Line 3: Modified analyze_spins function
         # Handle empty spins case
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
             state.reset()  # Always reset scores
             print("analyze_spins: Scores reset due to empty spins.")
-            return ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            return ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(), "<p>No spins to analyze for Hot Zone Call.</p>")
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -2475,13 +2476,13 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            return (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(), "<p>Invalid spins for Hot Zone Call.</p>")
 
         if not spins:
             print("analyze_spins: No valid spins found.")
             state.reset()  # Always reset scores
             print("analyze_spins: Scores reset due to no valid spins.")
-            return ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            return ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(), "<p>No valid spins for Hot Zone Call.</p>")
 
         # Always reset scores
         state.reset()
@@ -2593,12 +2594,17 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
+        # Generate Hot Zone Call
+        hot_zone_call_html = generate_hot_zone_call(spins)
+        print(f"analyze_spins: hot_zone_call_html generated")
+
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
+                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html,
+                strategy_output, render_sides_of_zero_display(), hot_zone_call_html)
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return (f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+        return (f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display(), "<p>Error generating Hot Zone Call.</p>")
 
 # Function to reset scores (no longer needed, but kept for compatibility)
 def reset_scores():
@@ -5143,7 +5149,125 @@ STRATEGIES = {
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
+# Line 2: New function to generate Hot Zone Call
+def generate_hot_zone_call(spins, max_spins=36):
+    """Generate Hot Zone Call prediction based on spins."""
+    if not spins:
+        return "<p>No spins to analyze for Hot Zone Call.</p>"
 
+    # Limit to last max_spins (default 36)
+    spins = spins[-max_spins:] if len(spins) > max_spins else spins
+    total_spins = len(spins)
+    
+    # Initialize scores for each number
+    scores = {n: 0 for n in range(37)}
+    side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+    dozen_hits = {name: 0 for name in DOZENS.keys()}
+    
+    # Compute hit counts and side/dozen hits
+    for spin in spins:
+        num = int(spin)
+        scores[num] += 1
+        if num in current_left_of_zero:
+            side_hits["Left Side of Zero"] += 1
+        if num in current_right_of_zero:
+            side_hits["Right Side of Zero"] += 1
+        for name, numbers in DOZENS.items():
+            if num in numbers:
+                dozen_hits[name] += 1
+    
+    # Calculate Side Hits gap
+    side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
+    
+    # Scoring weights based on Side Hits gap
+    weights = {
+        "streaks": 0.4 if side_gap <= 2 else 0.3,
+        "hit_percent": 0.3 if side_gap <= 2 else 0.2,
+        "hot_numbers": 0.2,
+        "side_hits": 0.1 if side_gap <= 2 else 0.2,
+        "neighbor_bonus": 0.05,
+        "repeat_penalty": -0.05
+    }
+    
+    # Compute scores for each number
+    number_scores = {}
+    for num in range(37):
+        score = 0
+        # Streaks (based on hottest dozen)
+        hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
+        if num in DOZENS[hottest_dozen]:
+            score += weights["streaks"] * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
+        
+        # Hit Percentage
+        hit_percent = scores[num] / total_spins if total_spins else 0
+        score += weights["hit_percent"] * hit_percent
+        
+        # Hot Numbers
+        if scores[num] > 0:
+            score += weights["hot_numbers"] * (scores[num] / max(scores.values(), default=1))
+        
+        # Side Hits
+        if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
+            score += weights["side_hits"]
+        elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
+            score += weights["side_hits"]
+        
+        # Neighbor Bonus
+        neighbors = current_neighbors.get(num, (None, None))
+        for neighbor in neighbors:
+            if neighbor is not None and scores[neighbor] > 0:
+                score += weights["neighbor_bonus"]
+        
+        # Repeat Penalty (if same number appears consecutively)
+        if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
+            score += weights["repeat_penalty"]
+        
+        number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
+    
+    # Sort numbers by score, using recency as tiebreaker
+    sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
+    
+    # Select Top Pick and Honorable Mentions
+    top_pick = sorted_numbers[0] if sorted_numbers else (0, {"score": 0, "hits": 0})
+    honorable_mentions = sorted_numbers[1:3] if len(sorted_numbers) >= 3 else sorted_numbers[1:] + [(0, {"score": 0, "hits": 0})] * (2 - len(sorted_numbers[1:]))
+    
+    # Generate comparison table
+    comparison_html = '<table border="1" style="border-collapse: collapse; text-align: center; margin-top: 10px;">'
+    comparison_html += '<tr><th>Criteria</th><th>Top Pick</th><th>Honorable Mention 1</th></tr>'
+    comparison_html += f'<tr><td>Number</td><td>{top_pick[0]}</td><td>{honorable_mentions[0][0]}</td></tr>'
+    comparison_html += f'<tr><td>Score</td><td>{top_pick[1]["score"]:.2f}</td><td>{honorable_mentions[0][1]["score"]:.2f}</td></tr>'
+    comparison_html += f'<tr><td>Hits</td><td>{top_pick[1]["hits"]}</td><td>{honorable_mentions[0][1]["hits"]}</td></tr>'
+    comparison_html += f'<tr><td>Recency (Spins Ago)</td><td>{-top_pick[1]["recency"]}</td><td>{-honorable_mentions[0][1]["recency"]}</td></tr>'
+    comparison_html += '</table>'
+    
+    # Trend Notes
+    side_trend = f"{'Left' if side_hits['Left Side of Zero'] > side_hits['Right Side of Zero'] else 'Right'} Side is hotter (Gap: {side_gap})"
+    repeat_trend = "Consecutive repeats detected in recent spins" if len(spins) >= 2 and spins[-1] == spins[-2] else "No recent consecutive repeats"
+    
+    # Generate HTML output
+    html = '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">'
+    html += '<h4>Hot Zone Call 🔥</h4>'
+    html += '<div style="margin-bottom: 10px;">'
+    html += f'<p><strong>Top Pick:</strong> Number {top_pick[0]} (Score: {top_pick[1]["score"]:.2f}, Hits: {top_pick[1]["hits"]})</p>'
+    html += f'<p><strong>Reason:</strong> Highest combined score from streaks, hit percentage, and side bias.</p>'
+    html += '</div>'
+    html += '<div style="margin-bottom: 10px;">'
+    html += '<p><strong>Honorable Mentions:</strong></p>'
+    html += f'<p>1. Number {honorable_mentions[0][0]} (Score: {honorable_mentions[0][1]["score"]:.2f}, Hits: {honorable_mentions[0][1]["hits"]})</p>'
+    html += f'<p>2. Number {honorable_mentions[1][0]} (Score: {honorable_mentions[1][1]["score"]:.2f}, Hits: {honorable_mentions[1][1]["hits"]})</p>'
+    html += '</div>'
+    html += '<div style="margin-bottom: 10px;">'
+    html += '<p><strong>Comparison with Honorable Mention 1:</strong></p>'
+    html += comparison_html
+    html += '</div>'
+    html += '<div>'
+    html += '<p><strong>Trend Notes:</strong></p>'
+    html += f'<p>- {side_trend}</p>'
+    html += f'<p>- {repeat_trend}</p>'
+    html += '</div>'
+    html += '</div>'
+    
+    return html
 # Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
@@ -5320,6 +5444,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
+
+    # Line 1: New Hot Zone Call accordion
+    with gr.Accordion("Hot Zone Call 🔥", open=False, elem_id="hot-zone-call"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                hot_zone_call_output = gr.HTML(
+                    label="Hot Zone Call",
+                    value="<p>Analyze spins to see the Hot Zone Call prediction.</p>",
+                    elem_classes=["hot-zone-call-container"]
+                )
+
 
 # Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
@@ -6284,12 +6419,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
             background-color: #888;
             border-radius: 3px;
-        }
-        
+        }        
+
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-    
 
+# Updated CSS
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important;
@@ -6300,6 +6435,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
         
+        /* Hot Zone Call Container */
+        .hot-zone-call-container {
+            background-color: #f5c6cb !important;
+            border: 1px solid #dc3545 !important;
+            padding: 15px !important;
+            border-radius: 5px !important;
+            margin-top: 10px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+            animation: fadeIn 0.5s ease-in !important;
+        }
+        .hot-zone-call-container h4 {
+            color: #dc3545 !important;
+            margin-bottom: 10px !important;
+        }
+        .hot-zone-call-container p {
+            margin: 5px 0 !important;
+            font-size: 14px !important;
+        }
+        .hot-zone-call-container table {
+            width: 100% !important;
+            max-width: 400px !important;
+            margin: 10px auto !important;
+            background-color: #fff !important;
+            border: 1px solid #d3d3d3 !important;
+            border-radius: 5px !important;
+        }
+        .hot-zone-call-container th, .hot-zone-call-container td {
+            padding: 8px !important;
+            font-size: 12px !important;
+            border: 1px solid #d3d3d3 !important;
+        }
+        .hot-zone-call-container th {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+        }
+
         /* Fade-in animation for Last Spins */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -7439,7 +7610,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, hot_zone_call_output
             ]
         ).then(
             # Update state.casino_data with current UI inputs before rendering the dynamic table
@@ -7481,7 +7652,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")    
+        print(f"Error in analyze_button.click handler: {str(e)}") 
     
     try:
         save_button.click(
