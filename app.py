@@ -5149,14 +5149,6 @@ STRATEGIES = {
     "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
 }
 
-# Line 2: New function to generate Hot Zone Call
-I apologize for the confusion and the runtime error. The error occurred because I included explanatory text ("Let's update the generate_hot_zone_call function...") directly before the code, which contained special characters like curly quotes ('’') that Python cannot parse as valid syntax. This text was meant to explain the changes but should not have been included within the <xaiArtifact/> tag, as the tag should only contain the actual code content.
-
-To fix this, I’ll provide the corrected version of the generate_hot_zone_call function without any explanatory text outside the code itself. The function will be wrapped in the <xaiArtifact/> tag as required, ensuring it can be copied and pasted directly without syntax errors. I’ll also briefly summarize the changes afterward to ensure clarity.
-
-python
-
-Copy
 import math
 from roulette_data import NEIGHBORS_EUROPEAN
 
@@ -5517,6 +5509,7 @@ def generate_hot_zone_call(valid_spins=None, max_spins=36):
             <h4>Hot Zone Call 🔥</h4>
             <p>Error generating Hot Zone Call: {str(e)}. Please try again.</p>
         </div>
+        """
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
