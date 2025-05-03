@@ -1,6 +1,7 @@
 import gradio as gr
 import math
 import pandas as pd
+from collections import defaultdict
 import json
 from itertools import combinations
 import random
@@ -8,6 +9,35 @@ from roulette_data import (
     EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
+
+from collections import defaultdict
+
+try:
+    global state, DOZENS, EVEN_MONEY, current_left_of_zero, current_right_of_zero, current_neighbors
+    # These should already be defined in the global scope from Part 1
+    if not hasattr(state, 'last_spins'):
+        state.last_spins = []  # Fallback initialization
+except NameError:
+    # Fallback definitions if not found (minimal to avoid errors)
+    class DummyState:
+        last_spins = []
+    state = DummyState()
+    DOZENS = {
+        "1st Dozen": set(range(1, 13)),
+        "2nd Dozen": set(range(13, 25)),
+        "3rd Dozen": set(range(25, 37))
+    }
+    EVEN_MONEY = {
+        "Red": {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36},
+        "Black": {2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35},
+        "Even": set(range(2, 37, 2)),
+        "Odd": set(range(1, 37, 2)),
+        "Low": set(range(1, 19)),
+        "High": set(range(19, 37))
+    }
+    current_left_of_zero = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+    current_right_of_zero = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
+    current_neighbors = {num: ((num-1)%37, (num+1)%37) for num in range(37)}  # Simplified fallback
 
 # New function: Calculate Hot Zone Call
 def calculate_hot_zone_call(last_spin_count):
@@ -20,7 +50,7 @@ def calculate_hot_zone_call(last_spin_count):
         # Get recent spins
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
-            return "<p>No spins available for Hot Zone Call analysis.</p>"
+            return "<p>No spins available for Hot Zone Call analysis. Please add spins using the roulette table above or enter them manually in the 'Selected Spins' textbox.</p>"
         
         total_spins = len(last_spins)
         
@@ -166,7 +196,7 @@ def calculate_hot_zone_call(last_spin_count):
         html += '<ul style="list-style-type: none; padding-left: 10px;">'
         for criterion, detail in top_data["details"].items():
             html += f'<li>{criterion}: {detail}</li>'
-        total_calc = " + ".join([str(v.split()[0]) for k, v in top_data["details"].items() if v.startswith(("+", "-") or v.split()[0].isdigit())])
+        total_calc = " + ".join([str(v.split()[0]) for k, v in top_data["details"].items() if v.startswith(("+", "-")) or v.split()[0].isdigit()])
         html += f'<li>Total: {total_calc} = {top_score}</li>'
         html += f'<li>Recency: Spin {total_spins - top_data["recency"]}</li>'
         html += '</ul>'
