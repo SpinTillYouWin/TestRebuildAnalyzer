@@ -5740,7 +5740,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
     with gr.Row():
         with gr.Column(scale=3):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
@@ -5790,6 +5789,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
+
+    # New Hot Zone Call Section
+    with gr.Row():
+        with gr.Column(scale=3):
+            gr.Markdown("### Hot Zone Call 🔥", elem_id="hot-zone-call-heading")
+            hot_zone_output = gr.HTML(
+                label="Hot Zone Call",
+                value=hot_zone_call(state)[0],
+                elem_classes=["hot-zone-container"]
+            )
+            hot_zone_top_pick = gr.State(value=None)
+            hot_zone_mentions = gr.State(value=[])
+        with gr.Column(scale=2):
+            pass  # Empty column for layout balance
     
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
