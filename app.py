@@ -411,25 +411,76 @@ class RouletteState:
         return predicted_number, predicted_traits
 
     def update_prediction(self):
-        """Generate a new prediction and store the current one if it exists."""
-        # Only make a prediction if there are spins in the sequence
-        if not self.last_spins:
-            return
-
-        # Store the current prediction if it exists (after a real spin has been added)
-        if self.current_prediction is not None and self.prediction_count < 36:
+        try:
+            print(f"update_prediction: Starting with prediction_count={self.prediction_count}, last_spins={self.last_spins}, scores={dict(self.scores)}")
+            if self.prediction_count >= 36:
+                self.current_prediction = None
+                print("update_prediction: Maximum predictions (36) reached.")
+                return
+    
+            if not self.last_spins:
+                self.current_prediction = None
+                print("update_prediction: No spins available for prediction.")
+                return
+    
+            # Enhanced prediction: Consider hot numbers and their neighbors
+            if self.scores and any(score > 0 for score in self.scores.values()):
+                # Get top 3 hot numbers
+                sorted_scores = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)
+                top_numbers = [num for num, score in sorted_scores[:3] if score > 0]
+                if top_numbers:
+                    # Pick a random top number to avoid repetition
+                    predicted_number = random.choice(top_numbers)
+                    # Optionally, predict a neighbor of the hot number
+                    if random.random() < 0.3:  # 30% chance to predict a neighbor
+                        left, right = current_neighbors.get(predicted_number, (None, None))
+                        neighbors = [n for n in [left, right] if n is not None]
+                        if neighbors:
+                            predicted_number = random.choice(neighbors)
+                            print(f"update_prediction: Predicted neighbor {predicted_number} of hot number.")
+                        else:
+                            print(f"update_prediction: No neighbors for {predicted_number}, using hot number.")
+                    else:
+                        print(f"update_prediction: Predicted hot number {predicted_number}.")
+                else:
+                    predicted_number = random.randint(0, 36)
+                    print(f"update_prediction: No hot numbers, randomly predicted number {predicted_number}.")
+            else:
+                predicted_number = random.randint(0, 36)
+                print(f"update_prediction: No scores, randomly predicted number {predicted_number}.")
+    
+            # Determine traits
+            traits = []
+            if predicted_number in EVEN_MONEY["Red"]:
+                traits.append("Red")
+            elif predicted_number in EVEN_MONEY["Black"]:
+                traits.append("Black")
+            if predicted_number in EVEN_MONEY["Even"]:
+                traits.append("Even")
+            elif predicted_number in EVEN_MONEY["Odd"]:
+                traits.append("Odd")
+            if predicted_number in EVEN_MONEY["Low"]:
+                traits.append("Low")
+            elif predicted_number in EVEN_MONEY["High"]:
+                traits.append("High")
+            traits_str = ", ".join(traits) if traits else "None"
+            print(f"update_prediction: Traits for {predicted_number}: {traits_str}")
+    
+            # Update prediction
+            self.current_prediction = (str(predicted_number), traits_str)
             self.prediction_count += 1
-            self.prediction_list.append((self.prediction_count, self.current_prediction[0], self.current_prediction[1]))
-
-        # Generate a new prediction for the next spin
-        self.current_prediction = self.predict_next_spin()
+            self.prediction_list.append((self.prediction_count, str(predicted_number), traits_str))
+            print(f"update_prediction: Added prediction {self.prediction_count}: {predicted_number} ({traits_str})")
+        except Exception as e:
+            print(f"update_prediction: Error: {str(e)}")
+            self.current_prediction = None
 
     def clear_predictions(self):
-        """Clear the Prediction Tracker state."""
+        print("clear_predictions: Clearing predictions.")
         self.prediction_list = []
         self.current_prediction = None
         self.prediction_count = 0
-        return "Prediction Tracker cleared successfully!"
+        return "Predictions cleared successfully."
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
@@ -5278,7 +5329,6 @@ def suggest_hot_cold_numbers():
         return "", ""  # Fallback to empty suggestions
 
 def render_prediction_tracker():
-    """Render the Prediction Tracker as an HTML display with a numbered list and current bet."""
     try:
         html = '<div class="prediction-tracker-container" style="padding: 10px; background-color: #f5f5f5; border-radius: 5px; border: 1px solid #d3d3d3;">'
         html += '<h4 style="color: #ff9800;">Prediction Tracker</h4>'
@@ -5307,6 +5357,7 @@ def render_prediction_tracker():
         html += f'<p style="margin: 5px 0;">Predictions Made: {state.prediction_count}/36</p>'
 
         html += '</div>'
+        print(f"render_prediction_tracker: Rendered with prediction_count={state.prediction_count}, current_prediction={state.current_prediction}")
         return html
     except Exception as e:
         print(f"render_prediction_tracker: Error: {str(e)}")
@@ -7484,6 +7535,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=lambda: state.update_prediction(),
+            inputs=[],
+            outputs=[]
+        ).then(
+            fn=render_prediction_tracker,
+            inputs=[],
+            outputs=[prediction_tracker_output]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -7862,8 +7921,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=lambda: state.update_prediction(),
+            inputs=[],
+            outputs=[]
+        ).then(
+            fn=render_prediction_tracker,
+            inputs=[],
+            outputs=[prediction_tracker_output]
         )
-        
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
     
