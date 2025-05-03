@@ -5159,102 +5159,168 @@ def generate_hot_zone_call(spins, max_spins=36):
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
     
-    # Initialize scores for each number
-    scores = {n: 0 for n in range(37)}
-    side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-    dozen_hits = {name: 0 for name in DOZENS.keys()}
+    # Define Left and Right Side numbers
+    LEFT_SIDE = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
+    RIGHT_SIDE = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
     
-    # Compute hit counts and side/dozen hits
+    # Compute hit counts, side hits, and dozen hits
+    scores = {n: 0 for n in range(37)}
+    side_hits = {"Left Side": 0, "Right Side": 0}
+    dozen_hits = {name: 0 for name in DOZENS.keys()}
+    even_money_hits = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+    
     for spin in spins:
         num = int(spin)
         scores[num] += 1
-        if num in current_left_of_zero:
-            side_hits["Left Side of Zero"] += 1
-        if num in current_right_of_zero:
-            side_hits["Right Side of Zero"] += 1
+        if num in LEFT_SIDE:
+            side_hits["Left Side"] += 1
+        elif num in RIGHT_SIDE:
+            side_hits["Right Side"] += 1
         for name, numbers in DOZENS.items():
             if num in numbers:
                 dozen_hits[name] += 1
+        if num in RED_NUMBERS:
+            even_money_hits["Red"] += 1
+        else:
+            even_money_hits["Black"] += 1
+        if num != 0:
+            even_money_hits["Even" if num % 2 == 0 else "Odd"] += 1
+            even_money_hits["Low" if num <= 18 else "High"] += 1
     
-    # Calculate Side Hits gap
-    side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
+    # Calculate Side Hits gap and set weights
+    side_gap = abs(side_hits["Left Side"] - side_hits["Right Side"])
+    if side_gap <= 2:
+        weights = {"streaks": 0.40, "hit_percent": 0.30, "hot_numbers": 0.20, "side_hits": 0.10}
+    elif side_gap <= 5:
+        weights = {"streaks": 0.38, "hit_percent": 0.29, "hot_numbers": 0.18, "side_hits": 0.15}
+    elif side_gap <= 8:
+        weights = {"streaks": 0.36, "hit_percent": 0.28, "hot_numbers": 0.16, "side_hits": 0.20}
+    else:
+        weights = {"streaks": 0.34, "hit_percent": 0.27, "hot_numbers": 0.14, "side_hits": 0.25}
     
-    # Scoring weights based on Side Hits gap
-    weights = {
-        "streaks": 0.4 if side_gap <= 2 else 0.3,
-        "hit_percent": 0.3 if side_gap <= 2 else 0.2,
-        "hot_numbers": 0.2,
-        "side_hits": 0.1 if side_gap <= 2 else 0.2,
-        "neighbor_bonus": 0.05,
-        "repeat_penalty": -0.05
-    }
+    # Identify hottest dozen and top even-money traits
+    hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
+    even_money_percent = {k: v / total_spins for k, v in even_money_hits.items() if total_spins}
+    top_traits = sorted(even_money_percent, key=even_money_percent.get, reverse=True)[:3]
     
     # Compute scores for each number
     number_scores = {}
     for num in range(37):
         score = 0
-        # Streaks (based on hottest dozen)
-        hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
+        reasons = []
+        
+        # Streaks: 40 points for hottest dozen or Red/Black streak
         if num in DOZENS[hottest_dozen]:
-            score += weights["streaks"] * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
+            score += 40
+            reasons.append(f"3rd Dozen Strength: 40 points")
+        elif num in RED_NUMBERS and "Red" in top_traits:
+            score += 40
+            reasons.append(f"Red Streak: 40 points")
+        elif num not in RED_NUMBERS and "Black" in top_traits:
+            score += 40
+            reasons.append(f"Black Streak: 40 points")
         
-        # Hit Percentage
-        hit_percent = scores[num] / total_spins if total_spins else 0
-        score += weights["hit_percent"] * hit_percent
+        # Hit Percentages: Based on top 3 even-money traits
+        trait_matches = 0
+        if num in RED_NUMBERS and "Red" in top_traits:
+            trait_matches += 1
+        elif num not in RED_NUMBERS and "Black" in top_traits:
+            trait_matches += 1
+        if num != 0:
+            if num % 2 == 0 and "Even" in top_traits:
+                trait_matches += 1
+            elif num % 2 != 0 and "Odd" in top_traits:
+                trait_matches += 1
+            if num <= 18 and "Low" in top_traits:
+                trait_matches += 1
+            elif num > 18 and "High" in top_traits:
+                trait_matches += 1
+        hit_points = {3: 30, 2: 20, 1: 10, 0: 0}.get(trait_matches, 0)
+        score += hit_points
+        if hit_points:
+            reasons.append(f"Top Trends: {hit_points} points ({trait_matches}/3 traits)")
         
-        # Hot Numbers
+        # Hot Numbers: 20 points if appeared
         if scores[num] > 0:
-            score += weights["hot_numbers"] * (scores[num] / max(scores.values(), default=1))
+            score += 20
+            reasons.append(f"Hot Number: 20 points")
         
-        # Side Hits
-        if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
-            score += weights["side_hits"]
-        elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
-            score += weights["side_hits"]
+        # Side Hits: Full for dominant, half for non-dominant, 0 for 0
+        dominant_side = "Left Side" if side_hits["Left Side"] > side_hits["Right Side"] else "Right Side"
+        if num == 0:
+            side_points = 0
+        elif (num in LEFT_SIDE and dominant_side == "Left Side") or (num in RIGHT_SIDE and dominant_side == "Right Side"):
+            side_points = int(weights["side_hits"] * 100)
+            score += side_points
+            reasons.append(f"Dominant {dominant_side}: {side_points} points")
+        elif num in LEFT_SIDE or num in RIGHT_SIDE:
+            side_points = int(weights["side_hits"] * 50)
+            score += side_points
+            reasons.append(f"Non-dominant Side: {side_points} points")
         
-        # Neighbor Bonus
-        neighbors = current_neighbors.get(num, (None, None))
-        for neighbor in neighbors:
-            if neighbor is not None and scores[neighbor] > 0:
-                score += weights["neighbor_bonus"]
+        # Neighbor Bonus: +5 if 2+ neighbors are hot
+        neighbors = []
+        for i, n in enumerate(WHEEL_ORDER):
+            if n == num:
+                neighbors = [
+                    WHEEL_ORDER[(i-2)%37], WHEEL_ORDER[(i-1)%37],
+                    WHEEL_ORDER[(i+1)%37], WHEEL_ORDER[(i+2)%37]
+                ]
+                break
+        hot_neighbors = sum(1 for n in neighbors if scores[n] > 0)
+        if hot_neighbors >= 2:
+            score += 5
+            reasons.append(f"Neighbor Bonus: 5 points ({hot_neighbors} hot neighbors)")
         
-        # Repeat Penalty (if same number appears consecutively)
-        if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
-            score += weights["repeat_penalty"]
+        # Repeat Bonus: +5 for 2+ hits
+        if scores[num] >= 2:
+            score += 5
+            reasons.append(f"Repeat Bonus: 5 points ({scores[num]} hits)")
         
-        number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
+        # Repeat Penalty: -5 for 2+ hits in last 1-2 spins
+        if scores[num] >= 2 and (spins[-1] == str(num) or (len(spins) >= 2 and spins[-2] == str(num))):
+            score -= 5
+            reasons.append(f"Repeat Penalty: -5 points (recent repeat)")
+        
+        # Store score, hits, recency, and reasons
+        number_scores[num] = {
+            "score": score,
+            "hits": scores[num],
+            "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins,
+            "reasons": reasons
+        }
     
-    # Sort numbers by score, using recency as tiebreaker
+    # Sort numbers by score, then recency
     sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
     
     # Select Top Pick and Honorable Mentions
-    top_pick = sorted_numbers[0] if sorted_numbers else (0, {"score": 0, "hits": 0})
-    honorable_mentions = sorted_numbers[1:3] if len(sorted_numbers) >= 3 else sorted_numbers[1:] + [(0, {"score": 0, "hits": 0})] * (2 - len(sorted_numbers[1:]))
+    top_pick = sorted_numbers[0] if sorted_numbers else (0, {"score": 0, "hits": 0, "reasons": []})
+    honorable_mentions = sorted_numbers[1:3] if len(sorted_numbers) >= 3 else sorted_numbers[1:] + [(0, {"score": 0, "hits": 0, "reasons": []})] * (2 - len(sorted_numbers[1:]))
     
     # Generate comparison table
     comparison_html = '<table border="1" style="border-collapse: collapse; text-align: center; margin-top: 10px;">'
     comparison_html += '<tr><th>Criteria</th><th>Top Pick</th><th>Honorable Mention 1</th></tr>'
     comparison_html += f'<tr><td>Number</td><td>{top_pick[0]}</td><td>{honorable_mentions[0][0]}</td></tr>'
-    comparison_html += f'<tr><td>Score</td><td>{top_pick[1]["score"]:.2f}</td><td>{honorable_mentions[0][1]["score"]:.2f}</td></tr>'
+    comparison_html += f'<tr><td>Score</td><td>{top_pick[1]["score"]}</td><td>{honorable_mentions[0][1]["score"]}</td></tr>'
     comparison_html += f'<tr><td>Hits</td><td>{top_pick[1]["hits"]}</td><td>{honorable_mentions[0][1]["hits"]}</td></tr>'
     comparison_html += f'<tr><td>Recency (Spins Ago)</td><td>{-top_pick[1]["recency"]}</td><td>{-honorable_mentions[0][1]["recency"]}</td></tr>'
     comparison_html += '</table>'
     
     # Trend Notes
-    side_trend = f"{'Left' if side_hits['Left Side of Zero'] > side_hits['Right Side of Zero'] else 'Right'} Side is hotter (Gap: {side_gap})"
-    repeat_trend = "Consecutive repeats detected in recent spins" if len(spins) >= 2 and spins[-1] == spins[-2] else "No recent consecutive repeats"
+    side_trend = f"{dominant_side} dominates with {side_hits[dominant_side]}/{total_spins} hits vs {side_hits['Right Side' if dominant_side == 'Left Side' else 'Left Side']}/{total_spins}, gap of {side_gap}"
+    repeat_trend = "Numbers like 18 with 2+ hits earn a +5 bonus" if any(scores[num] >= 2 for num in range(37)) else "No numbers with multiple hits"
     
     # Generate HTML output
     html = '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">'
     html += '<h4>Hot Zone Call 🔥</h4>'
     html += '<div style="margin-bottom: 10px;">'
-    html += f'<p><strong>Top Pick:</strong> Number {top_pick[0]} (Score: {top_pick[1]["score"]:.2f}, Hits: {top_pick[1]["hits"]})</p>'
-    html += f'<p><strong>Reason:</strong> Highest combined score from streaks, hit percentage, and side bias.</p>'
+    html += f'<p><strong>Top Pick:</strong> Number {top_pick[0]} ({top_pick[1]["score"]}/105)</p>'
+    html += f'<p><strong>Reason:</strong> {"; ".join(top_pick[1]["reasons"])}.</p>'
     html += '</div>'
     html += '<div style="margin-bottom: 10px;">'
     html += '<p><strong>Honorable Mentions:</strong></p>'
-    html += f'<p>1. Number {honorable_mentions[0][0]} (Score: {honorable_mentions[0][1]["score"]:.2f}, Hits: {honorable_mentions[0][1]["hits"]})</p>'
-    html += f'<p>2. Number {honorable_mentions[1][0]} (Score: {honorable_mentions[1][1]["score"]:.2f}, Hits: {honorable_mentions[1][1]["hits"]})</p>'
+    html += f'<p>1. Number {honorable_mentions[0][0]} ({honorable_mentions[0][1]["score"]}/105)</p>'
+    html += f'<p>2. Number {honorable_mentions[1][0]} ({honorable_mentions[1][1]["score"]}/105)</p>'
     html += '</div>'
     html += '<div style="margin-bottom: 10px;">'
     html += '<p><strong>Comparison with Honorable Mention 1:</strong></p>'
@@ -5268,7 +5334,8 @@ def generate_hot_zone_call(spins, max_spins=36):
     html += '</div>'
     
     return html
-# Line 1: Start of show_strategy_recommendations function (updated)
+
+# Lines after (context, unchanged)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
