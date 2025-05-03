@@ -136,7 +136,6 @@ def validate_roulette_data():
         "RIGHT_OF_ZERO_EUROPEAN": RIGHT_OF_ZERO_EUROPEAN
     }
 
-# Lines after (context, unchanged)
     errors = []
 
     # Check betting category dictionaries
@@ -162,8 +161,6 @@ def validate_roulette_data():
                 errors.append(f"{name} must be a list/set/tuple of integers.")
 
     return errors if errors else None
-
-# In Part 1, replace the RouletteState class with the following:
 
 class RouletteState:
     def __init__(self):
@@ -207,6 +204,7 @@ class RouletteState:
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
         self.progression_state = None
+        self.is_stopped = False  # Initialize is_stopped to prevent AttributeError
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         self.status_color = "white"
@@ -433,12 +431,6 @@ class RouletteState:
         self.prediction_count = 0
         return "Prediction Tracker cleared successfully!"
 
-    def get_lucky_number(self):
-        """Return the most frequently correctly predicted number."""
-        if not self.lucky_number:
-            return "None"
-        return max(self.lucky_number.items(), key=lambda x: x[1])[0]
-
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
         if won:
@@ -611,6 +603,7 @@ class RouletteState:
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
         
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        
         
         
 
