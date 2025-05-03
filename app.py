@@ -4377,8 +4377,6 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
             print("dozen_tracker: Not enough spins to check for consecutive hits (need at least 3).")
             state.last_dozen_alert_index = -1
             state.last_alerted_spins = None
-
-# Lines after (context, unchanged)
         else:
             # Map the last 3 spins to their Dozens
             last_three_dozens = []
@@ -4406,8 +4404,11 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                 current_spins_tuple = tuple(last_three_spins)
                 # Check if this set of spins is different from the last alerted set
                 if state.last_alerted_spins != current_spins_tuple:
-                    gr.Warning(f"Alert: {current_dozen} has hit 3 times consecutively!")
-                    recommendations.append(f"Alert: {current_dozen} has hit 3 times consecutively!")
+                    # Include the spins in the alert
+                    spins_str = ", ".join(map(str, last_three_spins))
+                    alert_message = f"Alert: {current_dozen} has hit 3 times consecutively! (Spins: {spins_str})"
+                    gr.Warning(alert_message)
+                    recommendations.append(alert_message)
                     state.last_dozen_alert_index = len(state.last_spins) - 1  # Update the last alerted index
                     state.last_alerted_spins = current_spins_tuple  # Store the spins that triggered this alert
             else:
@@ -4454,7 +4455,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                         # Mark this pattern as alerted
                         state.alerted_patterns.add(seq)
 
-            # If a match is found, provide betting recommendations
+            # If a match is found, provide betting recommendations with spin context
             if sequence_matches:
                 latest_match = max(sequence_matches, key=lambda x: x[0])  # Latest match by start index
                 latest_start_idx, matched_sequence = latest_match
@@ -4464,10 +4465,14 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                 follow_up_end = follow_up_start + follow_up_spins
                 # Adjust indices for the full spin history
                 latest_start_idx_full = len(full_dozen_pattern) - sequence_length
+                # Get the actual spins that triggered the sequence
+                sequence_spins = recent_spins[-sequence_length:]  # Last X spins
+                sequence_spins_str = ", ".join(map(str, sequence_spins))
                 if follow_up_end <= len(dozen_pattern):
                     follow_up = dozen_pattern[follow_up_start:follow_up_end]
-                    gr.Warning(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx_full + 1} to {latest_start_idx_full + sequence_length}!")
-                    sequence_recommendations.append(f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {latest_start_idx_full + 1} to {latest_start_idx_full + sequence_length}!")
+                    alert_message = f"Alert: Sequence {', '.join(matched_sequence)} has repeated at spins {sequence_spins_str}!"
+                    gr.Warning(alert_message)
+                    sequence_recommendations.append(alert_message)
                     sequence_recommendations.append(f"Previous follow-up spins (next {follow_up_spins}): {', '.join(follow_up)}")
                     sequence_recommendations.append("Betting Recommendations (Bet Against Historical Follow-Ups):")
                     all_dozens = ["1st Dozen", "2nd Dozen", "3rd Dozen"]
@@ -4537,6 +4542,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
 
     return "\n".join(recommendations), html_output, sequence_html_output
 
+
     # New: Even Money Bet Tracker Function
 def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled, combination_mode, track_red, track_black, track_even, track_odd, track_low, track_high, identical_traits_enabled, consecutive_identical_count):
     """Track even money bets and their combinations for consecutive hits, with optional tracking of consecutive identical trait combinations."""
@@ -4577,6 +4583,7 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     pattern = []
     category_counts = {name: 0 for name in EVEN_MONEY.keys()}
     trait_combinations = []  # Store the full trait combination for each spin (e.g., "Red, Odd, Low")
+    hit_spins = []  # Track spins for each pattern element (Hit/Miss)
     for spin in recent_spins:
         spin_value = int(spin)
         spin_categories = []
@@ -4589,13 +4596,17 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         if combination_mode == "And":
             if all(cat in spin_categories for cat in categories_to_track):
                 pattern.append("Hit")
+                hit_spins.append(str(spin_value))
             else:
                 pattern.append("Miss")
+                hit_spins.append(str(spin_value))
         else:  # Or mode
             if any(cat in spin_categories for cat in categories_to_track):
                 pattern.append("Hit")
+                hit_spins.append(str(spin_value))
             else:
                 pattern.append("Miss")
+                hit_spins.append(str(spin_value))
 
         # Build the full trait combination for this spin (Color, Parity, Range)
         color = "Red" if "Red" in spin_categories else ("Black" if "Black" in spin_categories else "None")
@@ -4604,20 +4615,25 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         trait_combination = f"{color}, {parity}, {range_}"
         trait_combinations.append(trait_combination)
 
-    # Track consecutive hits of the selected combination
-    current_streak = 1
-    max_streak = 1
+    # Track consecutive hits of the selected combination with spin context
+    current_streak = 1 if pattern[0] == "Hit" else 0
+    max_streak = current_streak
     max_streak_start = 0
+    current_streak_spins = [hit_spins[0]] if pattern[0] == "Hit" else []
+    max_streak_spins = current_streak_spins[:]
     for i in range(1, len(pattern)):
         if pattern[i] == "Hit" and pattern[i-1] == "Hit":
             current_streak += 1
-            if current_streak > max_streak:
-                max_streak = current_streak
-                max_streak_start = i - current_streak + 1
+            current_streak_spins.append(hit_spins[i])
         else:
             current_streak = 1 if pattern[i] == "Hit" else 0
+            current_streak_spins = [hit_spins[i]] if pattern[i] == "Hit" else []
+        if current_streak > max_streak:
+            max_streak = current_streak
+            max_streak_start = i - current_streak + 1
+            max_streak_spins = current_streak_spins[:]
 
-    # Track consecutive identical trait combinations (independent of category selection)
+    # Track consecutive identical trait combinations with spin context
     identical_recommendations = []
     identical_html_output = ""
     betting_recommendation = None
@@ -4626,21 +4642,24 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
         identical_streak = 1
         identical_streak_start = 0
         identical_matches = []
+        identical_streak_spins = [recent_spins[0]]  # Track spins for identical streaks
         for i in range(1, len(trait_combinations)):
             if trait_combinations[i] == trait_combinations[i-1] and trait_combinations[i] != "None, None, None":
                 identical_streak += 1
+                identical_streak_spins.append(recent_spins[i])
                 if identical_streak == consecutive_identical_count:
-                    identical_matches.append((i - consecutive_identical_count + 1, trait_combinations[i]))
+                    identical_matches.append((i - consecutive_identical_count + 1, trait_combinations[i], identical_streak_spins[-consecutive_identical_count:]))
                     identical_streak_start = i - consecutive_identical_count + 1
             else:
                 identical_streak = 1
-
+                identical_streak_spins = [recent_spins[i]]
         if identical_matches:
             # Process the most recent match
-            latest_match_start, matched_traits = identical_matches[-1]
+            latest_match_start, matched_traits, matched_spins = identical_matches[-1]
+            spins_str = ", ".join(map(str, matched_spins))
             if alert_enabled:
-                gr.Warning(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
-            identical_recommendations.append(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively at spins {latest_match_start + 1} to {latest_match_start + consecutive_identical_count}!")
+                gr.Warning(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively! (Spins: {spins_str})")
+            identical_recommendations.append(f"Alert: Traits '{matched_traits}' appeared {consecutive_identical_count} times consecutively! (Spins: {spins_str})")
 
             # Calculate opposite traits
             traits = [t.strip() for t in matched_traits.split(",")]
@@ -4715,7 +4734,7 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
             identical_html_output += "</ul>"
             identical_html_output += "</div>"
 
-    # Generate text and HTML for the original even money tracking
+    # Generate text and HTML for the original even money tracking with spin context
     tracked_str = " and ".join(categories_to_track) if combination_mode == "And" else " or ".join(categories_to_track)
     recommendations = []
     html_output = "<div class='even-money-tracker-container'>"
@@ -4723,8 +4742,10 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     recommendations.append(f"Tracking: {tracked_str} ({combination_mode})")
     recommendations.append("History: " + ", ".join(pattern))
     if alert_enabled and max_streak >= consecutive_hits_threshold:
-        gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
-        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!")
+        # Include the spins that triggered the streak
+        streak_spins = ", ".join(max_streak_spins[-consecutive_hits_threshold:])
+        gr.Warning(f"Alert: {tracked_str} hit {max_streak} times consecutively! (Spins: {streak_spins})")
+        recommendations.append(f"\nAlert: {tracked_str} hit {max_streak} times consecutively! (Spins: {streak_spins})")
     recommendations.append("\nSummary of Hits:")
     for name, count in category_counts.items():
         if name in categories_to_track:
@@ -4733,12 +4754,12 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     html_output += f'<h4>Even Money Tracker (Last {len(recent_spins)} Spins):</h4>'
     html_output += f'<p>Tracking: {tracked_str} ({combination_mode})</p>'
     html_output += '<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">'
-    for status in pattern:
+    for status, spin in zip(pattern, hit_spins):
         color = "#32CD32" if status == "Hit" else "#FF6347"  # Green for Hit, Red for Miss
-        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;">{status}</span>'
+        html_output += f'<span style="background-color: {color}; color: white; padding: 2px 5px; border-radius: 3px; display: inline-block;" title="Spin: {spin}">{status}</span>'
     html_output += '</div>'
     if alert_enabled and max_streak >= consecutive_hits_threshold:
-        html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively at spins {max_streak_start + 1} to {max_streak_start + max_streak}!</p>'
+        html_output += f'<p style="color: red; font-weight: bold;">Alert: {tracked_str} hit {max_streak} times consecutively! (Spins: {streak_spins})</p>'
     html_output += '<h4>Summary of Hits:</h4>'
     html_output += '<ul style="list-style-type: none; padding-left: 0;">'
     for name, count in category_counts.items():
@@ -4917,13 +4938,13 @@ def summarize_spin_traits(last_spin_count):
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
 
-        # Initialize streak tracking
-        even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in even_money_counts}
-        column_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in column_counts}
-        dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in dozen_counts}
+        # Initialize streak tracking with spin details
+        even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in even_money_counts}
+        column_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in column_counts}
+        dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in dozen_counts}
 
         # Analyze spins and track streaks
-        for spin in last_spins:
+        for idx, spin in enumerate(last_spins):
             try:
                 num = int(spin)
                 # Reset last_hit flags for this spin
@@ -4940,10 +4961,14 @@ def summarize_spin_traits(last_spin_count):
                         even_money_counts[name] += 1
                         even_money_streaks[name]["last_hit"] = True
                         even_money_streaks[name]["current"] += 1
+                        even_money_streaks[name]["spins"].append(str(num))
+                        if len(even_money_streaks[name]["spins"]) > even_money_streaks[name]["current"]:
+                            even_money_streaks[name]["spins"] = even_money_streaks[name]["spins"][-even_money_streaks[name]["current"]:]
                         even_money_streaks[name]["max"] = max(even_money_streaks[name]["max"], even_money_streaks[name]["current"])
                     else:
                         if not even_money_streaks[name]["last_hit"]:
                             even_money_streaks[name]["current"] = 0
+                            even_money_streaks[name]["spins"] = []
 
                 # Columns
                 for name, numbers in COLUMNS.items():
@@ -4951,10 +4976,14 @@ def summarize_spin_traits(last_spin_count):
                         column_counts[name] += 1
                         column_streaks[name]["last_hit"] = True
                         column_streaks[name]["current"] += 1
+                        column_streaks[name]["spins"].append(str(num))
+                        if len(column_streaks[name]["spins"]) > column_streaks[name]["current"]:
+                            column_streaks[name]["spins"] = column_streaks[name]["spins"][-column_streaks[name]["current"]:]
                         column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
                     else:
                         if not column_streaks[name]["last_hit"]:
                             column_streaks[name]["current"] = 0
+                            column_streaks[name]["spins"] = []
 
                 # Dozens
                 for name, numbers in DOZENS.items():
@@ -4962,10 +4991,14 @@ def summarize_spin_traits(last_spin_count):
                         dozen_counts[name] += 1
                         dozen_streaks[name]["last_hit"] = True
                         dozen_streaks[name]["current"] += 1
+                        dozen_streaks[name]["spins"].append(str(num))
+                        if len(dozen_streaks[name]["spins"]) > dozen_streaks[name]["current"]:
+                            dozen_streaks[name]["spins"] = dozen_streaks[name]["spins"][-dozen_streaks[name]["current"]:]
                         dozen_streaks[name]["max"] = max(dozen_streaks[name]["max"], dozen_streaks[name]["current"])
                     else:
                         if not dozen_streaks[name]["last_hit"]:
                             dozen_streaks[name]["current"] = 0
+                            dozen_streaks[name]["spins"] = []
 
                 # Repeat Numbers
                 number_counts[num] = number_counts.get(num, 0) + 1
@@ -4977,7 +5010,7 @@ def summarize_spin_traits(last_spin_count):
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # Quick Trends Calculation
+        # Quick Trends Calculation with Spin Context
         total_spins = len(last_spins)
         trends = []
         if total_spins > 0:
@@ -4987,12 +5020,13 @@ def summarize_spin_traits(last_spin_count):
             if dominant[1] > 0:
                 percentage = (dominant[1] / total_spins * 100)
                 trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
-            # Longest active streak
+            # Longest active streak with spin context
             all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
             longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
             if longest_streak > 1:
                 streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
-                trends.append(f"{streak_name} on a {longest_streak}-spin streak")
+                streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
+                trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
 
         # TITLE: Build HTML Badges
         html = '<div class="traits-overview">'
