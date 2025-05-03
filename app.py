@@ -5153,8 +5153,10 @@ STRATEGIES = {
 def generate_hot_zone_call(spins, max_spins=36):
     """Generate Hot Zone Call prediction based on spins."""
     try:
-        if not spins:
-            return "<p>No spins to analyze for Hot Zone Call.</p>"
+        # Validate spins
+        if not spins or not isinstance(spins, list):
+            print("generate_hot_zone_call: Invalid spins input - empty or not a list")
+            return "<p>No valid spins to analyze for Hot Zone Call.</p>"
 
         # Define constants
         DOZENS = {
@@ -5172,9 +5174,23 @@ def generate_hot_zone_call(spins, max_spins=36):
         LEFT_SIDE = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
         RIGHT_SIDE = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
 
-        # Limit to last max_spins (default 36)
-        spins = spins[-max_spins:] if len(spins) > max_spins else spins
-        total_spins = len(spins)
+        # Filter and validate spins
+        valid_spins = []
+        for spin in spins[:max_spins]:
+            try:
+                num = int(spin)
+                if 0 <= num <= 36:
+                    valid_spins.append(str(num))
+                else:
+                    print(f"generate_hot_zone_call: Invalid spin - {spin} out of range")
+            except (ValueError, TypeError):
+                print(f"generate_hot_zone_call: Invalid spin - {spin} not a number")
+                continue
+        if not valid_spins:
+            print("generate_hot_zone_call: No valid spins after filtering")
+            return "<p>No valid spins to analyze for Hot Zone Call.</p>"
+
+        total_spins = len(valid_spins)
 
         # Compute hit counts, side hits, dozen hits, and column hits
         scores = {n: 0 for n in range(37)}
@@ -5183,31 +5199,26 @@ def generate_hot_zone_call(spins, max_spins=36):
         column_hits = {name: 0 for name in COLUMNS.keys()}
         even_money_hits = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
 
-        for spin in spins:
-            try:
-                num = int(spin)
-                if not (0 <= num <= 36):
-                    continue
-                scores[num] += 1
-                if num in LEFT_SIDE:
-                    side_hits["Left Side"] += 1
-                elif num in RIGHT_SIDE:
-                    side_hits["Right Side"] += 1
-                for name, numbers in DOZENS.items():
-                    if num in numbers:
-                        dozen_hits[name] += 1
-                for name, numbers in COLUMNS.items():
-                    if num in numbers:
-                        column_hits[name] += 1
-                if num in RED_NUMBERS:
-                    even_money_hits["Red"] += 1
-                else:
-                    even_money_hits["Black"] += 1
-                if num != 0:
-                    even_money_hits["Even" if num % 2 == 0 else "Odd"] += 1
-                    even_money_hits["Low" if num <= 18 else "High"] += 1
-            except (ValueError, TypeError):
-                continue  # Skip invalid spins
+        for spin in valid_spins:
+            num = int(spin)
+            scores[num] += 1
+            if num in LEFT_SIDE:
+                side_hits["Left Side"] += 1
+            elif num in RIGHT_SIDE:
+                side_hits["Right Side"] += 1
+            for name, numbers in DOZENS.items():
+                if num in numbers:
+                    dozen_hits[name] += 1
+            for name, numbers in COLUMNS.items():
+                if num in numbers:
+                    column_hits[name] += 1
+            if num in RED_NUMBERS:
+                even_money_hits["Red"] += 1
+            else:
+                even_money_hits["Black"] += 1
+            if num != 0:
+                even_money_hits["Even" if num % 2 == 0 else "Odd"] += 1
+                even_money_hits["Low" if num <= 18 else "High"] += 1
 
         # Calculate Side Hits gap and set weights
         side_gap = abs(side_hits["Left Side"] - side_hits["Right Side"])
@@ -5232,7 +5243,7 @@ def generate_hot_zone_call(spins, max_spins=36):
             score = 0
             reasons = []
 
-            # Streaks: 40 points for hottest dozen, column, or Red/Black streak
+            # Streaks: 40 points for hottest dozen or column
             streak_points = 0
             if num in DOZENS[hottest_dozen]:
                 streak_points = 40
@@ -5240,12 +5251,6 @@ def generate_hot_zone_call(spins, max_spins=36):
             elif num in COLUMNS[hottest_column]:
                 streak_points = max(streak_points, 40)
                 reasons.append(f"{hottest_column} Strength: 40 points")
-            elif num in RED_NUMBERS and "Red" in top_traits:
-                streak_points = max(streak_points, 40)
-                reasons.append(f"Red Streak: 40 points")
-            elif num not in RED_NUMBERS and "Black" in top_traits:
-                streak_points = max(streak_points, 40)
-                reasons.append(f"Black Streak: 40 points")
             score += streak_points
 
             # Hit Percentages: Based on top 3 even-money traits
@@ -5296,12 +5301,16 @@ def generate_hot_zone_call(spins, max_spins=36):
                             WHEEL_ORDER[(i+1)%37], WHEEL_ORDER[(i+2)%37]
                         ]
                         break
-                hot_neighbors = sum(1 for n in neighbors if scores.get(n, 0) > 0)
-                if hot_neighbors >= 2:
-                    score += 5
-                    reasons.append(f"Neighbor Bonus: 5 points ({hot_neighbors} hot neighbors)")
+                if not neighbors:
+                    reasons.append(f"No Neighbor Bonus: Number {num} not in WHEEL_ORDER")
+                else:
+                    hot_neighbors = sum(1 for n in neighbors if scores.get(n, 0) > 0)
+                    if hot_neighbors >= 2:
+                        score += 5
+                        reasons.append(f"Neighbor Bonus: 5 points ({hot_neighbors} hot neighbors)")
             except Exception as e:
-                reasons.append(f"No Neighbor Bonus: Error in neighbor detection ({str(e)})")
+                print(f"generate_hot_zone_call: Neighbor detection error for {num} - {str(e)}")
+                reasons.append(f"No Neighbor Bonus: Error ({str(e)})")
 
             # Repeat Bonus: +5 for 2+ hits
             if scores[num] >= 2:
@@ -5309,12 +5318,15 @@ def generate_hot_zone_call(spins, max_spins=36):
                 reasons.append(f"Repeat Bonus: 5 points ({scores[num]} hits)")
 
             # Repeat Penalty: -5 for 2+ hits in last 1-2 spins
-            if scores[num] >= 2 and (str(num) in spins[-2:]):
+            if scores[num] >= 2 and (str(num) in valid_spins[-2:]):
                 score -= 5
                 reasons.append(f"Repeat Penalty: -5 points (recent repeat)")
 
             # Store score, hits, recency, and reasons
-            recency = -spins[::-1].index(str(num)) if str(num) in spins else -total_spins
+            try:
+                recency = -valid_spins[::-1].index(str(num)) if str(num) in valid_spins else -total_spins
+            except ValueError:
+                recency = -total_spins
             number_scores[num] = {
                 "score": score,
                 "hits": scores[num],
@@ -5341,7 +5353,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         # Trend Notes
         dominant_side = "Left Side" if side_hits["Left Side"] > side_hits["Right Side"] else "Right Side"
         side_trend = f"{dominant_side} dominates with {side_hits[dominant_side]}/{total_spins} hits vs {side_hits['Right Side' if dominant_side == 'Left Side' else 'Left Side']}/{total_spins}, gap of {side_gap}"
-        repeat_trend = "Numbers like 18 with 2+ hits earn a +5 bonus" if any(scores[num] >= 2 for num in range(37)) else "No numbers with multiple hits"
+        repeat_trend = f"Numbers like {', '.join(str(num) for num in range(37) if scores[num] >= 2)} with 2+ hits earn a +5 bonus" if any(scores[num] >= 2 for num in range(37)) else "No numbers with multiple hits"
 
         # Generate HTML output
         html = '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">'
@@ -5369,7 +5381,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         return html
     except Exception as e:
         print(f"generate_hot_zone_call: Error - {str(e)}")
-        return "<p>Error generating Hot Zone Call: Invalid data or configuration.</p>"
+        return f"<p>Error generating Hot Zone Call: {str(e)}.</p>"
 
 # Lines after (context, unchanged)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
