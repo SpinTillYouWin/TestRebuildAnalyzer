@@ -509,7 +509,7 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
     }
     
     # Pattern detection for consecutive colors and dozens (only if show_trends is True)
-    patterns = []
+    patterns_by_index = {}  # Dictionary to store all patterns starting at each index
     if show_trends:
         for i in range(len(spin_list) - 2):
             if i >= len(spin_list):
@@ -518,11 +518,15 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
             if colors.get(spin_list[i], "") == colors.get(spin_list[i+1], "") == colors.get(spin_list[i+2], ""):
                 color_name = colors.get(spin_list[i], '').capitalize()
                 if color_name:  # Ensure color_name is not empty
-                    patterns.append((i, f"3 {color_name}s in a Row"))
+                    if i not in patterns_by_index:
+                        patterns_by_index[i] = []
+                    patterns_by_index[i].append(f"3 {color_name}s in a Row")
             # Check for consecutive dozens
             dozen_hits = [next((name for name, nums in DOZENS.items() if int(spin) in nums), None) for spin in spin_list[i:i+3]]
             if None not in dozen_hits and len(set(dozen_hits)) == 1:
-                patterns.append((i, f"{dozen_hits[0]} Streak"))
+                if i not in patterns_by_index:
+                    patterns_by_index[i] = []
+                patterns_by_index[i].append(f"{dozen_hits[0]} Streak")
     
     # Format each spin as a colored span
     html_spins = []
@@ -533,13 +537,12 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
             class_attr = f'fade-in flip flash new-spin spin-{color} {color}'
         else:
             class_attr = f'fade-in {color}'
-        # Add pattern badge if this spin starts a pattern and show_trends is True
-        pattern_badge = ""
-        if show_trends:
-            for start_idx, pattern_text in patterns:
-                if i == start_idx:
-                    pattern_badge = f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
-        html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}{pattern_badge}</span>')
+        # Add all pattern badges for this spin if show_trends is True
+        pattern_badges = ""
+        if show_trends and i in patterns_by_index:
+            for pattern_text in patterns_by_index[i]:
+                pattern_badges += f'<span class="pattern-badge" title="{pattern_text}" style="background-color: #ffd700; color: #333; padding: 2px 5px; border-radius: 3px; font-size: 10px; margin-left: 5px;">{pattern_text}</span>'
+        html_spins.append(f'<span class="{class_attr}" style="background-color: {color}; color: white; padding: 2px 5px; margin: 2px; border-radius: 3px; display: inline-block;">{spin}{pattern_badges}</span>')
     
     # Wrap the spins in a div with flexbox to enable wrapping, and add a title
     html_output = f'<h4 style="margin-bottom: 5px;">Last Spins</h4><div style="display: flex; flex-wrap: wrap; gap: 5px;">{"".join(html_spins)}</div>'
@@ -5332,7 +5335,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
-            toggle_trends_button = gr.Button("Toggle Trends", elem_classes=["action-button"], elem_id="toggle-trends-btn")
+            toggle_trends_button = gr.Button(
+                value=toggle_trends_label,
+                elem_classes=["action-button"],
+                elem_id="toggle-trends-btn"
+            )
 
 # Surrounding lines after (unchanged)
     # 5. Row 5: Selected Spins Textbox and Spin Counter
@@ -7622,15 +7629,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
 
     # Define the toggle_trends function
-    def toggle_trends(show_trends):
-        return not show_trends
+    def toggle_trends(show_trends, current_label):
+        new_show_trends = not show_trends
+        new_label = "Hide Trends" if new_show_trends else "Show Trends"
+        return new_show_trends, new_label
 
     # Event handler for toggle_trends_button (at the top level, not indented under the function)
     try:
         toggle_trends_button.click(
             fn=toggle_trends,
-            inputs=[show_trends_state],
-            outputs=[show_trends_state]
+            inputs=[show_trends_state, toggle_trends_label],
+            outputs=[show_trends_state, toggle_trends_label]
         ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
