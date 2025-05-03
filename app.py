@@ -7622,18 +7622,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
 
-def toggle_trends(show_trends):
-    return not show_trends
-
-toggle_trends_button.click(
-    fn=toggle_trends,
-    inputs=[show_trends_state],
-    outputs=[show_trends_state]
-).then(
-    fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-    inputs=[spins_display, last_spin_count, show_trends_state],
-    outputs=[last_spin_display]
-)
+        def toggle_trends(show_trends):
+            return not show_trends
+        
+        toggle_trends_button.click(
+            fn=toggle_trends,
+            inputs=[show_trends_state],
+            outputs=[show_trends_state]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        )
     
     try:
         top_color_picker.change(
