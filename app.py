@@ -5224,9 +5224,201 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         print(f"show_strategy_recommendations: Error: {str(e)}")
         return f"<p>Error generating strategy recommendations: {str(e)}</p>"
 
-# Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
     return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
+
+def hot_zone_call(state, last_spin_count=10):
+    """Generate the Hot Zone Call with Top Pick and 2 Honorable Mentions."""
+    try:
+        # Ensure last_spin_count is valid
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 10
+        last_spin_count = max(1, min(last_spin_count, 36))
+
+        # Get last spins
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for Hot Zone Call.</p>", None, []
+
+        # Calculate count gap (Left vs. Right Side)
+        left_hits = sum(1 for spin in last_spins if int(spin) in LEFT_SIDE)
+        right_hits = sum(1 for spin in last_spins if int(spin) in RIGHT_SIDE)
+        gap = abs(left_hits - right_hits)
+
+        # Dynamic weights based on gap
+        if gap <= 2:
+            side_weight = 0.10
+            streak_weight = 0.40
+            percentage_weight = 0.30
+            hot_weight = 0.20
+        elif gap <= 5:
+            side_weight = 0.15
+            streak_weight = 0.38
+            percentage_weight = 0.29
+            hot_weight = 0.18
+        elif gap <= 8:
+            side_weight = 0.20
+            streak_weight = 0.36
+            percentage_weight = 0.28
+            hot_weight = 0.16
+        else:
+            side_weight = 0.25
+            streak_weight = 0.34
+            percentage_weight = 0.27
+            hot_weight = 0.14
+
+        # Calculate hit percentages and streaks
+        total_spins = len(last_spins)
+        even_money_counts = {k: 0 for k in EVEN_MONEY}
+        column_counts = {k: 0 for k in COLUMNS}
+        dozen_counts = {k: 0 for k in DOZENS}
+        number_counts = {}
+        current_streaks = {k: 0 for k in list(EVEN_MONEY.keys()) + list(COLUMNS.keys()) + list(DOZENS.keys())}
+
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                # Even Money
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        even_money_counts[name] += 1
+                # Columns
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        column_counts[name] += 1
+                # Dozens
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts[name] += 1
+                # Number counts
+                number_counts[num] = number_counts.get(num, 0) + 1
+            except ValueError:
+                continue
+
+        # Find hottest categories
+        hottest_dozen = max(dozen_counts.items(), key=lambda x: x[1], default=("None", 0))[0] if dozen_counts else "None"
+        hottest_even_money = max(even_money_counts.items(), key=lambda x: x[1], default=("None", 0))[0] if even_money_counts else "None"
+        top_traits = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+        top_traits = [name for name, _ in top_traits]
+
+        # Score all 37 numbers
+        scores = []
+        for num in range(37):
+            score = 0
+            reasons = []
+            num_str = str(num)
+
+            # Streaks
+            if hottest_dozen != "None" and num in DOZENS[hottest_dozen]:
+                score += streak_weight * 100
+                reasons.append(f"{hottest_dozen} Strength ({streak_weight * 100:.0f} points): {dozen_counts[hottest_dozen]/total_spins*100:.1f}% hit rate")
+            elif num in EVEN_MONEY.get("Red", set()) and "Red" in [hottest_even_money] + top_traits:
+                score += streak_weight * 100
+                reasons.append(f"Red Streak ({streak_weight * 100:.0f} points): Recent streak")
+            else:
+                reasons.append(f"Streak (0 points): Not in hottest dozen or streak")
+
+            # Hit Percentages
+            trait_count = sum(1 for trait in top_traits if num in EVEN_MONEY.get(trait, set()))
+            percentage_score = (percentage_weight * 100) * (trait_count / 3)
+            score += percentage_score
+            matched_traits = [trait for trait in top_traits if num in EVEN_MONEY.get(trait, set())]
+            reasons.append(f"Top Trends ({percentage_score:.2f} points): Matches {', '.join(matched_traits) if matched_traits else 'none'}")
+
+            # Hot Numbers
+            if num in number_counts:
+                score += hot_weight * 100
+                reasons.append(f"Hot Number ({hot_weight * 100:.0f} points): Appears {number_counts[num]} time(s)")
+                # Repeat Bonus
+                if number_counts[num] >= 2:
+                    score += 5
+                    reasons.append("Repeat Bonus (+5 points): 2+ hits")
+                # Repeat Penalty
+                if number_counts[num] >= 2 and num_str in last_spins[-2:]:
+                    score -= 5
+                    reasons.append("Repeat Penalty (-5 points): Unlikely third hit")
+            else:
+                reasons.append("Hot Number (0 points): Not in recent spins")
+
+            # Side Hits
+            if num in LEFT_SIDE:
+                score += side_weight * 100 if left_hits >= right_hits else (side_weight * 100) / 2
+                reasons.append(f"Side Bias ({score - sum([s for s, _, _ in scores[-3:]] if scores else 0):.2f} points): Left Side ({left_hits}/{total_spins} hits)")
+            elif num in RIGHT_SIDE:
+                score += side_weight * 100 if right_hits > left_hits else (side_weight * 100) / 2
+                reasons.append(f"Side Bias ({score - sum([s for s, _, _ in scores[-3:]] if scores else 0):.2f} points): Right Side ({right_hits}/{total_spins} hits)")
+            else:
+                reasons.append("Side Bias (0 points): Neutral (0)")
+
+            # Neighbor Bonus
+            num_index = WHEEL_ORDER.index(num)
+            neighbors = [WHEEL_ORDER[(num_index + i) % 37] for i in [-2, -1, 1, 2]]
+            hot_neighbors = sum(1 for n in neighbors if n in number_counts)
+            if hot_neighbors >= 2:
+                score += 5
+                reasons.append(f"Neighbor Bonus (+5 points): Near {hot_neighbors} hot numbers")
+            else:
+                reasons.append("Neighbor Bonus (0 points): Fewer than 2 hot neighbors")
+
+            scores.append((score, num, reasons))
+
+        # Sort by score, then recency
+        scores.sort(key=lambda x: (-x[0], last_spins[::-1].index(str(x[1])) if str(x[1]) in last_spins else len(last_spins)))
+
+        # Select Top Pick and Honorable Mentions
+        top_pick = scores[0]
+        honorable_mentions = scores[1:3] if len(scores) >= 3 else scores[1:]
+
+        # Generate HTML output
+        html = '<div class="hot-zone-call" style="background-color: #8B0000; color: white; padding: 15px; border-radius: 8px; border: 2px solid #FFD700; box-shadow: 0 4px 8px rgba(0,0,0,0.3); font-family: Arial, sans-serif;">'
+        html += f'<h3 style="margin: 0 0 10px; color: #FFD700; text-shadow: 1px 1px 2px #000;">Hot Zone Call: {top_pick[1]} ({top_pick[0]:.2f}/105)</h3>'
+        html += '<div class="reasons" style="margin-bottom: 15px;">'
+        html += '<h4 style="margin: 5px 0; color: #FFD700;">Reasons:</h4>'
+        for reason in top_pick[2]:
+            html += f'<p style="margin: 2px 0; padding-left: 10px;">{reason}</p>'
+        html += f'<p style="margin: 2px 0; font-weight: bold;">Calculation:</p>'
+        html += f'<p style="margin: 2px 0; padding-left: 10px;">Total = {" + ".join([r.split("(")[1].split(")")[0] for r in top_pick[2]])} = {top_pick[0]:.2f}</p>'
+        html += '</div>'
+
+        # Comparison with top runner-up (if available)
+        if honorable_mentions:
+            runner_up = honorable_mentions[0]
+            html += '<div class="comparison" style="margin-bottom: 15px;">'
+            html += f'<h4 style="margin: 5px 0; color: #FFD700;">Comparison with {runner_up[1]}:</h4>'
+            html += '<table style="width: 100%; border-collapse: collapse; background-color: #FFD700; color: #333; border-radius: 5px;">'
+            html += '<tr><th style="padding: 8px; border: 1px solid #333;">Factor</th><th style="padding: 8px; border: 1px solid #333;">{}</th><th style="padding: 8px; border: 1px solid #333;">{}</th></tr>'.format(top_pick[1], runner_up[1])
+            for i, reason in enumerate(top_pick[2]):
+                runner_reason = runner_up[2][i] if i < len(runner_up[2]) else "N/A"
+                factor = reason.split(":")[0]
+                html += f'<tr><td style="padding: 8px; border: 1px solid #333;">{factor}</td><td style="padding: 8px; border: 1px solid #333;">{reason}</td><td style="padding: 8px; border: 1px solid #333;">{runner_reason}</td></tr>'
+            html += f'<tr><td style="padding: 8px; border: 1px solid #333; font-weight: bold;">Total Score</td><td style="padding: 8px; border: 1px solid #333;">{top_pick[0]:.2f}/105</td><td style="padding: 8px; border: 1px solid #333;">{runner_up[0]:.2f}/105</td></tr>'
+            html += f'<tr><td style="padding: 8px; border: 1px solid #333;">Recency</td><td style="padding: 8px; border: 1px solid #333;">Spin {len(last_spins) - last_spins[::-1].index(str(top_pick[1])) if str(top_pick[1]) in last_spins else "N/A"}</td><td style="padding: 8px; border: 1px solid #333;">Spin {len(last_spins) - last_spins[::-1].index(str(runner_up[1])) if str(runner_up[1]) in last_spins else "N/A"}</td></tr>'
+            html += '</table>'
+            html += f'<p style="margin: 5px 0;">Why {top_pick[1]} Over {runner_up[1]}: {top_pick[1]} has a higher score or better recency, aligning with top trends and streaks.</p>'
+            html += '</div>'
+
+        # Honorable Mentions
+        if honorable_mentions:
+            html += '<div class="honorable-mentions" style="margin-bottom: 15px;">'
+            html += '<h4 style="margin: 5px 0; color: #FFD700;">Honorable Mentions:</h4>'
+            for _, num, reasons in honorable_mentions:
+                main_reason = next((r for r in reasons if "Strength" in r or "Trends" in r), reasons[0])
+                html += f'<p style="margin: 2px 0; padding: 5px; background-color: #FFD700; color: #333; border-radius: 5px;">{num} ({_:.2f}/105): {main_reason.split(":")[1].strip()}</p>'
+            html += '</div>'
+
+        # Count Gap and Repeat Notes
+        html += '<div class="notes">'
+        html += f'<p style="margin: 2px 0;">Count Gap Note: {"Left" if left_hits >= right_hits else "Right"} Side dominates with {max(left_hits, right_hits)}/{total_spins} hits vs. {min(left_hits, right_hits)}/{total_spins} (gap of {gap}), setting Side Hits weight to {side_weight*100:.0f}%.</p>'
+        repeats = {k: v for k, v in number_counts.items() if v >= 2}
+        if repeats:
+            html += '<p style="margin: 2px 0;">Repeat Note: Numbers like {0} with 2+ hits earn a +5 bonus but face a -5 penalty if recent, balancing strength with caution.</p>'.format(", ".join(f"{k} ({v} hits)" for k, v in repeats.items()))
+        html += '</div>'
+
+        html += '</div>'
+        return html, top_pick[1], [hm[1] for hm in honorable_mentions]
+    except Exception as e:
+        print(f"hot_zone_call: Error: {str(e)}")
+        return f"<p>Error generating Hot Zone Call: {str(e)}</p>", None, []
+
 
 # Lines after (context, unchanged)
 def toggle_checkboxes(strategy_name):
