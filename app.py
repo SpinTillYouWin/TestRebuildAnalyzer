@@ -193,14 +193,9 @@ class RouletteState:
         self.cold_suggestions = ""  # Store suggested cold numbers
         self.use_casino_winners = False
         # Prediction Tracker state
-        self.prediction_history = []  # List of dicts: {"predicted": value, "actual": value, "correct": bool}
-        self.predictions_made = 0
-        self.prediction_hits = 0
-        self.prediction_accuracy = "0/0 Hits (N/A)"
-        self.current_hit_streak = 0
-        self.lucky_number = None  # Most frequently correctly predicted number
-        self.current_prediction = None  # Store the current prediction
-        self.prediction_type = "Number"  # Default to predicting a number
+        self.prediction_list = []  # List of tuples: (prediction_number, predicted_spin, predicted_traits)
+        self.current_prediction = None  # Current prediction to be used for the next bet
+        self.prediction_count = 0  # Track the number of predictions made (1 to 36)
         self.bankroll = 1000
         self.initial_bankroll = 1000
         self.base_unit = 10
@@ -290,68 +285,147 @@ class RouletteState:
         self.status_color = "white"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status_color
 
-    def make_prediction(self, prediction, prediction_type="Number"):
-        """Store the user's prediction for the next spin."""
-        self.current_prediction = prediction
-        self.prediction_type = prediction_type
-        return f"Prediction made: {prediction_type} = {prediction}"
+    def predict_next_spin(self):
+        """Predict the next spin based on the dominant streak in the sequence.
+        Returns a tuple: (predicted_number, predicted_traits)"""
+        if not self.last_spins:
+            return 0, "No traits (no spins yet)"
 
-    def evaluate_prediction(self, actual_spin):
-        """Evaluate the current prediction against the actual spin."""
-        if self.current_prediction is None:
-            return "No prediction to evaluate."
+        # Define colors for each number (matching the European Roulette Table)
+        colors = {
+            "0": "green",
+            "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red", "14": "red", "16": "red", "18": "red",
+            "19": "red", "21": "red", "23": "red", "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
+            "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black", "13": "black", "15": "black", "17": "black",
+            "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
+        }
 
-        self.predictions_made += 1
-        actual_spin = int(actual_spin) if actual_spin.isdigit() else actual_spin
+        # Track streaks for each characteristic
+        color_streaks = {"black": 0, "red": 0, "green": 0}
+        even_odd_streaks = {"even": 0, "odd": 0}
+        high_low_streaks = {"high": 0, "low": 0}
+        dozen_streaks = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        column_streaks = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
 
-        # Determine if the prediction is correct based on the prediction type
-        is_correct = False
-        if self.prediction_type == "Number":
-            is_correct = str(actual_spin) == str(self.current_prediction)
-        elif self.prediction_type in ["Red", "Black", "Even", "Odd", "Low", "High"]:
-            numbers = EVEN_MONEY.get(self.prediction_type, [])
-            is_correct = actual_spin in numbers
-        elif self.prediction_type in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
-            numbers = DOZENS.get(self.prediction_type, [])
-            is_correct = actual_spin in numbers
+        # Map spins to their characteristics
+        for spin in self.last_spins[::-1]:  # Check in reverse (most recent first)
+            spin_value = int(spin)
+            # Color
+            color = colors.get(str(spin_value), "black")
+            color_streaks[color] += 1
+            for other_color in color_streaks:
+                if other_color != color:
+                    color_streaks[other_color] = 0
+            # Even/Odd
+            if spin_value == 0:
+                even_odd = "none"
+            else:
+                even_odd = "even" if spin_value % 2 == 0 else "odd"
+            if even_odd != "none":
+                even_odd_streaks[even_odd] += 1
+            for other_eo in even_odd_streaks:
+                if other_eo != even_odd:
+                    even_odd_streaks[other_eo] = 0
+            # High/Low
+            if spin_value == 0:
+                high_low = "none"
+            elif spin_value <= 18:
+                high_low = "low"
+            else:
+                high_low = "high"
+            if high_low != "none":
+                high_low_streaks[high_low] += 1
+            for other_hl in high_low_streaks:
+                if other_hl != high_low:
+                    high_low_streaks[other_hl] = 0
+            # Dozen
+            if spin_value == 0:
+                dozen = "none"
+            else:
+                dozen = next((name for name, nums in DOZENS.items() if spin_value in nums), "none")
+            if dozen != "none":
+                dozen_streaks[dozen] += 1
+            for other_dozen in dozen_streaks:
+                if other_dozen != dozen:
+                    dozen_streaks[other_dozen] = 0
+            # Column
+            if spin_value == 0:
+                column = "none"
+            else:
+                column = next((name for name, nums in COLUMNS.items() if spin_value in nums), "none")
+            if column != "none":
+                column_streaks[column] += 1
+            for other_column in column_streaks:
+                if other_column != column:
+                    column_streaks[other_column] = 0
 
-        # Update stats
-        if is_correct:
-            self.prediction_hits += 1
-            self.current_hit_streak += 1
-            if self.prediction_type == "Number":
-                if self.lucky_number is None:
-                    self.lucky_number = {self.current_prediction: 1}
-                else:
-                    self.lucky_number[self.current_prediction] = self.lucky_number.get(self.current_prediction, 0) + 1
-        else:
-            self.current_hit_streak = 0
+        # Find the dominant streak
+        all_streaks = {
+            **{f"color_{k}": v for k, v in color_streaks.items()},
+            **{f"even_odd_{k}": v for k, v in even_odd_streaks.items()},
+            **{f"high_low_{k}": v for k, v in high_low_streaks.items()},
+            **{f"dozen_{k}": v for k, v in dozen_streaks.items()},
+            **{f"column_{k}": v for k, v in column_streaks.items()}
+        }
+        dominant_streak = max(all_streaks.items(), key=lambda x: x[1], default=("color_black", 0))
+        dominant_category, streak_length = dominant_streak
 
-        # Update accuracy
-        self.prediction_accuracy = f"{self.prediction_hits}/{self.predictions_made} Hits ({(self.prediction_hits / self.predictions_made * 100) if self.predictions_made > 0 else 0:.1f}%)"
+        # Follow the dominant streak
+        spin_list = self.last_spins
+        if "color" in dominant_category:
+            predicted_color = dominant_category.split("_")[1]
+            # Filter numbers not in the sequence
+            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == predicted_color and str(num) not in spin_list]
+        elif "even_odd" in dominant_category:
+            predicted_eo = dominant_category.split("_")[2]
+            available_numbers = [num for num in range(1, 37) if (num % 2 == 0 if predicted_eo == "even" else num % 2 != 0) and str(num) not in spin_list]
+        elif "high_low" in dominant_category:
+            predicted_hl = dominant_category.split("_")[2]
+            available_numbers = [num for num in range(1, 37) if (num <= 18 if predicted_hl == "low" else num > 18) and str(num) not in spin_list]
+        elif "dozen" in dominant_category:
+            predicted_dozen = dominant_category.split("_")[1] + " Dozen"
+            available_numbers = [num for num in DOZENS.get(predicted_dozen, []) if str(num) not in spin_list]
+        else:  # column
+            predicted_column = dominant_category.split("_")[1] + " Column"
+            available_numbers = [num for num in COLUMNS.get(predicted_column, []) if str(num) not in spin_list]
 
-        # Store the prediction result
-        self.prediction_history.append({
-            "predicted": self.current_prediction,
-            "actual": actual_spin,
-            "type": self.prediction_type,
-            "correct": is_correct
-        })
+        # If no numbers match the dominant streak, fall back to any black number
+        if not available_numbers:
+            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == "black" and str(num) not in spin_list]
 
-        # Clear the current prediction
-        self.current_prediction = None
-        return f"Prediction evaluated: Predicted {self.prediction_type} = {self.prediction_history[-1]['predicted']}, Actual = {actual_spin}, {'Correct' if is_correct else 'Incorrect'}"
+        # If still no numbers, fall back to any number not in the sequence
+        if not available_numbers:
+            available_numbers = [num for num in range(37) if str(num) not in spin_list]
+
+        # Choose the first available number
+        predicted_number = available_numbers[0] if available_numbers else 0
+        spin_value = predicted_number
+
+        # Determine the predicted traits
+        color = colors.get(str(spin_value), "black")
+        even_odd = "none" if spin_value == 0 else ("even" if spin_value % 2 == 0 else "odd")
+        high_low = "none" if spin_value == 0 else ("low" if spin_value <= 18 else "high")
+        dozen = "none" if spin_value == 0 else next((name for name, nums in DOZENS.items() if spin_value in nums), "none")
+        column = "none" if spin_value == 0 else next((name for name, nums in COLUMNS.items() if spin_value in nums), "none")
+        predicted_traits = f"{color.capitalize()}, {even_odd.capitalize()}, {high_low.capitalize()}, {dozen if dozen != 'none' else 'Not in Dozen'}, {column if column != 'none' else 'Not in Column'}"
+
+        return predicted_number, predicted_traits
+
+    def update_prediction(self):
+        """Generate a new prediction and store the current one if it exists."""
+        # Store the current prediction if it exists (after a real spin has been added)
+        if self.current_prediction is not None and self.prediction_count < 36:
+            self.prediction_count += 1
+            self.prediction_list.append((self.prediction_count, self.current_prediction[0], self.current_prediction[1]))
+
+        # Generate a new prediction for the next spin
+        self.current_prediction = self.predict_next_spin()
 
     def clear_predictions(self):
         """Clear the Prediction Tracker state."""
-        self.prediction_history = []
-        self.predictions_made = 0
-        self.prediction_hits = 0
-        self.prediction_accuracy = "0/0 Hits (N/A)"
-        self.current_hit_streak = 0
-        self.lucky_number = None
+        self.prediction_list = []
         self.current_prediction = None
-        self.prediction_type = "Number"
+        self.prediction_count = 0
         return "Prediction Tracker cleared successfully!"
 
     def get_lucky_number(self):
@@ -5205,85 +5279,35 @@ def suggest_hot_cold_numbers():
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
-def validate_prediction_input(prediction, prediction_type):
-    """Validate the user's prediction input."""
-    import gradio as gr
-    if not prediction or not prediction.strip():
-        return None, f"Please enter a prediction for {prediction_type}."
-
-    if prediction_type == "Number":
-        try:
-            num = int(prediction.strip())
-            if not (0 <= num <= 36):
-                return None, "Number must be between 0 and 36."
-            return num, None
-        except ValueError:
-            return None, "Invalid number. Enter an integer between 0 and 36."
-    elif prediction_type in ["Red", "Black", "Even", "Odd", "Low", "High", "1st Dozen", "2nd Dozen", "3rd Dozen"]:
-        return prediction, None  # Prediction type is pre-validated by dropdown
-    else:
-        return None, f"Unsupported prediction type: {prediction_type}."
-
 def render_prediction_tracker():
-    """Render the Prediction Tracker as an HTML table with stats and a simple chart."""
+    """Render the Prediction Tracker as an HTML display with a numbered list and current bet."""
     try:
         html = '<div class="prediction-tracker-container" style="padding: 10px; background-color: #f5f5f5; border-radius: 5px; border: 1px solid #d3d3d3;">'
         html += '<h4 style="color: #ff9800;">Prediction Tracker</h4>'
 
-        # Stats
-        html += '<div class="prediction-stats" style="margin-bottom: 10px;">'
-        html += f'<p><strong>Total Predictions:</strong> {state.predictions_made}</p>'
-        html += f'<p><strong>Accuracy:</strong> {state.prediction_accuracy}</p>'
-        html += f'<p><strong>Current Hit Streak:</strong> {state.current_hit_streak}</p>'
-        html += f'<p><strong>Lucky Number:</strong> {state.get_lucky_number()}</p>'
-        html += '</div>'
-
-        # Prediction History Table
-        if state.prediction_history:
+        # Display the list of predictions
+        if state.prediction_list:
             html += '<h5 style="margin: 5px 0;">Prediction History:</h5>'
-            html += '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">'
-            html += '<tr style="background-color: #ddd;"><th style="border: 1px solid #999; padding: 5px;">Prediction Type</th><th style="border: 1px solid #999; padding: 5px;">Predicted</th><th style="border: 1px solid #999; padding: 5px;">Actual</th><th style="border: 1px solid #999; padding: 5px;">Result</th></tr>'
-            for entry in state.prediction_history[-10:]:  # Show last 10 predictions
-                result_color = "green" if entry["correct"] else "red"
-                html += f'<tr><td style="border: 1px solid #999; padding: 5px;">{entry["type"]}</td><td style="border: 1px solid #999; padding: 5px;">{entry["predicted"]}</td><td style="border: 1px solid #999; padding: 5px;">{entry["actual"]}</td><td style="border: 1px solid #999; padding: 5px; color: {result_color};">{"Hit" if entry["correct"] else "Miss"}</td></tr>'
-            html += '</table>'
+            html += '<ul style="list-style-type: none; padding-left: 0;">'
+            for pred_num, pred_spin, pred_traits in state.prediction_list:
+                html += f'<li style="margin: 2px 0;">Prediction {pred_num}: {pred_spin} ({pred_traits})</li>'
+            html += '</ul>'
         else:
-            html += '<p>No predictions made yet.</p>'
+            html += '<p>No predictions yet.</p>'
 
-        # Simple Accuracy Chart (using a canvas for a line chart)
-        if state.prediction_history:
-            html += '<h5 style="margin: 10px 0 5px 0;">Accuracy Trend:</h5>'
-            html += '<canvas id="accuracyChart" style="width: 100%; max-width: 300px; height: 150px;"></canvas>'
-            html += '<script>'
-            html += 'var ctx = document.getElementById("accuracyChart").getContext("2d");'
-            html += 'var accuracyData = [];'
-            hits = 0
-            for i, entry in enumerate(state.prediction_history):
-                if entry["correct"]:
-                    hits += 1
-                accuracy = (hits / (i + 1)) * 100 if (i + 1) > 0 else 0
-                html += f'accuracyData.push({accuracy});'
-            html += 'new Chart(ctx, {'
-            html += 'type: "line",'
-            html += 'data: {'
-            html += 'labels: Array.from({length: accuracyData.length}, (_, i) => i + 1),'
-            html += 'datasets: [{'
-            html += 'label: "Accuracy (%)",'
-            html += 'data: accuracyData,'
-            html += 'borderColor: "#ff9800",'
-            html += 'borderWidth: 2,'
-            html += 'fill: false'
-            html += '}]'
-            html += '},'
-            html += 'options: {'
-            html += 'scales: {'
-            html += 'y: { beginAtZero: true, max: 100, title: { display: true, text: "Accuracy (%)" } },'
-            html += 'x: { title: { display: true, text: "Prediction Number" } }'
-            html += '},'
-            html += 'plugins: { legend: { display: false } }'
-            html += '}'
-            html += '});'
-            html += '</script>'
+        # Display the current prediction for the next straight-up bet
+        if state.current_prediction and state.prediction_count < 36:
+            pred_num = state.prediction_count + 1
+            pred_spin, pred_traits = state.current_prediction
+            html += f'<p style="margin: 10px 0; font-weight: bold; color: #4caf50;">Next Bet: Prediction {pred_num}: {pred_spin} ({pred_traits})</p>'
+        elif state.prediction_count >= 36:
+            html += '<p style="margin: 10px 0; color: #f44336;">Maximum predictions (36) reached. Clear predictions to start over.</p>'
+        else:
+            html += '<p style="margin: 10px 0;">Add a spin to generate the first prediction.</p>'
+
+        # Display the count of predictions made
+        html += f'<p style="margin: 5px 0;">Predictions Made: {state.prediction_count}/36</p>'
+
         html += '</div>'
         return html
     except Exception as e:
@@ -5912,24 +5936,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Row():
         with gr.Accordion("Prediction Tracker 🔮", open=False, elem_id="prediction-tracker"):
             with gr.Row():
-                prediction_type_dropdown = gr.Dropdown(
-                    label="Prediction Type",
-                    choices=["Number", "Red", "Black", "Even", "Odd", "Low", "High", "1st Dozen", "2nd Dozen", "3rd Dozen"],
-                    value="Number",
-                    interactive=True
-                )
-                prediction_input = gr.Textbox(
-                    label="Enter Prediction (e.g., 23 for Number, ignored for other types)",
-                    value="",
-                    interactive=True,
-                    placeholder="Enter a number (0-36) if predicting a number"
-                )
-                submit_prediction_button = gr.Button("Submit Prediction", elem_classes=["action-button"])
-            with gr.Row():
                 clear_predictions_button = gr.Button("Clear Predictions", elem_classes=["action-button"], elem_id="clear-predictions-btn")
             prediction_tracker_output = gr.HTML(
                 label="Prediction Tracker",
-                value=render_prediction_tracker(),
+                value="<div class='prediction-tracker-container'><h4 style='color: #ff9800;'>Prediction Tracker</h4><p>No predictions yet.</p></div>",
                 elem_classes=["prediction-tracker-container"]
             )
 
@@ -6532,18 +6542,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 2px 0 !important;
             font-size: 12px !important;
         }
-        .prediction-tracker-container table {
-            width: 100% !important;
-            border-collapse: collapse !important;
+        .prediction-tracker-container ul {
+            margin: 0 !important;
+            padding-left: 10px !important;
+        }
+        .prediction-tracker-container li {
+            margin: 2px 0 !important;
             font-size: 12px !important;
-        }
-        .prediction-tracker-container th, .prediction-tracker-container td {
-            border: 1px solid #999 !important;
-            padding: 5px !important;
-            text-align: center !important;
-        }
-        .prediction-tracker-container th {
-            background-color: #ddd !important;
         }
         
         /* Pattern Badge for Spin Patterns */
@@ -8606,35 +8611,102 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Prediction Tracker event handlers
     try:
-        prediction_type_dropdown.change(
-            fn=lambda pred_type: setattr(state, "prediction_type", pred_type) or "",
-            inputs=[prediction_type_dropdown],
-            outputs=[spin_analysis_output]
+        spins_display.change(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=lambda: state.update_prediction(),
+            inputs=[],
+            outputs=[]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
+            fn=render_prediction_tracker,
+            inputs=[],
+            outputs=[prediction_tracker_output]
         )
     except Exception as e:
-        print(f"Error in prediction_type_dropdown.change handler: {str(e)}")
-
-    try:
-        submit_prediction_button.click(
-            fn=lambda pred, pred_type: (validate_prediction_input(pred, pred_type)[0], state.make_prediction(pred, pred_type))[1],
-            inputs=[prediction_input, prediction_type_dropdown],
-            outputs=[spin_analysis_output]
-        )
-    except Exception as e:
-        print(f"Error in submit_prediction_button.click handler: {str(e)}")
+        print(f"Error in spins_display.change handler: {str(e)}")
 
     try:
         clear_predictions_button.click(
             fn=lambda: state.clear_predictions(),
             inputs=[],
-            outputs=[spin_analysis_output, prediction_tracker_output]
+            outputs=[spin_analysis_output]
         ).then(
-            fn=lambda: render_prediction_tracker(),
+            fn=render_prediction_tracker,
             inputs=[],
             outputs=[prediction_tracker_output]
         )
     except Exception as e:
         print(f"Error in clear_predictions_button.click handler: {str(e)}")
+
+    # Update spins_textbox.change to update predictions
+    try:
+        spins_textbox.change(
+            fn=validate_spins_input,
+            inputs=[spins_textbox],
+            outputs=[spins_display, last_spin_display]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
+            fn=lambda: state.update_prediction(),
+            inputs=[],
+            outputs=[]
+        ).then(
+            fn=render_prediction_tracker,
+            inputs=[],
+            outputs=[prediction_tracker_output]
+        ).then(
+            fn=analyze_spins,
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        )
+    except Exception as e:
+        print(f"Error in spins_textbox.change handler: {str(e)}")
 
     # Update spins_textbox.change to evaluate predictions
     try:
