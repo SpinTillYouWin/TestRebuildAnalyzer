@@ -4876,36 +4876,47 @@ def calculate_hit_percentages(last_spin_count):
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
-# Updated function with debug log
-def summarize_spin_traits(last_spin_count):
+def summarize_spin_traits(spins_display, last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
-    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
+    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}, spins_display={spins_display}")  # Debug log
     try:
+        print("summarize_spin_traits: Starting input validation")  # Debug log
         # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        print(f"summarize_spin_traits: last_spin_count after int conversion: {last_spin_count}")  # Debug log
         last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+        print(f"summarize_spin_traits: last_spin_count after clamping: {last_spin_count}")  # Debug log
 
-        # Use state.last_spins directly and ensure it's not empty
-        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        print("summarize_spin_traits: Processing spins_display")  # Debug log
+        # Use spins_display instead of state.last_spins
+        last_spins = spins_display.split(", ") if spins_display and spins_display.strip() else []
+        print(f"summarize_spin_traits: last_spins after split: {last_spins}")  # Debug log
+        last_spins = last_spins[-last_spin_count:] if last_spins else []
+        print(f"summarize_spin_traits: last_spins after slicing: {last_spins}")  # Debug log
         if not last_spins:
-            print("summarize_spin_traits: No spins available in state.last_spins")
+            print("summarize_spin_traits: No spins available in spins_display")
             return "<p>No spins available for analysis.</p>"
 
+        print("summarize_spin_traits: Initializing counters")  # Debug log
         # Initialize counters
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
 
+        print("summarize_spin_traits: Initializing streak tracking")  # Debug log
         # Initialize streak tracking
         even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in even_money_counts}
         column_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in column_counts}
         dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in dozen_counts}
 
+        print("summarize_spin_traits: Starting spin analysis loop")  # Debug log
         # Analyze spins and track streaks
         for spin in last_spins:
             try:
+                print(f"summarize_spin_traits: Processing spin: {spin}")  # Debug log
                 num = int(spin)
+                print(f"summarize_spin_traits: Spin converted to int: {num}")  # Debug log
                 # Reset last_hit flags for this spin
                 for key in even_money_streaks:
                     even_money_streaks[key]["last_hit"] = False
@@ -4914,6 +4925,7 @@ def summarize_spin_traits(last_spin_count):
                 for key in dozen_streaks:
                     dozen_streaks[key]["last_hit"] = False
 
+                print("summarize_spin_traits: Analyzing even money bets")  # Debug log
                 # Even Money Bets
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
@@ -4925,6 +4937,7 @@ def summarize_spin_traits(last_spin_count):
                         if not even_money_streaks[name]["last_hit"]:
                             even_money_streaks[name]["current"] = 0
 
+                print("summarize_spin_traits: Analyzing columns")  # Debug log
                 # Columns
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
@@ -4936,6 +4949,7 @@ def summarize_spin_traits(last_spin_count):
                         if not column_streaks[name]["last_hit"]:
                             column_streaks[name]["current"] = 0
 
+                print("summarize_spin_traits: Analyzing dozens")  # Debug log
                 # Dozens
                 for name, numbers in DOZENS.items():
                     if num in numbers:
@@ -4947,38 +4961,56 @@ def summarize_spin_traits(last_spin_count):
                         if not dozen_streaks[name]["last_hit"]:
                             dozen_streaks[name]["current"] = 0
 
+                print("summarize_spin_traits: Updating repeat numbers")  # Debug log
                 # Repeat Numbers
                 number_counts[num] = number_counts.get(num, 0) + 1
-            except ValueError:
+            except ValueError as ve:
+                print(f"summarize_spin_traits: ValueError in spin loop for spin={spin}: {str(ve)}")  # Debug log
                 continue
 
+        print("summarize_spin_traits: Calculating maximum counts")  # Debug log
         # Find the maximum counts for each section (excluding Repeat Numbers)
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+        print(f"summarize_spin_traits: max_even_money: {max_even_money}")  # Debug log
         max_columns = max(column_counts.values()) if column_counts else 0
+        print(f"summarize_spin_traits: max_columns: {max_columns}")  # Debug log
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+        print(f"summarize_spin_traits: max_dozens: {max_dozens}")  # Debug log
 
+        print("summarize_spin_traits: Starting Quick Trends calculation")  # Debug log
         # Quick Trends Calculation
         total_spins = len(last_spins)
+        print(f"summarize_spin_traits: total_spins: {total_spins}")  # Debug log
         trends = []
         if total_spins > 0:
+            print("summarize_spin_traits: Combining counts for dominant category")  # Debug log
             # Dominant category
             all_counts = {**even_money_counts, **column_counts, **dozen_counts}
+            print(f"summarize_spin_traits: all_counts: {all_counts}")  # Debug log
             dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
+            print(f"summarize_spin_traits: dominant: {dominant}")  # Debug log
             if dominant[1] > 0:
                 percentage = (dominant[1] / total_spins * 100)
                 trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
+                print(f"summarize_spin_traits: Added dominant trend: {trends[-1]}")  # Debug log
+            print("summarize_spin_traits: Calculating longest active streak")  # Debug log
             # Longest active streak
             all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
+            print(f"summarize_spin_traits: all_streaks: {all_streaks}")  # Debug log
             longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
+            print(f"summarize_spin_traits: longest_streak: {longest_streak}")  # Debug log
             if longest_streak > 1:
                 streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
                 trends.append(f"{streak_name} on a {longest_streak}-spin streak")
+                print(f"summarize_spin_traits: Added streak trend: {trends[-1]}")  # Debug log
 
+        print("summarize_spin_traits: Building HTML output")  # Debug log
         # TITLE: Build HTML Badges
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
         # Quick Trends Section
+        print("summarize_spin_traits: Building Quick Trends section")  # Debug log
         html += '<div class="quick-trends">'
         html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
         if trends:
@@ -4990,6 +5022,7 @@ def summarize_spin_traits(last_spin_count):
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
         # Even Money
+        print("summarize_spin_traits: Building Even Money Bets section")  # Debug log
         html += '<div class="badge-group">'
         html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
@@ -5003,6 +5036,7 @@ def summarize_spin_traits(last_spin_count):
             html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         # Columns
+        print("summarize_spin_traits: Building Columns section")  # Debug log
         html += '<div class="badge-group">'
         html += '<h4 style="color: #1565c0;">Columns</h4>'
         html += '<div class="percentage-badges">'
@@ -5015,6 +5049,7 @@ def summarize_spin_traits(last_spin_count):
             html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         # Dozens
+        print("summarize_spin_traits: Building Dozens section")  # Debug log
         html += '<div class="badge-group">'
         html += '<h4 style="color: #388e3c;">Dozens</h4>'
         html += '<div class="percentage-badges">'
@@ -5027,6 +5062,7 @@ def summarize_spin_traits(last_spin_count):
             html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         # Repeat Numbers (no streak tracking for repeats)
+        print("summarize_spin_traits: Building Repeat Numbers section")  # Debug log
         html += '<div class="badge-group">'
         html += '<h4 style="color: #7b1fa2;">Repeat Numbers</h4>'
         html += '<div class="percentage-badges">'
@@ -5037,6 +5073,7 @@ def summarize_spin_traits(last_spin_count):
         else:
             html += f'<span class="trait-badge repeat">No repeats</span>'
         html += '</div></div></div>'
+        print("summarize_spin_traits: Returning HTML output")  # Debug log
         return html
 
     except Exception as e:
