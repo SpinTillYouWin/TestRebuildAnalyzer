@@ -5148,7 +5148,6 @@ STRATEGIES = {
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
-        print(f"show_strategy_recommendations: last_spins = {state.last_spins}")
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
         print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
         print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
@@ -5157,6 +5156,7 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         if strategy_name == "None":
             return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
         
+        # If no spins yet, provide a default for "Best Even Money Bets"
         if not any(state.scores.values()) and not any(state.even_money_scores.values()):
             if strategy_name == "Best Even Money Bets":
                 return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
@@ -5175,24 +5175,28 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
                 neighbours_count = 2
                 strong_numbers_count = 1
             result = strategy_func(neighbours_count, strong_numbers_count)
+            # Handle the tuple return value for Neighbours of Strong Number
             if isinstance(result, tuple) and len(result) == 2:
-                recommendations, _ = result
+                recommendations, _ = result  # We only need the recommendations string for display
             else:
                 recommendations = result
         elif strategy_name == "Dozen Tracker":
+            # Dozen Tracker expects multiple arguments and returns a tuple
             result = strategy_func(*args)
             if isinstance(result, tuple) and len(result) == 3:
-                recommendations, _, _ = result
+                recommendations, _, _ = result  # Unpack the tuple, we only need the first element
             else:
                 recommendations = result
         else:
+            # Other strategies return a single string
             recommendations = strategy_func()
 
         print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
 
+        # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
-            print(f"Final HTML (Tiered): {recommendations}")
             return recommendations
+        # Special handling for "Neighbours of Strong Number" to format Suggestions section
         elif strategy_name == "Neighbours of Strong Number":
             lines = recommendations.split("\n")
             html_lines = []
@@ -5208,15 +5212,14 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
                     html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
                 else:
                     html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
-            html = '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
-            print(f"Final HTML (Neighbours): {html}")
-            return html
+            return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
+        # Otherwise, convert plain text to HTML with proper line breaks
         else:
+            # Split the output into lines, removing any empty lines
             lines = [line for line in recommendations.split("\n") if line.strip()]
+            # Wrap each line in <p> tags and join with <br> for proper spacing
             html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
-            html = "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
-            print(f"Final HTML (Default): {html}")
-            return html
+            return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
     except Exception as e:
         print(f"show_strategy_recommendations: Error: {str(e)}")
         return f"<p>Error generating strategy recommendations: {str(e)}</p>"
