@@ -4888,8 +4888,10 @@ def summarize_spin_traits(spins_display, last_spin_count):
         print(f"summarize_spin_traits: last_spin_count after clamping: {last_spin_count}")  # Debug log
 
         print("summarize_spin_traits: Processing spins_display")  # Debug log
-        # Use spins_display instead of state.last_spins
-        last_spins = spins_display.split(", ") if spins_display and spins_display.strip() else []
+        # Ensure spins_display is a string and properly formatted
+        if not isinstance(spins_display, str):
+            raise ValueError(f"spins_display must be a string, got {type(spins_display)}")
+        last_spins = [s.strip() for s in spins_display.split(",") if s.strip()] if spins_display else []
         print(f"summarize_spin_traits: last_spins after split: {last_spins}")  # Debug log
         last_spins = last_spins[-last_spin_count:] if last_spins else []
         print(f"summarize_spin_traits: last_spins after slicing: {last_spins}")  # Debug log
@@ -7306,7 +7308,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],  # Fix: Pass spins_display
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
