@@ -9,6 +9,209 @@ from roulette_data import (
     NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
 )
 
+# New function: Calculate Hot Zone Call
+def calculate_hot_zone_call(last_spin_count):
+    """Calculate Hot Zone Call scores for all numbers (0-36) and return HTML output per Option 3."""
+    try:
+        # Validate last_spin_count
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = max(1, min(last_spin_count, 36))
+        
+        # Get recent spins
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for Hot Zone Call analysis.</p>"
+        
+        total_spins = len(last_spins)
+        
+        # Initialize scores and tracking
+        scores = {num: {"total": 0, "details": {}, "recency": -1} for num in range(37)}
+        number_counts = defaultdict(int)
+        dozen_hits = defaultdict(int)
+        even_money_hits = defaultdict(int)
+        side_hits = {"Left Side": 0, "Right Side": 0}
+        
+        # Track spins for recency
+        for idx, spin in enumerate(reversed(last_spins)):
+            try:
+                num = int(spin)
+                number_counts[num] += 1
+                scores[num]["recency"] = idx  # Most recent spin has lowest index
+                
+                # Dozen hits
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_hits[name] += 1
+                        
+                # Even money hits
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        even_money_hits[name] += 1
+                        
+                # Side hits
+                if num in current_left_of_zero:
+                    side_hits["Left Side"] += 1
+                if num in current_right_of_zero:
+                    side_hits["Right Side"] += 1
+            except ValueError:
+                continue
+        
+        # Determine hottest dozen
+        hottest_dozen = max(dozen_hits.items(), key=lambda x: x[1], default=("None", 0))[0]
+        
+        # Determine top even-money traits
+        top_even_money = sorted(even_money_hits.items(), key=lambda x: x[1], reverse=True)
+        top_traits = [name for name, count in top_even_money[:3] if count > 0]
+        
+        # Calculate Side Hits gap
+        left_hits = side_hits["Left Side"]
+        right_hits = side_hits["Right Side"]
+        gap = abs(left_hits - right_hits)
+        side_weight = 10 if gap >= 2 else 5  # Dynamic weight based on gap
+        
+        # Hot numbers (top 5 by hits)
+        hot_numbers = sorted(number_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+        hot_numbers_set = {num for num, _ in hot_numbers if number_counts[num] > 0}
+        
+        # Score each number
+        for num in range(37):
+            score_details = {}
+            total_score = 0
+            
+            # Streaks (40 points max)
+            if num != 0:  # Exclude 0 from dozen scoring
+                for name, numbers in DOZENS.items():
+                    if num in numbers and name == hottest_dozen and dozen_hits[name] > 0:
+                        streak_score = min(40, int((dozen_hits[name] / total_spins) * 60))
+                        total_score += streak_score
+                        score_details["Streaks"] = f"{streak_score} (Hottest {name})"
+                        break
+            
+            # Hit Percentages (30 points max)
+            trait_score = 0
+            matched_traits = []
+            for name, numbers in EVEN_MONEY.items():
+                if num in numbers and name in top_traits:
+                    trait_score += 10  # 10 points per top trait
+                    matched_traits.append(name)
+            if trait_score > 0:
+                total_score += min(30, trait_score)
+                score_details["Hit Percentages"] = f"{min(30, trait_score)} ({', '.join(matched_traits)})"
+            
+            # Hot Number (20 points max)
+            if num in hot_numbers_set:
+                hot_score = min(20, number_counts[num] * 10)
+                total_score += hot_score
+                score_details["Hot Number"] = f"{hot_score} ({number_counts[num]} hits)"
+            
+            # Side Hits (10 or 5 points)
+            side_score = 0
+            if num in current_left_of_zero and left_hits > right_hits:
+                side_score = side_weight
+                score_details["Side Hits"] = f"{side_score} (Left Side)"
+            elif num in current_right_of_zero and right_hits > left_hits:
+                side_score = side_weight
+                score_details["Side Hits"] = f"{side_score} (Right Side)"
+            total_score += side_score
+            
+            # Neighbor Bonus (+5 if near 2+ hot numbers)
+            neighbors = set()
+            current_num = num
+            for _ in range(2):  # Check 2 neighbors left and right
+                left, right = current_neighbors.get(current_num, (None, None))
+                if left is not None:
+                    neighbors.add(left)
+                    current_num = left
+                if right is not None:
+                    neighbors.add(right)
+            neighbor_count = len(neighbors & hot_numbers_set)
+            if neighbor_count >= 2:
+                total_score += 5
+                score_details["Neighbor Bonus"] = "+5 (Near 2+ hot numbers)"
+            
+            # Repeat Bonus/Penalty
+            if number_counts[num] >= 2:
+                total_score += 5  # Bonus for 2+ hits
+                score_details["Repeat Bonus"] = "+5 (2+ hits)"
+            if number_counts[num] > 0 and scores[num]["recency"] == 0:  # Penalty for most recent
+                total_score -= 5
+                score_details["Repeat Penalty"] = "-5 (Recent repeat)"
+            
+            scores[num]["total"] = total_score
+            scores[num]["details"] = score_details
+        
+        # Sort by score, then recency (lower recency index = more recent)
+        ranked = sorted(
+            scores.items(),
+            key=lambda x: (x[1]["total"], -x[1]["recency"] if x[1]["recency"] >= 0 else float('inf')),
+            reverse=True
+        )
+        
+        if not ranked or ranked[0][1]["total"] == 0:
+            return "<p>No significant scores yet. Add more spins to generate a Hot Zone Call.</p>"
+        
+        # Extract Top Pick and Honorable Mentions
+        top_pick = ranked[0]
+        honorable_mentions = ranked[1:3]
+        
+        # Build HTML output
+        html = '<div class="hot-zone-call-container" style="padding: 10px; background-color: #f5f5dc; border-radius: 5px; border: 1px solid #d3d3d3;">'
+        html += '<h3 style="color: #ff9800;">Hot Zone Call</h3>'
+        
+        # Top Pick
+        top_num, top_data = top_pick
+        top_score = top_data["total"]
+        html += f'<h4 style="color: #333;">Top Pick: {top_num} ({top_score}/105)</h4>'
+        html += '<p style="margin: 5px 0;"><strong>Reasons:</strong></p>'
+        html += '<ul style="list-style-type: none; padding-left: 10px;">'
+        for criterion, detail in top_data["details"].items():
+            html += f'<li>{criterion}: {detail}</li>'
+        total_calc = " + ".join([str(v.split()[0]) for k, v in top_data["details"].items() if v.startswith(("+", "-") or v.split()[0].isdigit())])
+        html += f'<li>Total: {total_calc} = {top_score}</li>'
+        html += f'<li>Recency: Spin {total_spins - top_data["recency"]}</li>'
+        html += '</ul>'
+        
+        # Comparison with First Honorable Mention
+        if honorable_mentions:
+            second_num, second_data = honorable_mentions[0]
+            second_score = second_data["total"]
+            html += '<h4 style="color: #333;">Comparison with First Honorable Mention</h4>'
+            html += '<table border="1" style="border-collapse: collapse; text-align: center; width: 100%; max-width: 400px;">'
+            html += '<tr><th>Criteria</th><th>{}</th><th>{}</th></tr>'.format(top_num, second_num)
+            criteria = set(top_data["details"].keys()) | set(second_data["details"].keys())
+            for criterion in sorted(criteria):
+                top_value = top_data["details"].get(criterion, "0")
+                second_value = second_data["details"].get(criterion, "0")
+                html += f'<tr><td>{criterion}</td><td>{top_value}</td><td>{second_value}</td></tr>'
+            html += f'<tr><td>Total Score</td><td>{top_score}</td><td>{second_score}</td></tr>'
+            html += f'<tr><td>Recency</td><td>Spin {total_spins - top_data["recency"]}</td><td>Spin {total_spins - second_data["recency"]}</td></tr>'
+            html += '</table>'
+            reason = "Higher score" if top_score > second_score else f"Better recency (Spin {total_spins - top_data['recency']} vs Spin {total_spins - second_data['recency']})"
+            html += f'<p style="margin: 5px 0;"><strong>Why {top_num} Over {second_num}:</strong> {reason}</p>'
+        
+        # Honorable Mentions
+        if honorable_mentions:
+            html += '<h4 style="color: #333;">Honorable Mentions</h4>'
+            html += '<div class="honorable-mentions" style="margin-left: 10px;">'
+            for num, data in honorable_mentions:
+                score = data["total"]
+                main_reason = next(iter(data["details"].values()), "High score")
+                html += f'<p style="margin: 2px 0;">{num} ({score}/105): {main_reason}</p>'
+            html += '</div>'
+        
+        # Additional Notes
+        html += '<h4 style="color: #333;">Notes</h4>'
+        side_note = f"Left Side dominates with {left_hits}/{total_spins} hits vs {right_hits}/{total_spins}, gap of {gap}, setting Side Hits weight to {side_weight}%"
+        repeat_note = f"Numbers like {[num for num, count in number_counts.items() if count >= 2]} with 2+ hits earn a +5 bonus but face a -5 penalty if recent"
+        html += f'<p style="margin: 5px 0;">Count Gap Note: {side_note}</p>'
+        html += f'<p style="margin: 5px 0;">Repeat Note: {repeat_note}</p>'
+        
+        html += '</div>'
+        return html
+    except Exception as e:
+        print(f"calculate_hot_zone_call: Error: {str(e)}")
+        return f"<p>Error generating Hot Zone Call: {str(e)}</p>"
+
 # New: Initialize betting category mappings for faster lookups
 BETTING_MAPPINGS = {}
 
@@ -5321,6 +5524,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["traits-container"]
                 )
 
+    with gr.Accordion("Hot Zone Call 🔥", open=False, elem_id="hot-zone-call"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                hot_zone_call_display = gr.HTML(
+                    label="Hot Zone Call",
+                    value=calculate_hot_zone_call(36),
+                    elem_classes=["hot-zone-call-container"]
+                )
+
 # Surrounding lines before (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -6669,7 +6881,46 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
         }
         
-        /* Lines after (unchanged) */
+        /* Hot Zone Call Container */
+        .hot-zone-call-container {
+            padding: 10px !important;
+            background-color: #f5f5dc !important;
+            border-radius: 5px !important;
+            border: 1px solid #d3d3d3 !important;
+            width: 100% !important;
+            max-width: 2000px !important;
+            margin-top: 10px !important;
+            box-sizing: border-box !important;
+        }
+        .hot-zone-call-container h3 {
+            margin: 0 0 10px 0 !important;
+            font-size: 18px !important;
+        }
+        .hot-zone-call-container h4 {
+            margin: 10px 0 5px 0 !important;
+            font-size: 14px !important;
+        }
+        .hot-zone-call-container p {
+            margin: 5px 0 !important;
+            font-size: 14px !important;
+        }
+        .hot-zone-call-container ul {
+            margin: 5px 0 !important;
+            padding-left: 20px !important;
+        }
+        .hot-zone-call-container table {
+            font-size: 12px !important;
+            margin: 5px 0 !important;
+        }
+        .hot-zone-call-container th, .hot-zone-call-container td {
+            padding: 5px !important;
+            border: 1px solid #d3d3d3 !important;
+        }
+        .hot-zone-call-container .honorable-mentions p {
+            margin: 2px 0 !important;
+        }
+        
+
         /* TITLE: Suggestion Box */
         .suggestion-box {
             background-color: #f0f8ff !important;
@@ -7342,7 +7593,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=calculate_hot_zone_call,
+            inputs=[last_spin_count],
+            outputs=[hot_zone_call_display]
         )
+        
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
     
@@ -7439,10 +7695,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display,
+                hot_zone_call_display  # Added new output
             ]
         ).then(
-            # Update state.casino_data with current UI inputs before rendering the dynamic table
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
