@@ -5237,7 +5237,12 @@ def hot_zone_call(state, last_spin_count=10):
         # Get last spins
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
-            return "<p>No spins available for Hot Zone Call.</p>", None, []
+            # Default message with sample prediction
+            html = '<div class="hot-zone-call" style="background-color: #8B0000; color: white; padding: 15px; border-radius: 8px; border: 2px solid #FFD700; box-shadow: 0 4px 8px rgba(0,0,0,0.3); font-family: Arial, sans-serif;">'
+            html += '<h3 style="margin: 0 0 10px; color: #FFD700; text-shadow: 1px 1px 2px #000;">Hot Zone Call: 0 (Sample)</h3>'
+            html += '<p>No spins entered yet. Enter spins via the table or textbox to get a real Hot Zone Call!</p>'
+            html += '</div>'
+            return html, None, []
 
         # Calculate count gap (Left vs. Right Side)
         left_hits = sum(1 for spin in last_spins if int(spin) in LEFT_SIDE)
@@ -5419,8 +5424,6 @@ def hot_zone_call(state, last_spin_count=10):
         print(f"hot_zone_call: Error: {str(e)}")
         return f"<p>Error generating Hot Zone Call: {str(e)}</p>", None, []
 
-
-# Lines after (context, unchanged)
 def toggle_checkboxes(strategy_name):
     return (gr.update(visible=strategy_name == "Kitchen Martingale"),
             gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
