@@ -4881,10 +4881,8 @@ def calculate_hit_percentages(last_spin_count):
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
-# Updated function with debug log
 def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
-    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
     try:
         # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
@@ -4893,7 +4891,6 @@ def summarize_spin_traits(last_spin_count):
         # Use state.last_spins directly and ensure it's not empty
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
-            print("summarize_spin_traits: No spins available in state.last_spins")
             return "<p>No spins available for analysis.</p>"
 
         # Initialize counters
@@ -5216,8 +5213,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
 
     # Define state and components used across sections
+    # Define state and components used across sections
     spins_display = gr.State(value="")
     show_trends_state = gr.State(value=True)  # Default to showing trends
+    toggle_trends_label = gr.State(value="Hide Trends")  # Default label when trends are shown
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -5340,14 +5339,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 elem_classes=["action-button"],
                 elem_id="toggle-trends-btn"
             )
-
-# Surrounding lines after (unchanged)
+    
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
             spins_textbox
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
+      
 
     # Define strategy categories and choices
     strategy_categories = {
