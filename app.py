@@ -6528,7 +6528,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             color: #fff !important;
             padding: 5px 10px !important;
             border-radius: 12px !important;
-            font-size: 12px !important;
+            font-size: 10px !important; /* Reduced from 12px to 10px */
             margin: 3px !important;
             transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
             cursor: pointer !important;
