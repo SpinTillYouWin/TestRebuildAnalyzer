@@ -6427,12 +6427,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important; /* Keep badges in a single row */
+            flex-wrap: wrap !important; /* Changed to allow wrapping */
             gap: 5px !important;
             align-items: center !important;
-            white-space: nowrap !important; /* Ensure content stays in one line */
-            overflow-x: auto !important; /* Enable horizontal scrolling if badges overflow */
-            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
+            white-space: normal !important; /* Allow text to wrap */
         }
 
         /* TITLE: Percentage Item Styles */
