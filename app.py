@@ -5292,7 +5292,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["hit-percentage-container"]
                 )
 
-        with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
                 traits_display = gr.HTML(
