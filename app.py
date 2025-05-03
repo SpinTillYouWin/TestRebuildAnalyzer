@@ -4881,31 +4881,40 @@ def summarize_spin_traits(spins_display, last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
     print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}, spins_display={spins_display}")  # Debug log
     try:
+        print("summarize_spin_traits: Entering try block")  # Debug log
         # Ensure last_spin_count is a valid integer
+        print(f"summarize_spin_traits: Converting last_spin_count={last_spin_count} to int")  # Debug log
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        print(f"summarize_spin_traits: Clamping last_spin_count={last_spin_count} between 1 and 36")  # Debug log
         last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
 
-        # Use spins_display directly instead of state.last_spins
+        print(f"summarize_spin_traits: Splitting spins_display={spins_display}")  # Debug log
         last_spins = spins_display.split(", ") if spins_display and spins_display.strip() else []
+        print(f"summarize_spin_traits: Slicing last_spins={last_spins} to last {last_spin_count} elements")  # Debug log
         last_spins = last_spins[-last_spin_count:] if last_spins else []
+        print(f"summarize_spin_traits: last_spins after slicing={last_spins}")  # Debug log
         if not last_spins:
             print("summarize_spin_traits: No spins available in spins_display")
             return "<p>No spins available for analysis.</p>"
 
+        print("summarize_spin_traits: Initializing counters")  # Debug log
         # Initialize counters
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
 
+        print("summarize_spin_traits: Initializing streak tracking")  # Debug log
         # Initialize streak tracking
         even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in even_money_counts}
         column_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in column_counts}
         dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False} for key in dozen_counts}
 
+        print("summarize_spin_traits: Analyzing spins")  # Debug log
         # Analyze spins and track streaks
         for spin in last_spins:
             try:
+                print(f"summarize_spin_traits: Processing spin={spin}")  # Debug log
                 num = int(spin)
                 # Reset last_hit flags for this spin
                 for key in even_money_streaks:
@@ -4916,6 +4925,7 @@ def summarize_spin_traits(spins_display, last_spin_count):
                     dozen_streaks[key]["last_hit"] = False
 
                 # Even Money Bets
+                print("summarize_spin_traits: Checking EVEN_MONEY")  # Debug log
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
                         even_money_counts[name] += 1
@@ -4927,6 +4937,7 @@ def summarize_spin_traits(spins_display, last_spin_count):
                             even_money_streaks[name]["current"] = 0
 
                 # Columns
+                print("summarize_spin_traits: Checking COLUMNS")  # Debug log
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
                         column_counts[name] += 1
@@ -4938,6 +4949,7 @@ def summarize_spin_traits(spins_display, last_spin_count):
                             column_streaks[name]["current"] = 0
 
                 # Dozens
+                print("summarize_spin_traits: Checking DOZENS")  # Debug log
                 for name, numbers in DOZENS.items():
                     if num in numbers:
                         dozen_counts[name] += 1
@@ -4949,15 +4961,19 @@ def summarize_spin_traits(spins_display, last_spin_count):
                             dozen_streaks[name]["current"] = 0
 
                 # Repeat Numbers
+                print("summarize_spin_traits: Updating number_counts")  # Debug log
                 number_counts[num] = number_counts.get(num, 0) + 1
             except ValueError:
+                print(f"summarize_spin_traits: ValueError in spin loop for spin={spin}")  # Debug log
                 continue
 
+        print("summarize_spin_traits: Calculating maximum counts")  # Debug log
         # Find the maximum counts for each section (excluding Repeat Numbers)
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
+        print("summarize_spin_traits: Calculating Quick Trends")  # Debug log
         # Quick Trends Calculation
         total_spins = len(last_spins)
         trends = []
@@ -4975,6 +4991,7 @@ def summarize_spin_traits(spins_display, last_spin_count):
                 streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
                 trends.append(f"{streak_name} on a {longest_streak}-spin streak")
 
+        print("summarize_spin_traits: Building HTML output")  # Debug log
         # TITLE: Build HTML Badges
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
@@ -5038,6 +5055,7 @@ def summarize_spin_traits(spins_display, last_spin_count):
         else:
             html += f'<span class="trait-badge repeat">No repeats</span>'
         html += '</div></div></div>'
+        print("summarize_spin_traits: Returning HTML output")  # Debug log
         return html
 
     except Exception as e:
@@ -5261,7 +5279,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 traits_display = gr.HTML(
                     label="Spin Traits",
-                    value=summarize_spin_traits("", 36),  # Pass empty spins_display and default last_spin_count
+                    value="<p>No spins available for analysis.</p>",  # Static default value
                     elem_classes=["traits-container"]
                 )
 
