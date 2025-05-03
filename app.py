@@ -506,7 +506,7 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):  # Added show_tr
         "20": "black", "22": "black", "24": "black", "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
     }
     
-    # Pattern detection for consecutive colors and dozens (only if show_trends is True)
+    # Pattern detection for consecutive colors, dozens, even/odd, and low/high (only if show_trends is True)
     patterns = []
     if show_trends:  # Conditional pattern detection
         for i in range(len(spin_list) - 2):
@@ -521,6 +521,30 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):  # Added show_tr
             dozen_hits = [next((name for name, nums in DOZENS.items() if int(spin) in nums), None) for spin in spin_list[i:i+3]]
             if None not in dozen_hits and len(set(dozen_hits)) == 1:
                 patterns.append((i, f"{dozen_hits[0]} Streak"))
+            # Check for consecutive even/odd
+            even_odd_hits = []
+            for spin in spin_list[i:i+3]:
+                num = int(spin)
+                if num == 0:
+                    even_odd_hits.append(None)
+                elif num % 2 == 0:
+                    even_odd_hits.append("Even")
+                else:
+                    even_odd_hits.append("Odd")
+            if None not in even_odd_hits and len(set(even_odd_hits)) == 1:
+                patterns.append((i, f"{even_odd_hits[0]} Streak"))
+            # Check for consecutive low/high
+            low_high_hits = []
+            for spin in spin_list[i:i+3]:
+                num = int(spin)
+                if num == 0:
+                    low_high_hits.append(None)
+                elif 1 <= num <= 18:
+                    low_high_hits.append("Low")
+                else:
+                    low_high_hits.append("High")
+            if None not in low_high_hits and len(set(low_high_hits)) == 1:
+                patterns.append((i, f"{low_high_hits[0]} Streak"))
     
     # Format each spin as a colored span
     html_spins = []
@@ -570,6 +594,48 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):  # Added show_tr
     '''
     
     return html_output
+
+def calculate_dominant_category(spins_display, last_spin_count):
+    """Calculate the dominant category (Even Money, Columns, Dozens) over the last N spins."""
+    num_to_show = int(last_spin_count)
+    spins = spins_display.split(", ") if spins_display and spins_display.strip() else []
+    spins = spins[-num_to_show:] if spins else []
+    
+    if not spins:
+        return "<p>No dominant category yet.</p>"
+    
+    # Initialize counters
+    even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+    column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+    dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+    
+    # Count hits for each category
+    for spin in spins:
+        try:
+            num = int(spin)
+            # Even Money Bets
+            for name, numbers in EVEN_MONEY.items():
+                if num in numbers:
+                    even_money_counts[name] += 1
+            # Columns
+            for name, numbers in COLUMNS.items():
+                if num in numbers:
+                    column_counts[name] += 1
+            # Dozens
+            for name, numbers in DOZENS.items():
+                if num in numbers:
+                    dozen_counts[name] += 1
+        except ValueError:
+            continue
+    
+    # Find the dominant category
+    total_spins = len(spins)
+    all_counts = {**even_money_counts, **column_counts, **dozen_counts}
+    dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
+    if dominant[1] > 0:
+        percentage = (dominant[1] / total_spins * 100)
+        return f'<p style="background-color: #fff3e0; padding: 5px; border-radius: 3px; border: 1px solid #ff9800;">{dominant[0]} dominates with {percentage:.1f}% hits</p>'
+    return "<p>No dominant category yet.</p>"
 
 # Lines after (context, unchanged)
 def render_sides_of_zero_display():
@@ -5314,12 +5380,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             )
 
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
-    show_trends_state = gr.State(value=True)  # New: State to track if trends are shown (True = show trends, False = hide trends)
+    show_trends_state = gr.State(value=True)
     with gr.Row():
         with gr.Column():
-            with gr.Row():  # New: Row to hold the Last Spins display and Toggle Trends button
+            dominant_category_display = gr.HTML(
+                label="Dominant Category",
+                value="<p>No dominant category yet.</p>",
+                elem_classes=["fade-in"]
+            )
+            with gr.Row():
                 last_spin_display
-                toggle_trends_button = gr.Button("Toggle Trends", elem_classes=["action-button"])  # New: Button to toggle trends
+                toggle_trends_button = gr.Button("Toggle Trends", elem_classes=["action-button"])
             last_spin_count
             
 
@@ -7155,8 +7226,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[spin_counter]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         ).then(
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
@@ -7176,8 +7251,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         ).then(
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
@@ -7246,8 +7325,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         )
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
@@ -7263,12 +7346,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
-
 # Line 1: Slider change handler (updated)
     try:
         last_spin_count.change(
@@ -7277,8 +7363,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         ).then(
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
@@ -7560,8 +7650,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
             fn=summarize_spin_traits,
-            inputs=[last_spin_count],
+            inputs=[spins_display, last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
@@ -8188,6 +8282,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
+            fn=summarize_spin_traits,
+            inputs=[spins_display, last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
+        ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
@@ -8253,7 +8355,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
-    
+
     try:
         play_cold_button.click(
             fn=play_specific_numbers,
@@ -8263,6 +8365,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[spins_display, last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_dominant_category,
+            inputs=[spins_display, last_spin_count],
+            outputs=[dominant_category_display]
         ).then(
             fn=suggest_hot_cold_numbers,
             inputs=[],
