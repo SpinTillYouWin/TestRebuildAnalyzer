@@ -167,6 +167,11 @@ class RouletteState:
         self.last_spins = []
         self.scores = {}
         self.even_money_scores = {}
+        # Add side_scores to track Left and Right section hits
+        self.side_scores = {
+            "Left Side of Zero": 0,
+            "Right Side of Zero": 0
+        }
         self.prediction_list = []
         self.current_prediction = None
         self.prediction_count = 0
@@ -213,16 +218,28 @@ class RouletteState:
     def reset_scores(self):
         self.scores = {i: 0 for i in range(37)}
         self.even_money_scores = {key: 0 for key in EVEN_MONEY.keys()}
+        # Reset side_scores
+        self.side_scores = {
+            "Left Side of Zero": 0,
+            "Right Side of Zero": 0
+        }
         print("reset_scores: Scores have been reset.")
 
     def update_scores(self, spin):
         try:
             num = int(spin)
+            # Update number scores
             self.scores[num] = self.scores.get(num, 0) + 1
+            # Update even money scores
             for category, numbers in EVEN_MONEY.items():
                 if num in numbers:
                     self.even_money_scores[category] = self.even_money_scores.get(category, 0) + 1
-            print(f"update_scores: Updated scores for spin {spin}, scores={dict(self.scores)}, even_money_scores={dict(self.even_money_scores)}")
+            # Update side scores
+            if num in LEFT_SECTION:
+                self.side_scores["Left Side of Zero"] += 1
+            elif num in RIGHT_SECTION:
+                self.side_scores["Right Side of Zero"] += 1
+            print(f"update_scores: Updated scores for spin {spin}, scores={dict(self.scores)}, even_money_scores={dict(self.even_money_scores)}, side_scores={dict(self.side_scores)}")
         except ValueError:
             print(f"update_scores: Invalid spin value {spin}, skipping score update.")
 
@@ -444,7 +461,6 @@ class RouletteState:
         self.prediction_count = 0
         return "Predictions cleared successfully."
 
-    # Remaining methods (unchanged from your code)
     def update_progression(self, win):
         odds = {"Even Money": 2, "Dozens": 3, "Columns": 3, "Straight Bets": 36}
         multiplier = odds[self.bet_type]
