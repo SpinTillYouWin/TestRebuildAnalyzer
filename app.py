@@ -285,7 +285,7 @@ class RouletteState:
         self.status_color = "white"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status_color
 
-    def predict_next_spin(self):
+        def predict_next_spin(self):
         """Predict the next spin based on the dominant streak in the sequence.
         Returns a tuple: (predicted_number, predicted_traits)"""
         if not self.last_spins:
@@ -372,30 +372,31 @@ class RouletteState:
 
         # Follow the dominant streak
         spin_list = self.last_spins
+        predicted_numbers = set(pred[1] for pred in self.prediction_list)  # Numbers already predicted
         if "color" in dominant_category:
             predicted_color = dominant_category.split("_")[1]
-            # Filter numbers not in the sequence
-            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == predicted_color and str(num) not in spin_list]
+            # Filter numbers not in the sequence or already predicted
+            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == predicted_color and str(num) not in spin_list and num not in predicted_numbers]
         elif "even_odd" in dominant_category:
             predicted_eo = dominant_category.split("_")[2]
-            available_numbers = [num for num in range(1, 37) if (num % 2 == 0 if predicted_eo == "even" else num % 2 != 0) and str(num) not in spin_list]
+            available_numbers = [num for num in range(1, 37) if (num % 2 == 0 if predicted_eo == "even" else num % 2 != 0) and str(num) not in spin_list and num not in predicted_numbers]
         elif "high_low" in dominant_category:
             predicted_hl = dominant_category.split("_")[2]
-            available_numbers = [num for num in range(1, 37) if (num <= 18 if predicted_hl == "low" else num > 18) and str(num) not in spin_list]
+            available_numbers = [num for num in range(1, 37) if (num <= 18 if predicted_hl == "low" else num > 18) and str(num) not in spin_list and num not in predicted_numbers]
         elif "dozen" in dominant_category:
             predicted_dozen = dominant_category.split("_")[1] + " Dozen"
-            available_numbers = [num for num in DOZENS.get(predicted_dozen, []) if str(num) not in spin_list]
+            available_numbers = [num for num in DOZENS.get(predicted_dozen, []) if str(num) not in spin_list and num not in predicted_numbers]
         else:  # column
             predicted_column = dominant_category.split("_")[1] + " Column"
-            available_numbers = [num for num in COLUMNS.get(predicted_column, []) if str(num) not in spin_list]
+            available_numbers = [num for num in COLUMNS.get(predicted_column, []) if str(num) not in spin_list and num not in predicted_numbers]
 
         # If no numbers match the dominant streak, fall back to any black number
         if not available_numbers:
-            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == "black" and str(num) not in spin_list]
+            available_numbers = [num for num in range(37) if colors.get(str(num), "black") == "black" and str(num) not in spin_list and num not in predicted_numbers]
 
-        # If still no numbers, fall back to any number not in the sequence
+        # If still no numbers, fall back to any number not in the sequence or predicted
         if not available_numbers:
-            available_numbers = [num for num in range(37) if str(num) not in spin_list]
+            available_numbers = [num for num in range(37) if str(num) not in spin_list and num not in predicted_numbers]
 
         # Choose the first available number
         predicted_number = available_numbers[0] if available_numbers else 0
@@ -413,6 +414,10 @@ class RouletteState:
 
     def update_prediction(self):
         """Generate a new prediction and store the current one if it exists."""
+        # Only make a prediction if there are spins in the sequence
+        if not self.last_spins:
+            return
+
         # Store the current prediction if it exists (after a real spin has been added)
         if self.current_prediction is not None and self.prediction_count < 36:
             self.prediction_count += 1
@@ -8616,10 +8621,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=lambda: state.update_prediction(),
-            inputs=[],
-            outputs=[]
-        ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
@@ -8631,6 +8632,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=lambda: state.update_prediction(),
+            inputs=[],
+            outputs=[]
         ).then(
             fn=render_prediction_tracker,
             inputs=[],
@@ -8663,6 +8668,40 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
+            fn=analyze_spins,
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        ).then(
             fn=lambda: state.update_prediction(),
             inputs=[],
             outputs=[]
@@ -8670,96 +8709,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=render_prediction_tracker,
             inputs=[],
             outputs=[prediction_tracker_output]
-        ).then(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
-        ).then(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        )
-    except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
-
-    # Update spins_textbox.change to evaluate predictions
-    try:
-        spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=lambda: state.evaluate_prediction(state.last_spins[-1]) if state.last_spins else "No spins to evaluate.",
-            inputs=[],
-            outputs=[spin_analysis_output]
-        ).then(
-            fn=render_prediction_tracker,
-            inputs=[],
-            outputs=[prediction_tracker_output]
-        ).then(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
-        ).then(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
