@@ -7607,22 +7607,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_colors_button.click handler: {str(e)}")
-    
+
     try:
-    clear_last_spins_button.click(
-        fn=clear_last_spins_display,
-        inputs=[],
-        outputs=[last_spin_display, spin_counter]
-    ).then(
-        fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-        inputs=[spins_display, last_spin_count, show_trends_state],
-        outputs=[last_spin_display]
-    )
-    
+        clear_last_spins_button.click(
+            fn=clear_last_spins_display,
+            inputs=[],
+            outputs=[last_spin_display, spin_counter]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        )
+    except Exception as e:
+        print(f"Error in clear_last_spins_button.click handler: {str(e)}")
+
     # Define the toggle_trends function
     def toggle_trends(show_trends):
         return not show_trends
-    
+
     # Event handler for toggle_trends_button (at the top level, not indented under the function)
     try:
         toggle_trends_button.click(
@@ -7636,8 +7638,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in toggle_trends_button.click handler: {str(e)}")
-    
-    
+
     try:
         top_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -7646,7 +7647,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in top_color_picker.change handler: {str(e)}")
-    
+
     try:
         middle_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -7655,7 +7656,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in middle_color_picker.change handler: {str(e)}")
-    
+
     try:
         lower_color_picker.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -7664,7 +7665,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
-    
+
     # Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
