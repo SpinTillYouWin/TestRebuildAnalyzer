@@ -4877,19 +4877,19 @@ def calculate_hit_percentages(last_spin_count):
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
-# Updated function with debug log
-def summarize_spin_traits(last_spin_count):
+def summarize_spin_traits(spins_display, last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
-    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}")  # Debug log
+    print(f"summarize_spin_traits: Called with last_spin_count={last_spin_count}, spins_display={spins_display}")  # Debug log
     try:
         # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
 
-        # Use state.last_spins directly and ensure it's not empty
-        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        # Use spins_display directly instead of state.last_spins
+        last_spins = spins_display.split(", ") if spins_display and spins_display.strip() else []
+        last_spins = last_spins[-last_spin_count:] if last_spins else []
         if not last_spins:
-            print("summarize_spin_traits: No spins available in state.last_spins")
+            print("summarize_spin_traits: No spins available in spins_display")
             return "<p>No spins available for analysis.</p>"
 
         # Initialize counters
