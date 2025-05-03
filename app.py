@@ -5261,7 +5261,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 traits_display = gr.HTML(
                     label="Spin Traits",
-                    value=summarize_spin_traits(36),
+                    value=summarize_spin_traits("", 36),  # Pass empty spins_display and default last_spin_count
                     elem_classes=["traits-container"]
                 )
 
