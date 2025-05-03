@@ -192,6 +192,15 @@ class RouletteState:
         self.hot_suggestions = ""  # Store suggested hot numbers
         self.cold_suggestions = ""  # Store suggested cold numbers
         self.use_casino_winners = False
+        # Prediction Tracker state
+        self.prediction_history = []  # List of dicts: {"predicted": value, "actual": value, "correct": bool}
+        self.predictions_made = 0
+        self.prediction_hits = 0
+        self.prediction_accuracy = "0/0 Hits (N/A)"
+        self.current_hit_streak = 0
+        self.lucky_number = None  # Most frequently correctly predicted number
+        self.current_prediction = None  # Store the current prediction
+        self.prediction_type = "Number"  # Default to predicting a number
         self.bankroll = 1000
         self.initial_bankroll = 1000
         self.base_unit = 10
@@ -263,11 +272,93 @@ class RouletteState:
     def reset_progression(self):
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
-        self.progression_state = None
-        self.is_stopped = False
-        self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+        if self.progression == "Fibonacci":
+            self.progression_state = [1, 1]
+        elif self.progression == "Labouchere":
+            if self.labouchere_sequence and self.labouchere_sequence.strip():
+                try:
+                    self.progression_state = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
+                except ValueError:
+                    self.progression_state = [1] * self.target_profit
+            else:
+                self.progression_state = [1] * self.target_profit
+        else:
+            self.progression_state = None
+        self.bankroll = self.initial_bankroll
+        self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+        self.status_color = "white"
+        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status_color
+
+    def make_prediction(self, prediction, prediction_type="Number"):
+        """Store the user's prediction for the next spin."""
+        self.current_prediction = prediction
+        self.prediction_type = prediction_type
+        return f"Prediction made: {prediction_type} = {prediction}"
+
+    def evaluate_prediction(self, actual_spin):
+        """Evaluate the current prediction against the actual spin."""
+        if self.current_prediction is None:
+            return "No prediction to evaluate."
+
+        self.predictions_made += 1
+        actual_spin = int(actual_spin) if actual_spin.isdigit() else actual_spin
+
+        # Determine if the prediction is correct based on the prediction type
+        is_correct = False
+        if self.prediction_type == "Number":
+            is_correct = str(actual_spin) == str(self.current_prediction)
+        elif self.prediction_type in ["Red", "Black", "Even", "Odd", "Low", "High"]:
+            numbers = EVEN_MONEY.get(self.prediction_type, [])
+            is_correct = actual_spin in numbers
+        elif self.prediction_type in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+            numbers = DOZENS.get(self.prediction_type, [])
+            is_correct = actual_spin in numbers
+
+        # Update stats
+        if is_correct:
+            self.prediction_hits += 1
+            self.current_hit_streak += 1
+            if self.prediction_type == "Number":
+                if self.lucky_number is None:
+                    self.lucky_number = {self.current_prediction: 1}
+                else:
+                    self.lucky_number[self.current_prediction] = self.lucky_number.get(self.current_prediction, 0) + 1
+        else:
+            self.current_hit_streak = 0
+
+        # Update accuracy
+        self.prediction_accuracy = f"{self.prediction_hits}/{self.predictions_made} Hits ({(self.prediction_hits / self.predictions_made * 100) if self.predictions_made > 0 else 0:.1f}%)"
+
+        # Store the prediction result
+        self.prediction_history.append({
+            "predicted": self.current_prediction,
+            "actual": actual_spin,
+            "type": self.prediction_type,
+            "correct": is_correct
+        })
+
+        # Clear the current prediction
+        self.current_prediction = None
+        return f"Prediction evaluated: Predicted {self.prediction_type} = {self.prediction_history[-1]['predicted']}, Actual = {actual_spin}, {'Correct' if is_correct else 'Incorrect'}"
+
+    def clear_predictions(self):
+        """Clear the Prediction Tracker state."""
+        self.prediction_history = []
+        self.predictions_made = 0
+        self.prediction_hits = 0
+        self.prediction_accuracy = "0/0 Hits (N/A)"
+        self.current_hit_streak = 0
+        self.lucky_number = None
+        self.current_prediction = None
+        self.prediction_type = "Number"
+        return "Prediction Tracker cleared successfully!"
+
+    def get_lucky_number(self):
+        """Return the most frequently correctly predicted number."""
+        if not self.lucky_number:
+            return "None"
+        return max(self.lucky_number.items(), key=lambda x: x[1])[0]
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
@@ -5114,6 +5205,91 @@ def suggest_hot_cold_numbers():
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", ""  # Fallback to empty suggestions
 
+def validate_prediction_input(prediction, prediction_type):
+    """Validate the user's prediction input."""
+    import gradio as gr
+    if not prediction or not prediction.strip():
+        return None, f"Please enter a prediction for {prediction_type}."
+
+    if prediction_type == "Number":
+        try:
+            num = int(prediction.strip())
+            if not (0 <= num <= 36):
+                return None, "Number must be between 0 and 36."
+            return num, None
+        except ValueError:
+            return None, "Invalid number. Enter an integer between 0 and 36."
+    elif prediction_type in ["Red", "Black", "Even", "Odd", "Low", "High", "1st Dozen", "2nd Dozen", "3rd Dozen"]:
+        return prediction, None  # Prediction type is pre-validated by dropdown
+    else:
+        return None, f"Unsupported prediction type: {prediction_type}."
+
+def render_prediction_tracker():
+    """Render the Prediction Tracker as an HTML table with stats and a simple chart."""
+    try:
+        html = '<div class="prediction-tracker-container" style="padding: 10px; background-color: #f5f5f5; border-radius: 5px; border: 1px solid #d3d3d3;">'
+        html += '<h4 style="color: #ff9800;">Prediction Tracker</h4>'
+
+        # Stats
+        html += '<div class="prediction-stats" style="margin-bottom: 10px;">'
+        html += f'<p><strong>Total Predictions:</strong> {state.predictions_made}</p>'
+        html += f'<p><strong>Accuracy:</strong> {state.prediction_accuracy}</p>'
+        html += f'<p><strong>Current Hit Streak:</strong> {state.current_hit_streak}</p>'
+        html += f'<p><strong>Lucky Number:</strong> {state.get_lucky_number()}</p>'
+        html += '</div>'
+
+        # Prediction History Table
+        if state.prediction_history:
+            html += '<h5 style="margin: 5px 0;">Prediction History:</h5>'
+            html += '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">'
+            html += '<tr style="background-color: #ddd;"><th style="border: 1px solid #999; padding: 5px;">Prediction Type</th><th style="border: 1px solid #999; padding: 5px;">Predicted</th><th style="border: 1px solid #999; padding: 5px;">Actual</th><th style="border: 1px solid #999; padding: 5px;">Result</th></tr>'
+            for entry in state.prediction_history[-10:]:  # Show last 10 predictions
+                result_color = "green" if entry["correct"] else "red"
+                html += f'<tr><td style="border: 1px solid #999; padding: 5px;">{entry["type"]}</td><td style="border: 1px solid #999; padding: 5px;">{entry["predicted"]}</td><td style="border: 1px solid #999; padding: 5px;">{entry["actual"]}</td><td style="border: 1px solid #999; padding: 5px; color: {result_color};">{"Hit" if entry["correct"] else "Miss"}</td></tr>'
+            html += '</table>'
+        else:
+            html += '<p>No predictions made yet.</p>'
+
+        # Simple Accuracy Chart (using a canvas for a line chart)
+        if state.prediction_history:
+            html += '<h5 style="margin: 10px 0 5px 0;">Accuracy Trend:</h5>'
+            html += '<canvas id="accuracyChart" style="width: 100%; max-width: 300px; height: 150px;"></canvas>'
+            html += '<script>'
+            html += 'var ctx = document.getElementById("accuracyChart").getContext("2d");'
+            html += 'var accuracyData = [];'
+            hits = 0
+            for i, entry in enumerate(state.prediction_history):
+                if entry["correct"]:
+                    hits += 1
+                accuracy = (hits / (i + 1)) * 100 if (i + 1) > 0 else 0
+                html += f'accuracyData.push({accuracy});'
+            html += 'new Chart(ctx, {'
+            html += 'type: "line",'
+            html += 'data: {'
+            html += 'labels: Array.from({length: accuracyData.length}, (_, i) => i + 1),'
+            html += 'datasets: [{'
+            html += 'label: "Accuracy (%)",'
+            html += 'data: accuracyData,'
+            html += 'borderColor: "#ff9800",'
+            html += 'borderWidth: 2,'
+            html += 'fill: false'
+            html += '}]'
+            html += '},'
+            html += 'options: {'
+            html += 'scales: {'
+            html += 'y: { beginAtZero: true, max: 100, title: { display: true, text: "Accuracy (%)" } },'
+            html += 'x: { title: { display: true, text: "Prediction Number" } }'
+            html += '},'
+            html += 'plugins: { legend: { display: false } }'
+            html += '}'
+            html += '});'
+            html += '</script>'
+        html += '</div>'
+        return html
+    except Exception as e:
+        print(f"render_prediction_tracker: Error: {str(e)}")
+        return "<p>Error rendering Prediction Tracker.</p>"
+
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
     "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -5731,8 +5907,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
                 status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
-         
-    # 8.1. Row 8.1: Casino Data Insights
+
+    # 8.1. Row 8.1: Prediction Tracker
+    with gr.Row():
+        with gr.Accordion("Prediction Tracker 🔮", open=False, elem_id="prediction-tracker"):
+            with gr.Row():
+                prediction_type_dropdown = gr.Dropdown(
+                    label="Prediction Type",
+                    choices=["Number", "Red", "Black", "Even", "Odd", "Low", "High", "1st Dozen", "2nd Dozen", "3rd Dozen"],
+                    value="Number",
+                    interactive=True
+                )
+                prediction_input = gr.Textbox(
+                    label="Enter Prediction (e.g., 23 for Number, ignored for other types)",
+                    value="",
+                    interactive=True,
+                    placeholder="Enter a number (0-36) if predicting a number"
+                )
+                submit_prediction_button = gr.Button("Submit Prediction", elem_classes=["action-button"])
+            with gr.Row():
+                clear_predictions_button = gr.Button("Clear Predictions", elem_classes=["action-button"], elem_id="clear-predictions-btn")
+            prediction_tracker_output = gr.HTML(
+                label="Prediction Tracker",
+                value=render_prediction_tracker(),
+                elem_classes=["prediction-tracker-container"]
+            )
+
+    # 8.2. Row 8.2: Casino Data Insights
     with gr.Row():
         with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
             spins_count_dropdown = gr.Dropdown(
@@ -6051,6 +6252,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # CSS (end of the previous section, for context)
     gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
       function loadShepherdFallback() {
@@ -6307,6 +6509,41 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+
+        /* Prediction Tracker Styling */
+        .prediction-tracker-container {
+            background-color: #f5f5f5 !important;
+            border: 1px solid #d3d3d3 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin-top: 10px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        }
+        .prediction-tracker-container h4 {
+            margin: 0 0 10px 0 !important;
+            font-size: 16px !important;
+        }
+        .prediction-tracker-container h5 {
+            margin: 5px 0 !important;
+            font-size: 14px !important;
+        }
+        .prediction-tracker-container p {
+            margin: 2px 0 !important;
+            font-size: 12px !important;
+        }
+        .prediction-tracker-container table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 12px !important;
+        }
+        .prediction-tracker-container th, .prediction-tracker-container td {
+            border: 1px solid #999 !important;
+            padding: 5px !important;
+            text-align: center !important;
+        }
+        .prediction-tracker-container th {
+            background-color: #ddd !important;
         }
         
         /* Pattern Badge for Spin Patterns */
@@ -8366,51 +8603,94 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
-    
+
+    # Prediction Tracker event handlers
     try:
-        bankroll_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+        prediction_type_dropdown.change(
+            fn=lambda pred_type: setattr(state, "prediction_type", pred_type) or "",
+            inputs=[prediction_type_dropdown],
+            outputs=[spin_analysis_output]
         )
     except Exception as e:
-        print(f"Error in bankroll_input.change handler: {str(e)}")
-    
+        print(f"Error in prediction_type_dropdown.change handler: {str(e)}")
+
     try:
-        base_unit_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+        submit_prediction_button.click(
+            fn=lambda pred, pred_type: (validate_prediction_input(pred, pred_type)[0], state.make_prediction(pred, pred_type))[1],
+            inputs=[prediction_input, prediction_type_dropdown],
+            outputs=[spin_analysis_output]
         )
     except Exception as e:
-        print(f"Error in base_unit_input.change handler: {str(e)}")
-    
+        print(f"Error in submit_prediction_button.click handler: {str(e)}")
+
     try:
-        stop_loss_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+        clear_predictions_button.click(
+            fn=lambda: state.clear_predictions(),
+            inputs=[],
+            outputs=[spin_analysis_output, prediction_tracker_output]
+        ).then(
+            fn=lambda: render_prediction_tracker(),
+            inputs=[],
+            outputs=[prediction_tracker_output]
         )
     except Exception as e:
-        print(f"Error in stop_loss_input.change handler: {str(e)}")
-    
+        print(f"Error in clear_predictions_button.click handler: {str(e)}")
+
+    # Update spins_textbox.change to evaluate predictions
     try:
-        stop_win_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+        spins_textbox.change(
+            fn=validate_spins_input,
+            inputs=[spins_textbox],
+            outputs=[spins_display, last_spin_display]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
+            fn=lambda: state.evaluate_prediction(state.last_spins[-1]) if state.last_spins else "No spins to evaluate.",
+            inputs=[],
+            outputs=[spin_analysis_output]
+        ).then(
+            fn=render_prediction_tracker,
+            inputs=[],
+            outputs=[prediction_tracker_output]
+        ).then(
+            fn=analyze_spins,
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=update_spin_counter,
+            inputs=[],
+            outputs=[spin_counter]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox,
+                even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox,
+                even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox,
+                even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
         )
     except Exception as e:
-        print(f"Error in stop_win_input.change handler: {str(e)}")
-    
-    try:
-        bet_type_dropdown.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
-        )
-    except Exception as e:
-        print(f"Error in bet_type_dropdown.change handler: {str(e)}")
+        print(f"Error in spins_textbox.change handler: {str(e)}")
     
     try:
         progression_dropdown.change(
