@@ -5335,7 +5335,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
             toggle_trends_button = gr.Button(
-                value=toggle_trends_label,
+                value="Hide Trends",  # Initial string value
                 elem_classes=["action-button"],
                 elem_id="toggle-trends-btn"
             )
@@ -7627,18 +7627,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
 
-    # Define the toggle_trends function
+        # Define the toggle_trends function to update both state and label
     def toggle_trends(show_trends, current_label):
         new_show_trends = not show_trends
         new_label = "Hide Trends" if new_show_trends else "Show Trends"
-        return new_show_trends, new_label
+        return new_show_trends, new_label, gr.update(value=new_label)
 
     # Event handler for toggle_trends_button (at the top level, not indented under the function)
     try:
         toggle_trends_button.click(
             fn=toggle_trends,
             inputs=[show_trends_state, toggle_trends_label],
-            outputs=[show_trends_state, toggle_trends_label]
+            outputs=[show_trends_state, toggle_trends_label, toggle_trends_button]
         ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
