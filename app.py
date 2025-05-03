@@ -285,7 +285,7 @@ class RouletteState:
         self.status_color = "white"
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status_color
 
-        def predict_next_spin(self):
+    def predict_next_spin(self):
         """Predict the next spin based on the dominant streak in the sequence.
         Returns a tuple: (predicted_number, predicted_traits)"""
         if not self.last_spins:
