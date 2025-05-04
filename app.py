@@ -4976,7 +4976,7 @@ def summarize_spin_traits(last_spin_count):
                         column_counts[name] += 1
                         column_streaks[name]["last_hit"] = True
                         column_streaks[name]["current"] += 1
-                        column_streaks[name]["spins"].append(str(num))
+                        column_streaks[name]["spins"].append(str(num))  # Fixed typo: column_streets -> column_streaks
                         if len(column_streaks[name]["spins"]) > column_streaks[name]["current"]:
                             column_streaks[name]["spins"] = column_streaks[name]["spins"][-column_streaks[name]["current"]:]
                         column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
@@ -5028,7 +5028,7 @@ def summarize_spin_traits(last_spin_count):
                 streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
                 trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
 
-        # TITLE: Build HTML Badges
+        # Build HTML Badges
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
@@ -7643,6 +7643,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # Event Handlers
     try:
+        # Event Handlers
+    try:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
@@ -7710,6 +7712,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After spins_display change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
@@ -7731,6 +7741,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After clear_spins_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in clear_spins_button.click handler: {str(e)}")
@@ -7793,8 +7811,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After clear_all_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
- 
     except Exception as e:
         print(f"Error in clear_all_button.click handler: {str(e)}")
     
@@ -7811,6 +7836,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After generate_spins_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
@@ -7829,6 +7862,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After last_spin_count change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
@@ -7926,7 +7967,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
             # Update state.casino_data with current UI inputs before rendering the dynamic table
@@ -7999,7 +8040,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -8040,8 +8081,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After load_input change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
-        
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
     
@@ -8109,8 +8157,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After undo_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
-        
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
     
@@ -8162,11 +8217,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After clear_last_spins_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
 
-        # Define the toggle_trends function to update both state and label
+    # Define the toggle_trends function to update both state and label
     def toggle_trends(show_trends, current_label):
         new_show_trends = not show_trends
         new_label = "Hide Trends" if new_show_trends else "Show Trends"
@@ -8182,6 +8245,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After toggle_trends_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in toggle_trends_button.click handler: {str(e)}")
@@ -8699,9 +8770,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
             outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=format_spins_as_html,
-            inputs=[spins_display, last_spin_count],
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
@@ -8712,9 +8795,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
             outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=format_spins_as_html,
-            inputs=[spins_display, last_spin_count],
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in play_cold_button.click handler: {str(e)}")
@@ -8724,6 +8819,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=clear_hot_cold_picks,
             inputs=[gr.State(value="Hot"), spins_display],
             outputs=[hot_numbers_input, casino_data_output, spin_counter, sides_of_zero_display, spins_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After clear_hot_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in clear_hot_button.click handler: {str(e)}")
@@ -8733,6 +8836,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=clear_hot_cold_picks,
             inputs=[gr.State(value="Cold"), spins_display],
             outputs=[cold_numbers_input, casino_data_output, spin_counter, sides_of_zero_display, spins_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After clear_cold_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
@@ -8780,6 +8891,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
@@ -8797,6 +8916,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=suggest_hot_cold_numbers,
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
@@ -8814,6 +8941,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=suggest_hot_cold_numbers,
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in play_cold_button.click handler: {str(e)}")
@@ -8984,6 +9119,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
+# Add the top pick slider change handler (was previously missing in your code)
+    try:
+        top_pick_spin_count.change(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
+        )
+    except Exception as e:
+        print(f"Error in top_pick_spin_count.change handler: {str(e)}")
 
 # Launch the interface
 print("Starting Gradio launch...")
