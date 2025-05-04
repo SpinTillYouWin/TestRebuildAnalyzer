@@ -5225,7 +5225,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function with scoring system explanation
+# Latest select_next_spin_top_pick function with all scoring components in explanation
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5505,7 +5505,7 @@ def select_next_spin_top_pick(last_spin_count):
                         f"- <strong>Hot Number Boost</strong>: {components['hot']} ({'Added because it has at least 2 hits and is among the top 5 most frequent numbers' if components['hot'] > 0 else 'Not added; fewer than 2 hits or not in top 5'})",
                         f"- <strong>Betting Section Boost</strong>: {components['section']} ({'Added because it’s in the top betting section: ' + top_section_name if components['section'] > 0 else 'Not in the top betting section'})",
                         f"- <strong>Wheel Side Boost</strong>: {components['side']} ({'Added because it’s on the winning side of the wheel: ' + winning_side if components['side'] > 0 else 'Not on the winning side or sides are tied'})",
-                        f"- <strong>Category Boost</strong>: {components['category']} (Matches {components['category']} of the top categories: {', '.join(cat for cat, nums in top_category_numbers.items() if num in nums)})",
+                        f"- <strong>Category Boost</strong>: {components['category']} (Matches {components['category']} of the top categories: {', '.join(cat for cat, nums in top_category_numbers.items() if top_pick in nums)})",
                         f"- <strong>Recency Boost</strong>: {components['recency']:.1f} (Based on how recently it appeared)",
                         f"- <strong>Total Score</strong>: {components['total']:.1f}"
                     ]
