@@ -5203,6 +5203,12 @@ def generate_hot_zone_call(spins, max_spins=36):
             if num in numbers:
                 section_hits[name] += 1
     
+    # CHANGED: Identify top 1–2, top 18, and bottom 18 numbers by hit count
+    sorted_by_hits = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    top_2_numbers = [num for num, hits in sorted_by_hits[:2] if hits > 0]
+    top_18_numbers = [num for num, hits in sorted_by_hits[:18] if hits > 0]
+    bottom_18_numbers = [num for num, hits in sorted_by_hits[-18:] if hits >= 0]
+    
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
     
@@ -5211,8 +5217,8 @@ def generate_hot_zone_call(spins, max_spins=36):
         "streaks": 0.2,
         "wheel_section_streaks": 0.2,
         "active_streaks": 0.15,
-        "hit_percent": 0.15,  # CHANGED: Updated weight to 0.15 for Hit Percentage
-        "hot_numbers": 0.2,
+        "hit_percent": 0.15,
+        "hot_numbers": 0.2,  # CHANGED: Kept for consistency, but not used directly
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
         "neighbor_bonus": 0.05,
         "repeat_penalty": -0.05
@@ -5244,13 +5250,17 @@ def generate_hot_zone_call(spins, max_spins=36):
                     elif streak_length >= 5:
                         score -= 0.05
         
-        # CHANGED: Hit Percentage (updated to use weight of 0.15)
+        # Hit Percentage
         hit_percent = scores[num] / total_spins if total_spins else 0
         score += 0.15 * hit_percent
         
-        # Hot Numbers (unchanged)
-        if scores[num] > 0:
-            score += weights["hot_numbers"] * (scores[num] / max(scores.values(), default=1))
+        # CHANGED: Hot Numbers Bonus (top 1–2, top 18, cold numbers)
+        if num in top_2_numbers:
+            score += 0.1
+        elif num in top_18_numbers:
+            score += 0.05
+        elif num in bottom_18_numbers:
+            score -= 0.05
         
         # Side Hits (unchanged)
         if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
