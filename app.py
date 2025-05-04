@@ -5169,8 +5169,6 @@ def generate_hot_zone_call(spins, max_spins=36):
         "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9]
     }
     section_hits = {name: 0 for name in wheel_sections.keys()}
-    
-    # CHANGED: Added streak tracking for dozens, columns, even-money bets
     streak_lengths = {
         "dozens": {name: 0 for name in DOZENS.keys()},
         "columns": {name: 0 for name in COLUMNS.keys()},
@@ -5212,8 +5210,8 @@ def generate_hot_zone_call(spins, max_spins=36):
     weights = {
         "streaks": 0.2,
         "wheel_section_streaks": 0.2,
-        "active_streaks": 0.15,  # CHANGED: Added weight for Active Streaks
-        "hit_percent": 0.3,
+        "active_streaks": 0.15,
+        "hit_percent": 0.15,  # CHANGED: Updated weight to 0.15 for Hit Percentage
         "hot_numbers": 0.2,
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
         "neighbor_bonus": 0.05,
@@ -5234,7 +5232,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         if num in wheel_sections[hottest_section]:
             score += 0.2 * (section_hits[hottest_section] / total_spins if total_spins else 0)
         
-        # CHANGED: Added Active Streaks (based on streak lengths in dozens, columns, even-money)
+        # Active Streaks (based on streak lengths in dozens, columns, even-money)
         for category, categories in [
             ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
         ]:
@@ -5246,9 +5244,9 @@ def generate_hot_zone_call(spins, max_spins=36):
                     elif streak_length >= 5:
                         score -= 0.05
         
-        # Hit Percentage (unchanged)
+        # CHANGED: Hit Percentage (updated to use weight of 0.15)
         hit_percent = scores[num] / total_spins if total_spins else 0
-        score += weights["hit_percent"] * hit_percent
+        score += 0.15 * hit_percent
         
         # Hot Numbers (unchanged)
         if scores[num] > 0:
