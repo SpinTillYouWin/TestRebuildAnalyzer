@@ -5225,10 +5225,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-
-# Line 1: Start of updated select_next_spin_top_pick function
-# Corrected select_next_spin_top_pick function with strict state management and debugging
-# Updated select_next_spin_top_pick function with scoring explanation
+# Updated select_next_spin_top_pick function with scoring system explanation
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5328,27 +5325,20 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: After category filtering, filtered_numbers={filtered_numbers}")
 
-        # Step 4: Get hot numbers from Dealer's Spin Tracker
+        # Step 4: Get hot numbers (at least 2 hits and in top 5)
         hit_counts = {n: state.scores.get(n, 0) for n in range(37)}
         if DEBUG:
             print(f"select_next_spin_top_pick: hit_counts={hit_counts}")
-        sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
+        # Filter for numbers with at least 2 hits
+        frequent_numbers = [(num, count) for num, count in hit_counts.items() if count >= 2]
+        sorted_frequent = sorted(frequent_numbers, key=lambda x: (-x[1], x[0]))
         hot_numbers = set()
-        if len(sorted_hot) >= 5:
-            fifth_score = sorted_hot[4][1]
-            for num, score in sorted_hot:
-                if len(hot_numbers) < 5 or score == fifth_score:
-                    if score > 0:
-                        hot_numbers.add(num)
-                else:
-                    break
-        else:
-            hot_numbers = set(num for num, score in sorted_hot if score > 0)
-        hot_numbers = hot_numbers & filtered_numbers
+        for num, count in sorted_frequent[:5]:
+            hot_numbers.add(num)
         if DEBUG:
             print(f"select_next_spin_top_pick: hot_numbers={hot_numbers}")
 
-        # Step 5: Identify top betting section (but don't filter, just use for scoring)
+        # Step 5: Identify top betting section (for scoring)
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
@@ -5370,32 +5360,43 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: section_numbers={section_numbers}")
 
-        # Step 6: Boost numbers in categories with active streaks (SpinTrend Radar)
-        streak_numbers = set()
-        all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
-        longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
-        streak_category_name = "None"
-        if longest_streak > 1:
-            streak_categories = [name for name, count in all_streaks.items() if count == longest_streak]
-            streak_category_name = streak_categories[0] if streak_categories else "None"
-            for cat in streak_categories:
-                if cat in EVEN_MONEY:
-                    streak_numbers.update(EVEN_MONEY[cat])
-                elif cat in COLUMNS:
-                    streak_numbers.update(COLUMNS[cat])
-                elif cat in DOZENS:
-                    streak_numbers.update(DOZENS[cat])
+        # Step 6: Identify winning wheel side (for scoring)
+        left_side_numbers = {26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24}
+        right_side_numbers = {32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5}
+        left_side_hits = sum(state.scores.get(num, 0) for num in left_side_numbers)
+        right_side_hits = sum(state.scores.get(num, 0) for num in right_side_numbers)
         if DEBUG:
-            print(f"select_next_spin_top_pick: streak_numbers={streak_numbers}")
+            print(f"select_next_spin_top_pick: left_side_hits={left_side_hits}, right_side_hits={right_side_hits}")
+        winning_side = "Left Side" if left_side_hits > right_side_hits else "Right Side" if right_side_hits > left_side_hits else "None"
+        winning_side_numbers = left_side_numbers if winning_side == "Left Side" else right_side_numbers if winning_side == "Right Side" else set()
+        if DEBUG:
+            print(f"select_next_spin_top_pick: winning_side={winning_side}, winning_side_numbers={winning_side_numbers}")
 
-        # Step 7: Get top 5 strongest numbers
-        strongest_numbers = set()
-        sorted_scores = sorted((state.scores.items()), key=lambda x: (-x[1], x[0]))
-        for num, score in sorted_scores[:5]:
-            if score > 0:
-                strongest_numbers.add(num)
+        # Step 7: Identify top categories by hit count (for Category Boost)
+        all_categories = {}
+        all_categories.update({f"Even Money - {name}": count for name, count in even_money_counts.items()})
+        all_categories.update({f"Column - {name}": count for name, count in column_counts.items()})
+        all_categories.update({f"Dozen - {name}": count for name, count in dozen_counts.items()})
+        sorted_categories = sorted(all_categories.items(), key=lambda x: -x[1])
+        top_categories = []
+        for name, count in sorted_categories:
+            if len(top_categories) < 3 or (count == sorted_categories[len(top_categories)-1][1]):
+                top_categories.append(name)
+            else:
+                break
         if DEBUG:
-            print(f"select_next_spin_top_pick: strongest_numbers={strongest_numbers}")
+            print(f"select_next_spin_top_pick: top_categories={top_categories}")
+        top_category_numbers = {}
+        for cat in top_categories:
+            if cat.startswith("Even Money - "):
+                cat_name = cat.replace("Even Money - ", "")
+                top_category_numbers[cat] = EVEN_MONEY[cat_name]
+            elif cat.startswith("Column - "):
+                cat_name = cat.replace("Column - ", "")
+                top_category_numbers[cat] = COLUMNS[cat_name]
+            elif cat.startswith("Dozen - "):
+                cat_name = cat.replace("Dozen - ", "")
+                top_category_numbers[cat] = DOZENS[cat_name]
 
         # Step 8: Score numbers (only in filtered_numbers)
         scores = {}
@@ -5407,26 +5408,26 @@ def select_next_spin_top_pick(last_spin_count):
             base_score = score
             hot_boost = 3 if num in hot_numbers else 0
             section_boost = 2 if num in section_numbers else 0
-            streak_boost = 1 if num in streak_numbers else 0
-            strongest_boost = 2 if num in strongest_numbers else 0
+            side_boost = 1 if num in winning_side_numbers else 0
+            category_boost = sum(1 for cat, nums in top_category_numbers.items() if num in nums)
             recency_boost = 0
             for i, spin in enumerate(reversed(last_spins)):
                 if int(spin) == num:
                     recency_boost = (last_spin_count - i) * 0.1
                     break
-            score = base_score + hot_boost + section_boost + streak_boost + strongest_boost + recency_boost
+            score = base_score + hot_boost + section_boost + side_boost + category_boost + recency_boost
             scores[num] = score
             score_components[num] = {
                 "base": base_score,
                 "hot": hot_boost,
                 "section": section_boost,
-                "streak": streak_boost,
-                "strongest": strongest_boost,
+                "side": side_boost,
+                "category": category_boost,
                 "recency": recency_boost,
                 "total": score
             }
             if DEBUG:
-                print(f"select_next_spin_top_pick: Score for {num}: base={base_score}, hot={hot_boost}, section={section_boost}, streak={streak_boost}, strongest={strongest_boost}, recency={recency_boost}, total={score}")
+                print(f"select_next_spin_top_pick: Score for {num}: base={base_score}, hot={hot_boost}, section={section_boost}, side={side_boost}, category={category_boost}, recency={recency_boost}, total={score}")
 
         if not scores:
             # Fallback: Use hot numbers or random selection
@@ -5436,28 +5437,25 @@ def select_next_spin_top_pick(last_spin_count):
                 if score == 0:
                     continue
                 base_score = score
-                hot_boost = 3 if num in hot_numbers else 0
-                section_boost = 2 if num in section_numbers else 0
-                streak_boost = 1 if num in streak_numbers else 0
-                strongest_boost = 2 if num in strongest_numbers else 0
+                # Simplified scoring: Base + Recency
                 recency_boost = 0
                 for i, spin in enumerate(reversed(last_spins)):
                     if int(spin) == num:
                         recency_boost = (last_spin_count - i) * 0.1
                         break
-                score = base_score + hot_boost + section_boost + streak_boost + strongest_boost + recency_boost
+                score = base_score + recency_boost
                 scores[num] = score
                 score_components[num] = {
                     "base": base_score,
-                    "hot": hot_boost,
-                    "section": section_boost,
-                    "streak": streak_boost,
-                    "strongest": strongest_boost,
+                    "hot": 0,
+                    "section": 0,
+                    "side": 0,
+                    "category": 0,
                     "recency": recency_boost,
                     "total": score
                 }
                 if DEBUG:
-                    print(f"select_next_spin_top_pick: Fallback score for {num}: base={base_score}, hot={hot_boost}, section={section_boost}, streak={streak_boost}, strongest={strongest_boost}, recency={recency_boost}, total={score}")
+                    print(f"select_next_spin_top_pick: Fallback score for {num}: base={base_score}, recency={recency_boost}, total={score}")
 
         # Step 9: Select top pick
         if not scores:
@@ -5478,19 +5476,41 @@ def select_next_spin_top_pick(last_spin_count):
                 explanation = f"No numbers scored high enough; defaulting to {top_pick}, the first appeared number."
             else:
                 top_pick = max(valid_scores.items(), key=lambda x: x[1])[0]
-                # Generate explanation for the top pick
-                components = score_components[top_pick]
-                explanation_lines = [
-                    f"<strong>Why {top_pick} was chosen:</strong>",
-                    f"- <strong>Base Score (Hits)</strong>: {components['base']} (Number of times {top_pick} appeared in the last {last_spin_count} spins)",
-                    f"- <strong>Hot Number Boost</strong>: {components['hot']} ({'Added because it’s among the top 5 most frequent numbers' if components['hot'] > 0 else 'Not in the top 5'})",
-                    f"- <strong>Betting Section Boost</strong>: {components['section']} ({'Added because it’s in the top betting section: ' + top_section_name if components['section'] > 0 else 'Not in the top betting section'})",
-                    f"- <strong>Streak Boost</strong>: {components['streak']} ({'Added because it’s in a category with an active streak: ' + streak_category_name if components['streak'] > 0 else 'No active streak'})",
-                    f"- <strong>Strongest Number Boost</strong>: {components['strongest']} ({'Added because it’s among the top 5 most frequent numbers' if components['strongest'] > 0 else 'Not in the top 5'})",
-                    f"- <strong>Recency Boost</strong>: {components['recency']:.1f} (Based on how recently it appeared)",
-                    f"- <strong>Total Score</strong>: {components['total']:.1f}"
+                # General explanation of the scoring system
+                general_explanation = [
+                    "<strong>How the Top Pick is Scored:</strong>",
+                    "- <strong>Base Score (Hits)</strong>: Number of hits (e.g., 1 hit = 1, 2 hits = 2).",
+                    "- <strong>Hot Number Boost</strong>: +3 if the number has at least 2 hits and is among the top 5 most frequent numbers (ties resolved by numerical order).",
+                    "- <strong>Betting Section Boost</strong>: +2 if the number is in the top betting section (most hits).",
+                    "- <strong>Wheel Side Boost</strong>: +1 if the number is on the winning side of the wheel (Left Side or Right Side, determined by hit count).",
+                    "- <strong>Category Boost</strong>: +1 for each of the top 3 categories (Even Money, Columns, Dozens) by hit count that the number belongs to (including ties, max +3).",
+                    "- <strong>Recency Boost</strong>: (last_spin_count - position) * 0.1 based on the most recent appearance.",
+                    "- <strong>Total Score</strong>: Sum of all components."
                 ]
-                explanation = "<br>".join(explanation_lines)
+                general_explanation_html = "<br>".join(general_explanation)
+                # Specific explanation for the top pick
+                components = score_components[top_pick]
+                # For fallback phase, only show Base and Recency
+                if len(components) == 2:  # Only Base and Recency (fallback)
+                    explanation_lines = [
+                        f"<strong>Why {top_pick} was chosen:</strong>",
+                        f"- <strong>Base Score (Hits)</strong>: {components['base']} (Number of times {top_pick} appeared in the last {last_spin_count} spins)",
+                        f"- <strong>Recency Boost</strong>: {components['recency']:.1f} (Based on how recently it appeared)",
+                        f"- <strong>Total Score</strong>: {components['total']:.1f}"
+                    ]
+                else:  # Full scoring
+                    explanation_lines = [
+                        f"<strong>Why {top_pick} was chosen:</strong>",
+                        f"- <strong>Base Score (Hits)</strong>: {components['base']} (Number of times {top_pick} appeared in the last {last_spin_count} spins)",
+                        f"- <strong>Hot Number Boost</strong>: {components['hot']} ({'Added because it has at least 2 hits and is among the top 5 most frequent numbers' if components['hot'] > 0 else 'Not added; fewer than 2 hits or not in top 5'})",
+                        f"- <strong>Betting Section Boost</strong>: {components['section']} ({'Added because it’s in the top betting section: ' + top_section_name if components['section'] > 0 else 'Not in the top betting section'})",
+                        f"- <strong>Wheel Side Boost</strong>: {components['side']} ({'Added because it’s on the winning side of the wheel: ' + winning_side if components['side'] > 0 else 'Not on the winning side or sides are tied'})",
+                        f"- <strong>Category Boost</strong>: {components['category']} (Matches {components['category']} of the top categories: {', '.join(cat for cat, nums in top_category_numbers.items() if num in nums)})",
+                        f"- <strong>Recency Boost</strong>: {components['recency']:.1f} (Based on how recently it appeared)",
+                        f"- <strong>Total Score</strong>: {components['total']:.1f}"
+                    ]
+                specific_explanation_html = "<br>".join(explanation_lines)
+                explanation = f"{general_explanation_html}<br><br>{specific_explanation_html}"
 
         state.current_top_pick = top_pick
 
