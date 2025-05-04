@@ -1,5 +1,4 @@
 import gradio as gr
-import math
 import pandas as pd
 import json
 from itertools import combinations
@@ -5150,7 +5149,6 @@ STRATEGIES = {
 }
 
 import math
-from roulette_data import NEIGHBORS_EUROPEAN
 
 # Constants
 DOZENS = {
@@ -5510,6 +5508,7 @@ def generate_hot_zone_call(valid_spins=None, max_spins=36):
             <p>Error generating Hot Zone Call: {str(e)}. Please try again.</p>
         </div>
         """
+    
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
