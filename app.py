@@ -291,7 +291,6 @@ class RouletteState:
         return even_money_scores, dozen_scores, column_scores
 
     def reset_progression(self):
-    def reset_progression(self):
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
         self.progression_state = None
