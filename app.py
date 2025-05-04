@@ -107,61 +107,91 @@ def update_scores_batch(spins):
         action["increments"].setdefault("scores", {})[spin_value] = 1
         
         # Update side scores
-        if spin_value in current_left_of_zero:
-            state.side_scores["Left Side of Zero"] += 1
-            action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
-        if spin_value in current_right_of_zero:
-            state.side_scores["Right Side of Zero"] += 1
-            action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
-        
-        action_log.append(action)
+# Update side scores
+    if spin_value in current_left_of_zero:
+        state.side_scores["Left Side of Zero"] += 1
+        action["increments"].setdefault("side_scores", {})["Left Side of Zero"] = 1
+    if spin_value in current_right_of_zero:
+        state.side_scores["Right Side of Zero"] += 1
+        action["increments"].setdefault("side_scores", {})["Right Side of Zero"] = 1
     
-    # UNCHANGED: Return the action log for undo functionality
-    return action_log
+    action_log.append(action)
 
-def validate_roulette_data():
-    """Validate that all required constants from roulette_data.py are present and correctly formatted."""
-    required_dicts = {
-        "EVEN_MONEY": EVEN_MONEY,
-        "DOZENS": DOZENS,
-        "COLUMNS": COLUMNS,
-        "STREETS": STREETS,
-        "CORNERS": CORNERS,
-        "SIX_LINES": SIX_LINES,
-        "SPLITS": SPLITS
-    }
-    required_neighbors = {
-        "NEIGHBORS_EUROPEAN": NEIGHBORS_EUROPEAN,
-        "LEFT_OF_ZERO_EUROPEAN": LEFT_OF_ZERO_EUROPEAN,
-        "RIGHT_OF_ZERO_EUROPEAN": RIGHT_OF_ZERO_EUROPEAN
-    }
+# UNCHANGED: Return the action log for undo functionality
+return action_log
 
-# Lines after (context, unchanged)
+def validate_spins_input(spins_input):
+    """Validate manually entered spins and update state."""
+    import gradio as gr
+    import time
+    start_time = time.time()  # CHANGED: Added for performance logging
+    
+    # CHANGED: Enhanced logging with input details
+    print(f"validate_spins_input: Processing spins_input='{spins_input}'")
+    
+    # UNCHANGED: Handle empty input
+    if not spins_input or not spins_input.strip():
+        print("validate_spins_input: No spins input provided.")
+        return "", "<h4>Last Spins</h4><p>No spins entered.</p>"
+
+    # CHANGED: Split and clean spins, enforce max limit
+    raw_spins = [s.strip() for s in spins_input.split(",") if s.strip()]
+    if len(raw_spins) > 1000:
+        error_msg = f"Too many spins ({len(raw_spins)}). Maximum allowed is 1000."
+        gr.Warning(error_msg)
+        print(f"validate_spins_input: Error - {error_msg}")
+        return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
+
+    # CHANGED: Batch validate spins
+    valid_spins = []
     errors = []
+    invalid_inputs = []
+    
+    for spin in raw_spins:
+        try:
+            num = int(spin)
+            if not (0 <= num <= 36):
+                errors.append(f"'{spin}' is out of range (must be 0-36)")
+                invalid_inputs.append(spin)
+            else:
+                valid_spins.append(str(num))
+        except ValueError:
+            errors.append(f"'{spin}' is not a valid integer")
+            invalid_inputs.append(spin)
 
-    # Check betting category dictionaries
-    for name, data in required_dicts.items():
-        if not isinstance(data, dict):
-            errors.append(f"{name} must be a dictionary.")
-            continue
-        for key, value in data.items():
-            if not isinstance(key, str) or not isinstance(value, (list, set, tuple)) or not all(isinstance(n, int) for n in value):
-                errors.append(f"{name}['{key}'] must map to a list/set/tuple of integers.")
+    # CHANGED: Improved error handling and messaging
+    if not valid_spins:
+        error_msg = "No valid spins found:\n- " + "\n- ".join(errors) + "\nUse comma-separated integers between 0 and 36 (e.g., 5, 12, 0)."
+        gr.Warning(error_msg)
+        print(f"validate_spins_input: Errors - {error_msg}")
+        return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
 
-    # Check neighbor data
-    for name, data in required_neighbors.items():
-        if name == "NEIGHBORS_EUROPEAN":
-            if not isinstance(data, dict):
-                errors.append(f"{name} must be a dictionary.")
-                continue
-            for key, value in data.items():
-                if not isinstance(key, int) or not isinstance(value, tuple) or len(value) != 2 or not all(isinstance(n, (int, type(None))) for n in value):
-                    errors.append(f"{name}['{key}'] must map to a tuple of two integers or None.")
-        else:
-            if not isinstance(data, (list, set, tuple)) or not all(isinstance(n, int) for n in data):
-                errors.append(f"{name} must be a list/set/tuple of integers.")
+    # UNCHANGED: Update state and scores
+    state.last_spins = valid_spins
+    state.selected_numbers = set(int(s) for s in valid_spins)
+    action_log = update_scores_batch(valid_spins)
+    for i, spin in enumerate(valid_spins):
+        state.spin_history.append(action_log[i])
+        # UNCHANGED: Limit spin history to 100 spins
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
 
-    return errors if errors else None
+    # UNCHANGED: Generate output
+    spins_display_value = ", ".join(valid_spins)
+    formatted_html = format_spins_as_html(spins_display_value, 36)  # Default to showing all spins
+    
+    # CHANGED: Detailed success logging
+    print(f"validate_spins_input: Processed {len(valid_spins)} valid spins, spins_display_value='{spins_display_value}', time={time.time() - start_time:.3f}s")
+    if invalid_inputs:
+        print(f"validate_spins_input: Ignored invalid inputs: {', '.join(invalid_inputs)}")
+    
+    # CHANGED: Include invalid inputs in warning if present
+    if errors:
+        warning_msg = f"Processed {len(valid_spins)} valid spins. Invalid inputs ignored:\n- " + "\n- ".join(errors) + "\nUse integers 0-36."
+        gr.Warning(warning_msg)
+        print(f"validate_spins_input: Warning - {warning_msg}")
+    
+    return spins_display_value, formatted_html
 
 
 class RouletteState:
@@ -209,6 +239,7 @@ class RouletteState:
         self.alerted_patterns = set()
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
+        self.current_top_pick = None  # Store the current top pick number
 
     def reset(self):
         # Preserve use_casino_winners and casino_data before resetting
@@ -1594,7 +1625,6 @@ def add_spin(number, current_spins, num_to_show):
     return new_spins_str, new_spins_str, formatted_html, update_spin_counter(), render_sides_of_zero_display()
 
 # Line 3: Start of next function (unchanged)
-# Line 3: Start of next function (unchanged)
 def clear_spins():
     state.selected_numbers.clear()
     state.last_spins = []
@@ -1603,8 +1633,6 @@ def clear_spins():
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
-# Lines after (context, unchanged)
-# Function to save the session
 # In Part 1, replace save_session and load_session with:
 
 def save_session():
