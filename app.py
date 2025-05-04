@@ -5098,6 +5098,7 @@ def summarize_spin_traits(last_spin_count):
         return "<p>Error analyzing spin traits.</p>"
 
 
+
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
