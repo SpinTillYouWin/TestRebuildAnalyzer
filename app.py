@@ -5393,167 +5393,157 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
 
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-
-        with gr.Row():
-            with gr.Column(scale=1):
-                traits_display = gr.HTML(
-                    label="Spin Traits",
-                    value=summarize_spin_traits(36),
-                    elem_classes=["traits-container"]
-                )
-
-# Line 1: Define the new function for selecting the top pick
-def select_next_spin_top_pick(last_spin_count):
-    """Analyze the last X spins and select the top pick number for the next spin."""
-    try:
-        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
-        last_spin_count = max(1, min(last_spin_count, 36))
-        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
-        if not last_spins:
-            return "<p>No spins available for analysis.</p>"
-
-        # Step 1: Start with all possible numbers
-        numbers = set(range(37))  # 0-36
-
-        # Step 2: Filter by dominant categories (Hit Percentage Overview and SpinTrend Radar)
-        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
-        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
-        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
-
-        for spin in last_spins:
-            try:
-                num = int(spin)
-                for name, numbers in EVEN_MONEY.items():
-                    if num in numbers:
-                        even_money_counts[name] += 1
-                for name, numbers in COLUMNS.items():
-                    if num in numbers:
-                        column_counts[name] += 1
-                for name, numbers in DOZENS.items():
-                    if num in numbers:
-                        dozen_counts[name] += 1
-            except ValueError:
-                continue
-
-        # Find winners (only if there's a clear winner, not tied)
-        max_even_money = max(even_money_counts.values())
-        even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
-        max_columns = max(column_counts.values())
-        column_winners = [name for name, count in column_counts.items() if count == max_columns]
-        max_dozens = max(dozen_counts.values())
-        dozen_winners = [name for name, count in dozen_counts.items() if count == max_dozens]
-
-        # Apply filters only if there's a single winner (not tied)
-        filtered_numbers = numbers.copy()
-        if len(even_money_winners) == 1 and max_even_money > 0:
-            winner = even_money_winners[0]
-            filtered_numbers = filtered_numbers.intersection(EVEN_MONEY[winner])
-        if len(dozen_winners) == 1 and max_dozens > 0:
-            winner = dozen_winners[0]
-            filtered_numbers = filtered_numbers.intersection(DOZENS[winner])
-        if len(column_winners) == 1 and max_columns > 0:
-            winner = column_winners[0]
-            filtered_numbers = filtered_numbers.intersection(COLUMNS[winner])
-
-        if not filtered_numbers:
-            filtered_numbers = numbers  # Reset if no numbers remain
-
-        # Step 3: Apply detailed filters from Spin Logic Reactor (common sections)
-        common_sections = {}
-        for spin in last_spins:
-            num = int(spin)
-            sections = set()
-            # Check corners
-            for name, nums in CORNERS.items():
-                if num in nums:
-                    sections.add(name)
-            # Check double streets
-            for name, nums in DOUBLE_STREETS.items():
-                if num in nums:
-                    sections.add(name)
-            # Check splits
-            for name, nums in SPLITS.items():
-                if num in nums:
-                    sections.add(name)
-            common_sections[num] = sections
-
-        # Find common sections across all spins
-        if last_spins:
-            common = common_sections[int(last_spins[0])]
-            for spin in last_spins[1:]:
-                common = common.intersection(common_sections[int(spin)])
-            # Filter numbers that appear in common sections
-            numbers_in_common = set()
-            for section in common:
-                if section in CORNERS:
-                    numbers_in_common.update(CORNERS[section])
-                elif section in DOUBLE_STREETS:
-                    numbers_in_common.update(DOUBLE_STREETS[section])
-                elif section in SPLITS:
-                    numbers_in_common.update(SPLITS[section])
-            filtered_numbers = filtered_numbers.intersection(numbers_in_common)
+            with gr.Row():
+                with gr.Column(scale=1):
+                    traits_display = gr.HTML(
+                        label="Spin Traits",
+                        value=summarize_spin_traits(36),
+                        elem_classes=["traits-container"]
+                    )
+    
+    # Line 1: Start of updated select_next_spin_top_pick function
+    def select_next_spin_top_pick(last_spin_count):
+        """Select the top pick number for the next spin based on the last X spins."""
+        try:
+            # Step 1: Validate input
+            last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+            last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+            last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+            if not last_spins:
+                return "<p>No spins available for analysis.</p>"
+    
+            # Step 2: Initialize candidate numbers (0-36)
+            numbers = set(range(37))  # All possible roulette numbers
+    
+            # Step 3: Filter candidates by dominant categories (single winner only)
+            even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+            column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+            dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+    
+            for spin in last_spins:
+                try:
+                    num = int(spin)
+                    for name, numbers in EVEN_MONEY.items():
+                        if num in numbers:
+                            even_money_counts[name] += 1
+                    for name, numbers in COLUMNS.items():
+                        if num in numbers:
+                            column_counts[name] += 1
+                    for name, numbers in DOZENS.items():
+                        if num in numbers:
+                            dozen_counts[name] += 1
+                except ValueError:
+                    continue
+    
+            # Identify single winners (no ties)
+            max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+            even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
+            max_columns = max(column_counts.values()) if column_counts else 0
+            column_winners = [name for name, count in column_counts.items() if count == max_columns]
+            max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+            dozen_winners = [name for name, count in dozen_counts.items() if count == max_dozens]
+    
+            # Apply filters only if there's a single winner
+            filtered_numbers = numbers.copy()
+            if len(even_money_winners) == 1 and max_even_money > 0:
+                winner = even_money_winners[0]
+                filtered_numbers = filtered_numbers.intersection(EVEN_MONEY[winner])
+            if len(dozen_winners) == 1 and max_dozens > 0:
+                winner = dozen_winners[0]
+                filtered_numbers = filtered_numbers.intersection(DOZENS[winner])
+            if len(column_winners) == 1 and max_columns > 0:
+                winner = column_winners[0]
+                filtered_numbers = filtered_numbers.intersection(COLUMNS[winner])
+    
             if not filtered_numbers:
                 filtered_numbers = numbers  # Reset if no numbers remain
-
-        # Step 4: Use hot numbers and strongest numbers
-        hot_numbers = set(state.casino_data.get("hot_numbers", []))
-        strongest_numbers = set()
-        sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
-        for num, score in sorted_scores[:5]:
-            if score > 0:
-                strongest_numbers.add(int(num))
-
-        # Step 5: Score and select top pick
-        scores = {}
-        for num in filtered_numbers:
-            score = 0
-            if num in hot_numbers:
-                score += 1
-            if num in strongest_numbers:
-                score += 1
-            # Tiebreaker: Recent spins
-            for i, spin in enumerate(reversed(last_spins)):
-                if int(spin) == num:
-                    score += (i + 1)  # More recent spins get higher weight
-                    break
-            scores[num] = score
-
-        if not scores:
-            return "<p>No numbers match the criteria.</p>"
-
-        top_pick = max(scores.items(), key=lambda x: x[1])[0]
-        state.current_top_pick = top_pick  # Store the top pick in state for celebration check
-
-        # Display the top pick
-        html = '<div class="top-pick-container">'
-        html += f'<h4>Top Pick for Next Spin: <span class="top-pick-badge">{top_pick}</span></h4>'
-        html += '</div>'
-        return html
-
-    except Exception as e:
-        print(f"select_next_spin_top_pick: Error: {str(e)}")
-        return "<p>Error selecting top pick.</p>"
-
-# Line 2: Add the new section
-    with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                top_pick_spin_count = gr.Slider(
-                    label="Number of Spins to Analyze",
-                    minimum=1,
-                    maximum=36,
-                    step=1,
-                    value=2,
-                    interactive=True,
-                    elem_classes="long-slider"
-                )
-                top_pick_display = gr.HTML(
-                    label="Top Pick",
-                    value=select_next_spin_top_pick(2),
-                    elem_classes=["top-pick-container"]
-                )
-
-# Surrounding lines before (unchanged)
+    
+            # Step 4: Score candidates
+            # Initialize counts for hits and section hits
+            hit_counts = {num: 0 for num in range(37)}
+            section_counts = {num: set() for num in range(37)}
+    
+            # Calculate hit counts and section hits
+            for spin in last_spins:
+                try:
+                    num = int(spin)
+                    hit_counts[num] += 1
+                    # Check corners
+                    for name, nums in CORNERS.items():
+                        if num in nums:
+                            section_counts[num].add(name)
+                    # Check double streets
+                    for name, nums in SIX_LINES.items():  # Use SIX_LINES instead of DOUBLE_STREETS
+                        if num in nums:
+                            section_counts[num].add(name)
+                    # Check splits
+                    for name, nums in SPLITS.items():
+                        if num in nums:
+                            section_counts[num].add(name)
+                except ValueError:
+                    continue
+    
+            # Normalize scores
+            total_spins = len(last_spins)
+            max_hits = max(hit_counts.values()) if max(hit_counts.values()) > 0 else 1
+            max_section_hits = max(len(sections) for sections in section_counts.values()) if any(section_counts.values()) else 1
+    
+            scores = {}
+            for num in filtered_numbers:
+                # Hit count score (50%)
+                hit_score = (hit_counts[num] / max_hits) if max_hits > 0 else 0
+                # Section hits score (30%)
+                section_score = (len(section_counts[num]) / max_section_hits) if max_section_hits > 0 else 0
+                # Recency score (20%)
+                recency_score = 0
+                for i, spin in enumerate(reversed(last_spins)):
+                    if int(spin) == num:
+                        # Normalize recency: most recent = 1, oldest = 0
+                        recency_score = (total_spins - i) / total_spins
+                        break
+                # Weighted total
+                total_score = (0.5 * hit_score) + (0.3 * section_score) + (0.2 * recency_score)
+                scores[num] = total_score
+    
+            if not scores:
+                return "<p>No numbers match the criteria.</p>"
+    
+            # Step 5: Select top pick with tie-breaking
+            max_score = max(scores.values())
+            top_candidates = [num for num, score in scores.items() if score == max_score]
+            top_pick = min(top_candidates)  # Tie-breaker: lowest numerical value
+            state.current_top_pick = top_pick  # Store for celebration check
+    
+            # Step 6: Generate HTML output
+            html = '<div class="top-pick-container">'
+            html += f'<h4>Top Pick for Next Spin: <span class="top-pick-badge">{top_pick}</span></h4>'
+            html += '</div>'
+            return html
+    
+        except Exception as e:
+            print(f"select_next_spin_top_pick: Error: {str(e)}")
+            return "<p>Error selecting top pick.</p>"
+    # Line 2: End of updated select_next_spin_top_pick function
+    
+    # Lines after (unchanged, from Part 2)
+        with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    top_pick_spin_count = gr.Slider(
+                        label="Number of Spins to Analyze",
+                        minimum=1,
+                        maximum=36,
+                        step=1,
+                        value=2,
+                        interactive=True,
+                        elem_classes="long-slider"
+                    )
+                    top_pick_display = gr.HTML(
+                        label="Top Pick",
+                        value=select_next_spin_top_pick(2),
+                        elem_classes=["top-pick-container"]
+                    )
+    
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
