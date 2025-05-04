@@ -5163,13 +5163,32 @@ def generate_hot_zone_call(spins, max_spins=36):
     scores = {n: 0 for n in range(37)}
     side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
     dozen_hits = {name: 0 for name in DOZENS.keys()}
-    # CHANGED: Added wheel section hits tracking
     wheel_sections = {
         "Voisins du Zéro": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
         "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33],
         "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9]
     }
     section_hits = {name: 0 for name in wheel_sections.keys()}
+    
+    # CHANGED: Added streak tracking for dozens, columns, even-money bets
+    streak_lengths = {
+        "dozens": {name: 0 for name in DOZENS.keys()},
+        "columns": {name: 0 for name in COLUMNS.keys()},
+        "even_money": {name: 0 for name in EVEN_MONEY.keys()}
+    }
+    # Track streaks by checking recent spins
+    for spin in spins[::-1]:  # Reverse to check most recent first
+        num = int(spin)
+        hit = False
+        for category, categories in [
+            ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
+        ]:
+            for name, numbers in categories.items():
+                if num in numbers:
+                    streak_lengths[category][name] += 1
+                    hit = True
+                else:
+                    streak_lengths[category][name] = 0 if hit else streak_lengths[category][name]
     
     # Compute hit counts and side/dozen/section hits
     for spin in spins:
@@ -5182,7 +5201,6 @@ def generate_hot_zone_call(spins, max_spins=36):
         for name, numbers in DOZENS.items():
             if num in numbers:
                 dozen_hits[name] += 1
-        # CHANGED: Added tracking for wheel section hits
         for name, numbers in wheel_sections.items():
             if num in numbers:
                 section_hits[name] += 1
@@ -5193,7 +5211,8 @@ def generate_hot_zone_call(spins, max_spins=36):
     # Scoring weights based on Side Hits gap
     weights = {
         "streaks": 0.2,
-        "wheel_section_streaks": 0.2,  # CHANGED: Added weight for Wheel Section Streaks
+        "wheel_section_streaks": 0.2,
+        "active_streaks": 0.15,  # CHANGED: Added weight for Active Streaks
         "hit_percent": 0.3,
         "hot_numbers": 0.2,
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
@@ -5210,10 +5229,22 @@ def generate_hot_zone_call(spins, max_spins=36):
         if num in DOZENS[hottest_dozen]:
             score += 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
         
-        # CHANGED: Added Wheel Section Streaks (based on hottest wheel section)
+        # Wheel Section Streaks (based on hottest wheel section)
         hottest_section = max(section_hits, key=section_hits.get, default="Voisins du Zéro")
         if num in wheel_sections[hottest_section]:
             score += 0.2 * (section_hits[hottest_section] / total_spins if total_spins else 0)
+        
+        # CHANGED: Added Active Streaks (based on streak lengths in dozens, columns, even-money)
+        for category, categories in [
+            ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
+        ]:
+            for name, numbers in categories.items():
+                if num in numbers:
+                    streak_length = streak_lengths[category][name]
+                    if 2 <= streak_length <= 4:
+                        score += 0.15 * (streak_length / 4)
+                    elif streak_length >= 5:
+                        score -= 0.05
         
         # Hit Percentage (unchanged)
         hit_percent = scores[num] / total_spins if total_spins else 0
