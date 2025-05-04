@@ -5203,9 +5203,8 @@ def generate_hot_zone_call(spins, max_spins=36):
             if num in numbers:
                 section_hits[name] += 1
     
-    # CHANGED: Handle ties in Hot Numbers Bonus
+    # Handle ties in Hot Numbers Bonus
     sorted_by_hits = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    # Get max hits for top 2 to include ties
     max_hits = sorted_by_hits[0][1] if sorted_by_hits else 0
     second_max_hits = sorted_by_hits[1][1] if len(sorted_by_hits) > 1 else 0
     top_2_numbers = [num for num, hits in sorted_by_hits if hits >= second_max_hits and hits > 0]
@@ -5228,7 +5227,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         "active_streaks": 0.15,
         "hit_percent": 0.15,
         "hot_numbers": 0.2,  # Kept for consistency, not used directly
-        "side_hits": 0.1,  # CHANGED: Fixed to 0.1 regardless of gap
+        "side_hits": 0.1,
         "neighbor_bonus": 0.05,
         "repeat_penalty": -0.05
     }
@@ -5237,7 +5236,7 @@ def generate_hot_zone_call(spins, max_spins=36):
     number_scores = {}
     for num in range(37):
         score = 0
-        if num in [7, 12, 28, 29]:
+        if num in [7, 12, 28]:
             print(f"Scoring number {num}:")
         
         # Streaks (based on hottest dozen)
@@ -5245,7 +5244,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         if num in DOZENS[hottest_dozen]:
             streak_score = 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
             score += streak_score
-            if num in [7, 12, 28, 29]:
+            if num in [7, 12, 28]:
                 print(f"  Streaks: +{streak_score:.3f} (Hottest: {hottest_dozen}, Hits: {dozen_hits[hottest_dozen]})")
         
         # Wheel Section Streaks (based on hottest wheel section)
@@ -5253,7 +5252,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         if num in wheel_sections[hottest_section]:
             wheel_score = 0.1 * (section_hits[hottest_section] / total_spins if total_spins else 0)
             score += wheel_score
-            if num in [7, 12, 28, 29]:
+            if num in [7, 12, 28]:
                 print(f"  Wheel Section Streaks: +{wheel_score:.3f} (Hottest: {hottest_section}, Hits: {section_hits[hottest_section]})")
         
         # Active Streaks (based on streak lengths in dozens, columns, even-money)
@@ -5268,15 +5267,17 @@ def generate_hot_zone_call(spins, max_spins=36):
                         active_streak_score += 0.15 * (streak_length / 4)
                     elif streak_length >= 5:
                         active_streak_score -= 0.05
+                    if num in [7, 12, 28] and streak_length > 0:
+                        print(f"  Active Streaks ({category}, {name}): Length={streak_length}, Score={0.15 * (streak_length / 4) if 2 <= streak_length <= 4 else -0.05 if streak_length >= 5 else 0:.3f}")
         score += active_streak_score
-        if num in [7, 12, 28, 29] and active_streak_score != 0:
-            print(f"  Active Streaks: {active_streak_score:.3f}")
+        if num in [7, 12, 28] and active_streak_score != 0:
+            print(f"  Active Streaks Total: {active_streak_score:.3f}")
         
         # Hit Percentage
         hit_percent = scores[num] / total_spins if total_spins else 0
         hit_score = 0.15 * hit_percent
         score += hit_score
-        if num in [7, 12, 28, 29]:
+        if num in [7, 12, 28]:
             print(f"  Hit Percentage: +{hit_score:.3f} (Hits: {scores[num]}, Total Spins: {total_spins})")
         
         # Hot Numbers Bonus
@@ -5288,7 +5289,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         elif num in bottom_18_numbers:
             hot_bonus_score = -0.05
         score += hot_bonus_score
-        if num in [7, 12, 28, 29]:
+        if num in [7, 12, 28]:
             print(f"  Hot Numbers Bonus: {hot_bonus_score:.3f} (Top 2: {num in top_2_numbers}, Top 18: {num in top_18_numbers}, Bottom 18: {num in bottom_18_numbers})")
         
         # Side Hits
@@ -5298,17 +5299,18 @@ def generate_hot_zone_call(spins, max_spins=36):
         elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
             side_score = weights["side_hits"]
         score += side_score
-        if num in [7, 12, 28, 29] and side_score != 0:
+        if num in [7, 12, 28] and side_score != 0:
             print(f"  Side Hits: +{side_score:.3f} (Left Hits: {side_hits['Left Side of Zero']}, Right Hits: {side_hits['Right Side of Zero']})")
         
-        # Neighbor Bonus
+        # CHANGED: Cap Neighbor Bonus at one neighbor
         neighbor_score = 0
         neighbors = current_neighbors.get(num, (None, None))
         for neighbor in neighbors:
             if neighbor is not None and scores[neighbor] > 0:
-                neighbor_score += weights["neighbor_bonus"]
+                neighbor_score = weights["neighbor_bonus"]  # Cap at one neighbor
+                break
         score += neighbor_score
-        if num in [7, 12, 28, 29] and neighbor_score != 0:
+        if num in [7, 12, 28] and neighbor_score != 0:
             print(f"  Neighbor Bonus: +{neighbor_score:.3f}")
         
         # Repeat Penalty
@@ -5316,10 +5318,10 @@ def generate_hot_zone_call(spins, max_spins=36):
         if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
             repeat_penalty = weights["repeat_penalty"]
         score += repeat_penalty
-        if num in [7, 12, 28, 29] and repeat_penalty != 0:
+        if num in [7, 12, 28] and repeat_penalty != 0:
             print(f"  Repeat Penalty: {repeat_penalty:.3f}")
         
-        if num in [7, 12, 28, 29]:
+        if num in [7, 12, 28]:
             print(f"  Total Score: {score:.3f}\n")
         
         number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
