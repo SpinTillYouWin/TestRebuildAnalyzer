@@ -5152,12 +5152,17 @@ STRATEGIES = {
 # Line 2: New function to generate Hot Zone Call
 def generate_hot_zone_call(spins, max_spins=36):
     """Generate Hot Zone Call prediction based on spins."""
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    
     if not spins:
+        logging.debug("No spins provided for Hot Zone Call")
         return "<p>No spins to analyze for Hot Zone Call.</p>"
 
     # Limit to last max_spins
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
+    logging.debug(f"Processing {total_spins} spins: {spins}")
     
     # Initialize data structures
     scores = {n: 0 for n in range(37)}
@@ -5166,15 +5171,19 @@ def generate_hot_zone_call(spins, max_spins=36):
     
     # Compute hit counts
     for spin in spins:
-        num = int(spin)
-        scores[num] += 1
-        if num in current_left_of_zero:
-            side_hits["Left Side of Zero"] += 1
-        if num in current_right_of_zero:
-            side_hits["Right Side of Zero"] += 1
-        for name, numbers in DOZENS.items():
-            if num in numbers:
-                dozen_hits[name] += 1
+        try:
+            num = int(spin)
+            scores[num] += 1
+            if num in current_left_of_zero:
+                side_hits["Left Side of Zero"] += 1
+            if num in current_right_of_zero:
+                side_hits["Right Side of Zero"] += 1
+            for name, numbers in DOZENS.items():
+                if num in numbers:
+                    dozen_hits[name] += 1
+        except ValueError:
+            logging.warning(f"Invalid spin value: {spin}")
+            continue
     
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
@@ -5182,18 +5191,19 @@ def generate_hot_zone_call(spins, max_spins=36):
     # Updated weights
     weights = {
         "streaks": 0.4 if side_gap <= 2 else 0.3,
-        "hit_percent": 0.3 if side_gap <= 2 else 0.2,
+        "hit_percent": 0.3 if side_gap <= 2 else 0.2,  # Increased to 0.2
         "hot_numbers": 0.2,
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
         "neighbor_bonus": 0.05,  # Reduced from 0.1
-        "recent_hit_momentum": 0.05,  # New criterion
-        "overlapping_trends": 0.05,  # New criterion
-        # Removed repeat_penalty
+        "recent_hit_momentum": 0.05,  # New
+        "overlapping_trends": 0.05,  # New
+        "active_streaks": 0.15,  # Already includes Columns, Odd, Even, Low, High
     }
+    logging.debug(f"Weights: {weights}")
     
     # Compute scores for each number
     number_scores = {}
-    active_streak_notes = []  # For trend notes
+    active_streak_notes = []
     for num in range(37):
         score = 0
         # Streaks
@@ -5221,37 +5231,47 @@ def generate_hot_zone_call(spins, max_spins=36):
             if neighbor is not None and scores[neighbor] > 0:
                 score += weights["neighbor_bonus"]
         
-        # New: Recent Hit Momentum
-        if str(num) in spins[-2:]:  # Check last 2 spins
+        # Recent Hit Momentum
+        if len(spins) >= 1 and str(num) in spins[-2:]:
             score += weights["recent_hit_momentum"]
         
-        # New: Overlapping Trends Bonus
+        # Overlapping Trends Bonus
         trending_categories = 0
-        max_categories = len(EVEN_MONEY) + len(DOZENS) + len(COLUMNS)  # 12
+        max_categories = len(EVEN_MONEY) + len(DOZENS) + len(COLUMNS)
+        # Check state dictionaries with fallbacks
+        even_money_scores = getattr(state, 'even_money_scores', {}) or {}
+        dozen_scores = getattr(state, 'dozen_scores', {}) or {}
+        column_scores = getattr(state, 'column_scores', {}) or {}
+        
         for category, numbers in EVEN_MONEY.items():
-            if num in numbers:
-                hits = state.even_money_scores.get(category, 0)
-                if total_spins > 0 and hits / total_spins > 1 / len(EVEN_MONEY[category]):  # Above average
+            if num in numbers and len(numbers) > 0:  # Ensure non-empty category
+                hits = even_money_scores.get(category, 0)
+                if total_spins > 0 and hits / total_spins > 1 / len(numbers):
                     trending_categories += 1
         for category, numbers in DOZENS.items():
-            if num in numbers:
-                hits = state.dozen_scores.get(category, 0)
-                if total_spins > 0 and hits / total_spins > 1 / 3:  # Above average for dozens
+            if num in numbers and len(numbers) > 0:
+                hits = dozen_scores.get(category, 0)
+                if total_spins > 0 and hits / total_spins > 1 / 3:
                     trending_categories += 1
         for category, numbers in COLUMNS.items():
-            if num in numbers:
-                hits = state.column_scores.get(category, 0)
-                if total_spins > 0 and hits / total_spins > 1 / 3:  # Above average for columns
+            if num in numbers and len(numbers) > 0:
+                hits = column_scores.get(category, 0)
+                if total_spins > 0 and hits / total_spins > 1 / 3:
                     trending_categories += 1
         score += weights["overlapping_trends"] * (trending_categories / max_categories if max_categories else 0)
         
-        # Active Streaks (already updated)
+        # Active Streaks
         for category in EVEN_MONEY.keys() + DOZENS.keys() + COLUMNS.keys():
             streak_length = 0
             for spin in state.last_spins[-4:][::-1]:
-                if int(spin) in EVEN_MONEY.get(category, []) or int(spin) in DOZENS.get(category, []) or int(spin) in COLUMNS.get(category, []):
-                    streak_length += 1
-                else:
+                try:
+                    spin_num = int(spin)
+                    if spin_num in EVEN_MONEY.get(category, []) or spin_num in DOZENS.get(category, []) or spin_num in COLUMNS.get(category, []):
+                        streak_length += 1
+                    else:
+                        break
+                except ValueError:
+                    logging.warning(f"Invalid spin in streak check: {spin}")
                     break
             if num in EVEN_MONEY.get(category, []) or num in DOZENS.get(category, []) or num in COLUMNS.get(category, []):
                 if 2 <= streak_length <= 4:
@@ -5281,9 +5301,7 @@ def generate_hot_zone_call(spins, max_spins=36):
     
     # Trend Notes
     side_trend = f"{'Left' if side_hits['Left Side of Zero'] > side_hits['Right Side of Zero'] else 'Right'} Side is hotter (Gap: {side_gap})"
-    # Updated: Add active streak notes
     trend_notes = [side_trend] + active_streak_notes
-    # Optional: Add overlapping trends note
     if trending_categories > 0:
         trend_notes.append(f"Trending Categories: {trending_categories} (e.g., Red, 2nd Dozen, 2nd Column)")
     
@@ -5310,6 +5328,7 @@ def generate_hot_zone_call(spins, max_spins=36):
     html += '</div>'
     html += '</div>'
     
+    logging.debug(f"Generated Hot Zone Call: Top Pick {top_pick[0]}, Score {top_pick[1]['score']:.2f}")
     return html
 # Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
