@@ -5163,8 +5163,15 @@ def generate_hot_zone_call(spins, max_spins=36):
     scores = {n: 0 for n in range(37)}
     side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
     dozen_hits = {name: 0 for name in DOZENS.keys()}
+    # CHANGED: Added wheel section hits tracking
+    wheel_sections = {
+        "Voisins du Zéro": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+        "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33],
+        "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9]
+    }
+    section_hits = {name: 0 for name in wheel_sections.keys()}
     
-    # Compute hit counts and side/dozen hits
+    # Compute hit counts and side/dozen/section hits
     for spin in spins:
         num = int(spin)
         scores[num] += 1
@@ -5175,13 +5182,18 @@ def generate_hot_zone_call(spins, max_spins=36):
         for name, numbers in DOZENS.items():
             if num in numbers:
                 dozen_hits[name] += 1
+        # CHANGED: Added tracking for wheel section hits
+        for name, numbers in wheel_sections.items():
+            if num in numbers:
+                section_hits[name] += 1
     
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
     
     # Scoring weights based on Side Hits gap
     weights = {
-        "streaks": 0.2,  # CHANGED: Updated to fixed weight of 0.2 for Streaks criterion
+        "streaks": 0.2,
+        "wheel_section_streaks": 0.2,  # CHANGED: Added weight for Wheel Section Streaks
         "hit_percent": 0.3,
         "hot_numbers": 0.2,
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
@@ -5196,7 +5208,12 @@ def generate_hot_zone_call(spins, max_spins=36):
         # Streaks (based on hottest dozen)
         hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
         if num in DOZENS[hottest_dozen]:
-            score += 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)  # CHANGED: Explicitly use 0.2 for Streaks criterion
+            score += 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
+        
+        # CHANGED: Added Wheel Section Streaks (based on hottest wheel section)
+        hottest_section = max(section_hits, key=section_hits.get, default="Voisins du Zéro")
+        if num in wheel_sections[hottest_section]:
+            score += 0.2 * (section_hits[hottest_section] / total_spins if total_spins else 0)
         
         # Hit Percentage (unchanged)
         hit_percent = scores[num] / total_spins if total_spins else 0
