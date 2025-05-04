@@ -5157,6 +5157,8 @@ def generate_hot_zone_call(spins, max_spins=36):
 
     # Line before (context, unchanged)
     # Limit to last max_spins (default 36)
+    # Line before (context, unchanged)
+    # Limit to last max_spins (default 36)
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
     
@@ -5184,7 +5186,13 @@ def generate_hot_zone_call(spins, max_spins=36):
         ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
     ]}
     for spin in spins[::-1]:  # Reverse to check most recent first
-        num = int(spin)
+        try:
+            num = int(spin)
+            if num < 0 or num > 36:
+                raise ValueError(f"Invalid spin value: {spin}")
+        except ValueError as e:
+            print(f"Error processing spin: {str(e)}")
+            continue
         hit_categories = set()
         for category, categories in [
             ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
@@ -5202,18 +5210,24 @@ def generate_hot_zone_call(spins, max_spins=36):
     
     # Compute hit counts and side/dozen/section hits
     for spin in spins:
-        num = int(spin)
-        scores[num] += 1
-        if num in current_left_of_zero:
-            side_hits["Left Side of Zero"] += 1
-        if num in current_right_of_zero:
-            side_hits["Right Side of Zero"] += 1
-        for name, numbers in DOZENS.items():
-            if num in numbers:
-                dozen_hits[name] += 1
-        for name, numbers in wheel_sections.items():
-            if num in numbers:
-                section_hits[name] += 1
+        try:
+            num = int(spin)
+            if num < 0 or num > 36:
+                raise ValueError(f"Invalid spin value: {spin}")
+            scores[num] += 1
+            if num in current_left_of_zero:
+                side_hits["Left Side of Zero"] += 1
+            if num in current_right_of_zero:
+                side_hits["Right Side of Zero"] += 1
+            for name, numbers in DOZENS.items():
+                if num in numbers:
+                    dozen_hits[name] += 1
+            for name, numbers in wheel_sections.items():
+                if num in numbers:
+                    section_hits[name] += 1
+        except ValueError as e:
+            print(f"Error processing spin: {str(e)}")
+            continue
     
     # Handle ties in Hot Numbers Bonus
     sorted_by_hits = sorted(scores.items(), key=lambda x: x[1], reverse=True)
@@ -5227,6 +5241,7 @@ def generate_hot_zone_call(spins, max_spins=36):
     print(f"Side Hits: {side_hits}")
     print(f"Section Hits: {section_hits}")
     print(f"Dozen Hits: {dozen_hits}")
+    print(f"Streak Lengths: {streak_lengths}")
     
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
@@ -5238,7 +5253,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         "active_streaks": 0.15,
         "hit_percent": 0.15,
         "hot_numbers": 0.2,  # Kept for consistency, not used directly
-        "side_hits": 0.1,
+        "side_hits": 0.15,  # CHANGED: Increased from 0.1 to 0.15
         "neighbor_bonus": 0.05,
         "repeat_penalty": -0.05
     }
@@ -5293,12 +5308,12 @@ def generate_hot_zone_call(spins, max_spins=36):
                 hot_bonus_score = -0.05
             score += hot_bonus_score
             
-            # Side Hits
+            # CHANGED: Side Hits (assign score based on side’s hits)
             side_score = 0
-            if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
-                side_score = 0.1 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
-            elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
-                side_score = 0.1 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+            if num in current_left_of_zero:
+                side_score = 0.15 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+            elif num in current_right_of_zero:
+                side_score = 0.15 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
             score += side_score
             
             # Neighbor Bonus (capped at one neighbor)
@@ -5321,14 +5336,15 @@ def generate_hot_zone_call(spins, max_spins=36):
         print(f"Error in scoring loop: {str(e)}")
         return '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">Error processing spins: {str(e)}</div>'
     
-    # CHANGED: Log Side Hits for top 5 numbers by hits
+    # CHANGED: Log Side Hits for top 5 hit numbers and one unhit number
     top_5_numbers = [num for num, hits in sorted_by_hits[:5] if hits > 0]
-    for num in top_5_numbers:
+    sample_unhit = 18  # Example unhit number
+    for num in top_5_numbers + [sample_unhit]:
         side_score = 0
-        if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
-            side_score = 0.1 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
-        elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
-            side_score = 0.1 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+        if num in current_left_of_zero:
+            side_score = 0.15 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+        elif num in current_right_of_zero:
+            side_score = 0.15 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
         print(f"Number {num}: Side Hits Score = {side_score:.3f}, Total Score = {number_scores[num]['score']:.3f}, Hits = {scores[num]}")
     
     # Sort numbers by score, using recency as tiebreaker (unchanged)
