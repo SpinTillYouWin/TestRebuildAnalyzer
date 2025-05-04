@@ -2513,6 +2513,8 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         # Update state.last_spins and spin_history
         state.last_spins = spins  # Replace last_spins with current spins
         state.spin_history = action_log  # Replace spin_history with current action_log
+        # Limit to last 36 spins
+        state.last_spins = state.last_spins[-36:] if len(state.last_spins) > 36 else state.last_spins
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history = state.spin_history[-100:]
@@ -5210,18 +5212,30 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
+DEBUG = True  # Enable for debugging
+
+DEBUG = True  # Enable for debugging
+
 def select_next_spin_top_pick(last_spin_count):
     """Select the top pick number for the next spin based on the last X spins."""
     try:
         import gradio as gr
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
+        if DEBUG:
+            print(f"select_next_spin_top_pick: last_spin_count={last_spin_count}, state.last_spins={state.last_spins}")
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if DEBUG:
+            print(f"select_next_spin_top_pick: Using last_spins={last_spins}")
         if not last_spins:
+            if DEBUG:
+                print("select_next_spin_top_pick: No spins available for analysis.")
             return "<p>No spins available for analysis.</p>"
 
         # Step 1: Initialize all possible numbers
         numbers = set(range(37))  # 0-36
+        if DEBUG:
+            print(f"select_next_spin_top_pick: Initial numbers={numbers}")
 
         # Step 2: Filter by dominant categories (Hit Percentage Overview)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
@@ -5241,7 +5255,14 @@ def select_next_spin_top_pick(last_spin_count):
                     if num in nums:
                         dozen_counts[name] += 1
             except ValueError:
+                if DEBUG:
+                    print(f"select_next_spin_top_pick: ValueError converting spin '{spin}' to integer, skipping.")
                 continue
+
+        if DEBUG:
+            print(f"select_next_spin_top_pick: even_money_counts={even_money_counts}")
+            print(f"select_next_spin_top_pick: column_counts={column_counts}")
+            print(f"select_next_spin_top_pick: dozen_counts={dozen_counts}")
 
         # Identify single winners (no ties)
         filtered_numbers = numbers.copy()
@@ -5249,21 +5270,34 @@ def select_next_spin_top_pick(last_spin_count):
         even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
         if len(even_money_winners) == 1 and max_even_money > 0:
             filtered_numbers = filtered_numbers.intersection(EVEN_MONEY[even_money_winners[0]])
+            if DEBUG:
+                print(f"select_next_spin_top_pick: Filtered by Even Money winner '{even_money_winners[0]}', filtered_numbers={filtered_numbers}")
         max_columns = max(column_counts.values()) if column_counts else 0
         column_winners = [name for name, count in column_counts.items() if count == max_columns]
         if len(column_winners) == 1 and max_columns > 0:
             filtered_numbers = filtered_numbers.intersection(COLUMNS[column_winners[0]])
+            if DEBUG:
+                print(f"select_next_spin_top_pick: Filtered by Column winner '{column_winners[0]}', filtered_numbers={filtered_numbers}")
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
         dozen_winners = [name for name, count in dozen_counts.items() if count == max_dozens]
         if len(dozen_winners) == 1 and max_dozens > 0:
             filtered_numbers = filtered_numbers.intersection(DOZENS[dozen_winners[0]])
+            if DEBUG:
+                print(f"select_next_spin_top_pick: Filtered by Dozen winner '{dozen_winners[0]}', filtered_numbers={filtered_numbers}")
 
         # Reset if no numbers remain
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
+            if DEBUG:
+                print("select_next_spin_top_pick: No numbers after filtering, resetting to all numbers.")
+
+        if DEBUG:
+            print(f"select_next_spin_top_pick: After category filtering, filtered_numbers={filtered_numbers}")
 
         # Step 3: Get hot numbers from Dealer's Spin Tracker
         hit_counts = {n: state.scores.get(n, 0) for n in range(37)} if hasattr(state, 'scores') else {n: 0 for n in range(37)}
+        if DEBUG:
+            print(f"select_next_spin_top_pick: hit_counts={hit_counts}")
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
         hot_numbers = set()
         if len(sorted_hot) >= 5:
@@ -5277,6 +5311,8 @@ def select_next_spin_top_pick(last_spin_count):
         else:
             hot_numbers = set(num for num, score in sorted_hot if score > 0)
         hot_numbers = hot_numbers & filtered_numbers
+        if DEBUG:
+            print(f"select_next_spin_top_pick: hot_numbers={hot_numbers}")
 
         # Step 4: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
         betting_sections = {
@@ -5289,6 +5325,8 @@ def select_next_spin_top_pick(last_spin_count):
             name: sum(state.scores.get(num, 0) for num in nums)
             for name, nums in betting_sections.items()
         }
+        if DEBUG:
+            print(f"select_next_spin_top_pick: section_hits={section_hits}")
         max_hits = max(section_hits.values()) if section_hits else 0
         top_sections = [name for name, hits in section_hits.items() if hits == max_hits and hits > 0]
         section_numbers = set()
@@ -5299,6 +5337,11 @@ def select_next_spin_top_pick(last_spin_count):
         # Reset if no numbers remain
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
+            if DEBUG:
+                print("select_next_spin_top_pick: No numbers after section filtering, resetting to all numbers.")
+
+        if DEBUG:
+            print(f"select_next_spin_top_pick: After section filtering, filtered_numbers={filtered_numbers}, section_numbers={section_numbers}")
 
         # Step 5: Boost numbers in categories with active streaks (SpinTrend Radar)
         streak_numbers = set()
@@ -5313,6 +5356,8 @@ def select_next_spin_top_pick(last_spin_count):
                     streak_numbers.update(COLUMNS[cat])
                 elif cat in DOZENS:
                     streak_numbers.update(DOZENS[cat])
+        if DEBUG:
+            print(f"select_next_spin_top_pick: streak_numbers={streak_numbers}")
 
         # Step 6: Get top 5 strongest numbers
         strongest_numbers = set()
@@ -5320,6 +5365,8 @@ def select_next_spin_top_pick(last_spin_count):
         for num, score in sorted_scores[:5]:
             if score > 0:
                 strongest_numbers.add(num)
+        if DEBUG:
+            print(f"select_next_spin_top_pick: strongest_numbers={strongest_numbers}")
 
         # Step 7: Score numbers
         scores = {}
@@ -5351,8 +5398,17 @@ def select_next_spin_top_pick(last_spin_count):
                         break
 
         # Select top pick
-        top_pick = max(scores.items(), key=lambda x: x[1])[0]
+        if not scores:
+            if DEBUG:
+                print("select_next_spin_top_pick: No scores available, defaulting to random number.")
+            top_pick = 0  # Default to 0 if no scores
+        else:
+            top_pick = max(scores.items(), key=lambda x: x[1])[0]
         state.current_top_pick = top_pick
+
+        if DEBUG:
+            print(f"select_next_spin_top_pick: Final scores={scores}")
+            print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
 
         # Generate HTML with updated styling
         color = colors.get(str(top_pick), "black")
@@ -5371,18 +5427,18 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .top-pick-container h4 {{
                 margin: 10px 0;
-                color: #fff; /* Whiter text */
+                color: #fff;
             }}
             .top-pick-container p {{
                 font-style: italic;
-                color: #ddd; /* Slightly off-white for contrast */
+                color: #ddd;
             }}
             .top-pick-badge {{
                 display: inline-block;
-                padding: 8px 12px; /* Increased padding for larger square */
-                border-radius: 15px; /* Adjusted for larger size */
+                padding: 8px 12px;
+                border-radius: 15px;
                 font-weight: bold;
-                font-size: 20px; /* Larger font size */
+                font-size: 20px;
                 color: white;
                 background-color: {color};
                 box-shadow: 0 0 8px rgba(0,0,0,0.3);
