@@ -242,6 +242,7 @@ class RouletteState:
         self.current_top_pick = None  # Store the current top pick number
 
     def reset(self):
+def reset(self):
         # Preserve use_casino_winners and casino_data before resetting
         use_casino_winners = self.use_casino_winners
         casino_data = self.casino_data.copy()  # Create a deep copy to preserve the data
@@ -291,6 +292,7 @@ class RouletteState:
         return even_money_scores, dozen_scores, column_scores
 
     def reset_progression(self):
+        """Reset the betting progression to initial values."""
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
         self.progression_state = None
@@ -300,6 +302,7 @@ class RouletteState:
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
 
     def update_bankroll(self, won):
+        """Update the bankroll based on win/loss and check stop conditions."""
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
         if won:
             self.bankroll += self.current_bet * payout
@@ -318,6 +321,7 @@ class RouletteState:
             self.status_color = "white"  # Neutral when active
 
     def update_progression(self, won):
+        """Update the betting progression based on win/loss outcome."""
         if self.is_stopped:
             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
         self.update_bankroll(won)
@@ -327,7 +331,7 @@ class RouletteState:
             self.status_color = "red"  # Red for insufficient bankroll
             self.message = "Cannot continue: Bankroll too low."
             return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-    
+        
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 2
@@ -471,10 +475,8 @@ class RouletteState:
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
         
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+             
         
-        
-        
-
 # Lines before (context, unchanged)
 state = RouletteState()
 
