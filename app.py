@@ -5228,6 +5228,7 @@ def cache_analysis(spins, last_spin_count):
 
 # Line 1: Start of updated select_next_spin_top_pick function
 # Corrected select_next_spin_top_pick function with strict state management and debugging
+# Updated select_next_spin_top_pick function with scoring explanation
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5347,7 +5348,7 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: hot_numbers={hot_numbers}")
 
-        # Step 5: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
+        # Step 5: Identify top betting section (but don't filter, just use for scoring)
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
@@ -5363,25 +5364,20 @@ def select_next_spin_top_pick(last_spin_count):
         max_hits = max(section_hits.values()) if section_hits else 0
         top_sections = [name for name, hits in section_hits.items() if hits == max_hits and hits > 0]
         section_numbers = set()
+        top_section_name = top_sections[0] if top_sections else "None"
         for name in top_sections:
             section_numbers.update(betting_sections[name])
-        filtered_numbers = filtered_numbers.intersection(section_numbers) if section_numbers else filtered_numbers
-
-        # Reset if no numbers remain
-        if not filtered_numbers:
-            filtered_numbers = numbers.copy()
-            if DEBUG:
-                print("select_next_spin_top_pick: No numbers after section filtering, resetting to all numbers.")
-
         if DEBUG:
-            print(f"select_next_spin_top_pick: After section filtering, filtered_numbers={filtered_numbers}, section_numbers={section_numbers}")
+            print(f"select_next_spin_top_pick: section_numbers={section_numbers}")
 
         # Step 6: Boost numbers in categories with active streaks (SpinTrend Radar)
         streak_numbers = set()
         all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
         longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
+        streak_category_name = "None"
         if longest_streak > 1:
             streak_categories = [name for name, count in all_streaks.items() if count == longest_streak]
+            streak_category_name = streak_categories[0] if streak_categories else "None"
             for cat in streak_categories:
                 if cat in EVEN_MONEY:
                     streak_numbers.update(EVEN_MONEY[cat])
@@ -5401,43 +5397,74 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: strongest_numbers={strongest_numbers}")
 
-        # Step 8: Score numbers
+        # Step 8: Score numbers (only in filtered_numbers)
         scores = {}
+        score_components = {}
         for num in filtered_numbers:
             score = state.scores.get(num, 0)
             if score == 0:
-                # Skip numbers that haven't appeared in last_spins
                 continue
-            if num in hot_numbers:
-                score += 3  # Hot number boost
-            if num in section_numbers:
-                score += 2  # Top betting section boost
-            if num in streak_numbers:
-                score += 1  # Active streak boost
-            if num in strongest_numbers:
-                score += 2  # Strongest number boost
-            # Tiebreaker: Recent spins
+            base_score = score
+            hot_boost = 3 if num in hot_numbers else 0
+            section_boost = 2 if num in section_numbers else 0
+            streak_boost = 1 if num in streak_numbers else 0
+            strongest_boost = 2 if num in strongest_numbers else 0
+            recency_boost = 0
             for i, spin in enumerate(reversed(last_spins)):
                 if int(spin) == num:
-                    score += (last_spin_count - i) * 0.1  # Weight recent spins
+                    recency_boost = (last_spin_count - i) * 0.1
                     break
+            score = base_score + hot_boost + section_boost + streak_boost + strongest_boost + recency_boost
             scores[num] = score
+            score_components[num] = {
+                "base": base_score,
+                "hot": hot_boost,
+                "section": section_boost,
+                "streak": streak_boost,
+                "strongest": strongest_boost,
+                "recency": recency_boost,
+                "total": score
+            }
+            if DEBUG:
+                print(f"select_next_spin_top_pick: Score for {num}: base={base_score}, hot={hot_boost}, section={section_boost}, streak={streak_boost}, strongest={strongest_boost}, recency={recency_boost}, total={score}")
 
         if not scores:
             # Fallback: Use hot numbers or random selection
             filtered_numbers = hot_numbers if hot_numbers else numbers
-            scores = {num: (state.scores.get(num, 0)) for num in filtered_numbers if state.scores.get(num, 0) > 0}
-            for num in scores:
+            for num in filtered_numbers:
+                score = state.scores.get(num, 0)
+                if score == 0:
+                    continue
+                base_score = score
+                hot_boost = 3 if num in hot_numbers else 0
+                section_boost = 2 if num in section_numbers else 0
+                streak_boost = 1 if num in streak_numbers else 0
+                strongest_boost = 2 if num in strongest_numbers else 0
+                recency_boost = 0
                 for i, spin in enumerate(reversed(last_spins)):
                     if int(spin) == num:
-                        scores[num] += (last_spin_count - i) * 0.1
+                        recency_boost = (last_spin_count - i) * 0.1
                         break
+                score = base_score + hot_boost + section_boost + streak_boost + strongest_boost + recency_boost
+                scores[num] = score
+                score_components[num] = {
+                    "base": base_score,
+                    "hot": hot_boost,
+                    "section": section_boost,
+                    "streak": streak_boost,
+                    "strongest": strongest_boost,
+                    "recency": recency_boost,
+                    "total": score
+                }
+                if DEBUG:
+                    print(f"select_next_spin_top_pick: Fallback score for {num}: base={base_score}, hot={hot_boost}, section={section_boost}, streak={streak_boost}, strongest={strongest_boost}, recency={recency_boost}, total={score}")
 
         # Step 9: Select top pick
         if not scores:
             if DEBUG:
                 print("select_next_spin_top_pick: No scores available, defaulting to random number.")
             top_pick = 0  # Default to 0 if no scores
+            explanation = "No numbers scored high enough; defaulting to 0."
         else:
             # Only consider numbers that have appeared in last_spins
             appeared_numbers = set(int(spin) for spin in last_spins if spin.isdigit() and 0 <= int(spin) <= 36)
@@ -5448,21 +5475,40 @@ def select_next_spin_top_pick(last_spin_count):
                 if DEBUG:
                     print("select_next_spin_top_pick: No valid numbers with scores that appeared in last_spins, defaulting to first appeared number.")
                 top_pick = min(appeared_numbers) if appeared_numbers else 0
+                explanation = f"No numbers scored high enough; defaulting to {top_pick}, the first appeared number."
             else:
                 top_pick = max(valid_scores.items(), key=lambda x: x[1])[0]
+                # Generate explanation for the top pick
+                components = score_components[top_pick]
+                explanation_lines = [
+                    f"<strong>Why {top_pick} was chosen:</strong>",
+                    f"- <strong>Base Score (Hits)</strong>: {components['base']} (Number of times {top_pick} appeared in the last {last_spin_count} spins)",
+                    f"- <strong>Hot Number Boost</strong>: {components['hot']} ({'Added because it’s among the top 5 most frequent numbers' if components['hot'] > 0 else 'Not in the top 5'})",
+                    f"- <strong>Betting Section Boost</strong>: {components['section']} ({'Added because it’s in the top betting section: ' + top_section_name if components['section'] > 0 else 'Not in the top betting section'})",
+                    f"- <strong>Streak Boost</strong>: {components['streak']} ({'Added because it’s in a category with an active streak: ' + streak_category_name if components['streak'] > 0 else 'No active streak'})",
+                    f"- <strong>Strongest Number Boost</strong>: {components['strongest']} ({'Added because it’s among the top 5 most frequent numbers' if components['strongest'] > 0 else 'Not in the top 5'})",
+                    f"- <strong>Recency Boost</strong>: {components['recency']:.1f} (Based on how recently it appeared)",
+                    f"- <strong>Total Score</strong>: {components['total']:.1f}"
+                ]
+                explanation = "<br>".join(explanation_lines)
+
         state.current_top_pick = top_pick
 
         if DEBUG:
             print(f"select_next_spin_top_pick: Final scores={scores}")
             print(f"select_next_spin_top_pick: Valid scores (appeared numbers only)={valid_scores}")
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
+            print(f"select_next_spin_top_pick: Explanation={explanation}")
 
-        # Step 10: Generate HTML with updated styling
+        # Step 10: Generate HTML with updated styling and explanation
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
             <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
             <p>Based on analysis of the last {last_spin_count} spins.</p>
+            <div class="explanation">
+                {explanation}
+            </div>
         </div>
         <style>
             .top-pick-container {{
@@ -5506,6 +5552,19 @@ def select_next_spin_top_pick(last_spin_count):
                 height: 100%;
                 pointer-events: none;
                 z-index: 1000;
+            }}
+            .explanation {{
+                text-align: left;
+                font-size: 14px;
+                color: #333;
+                margin-top: 10px;
+                padding: 5px;
+                background-color: #fff;
+                border-radius: 3px;
+                box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            }}
+            .explanation strong {{
+                color: #555;
             }}
         </style>
         '''
