@@ -5229,9 +5229,6 @@ def cache_analysis(spins, last_spin_count):
 # Line 1: Start of updated select_next_spin_top_pick function
 DEBUG = True  # Enable for debugging
 
-def # Updated select_next_spin_top_pick function with scoring system explanation
-DEBUG = True  # Enable for debugging
-
 def select_next_spin_top_pick(last_spin_count):
     """Select the top pick number for the next spin based on the last X spins."""
     try:
