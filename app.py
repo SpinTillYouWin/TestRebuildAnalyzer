@@ -5155,16 +5155,16 @@ def generate_hot_zone_call(spins, max_spins=36):
     if not spins:
         return "<p>No spins to analyze for Hot Zone Call.</p>"
 
-    # Limit to last max_spins (default 36)
+    # Limit to last max_spins
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
     
-    # Initialize scores for each number
+    # Initialize data structures
     scores = {n: 0 for n in range(37)}
     side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
     dozen_hits = {name: 0 for name in DOZENS.keys()}
     
-    # Compute hit counts and side/dozen hits
+    # Compute hit counts
     for spin in spins:
         num = int(spin)
         scores[num] += 1
@@ -5179,21 +5179,24 @@ def generate_hot_zone_call(spins, max_spins=36):
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
     
-    # Scoring weights based on Side Hits gap
+    # Updated weights
     weights = {
         "streaks": 0.4 if side_gap <= 2 else 0.3,
         "hit_percent": 0.3 if side_gap <= 2 else 0.2,
         "hot_numbers": 0.2,
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
-        "neighbor_bonus": 0.05,
-        "repeat_penalty": -0.05
+        "neighbor_bonus": 0.05,  # Reduced from 0.1
+        "recent_hit_momentum": 0.05,  # New criterion
+        "overlapping_trends": 0.05,  # New criterion
+        # Removed repeat_penalty
     }
     
     # Compute scores for each number
     number_scores = {}
+    active_streak_notes = []  # For trend notes
     for num in range(37):
         score = 0
-        # Streaks (based on hottest dozen)
+        # Streaks
         hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
         if num in DOZENS[hottest_dozen]:
             score += weights["streaks"] * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
@@ -5218,13 +5221,49 @@ def generate_hot_zone_call(spins, max_spins=36):
             if neighbor is not None and scores[neighbor] > 0:
                 score += weights["neighbor_bonus"]
         
-        # Repeat Penalty (if same number appears consecutively)
-        if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
-            score += weights["repeat_penalty"]
+        # New: Recent Hit Momentum
+        if str(num) in spins[-2:]:  # Check last 2 spins
+            score += weights["recent_hit_momentum"]
+        
+        # New: Overlapping Trends Bonus
+        trending_categories = 0
+        max_categories = len(EVEN_MONEY) + len(DOZENS) + len(COLUMNS)  # 12
+        for category, numbers in EVEN_MONEY.items():
+            if num in numbers:
+                hits = state.even_money_scores.get(category, 0)
+                if total_spins > 0 and hits / total_spins > 1 / len(EVEN_MONEY[category]):  # Above average
+                    trending_categories += 1
+        for category, numbers in DOZENS.items():
+            if num in numbers:
+                hits = state.dozen_scores.get(category, 0)
+                if total_spins > 0 and hits / total_spins > 1 / 3:  # Above average for dozens
+                    trending_categories += 1
+        for category, numbers in COLUMNS.items():
+            if num in numbers:
+                hits = state.column_scores.get(category, 0)
+                if total_spins > 0 and hits / total_spins > 1 / 3:  # Above average for columns
+                    trending_categories += 1
+        score += weights["overlapping_trends"] * (trending_categories / max_categories if max_categories else 0)
+        
+        # Active Streaks (already updated)
+        for category in EVEN_MONEY.keys() + DOZENS.keys() + COLUMNS.keys():
+            streak_length = 0
+            for spin in state.last_spins[-4:][::-1]:
+                if int(spin) in EVEN_MONEY.get(category, []) or int(spin) in DOZENS.get(category, []) or int(spin) in COLUMNS.get(category, []):
+                    streak_length += 1
+                else:
+                    break
+            if num in EVEN_MONEY.get(category, []) or num in DOZENS.get(category, []) or num in COLUMNS.get(category, []):
+                if 2 <= streak_length <= 4:
+                    score += weights["active_streaks"] * (streak_length / 4)
+                    if f"{category} streak: {streak_length} spins" not in active_streak_notes:
+                        active_streak_notes.append(f"{category} streak: {streak_length} spins")
+                elif streak_length >= 5:
+                    score -= 0.05
         
         number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
     
-    # Sort numbers by score, using recency as tiebreaker
+    # Sort numbers
     sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
     
     # Select Top Pick and Honorable Mentions
@@ -5242,14 +5281,18 @@ def generate_hot_zone_call(spins, max_spins=36):
     
     # Trend Notes
     side_trend = f"{'Left' if side_hits['Left Side of Zero'] > side_hits['Right Side of Zero'] else 'Right'} Side is hotter (Gap: {side_gap})"
-    repeat_trend = "Consecutive repeats detected in recent spins" if len(spins) >= 2 and spins[-1] == spins[-2] else "No recent consecutive repeats"
+    # Updated: Add active streak notes
+    trend_notes = [side_trend] + active_streak_notes
+    # Optional: Add overlapping trends note
+    if trending_categories > 0:
+        trend_notes.append(f"Trending Categories: {trending_categories} (e.g., Red, 2nd Dozen, 2nd Column)")
     
     # Generate HTML output
     html = '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">'
     html += '<h4>Hot Zone Call 🔥</h4>'
     html += '<div style="margin-bottom: 10px;">'
     html += f'<p><strong>Top Pick:</strong> Number {top_pick[0]} (Score: {top_pick[1]["score"]:.2f}, Hits: {top_pick[1]["hits"]})</p>'
-    html += f'<p><strong>Reason:</strong> Highest combined score from streaks, hit percentage, and side bias.</p>'
+    html += f'<p><strong>Reason:</strong> Highest combined score from streaks, hit percentage, and trend alignment.</p>'
     html += '</div>'
     html += '<div style="margin-bottom: 10px;">'
     html += '<p><strong>Honorable Mentions:</strong></p>'
@@ -5262,8 +5305,8 @@ def generate_hot_zone_call(spins, max_spins=36):
     html += '</div>'
     html += '<div>'
     html += '<p><strong>Trend Notes:</strong></p>'
-    html += f'<p>- {side_trend}</p>'
-    html += f'<p>- {repeat_trend}</p>'
+    for note in trend_notes:
+        html += f'<p>- {note}</p>'
     html += '</div>'
     html += '</div>'
     
