@@ -49,6 +49,8 @@ def initialize_betting_mappings():
             BETTING_MAPPINGS[num]["six_lines"].append(name)
     
     for name, numbers in SPLITS.items():
+
+    for name, numbers in SPLITS.items():
         numbers_set = set(numbers)
         for num in numbers_set:
             BETTING_MAPPINGS[num]["splits"].append(name)
@@ -163,7 +165,6 @@ def validate_roulette_data():
 
     return errors if errors else None
 
-# In Part 1, replace the RouletteState class with the following:
 
 class RouletteState:
     def __init__(self):
@@ -260,6 +261,7 @@ class RouletteState:
 
         return even_money_scores, dozen_scores, column_scores
 
+    def reset_progression(self):
     def reset_progression(self):
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
@@ -441,6 +443,7 @@ class RouletteState:
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
         
         return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+        
         
         
 
@@ -1463,6 +1466,8 @@ def render_sides_of_zero_display():
     """
 
 # Line 1: Start of updated validate_spins_input function
+# Line 1: Start of updated validate_spins_input function
+# Line 1: Start of updated validate_spins_input function
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -1576,12 +1581,21 @@ def add_spin(number, current_spins, num_to_show):
         duplicates = [n for n in numbers if numbers.count(n) > 1]
         print(f"add_spin: Removed duplicates: {', '.join(set(duplicates))}")
     
+    # Check if the new spin matches the current top pick (assuming only one number is added at a time via the table)
+    if len(unique_numbers) == 1:
+        num = int(unique_numbers[0])
+        if state.current_top_pick is not None and num == state.current_top_pick:
+            print(f"Top Pick Match! Predicted: {state.current_top_pick}, Actual: {num}")
+        else:
+            print(f"No Top Pick Match. Predicted: {state.current_top_pick}, Actual: {num}")
+    
     # CHANGED: Log success
     print(f"add_spin: Added {len(unique_numbers)} spins, new_spins_str='{new_spins_str}', time={time.time() - start_time:.3f}s")
     
     # UNCHANGED: Return updated outputs
     return new_spins_str, new_spins_str, formatted_html, update_spin_counter(), render_sides_of_zero_display()
 
+# Line 3: Start of next function (unchanged)
 # Line 3: Start of next function (unchanged)
 def clear_spins():
     state.selected_numbers.clear()
@@ -2042,8 +2056,6 @@ def calculate_trending_sections():
         "splits": sorted(state.split_scores.items(), key=lambda x: x[1], reverse=True)
     }
 
-# Line 1: Start of apply_strategy_highlights function (updated)
-# Line 1: Start of apply_strategy_highlights function (updated)
 # Line 1: Start of apply_strategy_highlights function (updated with neighbor highlights)
 def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_count, sorted_sections, top_color=None, middle_color=None, lower_color=None, suggestions=None):
     """Apply highlights based on the selected strategy with custom colors, passing suggestions for outside bets."""
@@ -5315,6 +5327,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
 
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+
         with gr.Row():
             with gr.Column(scale=1):
                 traits_display = gr.HTML(
@@ -5443,7 +5456,8 @@ def select_next_spin_top_pick(last_spin_count):
             return "<p>No numbers match the criteria.</p>"
 
         top_pick = max(scores.items(), key=lambda x: x[1])[0]
-        
+        state.current_top_pick = top_pick  # Store the top pick in state for celebration check
+
         # Display the top pick
         html = '<div class="top-pick-container">'
         html += f'<h4>Top Pick for Next Spin: <span class="top-pick-badge">{top_pick}</span></h4>'
