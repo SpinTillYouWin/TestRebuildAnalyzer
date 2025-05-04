@@ -5140,12 +5140,30 @@ def summarize_spin_traits(last_spin_count):
         return "<p>Error analyzing spin traits.</p>"
 
 def cache_analysis(spins, last_spin_count):
-    cache_key = f"{last_spin_count}_{hash(tuple(spins))}"
+    """Cache the results of summarize_spin_traits to avoid redundant calculations."""
+    spins_list = state.last_spins if hasattr(state, 'last_spins') else []
+    if not spins_list and isinstance(spins, str) and spins.strip():
+        spins_list = [s.strip() for s in spins.split(",") if s.strip()]
+    
+    cache_key = f"{last_spin_count}_{hash(tuple(spins_list))}"
     if cache_key in state.analysis_cache:
+        if DEBUG:
+            print(f"cache_analysis: Cache hit for key {cache_key}")
         return state.analysis_cache[cache_key]
+    
+    # Limit cache size
+    MAX_CACHE_SIZE = 100
+    if len(state.analysis_cache) >= MAX_CACHE_SIZE:
+        oldest_key = next(iter(state.analysis_cache))
+        del state.analysis_cache[oldest_key]
+        if DEBUG:
+            print(f"cache_analysis: Removed oldest cache entry {oldest_key}")
+    
     # Perform analysis
     result = summarize_spin_traits(last_spin_count)
     state.analysis_cache[cache_key] = result
+    if DEBUG:
+        print(f"cache_analysis: Cached result for key {cache_key}")
     return result
 
 # Lines before (context, unchanged from Part 2)
@@ -7700,6 +7718,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
@@ -7734,6 +7756,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
+            fn=cache_analysis,
+            inputs=[spins_display, last_spin_count],
+            outputs=[traits_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
@@ -7742,6 +7768,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[]
         )
+    
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
     
@@ -8995,6 +9022,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in play_cold_button.click handler: {str(e)}")
+
+    def toggle_labouchere(progression):
+        """Show/hide Labouchere sequence input based on selected progression."""
+        return gr.update(visible=progression == "Labouchere")
     
     # Betting progression event handlers
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
@@ -9087,6 +9118,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[progression_dropdown],
             outputs=[labouchere_sequence]
         )
+
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
     
