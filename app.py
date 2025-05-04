@@ -5755,39 +5755,47 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Accordion("Next Spin Top Pick 🎯", open=True, elem_id="next-spin-top-pick"):
         with gr.Row():
             with gr.Column(scale=1):
+                gr.Markdown("### 🎯 Select Your Top Pick")
+                gr.Markdown("Adjust the slider to analyze the last X spins and find the top pick for your next spin. Add spins using the roulette table below or enter them manually.")
                 top_pick_spin_count = gr.Slider(
                     label="Number of Spins to Analyze",
                     minimum=1,
                     maximum=36,
                     step=1,
-                    value=18,  # Updated default to 18 for better analysis
+                    value=18,
                     interactive=True,
                     elem_classes="long-slider"
                 )
                 top_pick_display = gr.HTML(
                     label="Top Pick",
-                    value=select_next_spin_top_pick(18),  # Updated to match slider default
+                    value=select_next_spin_top_pick(18),
                     elem_classes=["top-pick-container"]
                 )
-        # Add CSS to make the section stand out
         gr.HTML("""
         <style>
             #next-spin-top-pick {
-                background-color: #e3f2fd !important; /* Light blue background */
-                border: 2px solid #2196f3 !important; /* Blue border */
+                background-color: #e3f2fd !important;
+                border: 2px solid #2196f3 !important;
                 border-radius: 5px !important;
                 padding: 10px !important;
             }
             #next-spin-top-pick summary {
-                background-color: #2196f3 !important; /* Blue header */
+                background-color: #2196f3 !important;
                 color: white !important;
                 padding: 10px !important;
                 border-radius: 5px !important;
             }
+            .top-pick-container p {
+                font-style: italic;
+                color: #666;
+            }
+            .top-pick-container h4 {
+                margin: 10px 0;
+                color: #333;
+            }
         </style>
         """)
 
-    # Surrounding lines after (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5796,7 +5804,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
-
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
@@ -5831,17 +5838,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[last_spin_count],
                                 outputs=[hit_percentage_display]
                             ).then(
-                                fn=lambda: print("btn.click: Updated traits_display and hit_percentage_display"),
+                                fn=select_next_spin_top_pick,
+                                inputs=[top_pick_spin_count],
+                                outputs=[top_pick_display]
+                            ).then(
+                                fn=lambda: print(f"After add_spin: state.last_spins = {state.last_spins}"),
                                 inputs=[],
                                 outputs=[]
                             )
 
-# Row 3 (keep the accordion here)
+    # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
+        
             
 
     # 4. Row 4: Spin Controls
@@ -7669,6 +7681,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
