@@ -5203,15 +5203,20 @@ def generate_hot_zone_call(spins, max_spins=36):
             if num in numbers:
                 section_hits[name] += 1
     
-    # CHANGED: Log number lists and verify Hot Numbers Bonus logic
+    # CHANGED: Handle ties in Hot Numbers Bonus
     sorted_by_hits = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    top_2_numbers = [num for num, hits in sorted_by_hits[:2] if hits > 0]
+    # Get max hits for top 2 to include ties
+    max_hits = sorted_by_hits[0][1] if sorted_by_hits else 0
+    second_max_hits = sorted_by_hits[1][1] if len(sorted_by_hits) > 1 else 0
+    top_2_numbers = [num for num, hits in sorted_by_hits if hits >= second_max_hits and hits > 0]
     top_18_numbers = [num for num, hits in sorted_by_hits[:18] if hits > 0]
     bottom_18_numbers = [num for num, hits in sorted(scores.items(), key=lambda x: x[1])[:18]]
     print(f"Hot Numbers Lists:")
     print(f"  Top 2 Numbers: {top_2_numbers}")
     print(f"  Top 18 Numbers: {top_18_numbers}")
     print(f"  Bottom 18 Numbers: {bottom_18_numbers}")
+    print(f"Section Hits: {section_hits}")
+    print(f"Side Hits: {side_hits}")
     
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
@@ -5219,11 +5224,11 @@ def generate_hot_zone_call(spins, max_spins=36):
     # Scoring weights based on Side Hits gap
     weights = {
         "streaks": 0.2,
-        "wheel_section_streaks": 0.1,  # CHANGED: Reduced from 0.2 to 0.1
+        "wheel_section_streaks": 0.1,
         "active_streaks": 0.15,
         "hit_percent": 0.15,
         "hot_numbers": 0.2,  # Kept for consistency, not used directly
-        "side_hits": 0.1 if side_gap <= 2 else 0.2,
+        "side_hits": 0.1,  # CHANGED: Fixed to 0.1 regardless of gap
         "neighbor_bonus": 0.05,
         "repeat_penalty": -0.05
     }
@@ -5232,7 +5237,6 @@ def generate_hot_zone_call(spins, max_spins=36):
     number_scores = {}
     for num in range(37):
         score = 0
-        # CHANGED: Log for numbers 7, 12, 28, 29
         if num in [7, 12, 28, 29]:
             print(f"Scoring number {num}:")
         
