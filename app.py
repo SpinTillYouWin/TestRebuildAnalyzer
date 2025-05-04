@@ -2463,7 +2463,6 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-# Update analyze_spins to ensure state.last_spins and state.scores are consistent
 def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
     """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
@@ -5232,7 +5231,9 @@ def select_next_spin_top_pick(last_spin_count):
     """Select the top pick number for the next spin based on the last X spins."""
     try:
         import gradio as gr
-        last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
+        # Updated last_spin_count logic
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else len(state.last_spins)
+        last_spin_count = min(last_spin_count, len(state.last_spins))  # Ensure we don’t exceed available spins
         last_spin_count = max(1, min(last_spin_count, 36))
         if DEBUG:
             print(f"select_next_spin_top_pick: last_spin_count={last_spin_count}, state.last_spins={state.last_spins}")
@@ -5880,7 +5881,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
 
     # Line 1: Updated Next Spin Top Pick accordion
-    with gr.Accordion("Next Spin Top Pick 🎯", open=True, elem_id="next-spin-top-pick"):
+    with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
         with gr.Row():
             with gr.Column(scale=1):
                 gr.Markdown("### 🎯 Select Your Top Pick")
