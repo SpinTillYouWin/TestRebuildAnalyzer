@@ -2392,32 +2392,47 @@ def reset_casino_data():
 
 # Line 1: Start of create_dynamic_table function (updated)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
-    print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
-    print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
-    sorted_sections = calculate_trending_sections()
+    try:
+        print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
+        print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
+        
+        print("create_dynamic_table: Calculating trending sections")
+        sorted_sections = calculate_trending_sections()
+        print(f"create_dynamic_table: sorted_sections={sorted_sections}")
+        
+        # If no spins yet, initialize with default even money focus
+        if sorted_sections is None and strategy_name == "Best Even Money Bets":
+            print("create_dynamic_table: No spins yet, using default even money focus")
+            trending_even_money = "Red"  # Default to "Red" as an example
+            second_even_money = "Black"
+            third_even_money = "Even"
+            trending_dozen = None
+            second_dozen = None
+            trending_column = None
+            second_column = None
+            number_highlights = {}
+            top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
+            middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
+            lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
+            suggestions = None
+        else:
+            print("create_dynamic_table: Applying strategy highlights")
+            trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
+            print(f"create_dynamic_table: Strategy highlights applied - trending_even_money={trending_even_money}, second_even_money={second_even_money}, third_even_money={third_even_money}, trending_dozen={trending_dozen}, second_dozen={second_dozen}, trending_column={trending_column}, second_column={second_column}, number_highlights={number_highlights}")
+        
+        # If still no highlights and no sorted_sections, provide a default message
+        if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
+            print("create_dynamic_table: No spins and no highlights, returning default message")
+            return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+        
+        print("create_dynamic_table: Rendering dynamic table HTML")
+        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
+        print("create_dynamic_table: Table generated successfully")
+        return html
     
-    # If no spins yet, initialize with default even money focus
-    if sorted_sections is None and strategy_name == "Best Even Money Bets":
-        trending_even_money = "Red"  # Default to "Red" as an example
-        second_even_money = "Black"
-        third_even_money = "Even"
-        trending_dozen = None
-        second_dozen = None
-        trending_column = None
-        second_column = None
-        number_highlights = {}
-        top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
-        middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
-        lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
-        suggestions = None
-    else:
-        trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
-    
-    # If still no highlights and no sorted_sections, provide a default message
-    if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-        return "<p>No spins yet. Select a strategy to see default highlights.</p>"
-    
-    return render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
+    except Exception as e:
+        print(f"create_dynamic_table: Error: {str(e)}")
+        raise  # Re-raise for debugging
     
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
@@ -2451,7 +2466,7 @@ def get_strongest_numbers_with_neighbors(num_count):
 def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
     """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
-        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}")
+        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, checkbox_args={checkbox_args}")
         
         # Handle empty spins case
         if not spins_input or not spins_input.strip():
@@ -2491,7 +2506,9 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         print("analyze_spins: Scores reset.")
 
         # Batch update scores for all spins
+        print("analyze_spins: Updating scores batch")
         action_log = update_scores_batch(spins)
+        print(f"analyze_spins: action_log={action_log}")
 
         # Update state.last_spins and spin_history
         state.last_spins = spins  # Replace last_spins with current spins
@@ -2499,8 +2516,10 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history = state.spin_history[-100:]
+        print(f"analyze_spins: Updated state.last_spins={state.last_spins}, spin_history length={len(state.spin_history)}")
 
         # Generate spin analysis output
+        print("analyze_spins: Generating spin analysis output")
         spin_results = []
         state.selected_numbers.clear()  # Clear before rebuilding
         for idx, spin in enumerate(spins):
@@ -2565,6 +2584,7 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         sides_output = "Sides of Zero:\n" + "\n".join(f"{name}: {score}" for name, score in state.side_scores.items())
         print(f"analyze_spins: sides_output='{sides_output}'")
 
+        print("analyze_spins: Creating straight_up_df")
         straight_up_df = pd.DataFrame(list(state.scores.items()), columns=["Number", "Score"])
         straight_up_df = straight_up_df[straight_up_df["Score"] > 0].sort_values(by="Score", ascending=False)
         straight_up_df["Left Neighbor"] = straight_up_df["Number"].apply(lambda x: current_neighbors[x][0] if x in current_neighbors else "")
@@ -2572,6 +2592,7 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         straight_up_html = create_html_table(straight_up_df[["Number", "Left Neighbor", "Right Neighbor", "Score"]], "Strongest Numbers")
         print(f"analyze_spins: straight_up_html generated")
 
+        print("analyze_spins: Creating top_18_df")
         top_18_df = straight_up_df.head(18).sort_values(by="Number", ascending=True)
         numbers = top_18_df["Number"].tolist()
         if len(numbers) < 18:
@@ -2587,21 +2608,25 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         top_18_html += "</table>"
         print(f"analyze_spins: top_18_html generated")
 
+        print("analyze_spins: Getting strongest numbers")
         strongest_numbers_output = get_strongest_numbers_with_neighbors(3)
         print(f"analyze_spins: strongest_numbers_output='{strongest_numbers_output}'")
 
+        print("analyze_spins: Generating dynamic_table_html")
         dynamic_table_html = create_dynamic_table(strategy_name, neighbours_count)
         print(f"analyze_spins: dynamic_table_html generated")
 
+        print("analyze_spins: Generating strategy_output")
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
+        print("analyze_spins: Returning results")
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output, sides_output,
                 straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
-        return (f"Unexpected error while analyzing spins: {str(e)}. Please try again.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+        raise  # Re-raise for debugging
 
 # Function to reset scores (no longer needed, but kept for compatibility)
 def reset_scores():
@@ -5495,13 +5520,13 @@ STRATEGIES = {
 
 
 # Line 1: Start of show_strategy_recommendations function (updated)
-def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
+def show_strategy_recommendations(strategy_name, neighbours_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
         print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
         print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
-        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}, args = {args}")
+        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, args = {args}")
 
         if strategy_name == "None":
             return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
@@ -5518,7 +5543,7 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
         if strategy_name == "Neighbours of Strong Number":
             try:
                 neighbours_count = int(neighbours_count)
-                strong_numbers_count = int(strong_numbers_count)
+                strong_numbers_count = int(args[0]) if args else 1  # Assuming strong_numbers_count is first in args
                 print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
             except (ValueError, TypeError) as e:
                 print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
@@ -5570,9 +5595,10 @@ def show_strategy_recommendations(strategy_name, neighbours_count, strong_number
             # Wrap each line in <p> tags and join with <br> for proper spacing
             html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
             return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
+
     except Exception as e:
         print(f"show_strategy_recommendations: Error: {str(e)}")
-        return f"<p>Error generating strategy recommendations: {str(e)}</p>"
+        raise  # Re-raise for debugging
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
@@ -7900,24 +7926,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     try:
         analyze_button.click(
-            fn=lambda *args: orchestrate_analysis(*args),
+            fn=analyze_spins,
             inputs=[
-                spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider,
+                spins_display, strategy_dropdown, neighbours_count_slider,
+                strong_numbers_count_slider,
                 dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
                 even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
                 even_money_tracker_combination_mode_dropdown, even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
                 even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox, even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown,
-                top_color_picker, middle_color_picker, lower_color_picker
+                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output, streets_output,
-                corners_output, six_lines_output, splits_output, sides_output, straight_up_html, top_18_html,
-                strongest_numbers_output, dynamic_table_output, strategy_output, sides_of_zero_display,
-                gr.State(), dozen_tracker_output, dozen_tracker_sequence_output, gr.State(), even_money_tracker_output,
-                color_code_output, analysis_cache
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
+        ).then(
+            # Clear outputs to reset error state
+            fn=lambda: ("", ""),
+            inputs=[],
+            outputs=[dynamic_table_output, strategy_output]
         ).then(
             fn=update_casino_data,
             inputs=[
@@ -7926,6 +7956,36 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 col1_percent, col2_percent, col3_percent, use_winners_checkbox
             ],
             outputs=[casino_data_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -7941,7 +8001,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
-        gr.Warning(f"Error during analysis: {str(e)}") 
+        gr.Warning(f"Error during analysis: {str(e)}")
     
     try:
         save_button.click(
