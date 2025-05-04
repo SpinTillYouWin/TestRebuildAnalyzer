@@ -446,6 +446,9 @@ class RouletteState:
 
 # Lines before (context, unchanged)
 state = RouletteState()
+state.last_spins = []
+state.scores = {i: 0 for i in range(37)}
+state.casino_data = {"hot_numbers": [], "cold_numbers": []}
 
 # Validate roulette data at startup
 data_errors = validate_roulette_data()
@@ -4801,24 +4804,26 @@ def play_specific_numbers(numbers_input, type_label, current_spins_display, last
             gr.Warning(error)
             return current_spins_display, current_spins_display, error, update_spin_counter(), render_sides_of_zero_display()
 
+        # Check spin limit
+        if len(state.last_spins) + len(numbers) > 1000:
+            error_msg = "Cannot add spins: Maximum 1000 spins exceeded."
+            gr.Warning(error_msg)
+            return current_spins_display, current_spins_display, error_msg, update_spin_counter(), render_sides_of_zero_display()
+
         new_spins = [str(n) for n in numbers]
-        update_scores_batch(new_spins)
+        for spin in new_spins:
+            add_spin(spin, current_spins_display, last_spin_count)  # Reuse add_spin for consistency
 
-        if current_spins_display and current_spins_display.strip():
-            current_spins = current_spins_display.split(", ")
-            updated_spins = current_spins + new_spins
-        else:
-            updated_spins = new_spins
-
-        state.last_spins = updated_spins
+        # Update casino data
         state.casino_data[f"{type_label.lower()}_numbers"] = numbers
-        spins_text = ", ".join(updated_spins)
+        spins_text = ", ".join(state.last_spins)
         success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
         print(f"play_specific_numbers: {success_msg}")
         return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
     except Exception as e:
         error_msg = f"Error playing {type_label} numbers: {str(e)}"
         print(f"play_specific_numbers: {error_msg}")
+        gr.Warning(error_msg)
         return current_spins_display, current_spins_display, error_msg, update_spin_counter(), render_sides_of_zero_display()
 
 def clear_hot_cold_picks(type_label, current_spins_display):
@@ -4829,146 +4834,144 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
 def calculate_hit_percentages(last_spin_count):
-    """Calculate hit percentages for Even Money Bets, Columns, and Dozens, with winner highlighting."""
+    """Calculate hit percentages for Even Money Bets, Columns, and Dozens."""
     try:
-        # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
-        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
-
-        # Use state.last_spins directly and ensure it's not empty
+        last_spin_count = max(1, min(last_spin_count, 36))
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
 
         total_spins = len(last_spins)
-        # Initialize counters
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
 
-        # Analyze spins
         for spin in last_spins:
             try:
                 num = int(spin)
-                # Even Money Bets
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
                         even_money_counts[name] += 1
-                # Columns
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
                         column_counts[name] += 1
-                # Dozens
                 for name, numbers in DOZENS.items():
                     if num in numbers:
                         dozen_counts[name] += 1
             except ValueError:
                 continue
 
-        # Find the maximum counts for highlighting winners
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
 
-        # Build HTML output
         html = '<div class="hit-percentage-overview">'
         html += f'<h4>Hit Percentage Overview (Last {total_spins} Spins):</h4>'
         html += '<div class="percentage-wrapper">'
 
-                # Even Money Bets
+        # Even Money Bets
         html += '<div class="percentage-group">'
-        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'  # Burgundy, matching SpinTrend Radar
+        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
         even_money_items = []
         for name, count in even_money_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item even-money winner" if count == max_even_money and max_even_money > 0 else "percentage-item even-money"
-            bar_color = "#b71c1c" if name == "Red" else "#000000" if name == "Black" else "#666"  # Red, Black, or gray
+            bar_color = "#b71c1c" if name == "Red" else "#000000" if name == "Black" else "#666"
             even_money_items.append(f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}">{name}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(even_money_items)
         html += '</div></div>'
 
         # Columns
         html += '<div class="percentage-group">'
-        html += '<h4 style="color: #1565c0;">Columns</h4>'  # Blue, matching SpinTrend Radar
+        html += '<h4 style="color: #1565c0;">Columns</h4>'
         html += '<div class="percentage-badges">'
         column_items = []
         for name, count in column_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item column winner" if count == max_columns and max_columns > 0 else "percentage-item column"
-            bar_color = "#1565c0"  # Blue, matching Columns badge color
+            bar_color = "#1565c0"
             column_items.append(f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(column_items)
         html += '</div></div>'
 
         # Dozens
         html += '<div class="percentage-group">'
-        html += '<h4 style="color: #388e3c;">Dozens</h4>'  # Green, matching SpinTrend Radar
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'
         html += '<div class="percentage-badges">'
         dozen_items = []
         for name, count in dozen_counts.items():
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
             badge_class = "percentage-item dozen winner" if count == max_dozens and max_dozens > 0 else "percentage-item dozen"
-            bar_color = "#388e3c"  # Green, matching Dozens badge color
+            bar_color = "#388e3c"
             dozen_items.append(f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}">{name.split()[0]}: {percentage:.1f}%</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>')
         html += "".join(dozen_items)
         html += '</div></div>'
-
+        html += '</div></div>'  # Close percentage-wrapper and hit-percentage-overview
         return html
     except Exception as e:
         print(f"calculate_hit_percentages: Error: {str(e)}")
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
+DEBUG = False  # Toggle debugging
+
 def summarize_spin_traits(last_spin_count):
-    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
+    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
     try:
-        # Debug: Log input and state
-        print(f"summarize_spin_traits: last_spin_count = {last_spin_count}")
-        # Ensure last_spin_count is a valid integer
+        if DEBUG:
+            print(f"summarize_spin_traits: last_spin_count = {last_spin_count}")
+        
+        # Validate and clamp last_spin_count
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))
-        print(f"summarize_spin_traits: After clamping, last_spin_count = {last_spin_count}")
+        if DEBUG:
+            print(f"summarize_spin_traits: After clamping, last_spin_count = {last_spin_count}")
 
-        # Check if state and state.last_spins are properly defined
-        if not hasattr(state, 'last_spins'):
-            print(f"summarize_spin_traits: state.last_spins is not defined")
+        # Validate state
+        if not hasattr(state, 'last_spins') or not isinstance(state.last_spins, list):
+            if DEBUG:
+                print(f"summarize_spin_traits: Invalid state.last_spins")
             return "<p>Error: Spin data not initialized.</p>"
-        print(f"summarize_spin_traits: state.last_spins = {state.last_spins}, type: {type(state.last_spins)}")
-        
-        # Ensure state.last_spins is a list
-        if not isinstance(state.last_spins, list):
-            print(f"summarize_spin_traits: state.last_spins is not a list, type: {type(state.last_spins)}")
-            return "<p>Error: Invalid spin data format.</p>"
         
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
-        print(f"summarize_spin_traits: last_spins = {last_spins}")
+        if DEBUG:
+            print(f"summarize_spin_traits: last_spins = {last_spins}")
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
 
+        # Initialize counters and streaks
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
-
         even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in even_money_counts}
         column_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in column_counts}
         dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in dozen_counts}
-        print(f"summarize_spin_traits: Initialized counters and streaks")
+        if DEBUG:
+            print(f"summarize_spin_traits: Initialized counters and streaks")
 
+        # Analyze spins
         for idx, spin in enumerate(last_spins):
-            print(f"summarize_spin_traits: Processing spin {idx}: {spin}")
+            if DEBUG:
+                print(f"summarize_spin_traits: Processing spin {idx}: {spin}")
             try:
                 num = int(spin)
-                print(f"summarize_spin_traits: Converted spin to integer: {num}")
+                if DEBUG:
+                    print(f"summarize_spin_traits: Converted spin to integer: {num}")
+                
+                # Reset last_hit flags
                 for key in even_money_streaks:
                     even_money_streaks[key]["last_hit"] = False
                 for key in column_streaks:
                     column_streaks[key]["last_hit"] = False
                 for key in dozen_streaks:
                     dozen_streaks[key]["last_hit"] = False
-                print(f"summarize_spin_traits: Reset last_hit flags for spin {num}")
+                if DEBUG:
+                    print(f"summarize_spin_traits: Reset last_hit flags for spin {num}")
 
+                # Even Money Bets
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
                         even_money_counts[name] += 1
@@ -4982,14 +4985,16 @@ def summarize_spin_traits(last_spin_count):
                         if not even_money_streaks[name]["last_hit"]:
                             even_money_streaks[name]["current"] = 0
                             even_money_streaks[name]["spins"] = []
-                print(f"summarize_spin_traits: Processed Even Money Bets for spin {num}")
+                if DEBUG:
+                    print(f"summarize_spin_traits: Processed Even Money Bets for spin {num}")
 
+                # Columns
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
                         column_counts[name] += 1
                         column_streaks[name]["last_hit"] = True
                         column_streaks[name]["current"] += 1
-                        column_streaks[name]["spins"].append(str(num))
+                        column_streaks[name]["spins"].append(str(num))  # Fixed typo
                         if len(column_streaks[name]["spins"]) > column_streaks[name]["current"]:
                             column_streaks[name]["spins"] = column_streaks[name]["spins"][-column_streaks[name]["current"]:]
                         column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
@@ -4997,8 +5002,10 @@ def summarize_spin_traits(last_spin_count):
                         if not column_streaks[name]["last_hit"]:
                             column_streaks[name]["current"] = 0
                             column_streaks[name]["spins"] = []
-                print(f"summarize_spin_traits: Processed Columns for spin {num}")
+                if DEBUG:
+                    print(f"summarize_spin_traits: Processed Columns for spin {num}")
 
+                # Dozens
                 for name, numbers in DOZENS.items():
                     if num in numbers:
                         dozen_counts[name] += 1
@@ -5012,19 +5019,25 @@ def summarize_spin_traits(last_spin_count):
                         if not dozen_streaks[name]["last_hit"]:
                             dozen_streaks[name]["current"] = 0
                             dozen_streaks[name]["spins"] = []
-                print(f"summarize_spin_traits: Processed Dozens for spin {num}")
+                if DEBUG:
+                    print(f"summarize_spin_traits: Processed Dozens for spin {num}")
 
                 number_counts[num] = number_counts.get(num, 0) + 1
-                print(f"summarize_spin_traits: Processed Repeat Numbers for spin {num}")
+                if DEBUG:
+                    print(f"summarize_spin_traits: Processed Repeat Numbers for spin {num}")
             except ValueError:
-                print(f"summarize_spin_traits: ValueError converting spin {spin} to integer")
+                if DEBUG:
+                    print(f"summarize_spin_traits: ValueError converting spin {spin} to integer")
                 continue
 
+        # Calculate max counts
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
-        print(f"summarize_spin_traits: Max counts - Even Money: {max_even_money}, Columns: {max_columns}, Dozens: {max_dozens}")
+        if DEBUG:
+            print(f"summarize_spin_traits: Max counts - Even Money: {max_even_money}, Columns: {max_columns}, Dozens: {max_dozens}")
 
+        # Quick Trends
         total_spins = len(last_spins)
         trends = []
         if total_spins > 0:
@@ -5039,8 +5052,10 @@ def summarize_spin_traits(last_spin_count):
                 streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
                 streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
                 trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
-        print(f"summarize_spin_traits: Quick Trends calculated: {trends}")
+        if DEBUG:
+            print(f"summarize_spin_traits: Quick Trends calculated: {trends}")
 
+        # Build HTML
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
@@ -5054,11 +5069,13 @@ def summarize_spin_traits(last_spin_count):
         else:
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
-        print(f"summarize_spin_traits: Quick Trends HTML generated")
+        if DEBUG:
+            print(f"summarize_spin_traits: Quick Trends HTML generated")
+
+        # Even Money Bets
         html += '<div class="badge-group">'
         html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
-        total_spins = len(last_spins)
         for name, count in even_money_counts.items():
             badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
             streak = even_money_streaks[name]["max"]
@@ -5067,7 +5084,10 @@ def summarize_spin_traits(last_spin_count):
             bar_color = "#b71c1c" if name in ["Red", "Even", "Low"] else "#000000" if name in ["Black", "Odd", "High"] else "#666"
             html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
-        print(f"summarize_spin_traits: Even Money Bets HTML generated")
+        if DEBUG:
+            print(f"summarize_spin_traits: Even Money Bets HTML generated")
+
+        # Columns
         html += '<div class="badge-group">'
         html += '<h4 style="color: #1565c0;">Columns</h4>'
         html += '<div class="percentage-badges">'
@@ -5079,7 +5099,10 @@ def summarize_spin_traits(last_spin_count):
             bar_color = "#1565c0"
             html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
-        print(f"summarize_spin_traits: Columns HTML generated")
+        if DEBUG:
+            print(f"summarize_spin_traits: Columns HTML generated")
+
+        # Dozens
         html += '<div class="badge-group">'
         html += '<h4 style="color: #388e3c;">Dozens</h4>'
         html += '<div class="percentage-badges">'
@@ -5091,7 +5114,10 @@ def summarize_spin_traits(last_spin_count):
             bar_color = "#388e3c"
             html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
-        print(f"summarize_spin_traits: Dozens HTML generated")
+        if DEBUG:
+            print(f"summarize_spin_traits: Dozens HTML generated")
+
+        # Repeat Numbers
         html += '<div class="badge-group">'
         html += '<h4 style="color: #7b1fa2;">Repeat Numbers</h4>'
         html += '<div class="percentage-badges">'
@@ -5100,14 +5126,27 @@ def summarize_spin_traits(last_spin_count):
             for num, count in sorted(repeats.items()):
                 html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
         else:
-            html += f'<span class="trait-badge repeat">No repeats</span>'
-        html += '</div></div></div>'
-        print(f"summarize_spin_traits: Repeat Numbers HTML generated")
+            html += '<span class="trait-badge repeat">No repeats</span>'
+        html += '</div></div>'
+        html += '</div></div>'  # Close traits-wrapper and traits-overview
+        if DEBUG:
+            print(f"summarize_spin_traits: Repeat Numbers HTML generated")
+
         return html
 
     except Exception as e:
-        print(f"summarize_spin_traits: Error: {str(e)}")
+        if DEBUG:
+            print(f"summarize_spin_traits: Error: {str(e)}")
         return "<p>Error analyzing spin traits.</p>"
+
+def cache_analysis(spins, last_spin_count):
+    cache_key = f"{last_spin_count}_{hash(tuple(spins))}"
+    if cache_key in state.analysis_cache:
+        return state.analysis_cache[cache_key]
+    # Perform analysis
+    result = summarize_spin_traits(last_spin_count)
+    state.analysis_cache[cache_key] = result
+    return result
 
 # Lines before (context, unchanged from Part 2)
 def summarize_spin_traits(last_spin_count):
@@ -5293,15 +5332,12 @@ def select_next_spin_top_pick(last_spin_count):
     try:
         import gradio as gr
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
-        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+        last_spin_count = max(1, min(last_spin_count, 36))
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
 
-        # Step 1: Initialize all possible numbers
-        numbers = set(range(37))  # 0-36
-
-        # Step 2: Filter by dominant categories (Hit Percentage Overview)
+        numbers = set(range(37))
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5321,7 +5357,6 @@ def select_next_spin_top_pick(last_spin_count):
             except ValueError:
                 continue
 
-        # Identify single winners (no ties)
         filtered_numbers = numbers.copy()
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
@@ -5336,12 +5371,11 @@ def select_next_spin_top_pick(last_spin_count):
         if len(dozen_winners) == 1 and max_dozens > 0:
             filtered_numbers = filtered_numbers.intersection(DOZENS[dozen_winners[0]])
 
-        # Reset if no numbers remain
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
 
-        # Step 3: Get hot numbers from Dealer's Spin Tracker
-        hit_counts = {n: state.scores.get(n, 0) for n in range(37)}
+        # Validate state.scores
+        hit_counts = {n: state.scores.get(n, 0) for n in range(37)} if hasattr(state, 'scores') else {n: 0 for n in range(37)}
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
         hot_numbers = set()
         if len(sorted_hot) >= 5:
@@ -5354,9 +5388,8 @@ def select_next_spin_top_pick(last_spin_count):
                     break
         else:
             hot_numbers = set(num for num, score in sorted_hot if score > 0)
-        hot_numbers = hot_numbers & filtered_numbers  # Intersect with filtered numbers
+        hot_numbers = hot_numbers & filtered_numbers
 
-        # Step 4: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
@@ -5374,11 +5407,9 @@ def select_next_spin_top_pick(last_spin_count):
             section_numbers.update(betting_sections[name])
         filtered_numbers = filtered_numbers.intersection(section_numbers) if section_numbers else filtered_numbers
 
-        # Reset if no numbers remain
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
 
-        # Step 5: Boost numbers in categories with active streaks (SpinTrend Radar)
         streak_numbers = set()
         all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
         longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
@@ -5392,47 +5423,41 @@ def select_next_spin_top_pick(last_spin_count):
                 elif cat in DOZENS:
                     streak_numbers.update(DOZENS[cat])
 
-        # Step 6: Get top 5 strongest numbers
         strongest_numbers = set()
-        sorted_scores = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
+        sorted_scores = sorted((state.scores.items() if hasattr(state, 'scores') else []), key=lambda x: (-x[1], x[0]))
         for num, score in sorted_scores[:5]:
             if score > 0:
                 strongest_numbers.add(num)
 
-        # Step 7: Score numbers
         scores = {}
         for num in filtered_numbers:
-            score = state.scores.get(num, 0)  # Base score: hit count
+            score = state.scores.get(num, 0) if hasattr(state, 'scores') else 0
             if num in hot_numbers:
-                score += 3  # Hot number boost
+                score += 3
             if num in section_numbers:
-                score += 2  # Top betting section boost
+                score += 2
             if num in streak_numbers:
-                score += 1  # Active streak boost
+                score += 1
             if num in strongest_numbers:
-                score += 2  # Strongest number boost
-            # Tiebreaker: Recent spins
+                score += 2
             for i, spin in enumerate(reversed(last_spins)):
                 if int(spin) == num:
-                    score += (last_spin_count - i) * 0.1  # Weight recent spins
+                    score += (last_spin_count - i) * 0.1
                     break
             scores[num] = score
 
         if not scores:
-            # Fallback: Use hot numbers or random selection
             filtered_numbers = hot_numbers if hot_numbers else numbers
-            scores = {num: state.scores.get(num, 0) for num in filtered_numbers}
+            scores = {num: (state.scores.get(num, 0) if hasattr(state, 'scores') else 0) for num in filtered_numbers}
             for num in scores:
                 for i, spin in enumerate(reversed(last_spins)):
                     if int(spin) == num:
                         scores[num] += (last_spin_count - i) * 0.1
                         break
 
-        # Select top pick
         top_pick = max(scores.items(), key=lambda x: x[1])[0]
-        state.current_top_pick = top_pick  # Store for celebration check
+        state.current_top_pick = top_pick
 
-        # Generate HTML with celebration-ready styling
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
@@ -5542,19 +5567,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
-        # Sort scores by value (descending for hot, ascending for cold)
+        if not state.scores or not any(state.scores.values()):
+            return "", "<p>No spin data available for suggestions.</p>"
+
         sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
         hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
         cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score >= 0]
-        # Fill with random numbers if not enough data
-        if len(hot_numbers) < 5:
-            hot_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(hot_numbers))])
-        if len(cold_numbers) < 5:
-            cold_numbers.extend([str(random.randint(0, 36)) for _ in range(5 - len(cold_numbers))])
+
+        if not hot_numbers:
+            hot_numbers = ["No hot numbers"]
+        if not cold_numbers:
+            cold_numbers = ["No cold numbers"]
+
         return ", ".join(hot_numbers), ", ".join(cold_numbers)
     except Exception as e:
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
-        return "", ""  # Fallback to empty suggestions
+        return "", "<p>Error generating suggestions.</p>"
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -6976,14 +7004,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .percentage-group h4 {
             margin: 5px 0 !important;
         }
-        .percentage-badges {
+        .percentage-badges, .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important; /* Keep badges in a single row */
+            flex-wrap: nowrap !important;
             gap: 5px !important;
             align-items: center !important;
-            white-space: nowrap !important; /* Ensure content stays in one line */
-            overflow-x: auto !important; /* Enable horizontal scrolling if badges overflow */
-            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
+            white-space: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        /* Responsive adjustments for mobile */
+        @media (max-width: 600px) {
+            .percentage-badges, .percentage-badges {
+                flex-wrap: wrap !important; /* Allow wrapping on small screens */
+                overflow-x: visible !important;
+            }
+            .percentage-item, .trait-badge {
+                font-size: 10px !important; /* Smaller font for mobile */
+                padding: 4px 8px !important;
+            }
         }
 
         /* TITLE: Percentage Item Styles */
@@ -7971,16 +8011,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     try:
         analyze_button.click(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            fn=lambda *args: orchestrate_analysis(*args),
+            inputs=[
+                spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
+                even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown, even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox, even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown,
+                top_color_picker, middle_color_picker, lower_color_picker
+            ],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
+                spin_analysis_output, even_money_output, dozens_output, columns_output, streets_output,
+                corners_output, six_lines_output, splits_output, sides_output, straight_up_html, top_18_html,
+                strongest_numbers_output, dynamic_table_output, strategy_output, sides_of_zero_display,
+                gr.State(), dozen_tracker_output, dozen_tracker_sequence_output, gr.State(), even_money_tracker_output,
+                color_code_output, analysis_cache
             ]
         ).then(
-            # Update state.casino_data with current UI inputs before rendering the dynamic table
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -7989,37 +8038,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[casino_data_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         ).then(
-            fn=create_color_code_table,
-            inputs=[],
-            outputs=[color_code_output]
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
         )
     except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")    
+        print(f"Error in analyze_button.click handler: {str(e)}")
+        gr.Warning(f"Error during analysis: {str(e)}") 
     
     try:
         save_button.click(
