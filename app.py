@@ -7641,7 +7641,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     </script>
     """)
     
-        # Event Handlers
+    # Event Handlers
     try:
         spins_textbox.change(
             fn=validate_spins_input,
@@ -7965,7 +7965,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                dynamic_table_output, strategy_output, sides_of_zero_display  # Removed betting_sections_display
             ]
         ).then(
             # Update state.casino_data with current UI inputs before rendering the dynamic table
@@ -8038,7 +8038,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output
+                strategy_output  # Removed betting_sections_display
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
