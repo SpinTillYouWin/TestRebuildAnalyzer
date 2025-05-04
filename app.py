@@ -7641,8 +7641,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     </script>
     """)
     
-    # Event Handlers
-    try:
         # Event Handlers
     try:
         spins_textbox.change(
