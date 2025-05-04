@@ -5155,9 +5155,14 @@ def generate_hot_zone_call(spins, max_spins=36):
     if not spins:
         return "<p>No spins to analyze for Hot Zone Call.</p>"
 
+    # Line before (context, unchanged)
     # Limit to last max_spins (default 36)
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
+    
+    # CHANGED: Add error handling for empty spins
+    if not spins:
+        return '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">No spins provided for analysis.</div>'
     
     # Initialize scores for each number
     scores = {n: 0 for n in range(37)}
@@ -5218,10 +5223,10 @@ def generate_hot_zone_call(spins, max_spins=36):
     top_18_numbers = [num for num, hits in sorted_by_hits[:18] if hits > 0]
     bottom_18_numbers = [num for num, hits in sorted(scores.items(), key=lambda x: x[1])[:18]]
     
-    # CHANGED: Log key information for debugging
+    # CHANGED: Generalized logging
     print(f"Side Hits: {side_hits}")
     print(f"Section Hits: {section_hits}")
-    print(f"Streak Lengths: {streak_lengths}")
+    print(f"Dozen Hits: {dozen_hits}")
     
     # Calculate Side Hits gap
     side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
@@ -5240,101 +5245,91 @@ def generate_hot_zone_call(spins, max_spins=36):
     
     # Compute scores for each number
     number_scores = {}
-    for num in range(37):
-        score = 0
-        # CHANGED: Log for key numbers
-        if num in [15, 19, 18, 3, 12]:
-            print(f"Scoring number {num}:")
-        
-        # Streaks (based on hottest dozen)
-        hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
-        if num in DOZENS[hottest_dozen]:
-            streak_score = 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
-            score += streak_score
-            if num in [15, 19, 18, 3, 12]:
-                print(f"  Streaks: +{streak_score:.3f} (Hottest: {hottest_dozen}, Hits: {dozen_hits[hottest_dozen]})")
-        
-        # Wheel Section Streaks (based on hottest wheel section)
-        hottest_section = max(section_hits, key=section_hits.get, default="Voisins du Zéro")
-        if num in wheel_sections[hottest_section]:
-            wheel_score = 0.05 * (section_hits[hottest_section] / total_spins if total_spins else 0)
-            score += wheel_score
-            if num in [15, 19, 18, 3, 12]:
-                print(f"  Wheel Section Streaks: +{wheel_score:.3f} (Hottest: {hottest_section}, Hits: {section_hits[hottest_section]})")
-        
-        # CHANGED: Active Streaks (only for numbers with hits)
-        active_streak_score = 0
-        if scores[num] > 0:  # Only apply for numbers with hits
-            for category, categories in [
-                ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
-            ]:
-                for name, numbers in categories.items():
-                    if num in numbers:
-                        streak_length = streak_lengths[category][name]
-                        if 2 <= streak_length <= 4:
-                            contribution = 0.15 * (streak_length / 4)
-                            active_streak_score += contribution
-                        elif streak_length >= 5:
-                            contribution = -0.05
-                            active_streak_score += contribution
-                        if num in [15, 19, 18, 3, 12] and streak_length > 0:
-                            print(f"  Active Streaks ({category}, {name}): Length={streak_length}, Score={contribution:.3f}")
-        score += active_streak_score
-        if num in [15, 19, 18, 3, 12] and active_streak_score != 0:
-            print(f"  Active Streaks Total: {active_streak_score:.3f}")
-        
-        # Hit Percentage
-        hit_percent = scores[num] / total_spins if total_spins else 0
-        hit_score = 0.15 * hit_percent
-        score += hit_score
-        if num in [15, 19, 18, 3, 12]:
-            print(f"  Hit Percentage: +{hit_score:.3f} (Hits: {scores[num]}, Total Spins: {total_spins})")
-        
-        # Hot Numbers Bonus
-        hot_bonus_score = 0
-        if num in top_2_numbers:
-            hot_bonus_score = 0.1
-        elif num in top_18_numbers:
-            hot_bonus_score = 0.05
-        elif num in bottom_18_numbers:
-            hot_bonus_score = -0.05
-        score += hot_bonus_score
-        if num in [15, 19, 18, 3, 12]:
-            print(f"  Hot Numbers Bonus: {hot_bonus_score:.3f} (Top 2: {num in top_2_numbers}, Top 18: {num in top_18_numbers}, Bottom 18: {num in bottom_18_numbers})")
-        
-        # Side Hits
+    try:
+        for num in range(37):
+            score = 0
+            
+            # Streaks (based on hottest dozen)
+            hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
+            if num in DOZENS[hottest_dozen]:
+                streak_score = 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
+                score += streak_score
+            
+            # Wheel Section Streaks (based on hottest wheel section)
+            hottest_section = max(section_hits, key=section_hits.get, default="Voisins du Zéro")
+            if num in wheel_sections[hottest_section]:
+                wheel_score = 0.05 * (section_hits[hottest_section] / total_spins if total_spins else 0)
+                score += wheel_score
+            
+            # Active Streaks (only for numbers with hits)
+            active_streak_score = 0
+            if scores[num] > 0:
+                for category, categories in [
+                    ("dozens", DOZENS), ("columns", COLUMNS), ("even_money", EVEN_MONEY)
+                ]:
+                    for name, numbers in categories.items():
+                        if num in numbers:
+                            streak_length = streak_lengths[category][name]
+                            if 2 <= streak_length <= 4:
+                                contribution = 0.15 * (streak_length / 4)
+                                active_streak_score += contribution
+                            elif streak_length >= 5:
+                                contribution = -0.05
+                                active_streak_score += contribution
+            score += active_streak_score
+            
+            # Hit Percentage
+            hit_percent = scores[num] / total_spins if total_spins else 0
+            hit_score = 0.15 * hit_percent
+            score += hit_score
+            
+            # Hot Numbers Bonus
+            hot_bonus_score = 0
+            if num in top_2_numbers:
+                hot_bonus_score = 0.1
+            elif num in top_18_numbers:
+                hot_bonus_score = 0.05
+            elif num in bottom_18_numbers:
+                hot_bonus_score = -0.05
+            score += hot_bonus_score
+            
+            # Side Hits
+            side_score = 0
+            if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
+                side_score = 0.1 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+            elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
+                side_score = 0.1 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+            score += side_score
+            
+            # Neighbor Bonus (capped at one neighbor)
+            neighbor_score = 0
+            neighbors = current_neighbors.get(num, (None, None))
+            for neighbor in neighbors:
+                if neighbor is not None and scores[neighbor] > 0:
+                    neighbor_score = weights["neighbor_bonus"]
+                    break
+            score += neighbor_score
+            
+            # Repeat Penalty
+            repeat_penalty = 0
+            if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
+                repeat_penalty = weights["repeat_penalty"]
+            score += repeat_penalty
+            
+            number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
+    except Exception as e:
+        print(f"Error in scoring loop: {str(e)}")
+        return '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">Error processing spins: {str(e)}</div>'
+    
+    # CHANGED: Log Side Hits for top 5 numbers by hits
+    top_5_numbers = [num for num, hits in sorted_by_hits[:5] if hits > 0]
+    for num in top_5_numbers:
         side_score = 0
         if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
             side_score = 0.1 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
         elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
             side_score = 0.1 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
-        score += side_score
-        if num in [15, 19, 18, 3, 12]:
-            print(f"  Side Hits: +{side_score:.3f} (Left Hits: {side_hits['Left Side of Zero']}, Right Hits: {side_hits['Right Side of Zero']})")
-        
-        # Neighbor Bonus (capped at one neighbor)
-        neighbor_score = 0
-        neighbors = current_neighbors.get(num, (None, None))
-        for neighbor in neighbors:
-            if neighbor is not None and scores[neighbor] > 0:
-                neighbor_score = weights["neighbor_bonus"]
-                break
-        score += neighbor_score
-        if num in [15, 19, 18, 3, 12] and neighbor_score != 0:
-            print(f"  Neighbor Bonus: +{neighbor_score:.3f}")
-        
-        # Repeat Penalty
-        repeat_penalty = 0
-        if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
-            repeat_penalty = weights["repeat_penalty"]
-        score += repeat_penalty
-        if num in [15, 19, 18, 3, 12] and repeat_penalty != 0:
-            print(f"  Repeat Penalty: {repeat_penalty:.3f}")
-        
-        if num in [15, 19, 18, 3, 12]:
-            print(f"  Total Score: {score:.3f}\n")
-        
-        number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
+        print(f"Number {num}: Side Hits Score = {side_score:.3f}, Total Score = {number_scores[num]['score']:.3f}, Hits = {scores[num]}")
     
     # Sort numbers by score, using recency as tiebreaker (unchanged)
     sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
