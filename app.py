@@ -5181,8 +5181,8 @@ def generate_hot_zone_call(spins, max_spins=36):
     
     # Scoring weights based on Side Hits gap
     weights = {
-        "streaks": 0.4 if side_gap <= 2 else 0.3,
-        "hit_percent": 0.3 if side_gap <= 2 else 0.2,
+        "streaks": 0.2,  # CHANGED: Updated to fixed weight of 0.2 for Streaks criterion
+        "hit_percent": 0.3,
         "hot_numbers": 0.2,
         "side_hits": 0.1 if side_gap <= 2 else 0.2,
         "neighbor_bonus": 0.05,
@@ -5196,37 +5196,38 @@ def generate_hot_zone_call(spins, max_spins=36):
         # Streaks (based on hottest dozen)
         hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
         if num in DOZENS[hottest_dozen]:
-            score += weights["streaks"] * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
+            score += 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)  # CHANGED: Explicitly use 0.2 for Streaks criterion
         
-        # Hit Percentage
+        # Hit Percentage (unchanged)
         hit_percent = scores[num] / total_spins if total_spins else 0
         score += weights["hit_percent"] * hit_percent
         
-        # Hot Numbers
+        # Hot Numbers (unchanged)
         if scores[num] > 0:
             score += weights["hot_numbers"] * (scores[num] / max(scores.values(), default=1))
         
-        # Side Hits
+        # Side Hits (unchanged)
         if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
             score += weights["side_hits"]
         elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
             score += weights["side_hits"]
         
-        # Neighbor Bonus
+        # Neighbor Bonus (unchanged)
         neighbors = current_neighbors.get(num, (None, None))
         for neighbor in neighbors:
             if neighbor is not None and scores[neighbor] > 0:
                 score += weights["neighbor_bonus"]
         
-        # Repeat Penalty (if same number appears consecutively)
+        # Repeat Penalty (unchanged)
         if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
             score += weights["repeat_penalty"]
         
         number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
     
-    # Sort numbers by score, using recency as tiebreaker
+    # Sort numbers by score, using recency as tiebreaker (unchanged)
     sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
     
+    # Lines after (context, unchanged)
     # Select Top Pick and Honorable Mentions
     top_pick = sorted_numbers[0] if sorted_numbers else (0, {"score": 0, "hits": 0})
     honorable_mentions = sorted_numbers[1:3] if len(sorted_numbers) >= 3 else sorted_numbers[1:] + [(0, {"score": 0, "hits": 0})] * (2 - len(sorted_numbers[1:]))
