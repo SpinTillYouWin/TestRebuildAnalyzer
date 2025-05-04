@@ -4915,7 +4915,7 @@ def calculate_hit_percentages(last_spin_count):
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
-DEBUG = True  # Enable debugging to confirm execution
+DEBUG = True  # Keep debugging enabled
 
 def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
@@ -4940,6 +4940,13 @@ def summarize_spin_traits(last_spin_count):
             print(f"summarize_spin_traits: last_spins = {last_spins}")
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+
+        # Validate bet mappings
+        if not all(x in globals() for x in ['EVEN_MONEY', 'COLUMNS', 'DOZENS']):
+            missing = [x for x in ['EVEN_MONEY', 'COLUMNS', 'DOZENS'] if x not in globals()]
+            if DEBUG:
+                print(f"summarize_spin_traits: Missing bet mappings: {missing}")
+            return "<p>Error: Bet mappings not defined.</p>"
 
         # Initialize counters and streaks
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
@@ -4994,7 +5001,7 @@ def summarize_spin_traits(last_spin_count):
                         column_counts[name] += 1
                         column_streaks[name]["last_hit"] = True
                         column_streaks[name]["current"] += 1
-                        column_streaks[name]["spins"].append(str(num))  # Fixed: column_streaks instead of column_streets
+                        column_streaks[name]["spins"].append(str(num))
                         if len(column_streaks[name]["spins"]) > column_streaks[name]["current"]:
                             column_streaks[name]["spins"] = column_streaks[name]["spins"][-column_streaks[name]["current"]:]
                         column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
@@ -5025,12 +5032,14 @@ def summarize_spin_traits(last_spin_count):
                 number_counts[num] = number_counts.get(num, 0) + 1
                 if DEBUG:
                     print(f"summarize_spin_traits: Processed Repeat Numbers for spin {num}")
-            except ValueError:
+            except ValueError as ve:
                 if DEBUG:
-                    print(f"summarize_spin_traits: ValueError converting spin {spin} to integer")
+                    print(f"summarize_spin_traits: ValueError converting spin {spin} to integer: {str(ve)}")
                 continue
 
         # Calculate max counts
+        if DEBUG:
+            print(f"summarize_spin_traits: Calculating max counts")
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
@@ -5038,6 +5047,8 @@ def summarize_spin_traits(last_spin_count):
             print(f"summarize_spin_traits: Max counts - Even Money: {max_even_money}, Columns: {max_columns}, Dozens: {max_dozens}")
 
         # Quick Trends
+        if DEBUG:
+            print(f"summarize_spin_traits: Calculating Quick Trends")
         total_spins = len(last_spins)
         trends = []
         if total_spins > 0:
@@ -5056,6 +5067,8 @@ def summarize_spin_traits(last_spin_count):
             print(f"summarize_spin_traits: Quick Trends calculated: {trends}")
 
         # Build HTML
+        if DEBUG:
+            print(f"summarize_spin_traits: Building HTML")
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
@@ -5132,11 +5145,14 @@ def summarize_spin_traits(last_spin_count):
         if DEBUG:
             print(f"summarize_spin_traits: Repeat Numbers HTML generated")
 
+        if DEBUG:
+            print(f"summarize_spin_traits: Returning HTML successfully")
         return html
 
     except Exception as e:
         if DEBUG:
-            print(f"summarize_spin_traits: Error: {str(e)}")
+            print(f"summarize_spin_traits: Caught exception: {str(e)}")
+        raise  # Re-raise to see the full stack trace in logs
         return "<p>Error analyzing spin traits.</p>"
 
 def cache_analysis(spins, last_spin_count):
@@ -7580,8 +7596,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
-            fn=cache_analysis,
-            inputs=[spins_display, last_spin_count],
+            fn=summarize_spin_traits,  # Use summarize_spin_traits directly for now
+            inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
             fn=select_next_spin_top_pick,
@@ -7592,9 +7608,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[]
         )
-    
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
+        gr.Warning(f"Error during spin analysis: {str(e)}")
     
     try:
         spins_display.change(
