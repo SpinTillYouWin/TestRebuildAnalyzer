@@ -4915,7 +4915,7 @@ def calculate_hit_percentages(last_spin_count):
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
-DEBUG = False  # Toggle debugging
+DEBUG = True  # Enable debugging to confirm execution
 
 def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
@@ -4994,7 +4994,7 @@ def summarize_spin_traits(last_spin_count):
                         column_counts[name] += 1
                         column_streaks[name]["last_hit"] = True
                         column_streaks[name]["current"] += 1
-                        column_streaks[name]["spins"].append(str(num))  # Fixed typo
+                        column_streaks[name]["spins"].append(str(num))  # Fixed: column_streaks instead of column_streets
                         if len(column_streaks[name]["spins"]) > column_streaks[name]["current"]:
                             column_streaks[name]["spins"] = column_streaks[name]["spins"][-column_streaks[name]["current"]:]
                         column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
