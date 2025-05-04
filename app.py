@@ -5028,7 +5028,7 @@ def summarize_spin_traits(last_spin_count):
                 streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
                 trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
 
-        # TITLE: Build HTML Badges
+        # Build HTML Badges
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
