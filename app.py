@@ -5155,14 +5155,13 @@ def generate_hot_zone_call(spins, max_spins=36):
     if not spins:
         return "<p>No spins to analyze for Hot Zone Call.</p>"
 
-    # Line before (context, unchanged)
-    # Limit to last max_spins (default 36)
+
     # Line before (context, unchanged)
     # Limit to last max_spins (default 36)
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
     
-    # CHANGED: Add error handling for empty spins
+    # Add error handling for empty spins
     if not spins:
         return '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">No spins provided for analysis.</div>'
     
@@ -5237,7 +5236,7 @@ def generate_hot_zone_call(spins, max_spins=36):
     top_18_numbers = [num for num, hits in sorted_by_hits[:18] if hits > 0]
     bottom_18_numbers = [num for num, hits in sorted(scores.items(), key=lambda x: x[1])[:18]]
     
-    # CHANGED: Generalized logging
+    # Generalized logging
     print(f"Side Hits: {side_hits}")
     print(f"Section Hits: {section_hits}")
     print(f"Dozen Hits: {dozen_hits}")
@@ -5253,7 +5252,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         "active_streaks": 0.15,
         "hit_percent": 0.15,
         "hot_numbers": 0.2,  # Kept for consistency, not used directly
-        "side_hits": 0.15,  # CHANGED: Increased from 0.1 to 0.15
+        "side_hits": 0.2,  # CHANGED: Increased from 0.15 to 0.2
         "neighbor_bonus": 0.05,
         "repeat_penalty": -0.05
     }
@@ -5269,12 +5268,16 @@ def generate_hot_zone_call(spins, max_spins=36):
             if num in DOZENS[hottest_dozen]:
                 streak_score = 0.2 * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
                 score += streak_score
+            else:
+                streak_score = 0
             
             # Wheel Section Streaks (based on hottest wheel section)
             hottest_section = max(section_hits, key=section_hits.get, default="Voisins du Zéro")
             if num in wheel_sections[hottest_section]:
                 wheel_score = 0.05 * (section_hits[hottest_section] / total_spins if total_spins else 0)
                 score += wheel_score
+            else:
+                wheel_score = 0
             
             # Active Streaks (only for numbers with hits)
             active_streak_score = 0
@@ -5308,12 +5311,12 @@ def generate_hot_zone_call(spins, max_spins=36):
                 hot_bonus_score = -0.05
             score += hot_bonus_score
             
-            # CHANGED: Side Hits (assign score based on side’s hits)
+            # Side Hits
             side_score = 0
             if num in current_left_of_zero:
-                side_score = 0.15 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+                side_score = 0.2 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
             elif num in current_right_of_zero:
-                side_score = 0.15 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+                side_score = 0.2 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
             score += side_score
             
             # Neighbor Bonus (capped at one neighbor)
@@ -5331,23 +5334,36 @@ def generate_hot_zone_call(spins, max_spins=36):
                 repeat_penalty = weights["repeat_penalty"]
             score += repeat_penalty
             
-            number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
+            # CHANGED: Log detailed contributions for top 5 hit numbers and one unhit number
+            if num in [num for num, hits in sorted_by_hits[:5] if hits > 0] + [18]:
+                print(f"Scoring Number {num} (Hits: {scores[num]}):")
+                print(f"  Streaks: +{streak_score:.3f}")
+                print(f"  Wheel Section Streaks: +{wheel_score:.3f}")
+                print(f"  Active Streaks: +{active_streak_score:.3f}")
+                print(f"  Hit Percentage: +{hit_score:.3f}")
+                print(f"  Hot Numbers Bonus: {hot_bonus_score:.3f}")
+                print(f"  Side Hits: +{side_score:.3f}")
+                print(f"  Neighbor Bonus: +{neighbor_score:.3f}")
+                print(f"  Repeat Penalty: {repeat_penalty:.3f}")
+                print(f"  Total" + f"  Total Score: {score:.3f}\n")
+            
+            number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) / 10.0 if str(num) in spins else -total_spins / 10.0}  # CHANGED: Scale recency
     except Exception as e:
         print(f"Error in scoring loop: {str(e)}")
         return '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">Error processing spins: {str(e)}</div>'
     
-    # CHANGED: Log Side Hits for top 5 hit numbers and one unhit number
+    # Log Side Hits for top 5 hit numbers and one unhit number
     top_5_numbers = [num for num, hits in sorted_by_hits[:5] if hits > 0]
     sample_unhit = 18  # Example unhit number
     for num in top_5_numbers + [sample_unhit]:
         side_score = 0
         if num in current_left_of_zero:
-            side_score = 0.15 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+            side_score = 0.2 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
         elif num in current_right_of_zero:
-            side_score = 0.15 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+            side_score = 0.2 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
         print(f"Number {num}: Side Hits Score = {side_score:.3f}, Total Score = {number_scores[num]['score']:.3f}, Hits = {scores[num]}")
     
-    # Sort numbers by score, using recency as tiebreaker (unchanged)
+    # Sort numbers by score, using scaled recency as tiebreaker
     sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
     
     # Lines after (context, unchanged)
