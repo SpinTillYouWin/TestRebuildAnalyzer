@@ -5731,8 +5731,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+
     # Start of updated section
-    # Line 1: with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -5751,8 +5751,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["traits-container"]
                 )
 
-    # Line 2: Add the new section
-    with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
+    # Line 1: Updated Next Spin Top Pick accordion
+    with gr.Accordion("Next Spin Top Pick 🎯", open=True, elem_id="next-spin-top-pick"):
         with gr.Row():
             with gr.Column(scale=1):
                 top_pick_spin_count = gr.Slider(
@@ -5760,17 +5760,34 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     minimum=1,
                     maximum=36,
                     step=1,
-                    value=2,
+                    value=18,  # Updated default to 18 for better analysis
                     interactive=True,
                     elem_classes="long-slider"
                 )
                 top_pick_display = gr.HTML(
                     label="Top Pick",
-                    value=select_next_spin_top_pick(2),
+                    value=select_next_spin_top_pick(18),  # Updated to match slider default
                     elem_classes=["top-pick-container"]
                 )
+        # Add CSS to make the section stand out
+        gr.HTML("""
+        <style>
+            #next-spin-top-pick {
+                background-color: #e3f2fd !important; /* Light blue background */
+                border: 2px solid #2196f3 !important; /* Blue border */
+                border-radius: 5px !important;
+                padding: 10px !important;
+            }
+            #next-spin-top-pick summary {
+                background-color: #2196f3 !important; /* Blue header */
+                color: white !important;
+                padding: 10px !important;
+                border-radius: 5px !important;
+            }
+        </style>
+        """)
 
-# Surrounding lines before (unchanged)
+    # Surrounding lines after (unchanged)
     # 2. Row 2: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
@@ -5779,6 +5796,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
             ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
         ]
+
         with gr.Column(elem_classes="roulette-table"):
             for row in table_layout:
                 with gr.Row(elem_classes="table-row"):
