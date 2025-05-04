@@ -49,8 +49,6 @@ def initialize_betting_mappings():
             BETTING_MAPPINGS[num]["six_lines"].append(name)
     
     for name, numbers in SPLITS.items():
-
-    for name, numbers in SPLITS.items():
         numbers_set = set(numbers)
         for num in numbers_set:
             BETTING_MAPPINGS[num]["splits"].append(name)
