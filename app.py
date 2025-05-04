@@ -2463,6 +2463,7 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
+# Update analyze_spins to ensure state.last_spins and state.scores are consistent
 def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
     """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
@@ -2501,7 +2502,7 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
             print("analyze_spins: Scores reset due to no valid spins.")
             return ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
 
-        # Always reset scores
+        # Always reset scores and spins
         state.reset()
         print("analyze_spins: Scores reset.")
 
@@ -2519,6 +2520,20 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         if len(state.spin_history) > 100:
             state.spin_history = state.spin_history[-100:]
         print(f"analyze_spins: Updated state.last_spins={state.last_spins}, spin_history length={len(state.spin_history)}")
+
+        # Recalculate state.scores based on state.last_spins to ensure consistency
+        state.scores = {i: 0 for i in range(37)}  # Reset scores
+        for spin in state.last_spins:
+            try:
+                num = int(spin)
+                if 0 <= num <= 36:
+                    state.scores[num] += 1
+                else:
+                    print(f"analyze_spins: Invalid number {num} in state.last_spins, skipping.")
+            except ValueError:
+                print(f"analyze_spins: ValueError converting spin '{spin}' to integer, skipping.")
+                continue
+        print(f"analyze_spins: Recalculated state.scores={state.scores}")
 
         # Generate spin analysis output
         print("analyze_spins: Generating spin analysis output")
@@ -5212,8 +5227,7 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
-DEBUG = True  # Enable for debugging
-
+# Corrected select_next_spin_top_pick function with strict state management and debugging
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5232,12 +5246,31 @@ def select_next_spin_top_pick(last_spin_count):
                 print("select_next_spin_top_pick: No spins available for analysis.")
             return "<p>No spins available for analysis.</p>"
 
-        # Step 1: Initialize all possible numbers
+        # Step 1: Recalculate state.scores based on last_spins to ensure consistency
+        if DEBUG:
+            print("select_next_spin_top_pick: Recalculating state.scores based on last_spins")
+        state.scores = {i: 0 for i in range(37)}  # Reset scores
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                if 0 <= num <= 36:
+                    state.scores[num] += 1
+                else:
+                    if DEBUG:
+                        print(f"select_next_spin_top_pick: Invalid number {num} in last_spins, skipping.")
+            except ValueError:
+                if DEBUG:
+                    print(f"select_next_spin_top_pick: ValueError converting spin '{spin}' to integer, skipping.")
+                continue
+        if DEBUG:
+            print(f"select_next_spin_top_pick: Recalculated state.scores={state.scores}")
+
+        # Step 2: Initialize all possible numbers
         numbers = set(range(37))  # 0-36
         if DEBUG:
             print(f"select_next_spin_top_pick: Initial numbers={numbers}")
 
-        # Step 2: Filter by dominant categories (Hit Percentage Overview)
+        # Step 3: Filter by dominant categories (Hit Percentage Overview)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5256,7 +5289,7 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 if DEBUG:
-                    print(f"select_next_spin_top_pick: ValueError converting spin '{spin}' to integer, skipping.")
+                    print(f"select_next_spin_top_pick: ValueError converting spin '{spin}' to integer in category filtering, skipping.")
                 continue
 
         if DEBUG:
@@ -5289,13 +5322,13 @@ def select_next_spin_top_pick(last_spin_count):
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
             if DEBUG:
-                print("select_next_spin_top_pick: No numbers after filtering, resetting to all numbers.")
+                print("select_next_spin_top_pick: No numbers after category filtering, resetting to all numbers.")
 
         if DEBUG:
             print(f"select_next_spin_top_pick: After category filtering, filtered_numbers={filtered_numbers}")
 
-        # Step 3: Get hot numbers from Dealer's Spin Tracker
-        hit_counts = {n: state.scores.get(n, 0) for n in range(37)} if hasattr(state, 'scores') else {n: 0 for n in range(37)}
+        # Step 4: Get hot numbers from Dealer's Spin Tracker
+        hit_counts = {n: state.scores.get(n, 0) for n in range(37)}
         if DEBUG:
             print(f"select_next_spin_top_pick: hit_counts={hit_counts}")
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
@@ -5314,7 +5347,7 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: hot_numbers={hot_numbers}")
 
-        # Step 4: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
+        # Step 5: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
@@ -5343,7 +5376,7 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: After section filtering, filtered_numbers={filtered_numbers}, section_numbers={section_numbers}")
 
-        # Step 5: Boost numbers in categories with active streaks (SpinTrend Radar)
+        # Step 6: Boost numbers in categories with active streaks (SpinTrend Radar)
         streak_numbers = set()
         all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
         longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
@@ -5359,19 +5392,22 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print(f"select_next_spin_top_pick: streak_numbers={streak_numbers}")
 
-        # Step 6: Get top 5 strongest numbers
+        # Step 7: Get top 5 strongest numbers
         strongest_numbers = set()
-        sorted_scores = sorted((state.scores.items() if hasattr(state, 'scores') else []), key=lambda x: (-x[1], x[0]))
+        sorted_scores = sorted((state.scores.items()), key=lambda x: (-x[1], x[0]))
         for num, score in sorted_scores[:5]:
             if score > 0:
                 strongest_numbers.add(num)
         if DEBUG:
             print(f"select_next_spin_top_pick: strongest_numbers={strongest_numbers}")
 
-        # Step 7: Score numbers
+        # Step 8: Score numbers
         scores = {}
         for num in filtered_numbers:
-            score = state.scores.get(num, 0) if hasattr(state, 'scores') else 0
+            score = state.scores.get(num, 0)
+            if score == 0:
+                # Skip numbers that haven't appeared in last_spins
+                continue
             if num in hot_numbers:
                 score += 3  # Hot number boost
             if num in section_numbers:
@@ -5390,27 +5426,38 @@ def select_next_spin_top_pick(last_spin_count):
         if not scores:
             # Fallback: Use hot numbers or random selection
             filtered_numbers = hot_numbers if hot_numbers else numbers
-            scores = {num: (state.scores.get(num, 0) if hasattr(state, 'scores') else 0) for num in filtered_numbers}
+            scores = {num: (state.scores.get(num, 0)) for num in filtered_numbers if state.scores.get(num, 0) > 0}
             for num in scores:
                 for i, spin in enumerate(reversed(last_spins)):
                     if int(spin) == num:
                         scores[num] += (last_spin_count - i) * 0.1
                         break
 
-        # Select top pick
+        # Step 9: Select top pick
         if not scores:
             if DEBUG:
                 print("select_next_spin_top_pick: No scores available, defaulting to random number.")
             top_pick = 0  # Default to 0 if no scores
         else:
-            top_pick = max(scores.items(), key=lambda x: x[1])[0]
+            # Only consider numbers that have appeared in last_spins
+            appeared_numbers = set(int(spin) for spin in last_spins if spin.isdigit() and 0 <= int(spin) <= 36)
+            if DEBUG:
+                print(f"select_next_spin_top_pick: appeared_numbers={appeared_numbers}")
+            valid_scores = {num: score for num, score in scores.items() if num in appeared_numbers}
+            if not valid_scores:
+                if DEBUG:
+                    print("select_next_spin_top_pick: No valid numbers with scores that appeared in last_spins, defaulting to first appeared number.")
+                top_pick = min(appeared_numbers) if appeared_numbers else 0
+            else:
+                top_pick = max(valid_scores.items(), key=lambda x: x[1])[0]
         state.current_top_pick = top_pick
 
         if DEBUG:
             print(f"select_next_spin_top_pick: Final scores={scores}")
+            print(f"select_next_spin_top_pick: Valid scores (appeared numbers only)={valid_scores}")
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
 
-        # Generate HTML with updated styling
+        # Step 10: Generate HTML with updated styling
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
