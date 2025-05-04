@@ -5097,6 +5097,445 @@ def summarize_spin_traits(last_spin_count):
         print(f"summarize_spin_traits: Error: {str(e)}")
         return "<p>Error analyzing spin traits.</p>"
 
+# Lines before (context, unchanged from Part 2)
+def summarize_spin_traits(last_spin_count):
+    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
+    try:
+        # Ensure last_spin_count is a valid integer
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+
+        # Use state.last_spins directly and ensure it's not empty
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for analysis.</p>"
+
+        # Initialize counters
+        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        number_counts = {}
+
+        # Initialize streak tracking with spin details
+        even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in even_money_counts}
+        column_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in column_counts}
+        dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in dozen_counts}
+
+        # Analyze spins and track streaks
+        for idx, spin in enumerate(last_spins):
+            try:
+                num = int(spin)
+                # Reset last_hit flags for this spin
+                for key in even_money_streaks:
+                    even_money_streaks[key]["last_hit"] = False
+                for key in column_streaks:
+                    column_streaks[key]["last_hit"] = False
+                for key in dozen_streaks:
+                    dozen_streaks[key]["last_hit"] = False
+
+                # Even Money Bets
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        even_money_counts[name] += 1
+                        even_money_streaks[name]["last_hit"] = True
+                        even_money_streaks[name]["current"] += 1
+                        even_money_streaks[name]["spins"].append(str(num))
+                        if len(even_money_streaks[name]["spins"]) > even_money_streaks[name]["current"]:
+                            even_money_streaks[name]["spins"] = even_money_streaks[name]["spins"][-even_money_streaks[name]["current"]:]
+                        even_money_streaks[name]["max"] = max(even_money_streaks[name]["max"], even_money_streaks[name]["current"])
+                    else:
+                        if not even_money_streaks[name]["last_hit"]:
+                            even_money_streaks[name]["current"] = 0
+                            even_money_streaks[name]["spins"] = []
+
+                # Columns
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        column_counts[name] += 1
+                        column_streaks[name]["last_hit"] = True
+                        column_streaks[name]["current"] += 1
+                        column_streets[name]["spins"].append(str(num))
+                        if len(column_streaks[name]["spins"]) > column_streaks[name]["current"]:
+                            column_streaks[name]["spins"] = column_streaks[name]["spins"][-column_streaks[name]["current"]:]
+                        column_streaks[name]["max"] = max(column_streaks[name]["max"], column_streaks[name]["current"])
+                    else:
+                        if not column_streaks[name]["last_hit"]:
+                            column_streaks[name]["current"] = 0
+                            column_streaks[name]["spins"] = []
+
+                # Dozens
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts[name] += 1
+                        dozen_streaks[name]["last_hit"] = True
+                        dozen_streaks[name]["current"] += 1
+                        dozen_streaks[name]["spins"].append(str(num))
+                        if len(dozen_streaks[name]["spins"]) > dozen_streaks[name]["current"]:
+                            dozen_streaks[name]["spins"] = dozen_streaks[name]["spins"][-dozen_streaks[name]["current"]:]
+                        dozen_streaks[name]["max"] = max(dozen_streaks[name]["max"], dozen_streaks[name]["current"])
+                    else:
+                        if not dozen_streaks[name]["last_hit"]:
+                            dozen_streaks[name]["current"] = 0
+                            dozen_streaks[name]["spins"] = []
+
+                # Repeat Numbers
+                number_counts[num] = number_counts.get(num, 0) + 1
+            except ValueError:
+                continue
+
+        # Find the maximum counts for each section (excluding Repeat Numbers)
+        max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+        max_columns = max(column_counts.values()) if column_counts else 0
+        max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+
+        # Quick Trends Calculation with Spin Context
+        total_spins = len(last_spins)
+        trends = []
+        if total_spins > 0:
+            # Dominant category
+            all_counts = {**even_money_counts, **column_counts, **dozen_counts}
+            dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
+            if dominant[1] > 0:
+                percentage = (dominant[1] / total_spins * 100)
+                trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
+            # Longest active streak with spin context
+            all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
+            longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
+            if longest_streak > 1:
+                streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
+                streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
+                trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
+
+        # Build HTML Badges
+        html = '<div class="traits-overview">'
+        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
+        html += '<div class="traits-wrapper">'
+        # Quick Trends Section
+        html += '<div class="quick-trends">'
+        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
+        if trends:
+            html += '<ul style="list-style-type: none; padding-left: 0;">'
+            for trend in trends:
+                html += f'<li style="color: #333; margin: 5px 0;">{trend}</li>'
+            html += '</ul>'
+        else:
+            html += '<p>No significant trends detected yet.</p>'
+        html += '</div>'
+        # Even Money
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
+        html += '<div class="percentage-badges">'
+        total_spins = len(last_spins)
+        for name, count in even_money_counts.items():
+            badge_class = "trait-badge even-money winner" if count == max_even_money and max_even_money > 0 else "trait-badge even-money"
+            streak = even_money_streaks[name]["max"]
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#b71c1c" if name in ["Red", "Even", "Low"] else "#000000" if name in ["Black", "Odd", "High"] else "#666"
+            html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        html += '</div></div>'
+        # Columns
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #1565c0;">Columns</h4>'
+        html += '<div class="percentage-badges">'
+        for name, count in column_counts.items():
+            badge_class = "trait-badge column winner" if count == max_columns and max_columns > 0 else "trait-badge column"
+            streak = column_streaks[name]["max"]
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#1565c0"  # Blue for columns
+            html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        html += '</div></div>'
+        # Dozens
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'
+        html += '<div class="percentage-badges">'
+        for name, count in dozen_counts.items():
+            badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
+            streak = dozen_streaks[name]["max"]
+            streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
+            percentage = (count / total_spins * 100) if total_spins > 0 else 0
+            bar_color = "#388e3c"  # Green for dozens
+            html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
+        html += '</div></div>'
+        # Repeat Numbers (no streak tracking for repeats)
+        html += '<div class="badge-group">'
+        html += '<h4 style="color: #7b1fa2;">Repeat Numbers</h4>'
+        html += '<div class="percentage-badges">'
+        repeats = {num: count for num, count in number_counts.items() if count > 1}
+        if repeats:
+            for num, count in sorted(repeats.items()):
+                html += f'<span class="trait-badge repeat">{num}: {count} hits</span>'
+        else:
+            html += f'<span class="trait-badge repeat">No repeats</span>'
+        html += '</div></div></div>'
+        return html
+
+    except Exception as e:
+        print(f"summarize_spin_traits: Error: {str(e)}")
+        return "<p>Error analyzing spin traits.</p>"
+
+# Line 1: Start of updated select_next_spin_top_pick function
+def select_next_spin_top_pick(last_spin_count):
+    """Select the top pick number for the next spin based on the last X spins."""
+    try:
+        import gradio as gr
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
+        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for analysis.</p>"
+
+        # Step 1: Initialize all possible numbers
+        numbers = set(range(37))  # 0-36
+
+        # Step 2: Filter by dominant categories (Hit Percentage Overview)
+        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                for name, nums in EVEN_MONEY.items():
+                    if num in nums:
+                        even_money_counts[name] += 1
+                for name, nums in COLUMNS.items():
+                    if num in nums:
+                        column_counts[name] += 1
+                for name, nums in DOZENS.items():
+                    if num in nums:
+                        dozen_counts[name] += 1
+            except ValueError:
+                continue
+
+        # Identify single winners (no ties)
+        filtered_numbers = numbers.copy()
+        max_even_money = max(even_money_counts.values()) if even_money_counts else 0
+        even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
+        if len(even_money_winners) == 1 and max_even_money > 0:
+            filtered_numbers = filtered_numbers.intersection(EVEN_MONEY[even_money_winners[0]])
+        max_columns = max(column_counts.values()) if column_counts else 0
+        column_winners = [name for name, count in column_counts.items() if count == max_columns]
+        if len(column_winners) == 1 and max_columns > 0:
+            filtered_numbers = filtered_numbers.intersection(COLUMNS[column_winners[0]])
+        max_dozens = max(dozen_counts.values()) if dozen_counts else 0
+        dozen_winners = [name for name, count in dozen_counts.items() if count == max_dozens]
+        if len(dozen_winners) == 1 and max_dozens > 0:
+            filtered_numbers = filtered_numbers.intersection(DOZENS[dozen_winners[0]])
+
+        # Reset if no numbers remain
+        if not filtered_numbers:
+            filtered_numbers = numbers.copy()
+
+        # Step 3: Get hot numbers from Dealer's Spin Tracker
+        hit_counts = {n: state.scores.get(n, 0) for n in range(37)}
+        sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
+        hot_numbers = set()
+        if len(sorted_hot) >= 5:
+            fifth_score = sorted_hot[4][1]
+            for num, score in sorted_hot:
+                if len(hot_numbers) < 5 or score == fifth_score:
+                    if score > 0:
+                        hot_numbers.add(num)
+                else:
+                    break
+        else:
+            hot_numbers = set(num for num, score in sorted_hot if score > 0)
+        hot_numbers = hot_numbers & filtered_numbers  # Intersect with filtered numbers
+
+        # Step 4: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
+        betting_sections = {
+            "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
+            "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+            "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
+            "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+        }
+        section_hits = {
+            name: sum(state.scores.get(num, 0) for num in nums)
+            for name, nums in betting_sections.items()
+        }
+        max_hits = max(section_hits.values()) if section_hits else 0
+        top_sections = [name for name, hits in section_hits.items() if hits == max_hits and hits > 0]
+        section_numbers = set()
+        for name in top_sections:
+            section_numbers.update(betting_sections[name])
+        filtered_numbers = filtered_numbers.intersection(section_numbers) if section_numbers else filtered_numbers
+
+        # Reset if no numbers remain
+        if not filtered_numbers:
+            filtered_numbers = numbers.copy()
+
+        # Step 5: Boost numbers in categories with active streaks (SpinTrend Radar)
+        streak_numbers = set()
+        all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
+        longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
+        if longest_streak > 1:
+            streak_categories = [name for name, count in all_streaks.items() if count == longest_streak]
+            for cat in streak_categories:
+                if cat in EVEN_MONEY:
+                    streak_numbers.update(EVEN_MONEY[cat])
+                elif cat in COLUMNS:
+                    streak_numbers.update(COLUMNS[cat])
+                elif cat in DOZENS:
+                    streak_numbers.update(DOZENS[cat])
+
+        # Step 6: Get top 5 strongest numbers
+        strongest_numbers = set()
+        sorted_scores = sorted(state.scores.items(), key=lambda x: (-x[1], x[0]))
+        for num, score in sorted_scores[:5]:
+            if score > 0:
+                strongest_numbers.add(num)
+
+        # Step 7: Score numbers
+        scores = {}
+        for num in filtered_numbers:
+            score = state.scores.get(num, 0)  # Base score: hit count
+            if num in hot_numbers:
+                score += 3  # Hot number boost
+            if num in section_numbers:
+                score += 2  # Top betting section boost
+            if num in streak_numbers:
+                score += 1  # Active streak boost
+            if num in strongest_numbers:
+                score += 2  # Strongest number boost
+            # Tiebreaker: Recent spins
+            for i, spin in enumerate(reversed(last_spins)):
+                if int(spin) == num:
+                    score += (last_spin_count - i) * 0.1  # Weight recent spins
+                    break
+            scores[num] = score
+
+        if not scores:
+            # Fallback: Use hot numbers or random selection
+            filtered_numbers = hot_numbers if hot_numbers else numbers
+            scores = {num: state.scores.get(num, 0) for num in filtered_numbers}
+            for num in scores:
+                for i, spin in enumerate(reversed(last_spins)):
+                    if int(spin) == num:
+                        scores[num] += (last_spin_count - i) * 0.1
+                        break
+
+        # Select top pick
+        top_pick = max(scores.items(), key=lambda x: x[1])[0]
+        state.current_top_pick = top_pick  # Store for celebration check
+
+        # Generate HTML with celebration-ready styling
+        color = colors.get(str(top_pick), "black")
+        html = f'''
+        <div class="top-pick-container">
+            <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
+            <p>Based on analysis of the last {last_spin_count} spins.</p>
+        </div>
+        <style>
+            .top-pick-container {{
+                background-color: #f5f5f5;
+                border: 1px solid #d3d3d3;
+                padding: 10px;
+                border-radius: 5px;
+                text-align: center;
+            }}
+            .top-pick-badge {{
+                display: inline-block;
+                padding: 5px 10px;
+                border-radius: 12px;
+                font-weight: bold;
+                font-size: 16px;
+                color: white;
+                background-color: {color};
+                box-shadow: 0 0 8px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }}
+            .top-pick-badge.red {{ background-color: red; }}
+            .top-pick-badge.black {{ background-color: black; }}
+            .top-pick-badge.green {{ background-color: green; }}
+            .top-pick-badge:hover {{
+                transform: scale(1.1);
+                box-shadow: 0 0 12px rgba(255,215,0,0.8);
+            }}
+            .celebration {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1000;
+            }}
+        </style>
+        '''
+        return html
+
+    except Exception as e:
+        print(f"select_next_spin_top_pick: Error: {str(e)}")
+        return "<p>Error selecting top pick.</p>"
+
+# Lines after (context, unchanged from Part 2)
+with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
+    # 1. Row 1: Header (Moved to the top)
+    with gr.Row(elem_id="header-row"):
+        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
+        gr.HTML(
+            '''
+            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+            </div>
+            <style>
+                #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+            </style>
+            '''
+        )
+
+    # Define state and components used across sections
+    spins_display = gr.State(value="")
+    show_trends_state = gr.State(value=True)  # Default to showing trends
+    toggle_trends_label = gr.State(value="Hide Trends")  # Default label when trends are shown
+    analysis_cache = gr.State(value={})  # New: Cache for analysis results
+    spins_textbox = gr.Textbox(
+        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        value="",
+        interactive=True,
+        elem_id="selected-spins"
+    )
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
+    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
+        sides_of_zero_display = gr.HTML(
+            label="Sides of Zero",
+            value=render_sides_of_zero_display(),
+            elem_classes=["sides-of-zero-container"]
+        )
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
+    )
+    last_spin_count = gr.Slider(
+        label="",  # Remove the label to be safe
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
+    # Start of updated section
+    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                hit_percentage_display = gr.HTML(
+                    label="Hit Percentages",
+                    value=calculate_hit_percentages(36),
+                    elem_classes=["hit-percentage-container"]
+                )
+
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
