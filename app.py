@@ -5151,123 +5151,176 @@ STRATEGIES = {
 
 # Line 2: New function to generate Hot Zone Call
 def generate_hot_zone_call(spins, max_spins=36):
-    """Generate Hot Zone Call prediction based on spins."""
-    if not spins:
-        return "<p>No spins to analyze for Hot Zone Call.</p>"
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    if not isinstance(spins, list) or not spins:
+        logger.error("Invalid spins input: %s", spins)
+        return "<p>Error: No valid spins provided for Hot Zone Call.</p>"
+    if not isinstance(max_spins, int) or max_spins <= 0:
+        logger.warning("Invalid max_spins: %s, using default 36", max_spins)
+        max_spins = 36
+    try:
+        spins = spins[-max_spins:] if len(spins) > max_spins else spins
+        total_spins = len(spins)
+        logger.debug(f"Processing {total_spins} spins: {spins}")
+        scores = {n: 0 for n in range(37)}
+        side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
+        dozen_hits = {name: 0 for name in DOZENS.keys()}
+        for spin in spins:
+            try:
+                num = int(spin)
+                if not (0 <= num <= 36):
+                    logger.warning(f"Invalid spin number: {num}")
+                    continue
+                scores[num] += 1
+                if num in current_left_of_zero:
+                    side_hits["Left Side of Zero"] += 1
+                if num in current_right_of_zero:
+                    side_hits["Right Side of Zero"] += 1
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_hits[name] += 1
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Failed to process spin: {spin}, error: {str(e)}")
+                continue
+        side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
+        logger.debug(f"Side hits: {side_hits}, gap: {side_gap}")
+        weights = {
+            "streaks": 0.4 if side_gap <= 2 else 0.3,
+            "hit_percent": 0.3 if side_gap <= 2 else 0.2,
+            "hot_numbers": 0.2,
+            "side_hits": 0.1 if side_gap <= 2 else 0.2,
+            "neighbor_bonus": 0.05,
+            "recent_hit_momentum": 0.05,
+            "overlapping_trends": 0.05,
+            "active_streaks": 0.15,
+        }
+        logger.debug(f"Weights: {weights}")
+        even_money_scores = getattr(state, 'even_money_scores', {}) or {}
+        dozen_scores = getattr(state, 'dozen_scores', {}) or {}
+        column_scores = getattr(state, 'column_scores', {}) or {}
+        if not (even_money_scores and dozen_scores and column_scores):
+            logger.warning("One or more state score dictionaries are empty: even_money=%s, dozen=%s, column=%s",
+                           bool(even_money_scores), bool(dozen_scores), bool(column_scores))
+        number_scores = {}
+        active_streak_notes = []
+        for num in range(37):
+            score = 0
+            try:
+                hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
+                if num in DOZENS[hottest_dozen]:
+                    score += weights["streaks"] * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
+                hit_percent = scores[num] / total_spins if total_spins else 0
+                score += weights["hit_percent"] * hit_percent
+                if scores[num] > 0:
+                    score += weights["hot_numbers"] * (scores[num] / max(scores.values(), default=1))
+                if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
+                    score += weights["side_hits"]
+                elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
+                    score += weights["side_hits"]
+                neighbors = current_neighbors.get(num, (None, None))
+                for neighbor in neighbors:
+                    if neighbor is not None and scores[neighbor] > 0:
+                        score += weights["neighbor_bonus"]
+                if len(spins) >= 1 and str(num) in [str(s) for s in spins[-2:]]:
+                    score += weights["recent_hit_momentum"]
+                trending_categories = 0
+                max_categories = len(EVEN_MONEY) + len(DOZENS) + len(COLUMNS)
+                for category, numbers in EVEN_MONEY.items():
+                    if num in numbers and len(numbers) > 0:
+                        hits = even_money_scores.get(category, 0)
+                        if total_spins > 0 and hits / total_spins > 1 / len(numbers):
+                            trending_categories += 1
+                for category, numbers in DOZENS.items():
+                    if num in numbers and len(numbers) > 0:
+                        hits = dozen_scores.get(category, 0)
+                        if total_spins > 0 and hits / total_spins > 1 / 3:
+                            trending_categories += 1
+                for category, numbers in COLUMNS.items():
+                    if num in numbers and len(numbers) > 0:
+                        hits = column_scores.get(category, 0)
+                        if total_spins > 0 and hits / total_spins > 1 / 3:
+                            trending_categories += 1
+                score += weights["overlapping_trends"] * (trending_categories / max_categories if max_categories else 0)
+                for category in EVEN_MONEY.keys() + DOZENS.keys() + COLUMNS.keys():
+                    streak_length = 0
+                    for spin in state.last_spins[-4:][::-1]:
+                        try:
+                            spin_num = int(spin)
+                            if spin_num in EVEN_MONEY.get(category, []) or spin_num in DOZENS.get(category, []) or spin_num in COLUMNS.get(category, []):
+                                streak_length += 1
+                            else:
+                                break
+                        except (ValueError, TypeError):
+                            logger.warning(f"Invalid spin in streak check: {spin}")
+                            break
+                    if num in EVEN_MONEY.get(category, []) or num in DOZENS.get(category, []) or num in COLUMNS.get(category, []):
+                        if 2 <= streak_length <= 4:
+                            score += weights["active_streaks"] * (streak_length / 4)
+                            if f"{category} streak: {streak_length} spins" not in active_streak_notes:
+                                active_streak_notes.append(f"{category} streak: {streak_length} spins")
+                        elif streak_length >= 5:
+                            score -= 0.05
+                number_scores[num] = {
+                    "score": score,
+                    "hits": scores[num],
+                    "recency": -spins[::-1].index(str(num)) if str(num) in [str(s) for s in spins] else -total_spins
+                }
+            except Exception as e:
+                logger.error(f"Error scoring number {num}: {str(e)}")
+                number_scores[num] = {"score": 0, "hits": 0, "recency": -total_spins}
+                continue
+        try:
+            sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
+        except Exception as e:
+            logger.error(f"Error sorting numbers: {str(e)}")
+            return "<p>Error: Failed to sort predictions for Hot Zone Call.</p>"
+        top_pick = sorted_numbers[0] if sorted_numbers else (0, {"score": 0, "hits": 0, "recency": 0})
+        honorable_mentions = sorted_numbers[1:3] if len(sorted_numbers) >= 3 else sorted_numbers[1:] + [(0, {"score": 0, "hits": 0, "recency": 0})] * (2 - len(sorted_numbers[1:]))
+        try:
+            comparison_html = '<table border="1" style="border-collapse: collapse; text-align: center; margin-top: 10px;">'
+            comparison_html += '<tr><th>Criteria</th><th>Top Pick</th><th>Honorable Mention 1</th></tr>'
+            comparison_html += f'<tr><td>Number</td><td>{top_pick[0]}</td><td>{honorable_mentions[0][0]}</td></tr>'
+            comparison_html += f'<tr><td>Score</td><td>{top_pick[1]["score"]:.2f}</td><td>{honorable_mentions[0][1]["score"]:.2f}</td></tr>'
+            comparison_html += f'<tr><td>Hits</td><td>{top_pick[1]["hits"]}</td><td>{honorable_mentions[0][1]["hits"]}</td></tr>'
+            comparison_html += f'<tr><td>Recency (Spins Ago)</td><td>{-top_pick[1]["recency"]}</td><td>{-honorable_mentions[0][1]["recency"]}</td></tr>'
+            comparison_html += '</table>'
+        except Exception as e:
+            logger.error(f"Error generating comparison table: {str(e)}")
+            comparison_html = "<p>Error: Failed to generate comparison table.</p>"
+        side_trend = f"{'Left' if side_hits['Left Side of Zero'] > side_hits['Right Side of Zero'] else 'Right'} Side is hotter (Gap: {side_gap})"
+        trend_notes = [side_trend] + active_streak_notes
+        if trending_categories > 0:
+            trend_notes.append(f"Trending Categories: {trending_categories} (e.g., Red, 2nd Dozen, 2nd Column)")
+        try:
+            html = '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">'
+            html += '<h4>Hot Zone Call 🔥</h4>'
+            html += '<div style="margin-bottom: 10px;">'
+            html += f'<p><strong>Top Pick:</strong> Number {top_pick[0]} (Score: {top_pick[1]["score"]:.2f}, Hits: {top_pick[1]["hits"]})</p>'
+            html += f'<p><strong>Reason:</strong> Highest combined score from streaks, hit percentage, and trend alignment.</p>'
+            html += '</div>'
+            html += '<div style="margin-bottom: 10px;">'
+            html += '<p><strong>Honorable Mentions:</strong></p>'
+            html += f'<p>1. Number {honorable_mentions[0][0]} (Score: {honorable_mentions[0][1]["score"]:.2f}, Hits: {honorable_mentions[0][1]["hits"]})</p>'
+            html += f'<p>2. Number {honorable_mentions[1][0]} (Score: {honorable_mentions[1]["score"]:.2f}, Hits: {honorable_mentions[1]["hits"]})</p>'
+            html += '</div>'
+            html += '<div style="margin-bottom: 10px;">'
+            html += '<p><strong>Comparison with Honorable Mention 1:</strong></p>'
+            html += comparison_html
+            html += '</div>'
+            html += '<div>'
+            html += '<p><strong>Trend Notes:</strong></p>'
+            for note in trend_notes:
+                html += f'<p>- {note}</p>'
+            html += '</div>'
+            html += '</div>'
+            logger.debug(f"Generated Hot Zone Call: Top Pick {top_pick[0]}, Score {top_pick[1]['score']:.2f}")
+            return html
+        except Exception as e:
+            logger.error(f"Error generating HTML output: {str(e)}")
+            return "<p>Error: Failed to generate Hot Zone Call output.</p>"
 
-    # Limit to last max_spins (default 36)
-    spins = spins[-max_spins:] if len(spins) > max_spins else spins
-    total_spins = len(spins)
-    
-    # Initialize scores for each number
-    scores = {n: 0 for n in range(37)}
-    side_hits = {"Left Side of Zero": 0, "Right Side of Zero": 0}
-    dozen_hits = {name: 0 for name in DOZENS.keys()}
-    
-    # Compute hit counts and side/dozen hits
-    for spin in spins:
-        num = int(spin)
-        scores[num] += 1
-        if num in current_left_of_zero:
-            side_hits["Left Side of Zero"] += 1
-        if num in current_right_of_zero:
-            side_hits["Right Side of Zero"] += 1
-        for name, numbers in DOZENS.items():
-            if num in numbers:
-                dozen_hits[name] += 1
-    
-    # Calculate Side Hits gap
-    side_gap = abs(side_hits["Left Side of Zero"] - side_hits["Right Side of Zero"])
-    
-    # Scoring weights based on Side Hits gap
-    weights = {
-        "streaks": 0.4 if side_gap <= 2 else 0.3,
-        "hit_percent": 0.3 if side_gap <= 2 else 0.2,
-        "hot_numbers": 0.2,
-        "side_hits": 0.1 if side_gap <= 2 else 0.2,
-        "neighbor_bonus": 0.05,
-        "repeat_penalty": -0.05
-    }
-    
-    # Compute scores for each number
-    number_scores = {}
-    for num in range(37):
-        score = 0
-        # Streaks (based on hottest dozen)
-        hottest_dozen = max(dozen_hits, key=dozen_hits.get, default="1st Dozen")
-        if num in DOZENS[hottest_dozen]:
-            score += weights["streaks"] * (dozen_hits[hottest_dozen] / total_spins if total_spins else 0)
-        
-        # Hit Percentage
-        hit_percent = scores[num] / total_spins if total_spins else 0
-        score += weights["hit_percent"] * hit_percent
-        
-        # Hot Numbers
-        if scores[num] > 0:
-            score += weights["hot_numbers"] * (scores[num] / max(scores.values(), default=1))
-        
-        # Side Hits
-        if num in current_left_of_zero and side_hits["Left Side of Zero"] > side_hits["Right Side of Zero"]:
-            score += weights["side_hits"]
-        elif num in current_right_of_zero and side_hits["Right Side of Zero"] > side_hits["Left Side of Zero"]:
-            score += weights["side_hits"]
-        
-        # Neighbor Bonus
-        neighbors = current_neighbors.get(num, (None, None))
-        for neighbor in neighbors:
-            if neighbor is not None and scores[neighbor] > 0:
-                score += weights["neighbor_bonus"]
-        
-        # Repeat Penalty (if same number appears consecutively)
-        if len(spins) >= 2 and int(spins[-1]) == num and int(spins[-2]) == num:
-            score += weights["repeat_penalty"]
-        
-        number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
-    
-    # Sort numbers by score, using recency as tiebreaker
-    sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
-    
-    # Select Top Pick and Honorable Mentions
-    top_pick = sorted_numbers[0] if sorted_numbers else (0, {"score": 0, "hits": 0})
-    honorable_mentions = sorted_numbers[1:3] if len(sorted_numbers) >= 3 else sorted_numbers[1:] + [(0, {"score": 0, "hits": 0})] * (2 - len(sorted_numbers[1:]))
-    
-    # Generate comparison table
-    comparison_html = '<table border="1" style="border-collapse: collapse; text-align: center; margin-top: 10px;">'
-    comparison_html += '<tr><th>Criteria</th><th>Top Pick</th><th>Honorable Mention 1</th></tr>'
-    comparison_html += f'<tr><td>Number</td><td>{top_pick[0]}</td><td>{honorable_mentions[0][0]}</td></tr>'
-    comparison_html += f'<tr><td>Score</td><td>{top_pick[1]["score"]:.2f}</td><td>{honorable_mentions[0][1]["score"]:.2f}</td></tr>'
-    comparison_html += f'<tr><td>Hits</td><td>{top_pick[1]["hits"]}</td><td>{honorable_mentions[0][1]["hits"]}</td></tr>'
-    comparison_html += f'<tr><td>Recency (Spins Ago)</td><td>{-top_pick[1]["recency"]}</td><td>{-honorable_mentions[0][1]["recency"]}</td></tr>'
-    comparison_html += '</table>'
-    
-    # Trend Notes
-    side_trend = f"{'Left' if side_hits['Left Side of Zero'] > side_hits['Right Side of Zero'] else 'Right'} Side is hotter (Gap: {side_gap})"
-    repeat_trend = "Consecutive repeats detected in recent spins" if len(spins) >= 2 and spins[-1] == spins[-2] else "No recent consecutive repeats"
-    
-    # Generate HTML output
-    html = '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">'
-    html += '<h4>Hot Zone Call 🔥</h4>'
-    html += '<div style="margin-bottom: 10px;">'
-    html += f'<p><strong>Top Pick:</strong> Number {top_pick[0]} (Score: {top_pick[1]["score"]:.2f}, Hits: {top_pick[1]["hits"]})</p>'
-    html += f'<p><strong>Reason:</strong> Highest combined score from streaks, hit percentage, and side bias.</p>'
-    html += '</div>'
-    html += '<div style="margin-bottom: 10px;">'
-    html += '<p><strong>Honorable Mentions:</strong></p>'
-    html += f'<p>1. Number {honorable_mentions[0][0]} (Score: {honorable_mentions[0][1]["score"]:.2f}, Hits: {honorable_mentions[0][1]["hits"]})</p>'
-    html += f'<p>2. Number {honorable_mentions[1][0]} (Score: {honorable_mentions[1][1]["score"]:.2f}, Hits: {honorable_mentions[1][1]["hits"]})</p>'
-    html += '</div>'
-    html += '<div style="margin-bottom: 10px;">'
-    html += '<p><strong>Comparison with Honorable Mention 1:</strong></p>'
-    html += comparison_html
-    html += '</div>'
-    html += '<div>'
-    html += '<p><strong>Trend Notes:</strong></p>'
-    html += f'<p>- {side_trend}</p>'
-    html += f'<p>- {repeat_trend}</p>'
-    html += '</div>'
-    html += '</div>'
-    
-    return html
 # Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, strong_numbers_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
