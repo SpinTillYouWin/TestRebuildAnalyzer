@@ -4924,38 +4924,43 @@ def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks with a Quick Trends section."""
     try:
         # Debug: Log input and state
-        print(f"summarize_spin_traits: last_spin_count = {last_spin_count}, state.last_spins = {state.last_spins}")
+        print(f"summarize_spin_traits: last_spin_count = {last_spin_count}")
         # Ensure last_spin_count is a valid integer
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
-        last_spin_count = max(1, min(last_spin_count, 36))  # Clamp between 1 and 36
+        last_spin_count = max(1, min(last_spin_count, 36))
         print(f"summarize_spin_traits: After clamping, last_spin_count = {last_spin_count}")
 
-        # Use state.last_spins directly and ensure it's not empty
-        print(f"summarize_spin_traits: Checking state.last_spins type: {type(state.last_spins)}")
+        # Check if state and state.last_spins are properly defined
+        if not hasattr(state, 'last_spins'):
+            print(f"summarize_spin_traits: state.last_spins is not defined")
+            return "<p>Error: Spin data not initialized.</p>"
+        print(f"summarize_spin_traits: state.last_spins = {state.last_spins}, type: {type(state.last_spins)}")
+        
+        # Ensure state.last_spins is a list
+        if not isinstance(state.last_spins, list):
+            print(f"summarize_spin_traits: state.last_spins is not a list, type: {type(state.last_spins)}")
+            return "<p>Error: Invalid spin data format.</p>"
+        
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         print(f"summarize_spin_traits: last_spins = {last_spins}")
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
 
-        # Initialize counters
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         number_counts = {}
 
-        # Initialize streak tracking with spin details
         even_money_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in even_money_counts}
         column_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in column_counts}
         dozen_streaks = {key: {"current": 0, "max": 0, "last_hit": False, "spins": []} for key in dozen_counts}
         print(f"summarize_spin_traits: Initialized counters and streaks")
 
-        # Analyze spins and track streaks
         for idx, spin in enumerate(last_spins):
             print(f"summarize_spin_traits: Processing spin {idx}: {spin}")
             try:
                 num = int(spin)
                 print(f"summarize_spin_traits: Converted spin to integer: {num}")
-                # Reset last_hit flags for this spin
                 for key in even_money_streaks:
                     even_money_streaks[key]["last_hit"] = False
                 for key in column_streaks:
@@ -4964,7 +4969,6 @@ def summarize_spin_traits(last_spin_count):
                     dozen_streaks[key]["last_hit"] = False
                 print(f"summarize_spin_traits: Reset last_hit flags for spin {num}")
 
-                # Even Money Bets
                 for name, numbers in EVEN_MONEY.items():
                     if num in numbers:
                         even_money_counts[name] += 1
@@ -4980,7 +4984,6 @@ def summarize_spin_traits(last_spin_count):
                             even_money_streaks[name]["spins"] = []
                 print(f"summarize_spin_traits: Processed Even Money Bets for spin {num}")
 
-                # Columns
                 for name, numbers in COLUMNS.items():
                     if num in numbers:
                         column_counts[name] += 1
@@ -4996,7 +4999,6 @@ def summarize_spin_traits(last_spin_count):
                             column_streaks[name]["spins"] = []
                 print(f"summarize_spin_traits: Processed Columns for spin {num}")
 
-                # Dozens
                 for name, numbers in DOZENS.items():
                     if num in numbers:
                         dozen_counts[name] += 1
@@ -5012,30 +5014,25 @@ def summarize_spin_traits(last_spin_count):
                             dozen_streaks[name]["spins"] = []
                 print(f"summarize_spin_traits: Processed Dozens for spin {num}")
 
-                # Repeat Numbers
                 number_counts[num] = number_counts.get(num, 0) + 1
                 print(f"summarize_spin_traits: Processed Repeat Numbers for spin {num}")
             except ValueError:
                 print(f"summarize_spin_traits: ValueError converting spin {spin} to integer")
                 continue
 
-        # Find the maximum counts for each section (excluding Repeat Numbers)
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         max_columns = max(column_counts.values()) if column_counts else 0
         max_dozens = max(dozen_counts.values()) if dozen_counts else 0
         print(f"summarize_spin_traits: Max counts - Even Money: {max_even_money}, Columns: {max_columns}, Dozens: {max_dozens}")
 
-        # Quick Trends Calculation with Spin Context
         total_spins = len(last_spins)
         trends = []
         if total_spins > 0:
-            # Dominant category
             all_counts = {**even_money_counts, **column_counts, **dozen_counts}
             dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
             if dominant[1] > 0:
                 percentage = (dominant[1] / total_spins * 100)
                 trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
-            # Longest active streak with spin context
             all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
             longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
             if longest_streak > 1:
@@ -5044,11 +5041,9 @@ def summarize_spin_traits(last_spin_count):
                 trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
         print(f"summarize_spin_traits: Quick Trends calculated: {trends}")
 
-        # Build HTML Badges
         html = '<div class="traits-overview">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
-        # Quick Trends Section
         html += '<div class="quick-trends">'
         html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
         if trends:
@@ -5060,7 +5055,6 @@ def summarize_spin_traits(last_spin_count):
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
         print(f"summarize_spin_traits: Quick Trends HTML generated")
-        # Even Money
         html += '<div class="badge-group">'
         html += '<h4 style="color: #b71c1c;">Even Money Bets</h4>'
         html += '<div class="percentage-badges">'
@@ -5074,7 +5068,6 @@ def summarize_spin_traits(last_spin_count):
             html += f'<div class="percentage-with-bar" data-category="even-money"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         print(f"summarize_spin_traits: Even Money Bets HTML generated")
-        # Columns
         html += '<div class="badge-group">'
         html += '<h4 style="color: #1565c0;">Columns</h4>'
         html += '<div class="percentage-badges">'
@@ -5083,24 +5076,22 @@ def summarize_spin_traits(last_spin_count):
             streak = column_streaks[name]["max"]
             streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
-            bar_color = "#1565c0"  # Blue for columns
+            bar_color = "#1565c0"
             html += f'<div class="percentage-with-bar" data-category="columns"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         print(f"summarize_spin_traits: Columns HTML generated")
-        # Dozens
         html += '<div class="badge-group">'
-        html += '<h4 style="color: #388e3c;">Dozens</h4>'  # Fixed typo: "zahlDozens" -> "Dozens"
+        html += '<h4 style="color: #388e3c;">Dozens</h4>'
         html += '<div class="percentage-badges">'
         for name, count in dozen_counts.items():
             badge_class = "trait-badge dozen winner" if count == max_dozens and max_dozens > 0 else "trait-badge dozen"
             streak = dozen_streaks[name]["max"]
             streak_title = f"{name} Hot Streak: {streak} consecutive hits" if streak >= 3 else ""
             percentage = (count / total_spins * 100) if total_spins > 0 else 0
-            bar_color = "#388e3c"  # Green for dozens
+            bar_color = "#388e3c"
             html += f'<div class="percentage-with-bar" data-category="dozens"><span class="{badge_class}" title="{streak_title}">{name}: {count}</span><div class="progress-bar"><div class="progress-fill" style="width: {percentage}%; background-color: {bar_color};"></div></div></div>'
         html += '</div></div>'
         print(f"summarize_spin_traits: Dozens HTML generated")
-        # Repeat Numbers (no streak tracking for repeats)
         html += '<div class="badge-group">'
         html += '<h4 style="color: #7b1fa2;">Repeat Numbers</h4>'
         html += '<div class="percentage-badges">'
