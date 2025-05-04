@@ -5195,7 +5195,10 @@ def select_next_spin_top_pick(last_spin_count):
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
 
-        numbers = set(range(37))
+        # Step 1: Initialize all possible numbers
+        numbers = set(range(37))  # 0-36
+
+        # Step 2: Filter by dominant categories (Hit Percentage Overview)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5215,6 +5218,7 @@ def select_next_spin_top_pick(last_spin_count):
             except ValueError:
                 continue
 
+        # Identify single winners (no ties)
         filtered_numbers = numbers.copy()
         max_even_money = max(even_money_counts.values()) if even_money_counts else 0
         even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
@@ -5229,10 +5233,11 @@ def select_next_spin_top_pick(last_spin_count):
         if len(dozen_winners) == 1 and max_dozens > 0:
             filtered_numbers = filtered_numbers.intersection(DOZENS[dozen_winners[0]])
 
+        # Reset if no numbers remain
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
 
-        # Validate state.scores
+        # Step 3: Get hot numbers from Dealer's Spin Tracker
         hit_counts = {n: state.scores.get(n, 0) for n in range(37)} if hasattr(state, 'scores') else {n: 0 for n in range(37)}
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
         hot_numbers = set()
@@ -5248,6 +5253,7 @@ def select_next_spin_top_pick(last_spin_count):
             hot_numbers = set(num for num, score in sorted_hot if score > 0)
         hot_numbers = hot_numbers & filtered_numbers
 
+        # Step 4: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
@@ -5265,9 +5271,11 @@ def select_next_spin_top_pick(last_spin_count):
             section_numbers.update(betting_sections[name])
         filtered_numbers = filtered_numbers.intersection(section_numbers) if section_numbers else filtered_numbers
 
+        # Reset if no numbers remain
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
 
+        # Step 5: Boost numbers in categories with active streaks (SpinTrend Radar)
         streak_numbers = set()
         all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
         longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
@@ -5281,30 +5289,34 @@ def select_next_spin_top_pick(last_spin_count):
                 elif cat in DOZENS:
                     streak_numbers.update(DOZENS[cat])
 
+        # Step 6: Get top 5 strongest numbers
         strongest_numbers = set()
         sorted_scores = sorted((state.scores.items() if hasattr(state, 'scores') else []), key=lambda x: (-x[1], x[0]))
         for num, score in sorted_scores[:5]:
             if score > 0:
                 strongest_numbers.add(num)
 
+        # Step 7: Score numbers
         scores = {}
         for num in filtered_numbers:
             score = state.scores.get(num, 0) if hasattr(state, 'scores') else 0
             if num in hot_numbers:
-                score += 3
+                score += 3  # Hot number boost
             if num in section_numbers:
-                score += 2
+                score += 2  # Top betting section boost
             if num in streak_numbers:
-                score += 1
+                score += 1  # Active streak boost
             if num in strongest_numbers:
-                score += 2
+                score += 2  # Strongest number boost
+            # Tiebreaker: Recent spins
             for i, spin in enumerate(reversed(last_spins)):
                 if int(spin) == num:
-                    score += (last_spin_count - i) * 0.1
+                    score += (last_spin_count - i) * 0.1  # Weight recent spins
                     break
             scores[num] = score
 
         if not scores:
+            # Fallback: Use hot numbers or random selection
             filtered_numbers = hot_numbers if hot_numbers else numbers
             scores = {num: (state.scores.get(num, 0) if hasattr(state, 'scores') else 0) for num in filtered_numbers}
             for num in scores:
@@ -5313,9 +5325,11 @@ def select_next_spin_top_pick(last_spin_count):
                         scores[num] += (last_spin_count - i) * 0.1
                         break
 
+        # Select top pick
         top_pick = max(scores.items(), key=lambda x: x[1])[0]
         state.current_top_pick = top_pick
 
+        # Generate HTML with updated styling
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
@@ -5330,12 +5344,20 @@ def select_next_spin_top_pick(last_spin_count):
                 border-radius: 5px;
                 text-align: center;
             }}
+            .top-pick-container h4 {{
+                margin: 10px 0;
+                color: #fff; /* Whiter text */
+            }}
+            .top-pick-container p {{
+                font-style: italic;
+                color: #ddd; /* Slightly off-white for contrast */
+            }}
             .top-pick-badge {{
                 display: inline-block;
-                padding: 5px 10px;
-                border-radius: 12px;
+                padding: 8px 12px; /* Increased padding for larger square */
+                border-radius: 15px; /* Adjusted for larger size */
                 font-weight: bold;
-                font-size: 16px;
+                font-size: 20px; /* Larger font size */
                 color: white;
                 background-color: {color};
                 box-shadow: 0 0 8px rgba(0,0,0,0.3);
