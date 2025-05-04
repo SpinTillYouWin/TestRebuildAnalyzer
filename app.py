@@ -5740,6 +5740,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Hit Percentages",
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
+                elem_classes=["hit-percentage-container"]
                 )
 
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
@@ -5750,6 +5751,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
+
 
     # Line 1: Updated Next Spin Top Pick accordion
     with gr.Accordion("Next Spin Top Pick 🎯", open=True, elem_id="next-spin-top-pick"):
