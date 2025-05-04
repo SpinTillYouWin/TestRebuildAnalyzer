@@ -5151,9 +5151,8 @@ STRATEGIES = {
 
 # Line 2: New function to generate Hot Zone Call
 def generate_hot_zone_call(spins, max_spins=36):
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger(__name__)
+def generate_hot_zone_call(spins, max_spins=36):
+    logger.debug(f"Entering generate_hot_zone_call with spins: {spins}")
     if not isinstance(spins, list) or not spins:
         logger.error("Invalid spins input: %s", spins)
         return "<p>Error: No valid spins provided for Hot Zone Call.</p>"
