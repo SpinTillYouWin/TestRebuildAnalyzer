@@ -5526,15 +5526,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    # Start of updated section
-    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                hit_percentage_display = gr.HTML(
-                    label="Hit Percentages",
-                    value=calculate_hit_percentages(36),
-                    elem_classes=["hit-percentage-container"]
-                )
 
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
@@ -5758,6 +5749,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Spin Traits",
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
+                )
+
+    # Line 2: Add the new section
+    with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                top_pick_spin_count = gr.Slider(
+                    label="Number of Spins to Analyze",
+                    minimum=1,
+                    maximum=36,
+                    step=1,
+                    value=2,
+                    interactive=True,
+                    elem_classes="long-slider"
+                )
+                top_pick_display = gr.HTML(
+                    label="Top Pick",
+                    value=select_next_spin_top_pick(2),
+                    elem_classes=["top-pick-container"]
                 )
 
 # Surrounding lines before (unchanged)
