@@ -5158,6 +5158,8 @@ def generate_hot_zone_call(spins, max_spins=36):
 
     # Line before (context, unchanged)
     # Limit to last max_spins (default 36)
+    # Line before (context, unchanged)
+    # Limit to last max_spins (default 36)
     spins = spins[-max_spins:] if len(spins) > max_spins else spins
     total_spins = len(spins)
     
@@ -5252,7 +5254,7 @@ def generate_hot_zone_call(spins, max_spins=36):
         "active_streaks": 0.15,
         "hit_percent": 0.15,
         "hot_numbers": 0.2,  # Kept for consistency, not used directly
-        "side_hits": 0.2,  # CHANGED: Increased from 0.15 to 0.2
+        "side_hits": 0.25,  # CHANGED: Increased from 0.2 to 0.25
         "neighbor_bonus": 0.05,
         "repeat_penalty": -0.05
     }
@@ -5314,9 +5316,9 @@ def generate_hot_zone_call(spins, max_spins=36):
             # Side Hits
             side_score = 0
             if num in current_left_of_zero:
-                side_score = 0.2 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+                side_score = 0.25 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
             elif num in current_right_of_zero:
-                side_score = 0.2 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+                side_score = 0.25 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
             score += side_score
             
             # Neighbor Bonus (capped at one neighbor)
@@ -5334,7 +5336,7 @@ def generate_hot_zone_call(spins, max_spins=36):
                 repeat_penalty = weights["repeat_penalty"]
             score += repeat_penalty
             
-            # CHANGED: Log detailed contributions for top 5 hit numbers and one unhit number
+            # Log detailed contributions for top 5 hit numbers and one unhit number
             if num in [num for num, hits in sorted_by_hits[:5] if hits > 0] + [18]:
                 print(f"Scoring Number {num} (Hits: {scores[num]}):")
                 print(f"  Streaks: +{streak_score:.3f}")
@@ -5345,9 +5347,9 @@ def generate_hot_zone_call(spins, max_spins=36):
                 print(f"  Side Hits: +{side_score:.3f}")
                 print(f"  Neighbor Bonus: +{neighbor_score:.3f}")
                 print(f"  Repeat Penalty: {repeat_penalty:.3f}")
-                print(f"  Total" + f"  Total Score: {score:.3f}\n")
+                print(f"  Total Score: {score:.3f}\n")
             
-            number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) / 10.0 if str(num) in spins else -total_spins / 10.0}  # CHANGED: Scale recency
+            number_scores[num] = {"score": score, "hits": scores[num], "recency": -spins[::-1].index(str(num)) if str(num) in spins else -total_spins}
     except Exception as e:
         print(f"Error in scoring loop: {str(e)}")
         return '<div style="background-color: #f5c6cb; padding: 10px; border-radius: 5px;">Error processing spins: {str(e)}</div>'
@@ -5358,13 +5360,18 @@ def generate_hot_zone_call(spins, max_spins=36):
     for num in top_5_numbers + [sample_unhit]:
         side_score = 0
         if num in current_left_of_zero:
-            side_score = 0.2 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
+            side_score = 0.25 * (side_hits["Left Side of Zero"] / total_spins if total_spins else 0)
         elif num in current_right_of_zero:
-            side_score = 0.2 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
+            side_score = 0.25 * (side_hits["Right Side of Zero"] / total_spins if total_spins else 0)
         print(f"Number {num}: Side Hits Score = {side_score:.3f}, Total Score = {number_scores[num]['score']:.3f}, Hits = {scores[num]}")
     
-    # Sort numbers by score, using scaled recency as tiebreaker
-    sorted_numbers = sorted(number_scores.items(), key=lambda x: (x[1]["score"], x[1]["recency"]), reverse=True)
+    # CHANGED: Sort by score only, remove recency tiebreaker
+    sorted_numbers = sorted(number_scores.items(), key=lambda x: x[1]["score"], reverse=True)
+    
+    # CHANGED: Log top 3 numbers for verification
+    print("Top 3 Numbers:")
+    for i, (num, data) in enumerate(sorted_numbers[:3], 1):
+        print(f"  {i}. Number {num}: Score = {data['score']:.3f}, Hits = {data['hits']}")
     
     # Lines after (context, unchanged)
     # Select Top Pick and Honorable Mentions
