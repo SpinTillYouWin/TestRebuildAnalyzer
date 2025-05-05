@@ -2462,7 +2462,7 @@ def get_strongest_numbers_with_neighbors(num_count):
     sorted_numbers = sorted(list(all_numbers))
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
-# Function to analyze spins
+# Updated analyze_spins function with additional debugging
 def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
     """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
