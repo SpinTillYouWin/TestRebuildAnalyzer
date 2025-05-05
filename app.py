@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function without collapsible section
+# Updated select_next_spin_top_pick function with characteristics display
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5521,11 +5521,48 @@ def select_next_spin_top_pick(last_spin_count):
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
             print(f"select_next_spin_top_pick: Explanation={explanation}")
 
-        # Step 10: Generate HTML with updated styling and explanation (not collapsible)
+        # Step 10: Calculate characteristics of the top pick number
+        characteristics = []
+        top_pick_str = str(top_pick)
+
+        # Color
+        color = colors.get(top_pick_str, "unknown").capitalize()
+        characteristics.append(f'<span class="characteristic characteristic-color characteristic-{color.lower()}">{color}</span>')
+
+        # Parity (Even/Odd)
+        parity = "Even" if top_pick in EVEN_MONEY["Even"] else "Odd"
+        characteristics.append(f'<span class="characteristic characteristic-parity">{parity}</span>')
+
+        # Range (Low/High)
+        range_category = "Low" if top_pick in EVEN_MONEY["Low"] else "High"
+        characteristics.append(f'<span class="characteristic characteristic-range">{range_category}</span>')
+
+        # Dozen
+        dozen = None
+        for name, nums in DOZENS.items():
+            if top_pick in nums:
+                dozen = name
+                break
+        if dozen:
+            characteristics.append(f'<span class="characteristic characteristic-dozen">{dozen}</span>')
+
+        # Column
+        column = None
+        for name, nums in COLUMNS.items():
+            if top_pick in nums:
+                column = name
+                break
+        if column:
+            characteristics.append(f'<span class="characteristic characteristic-column">{column}</span>')
+
+        characteristics_html = " ".join(characteristics)
+
+        # Step 11: Generate HTML with updated styling, explanation, and characteristics
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
             <h4>Top Pick for Next Spin 🎯: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
+            <div class="characteristics">{characteristics_html}</div>
             <p>Based on analysis of the last {last_spin_count} spins.</p>
             <div class="explanation">
                 {explanation}
@@ -5541,11 +5578,11 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .top-pick-container h4 {{
                 margin: 10px 0;
-                color: #333; /* Changed to a darker color for better visibility */
+                color: #333;
             }}
             .top-pick-container p {{
                 font-style: italic;
-                color: #666; /* Adjusted for better contrast */
+                color: #666;
             }}
             .top-pick-badge {{
                 display: inline-block;
@@ -5587,6 +5624,34 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .explanation strong {{
                 color: #555;
+            }}
+            .characteristics {{
+                margin: 5px 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+                animation: fadeIn 0.5s ease-in;
+            }}
+            .characteristic {{
+                display: inline-block;
+                padding: 3px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+                color: white;
+                box-shadow: 0 0 3px rgba(0,0,0,0.2);
+            }}
+            .characteristic-color.red {{ background-color: #e74c3c; }}
+            .characteristic-color.black {{ background-color: #2c3e50; }}
+            .characteristic-color.green {{ background-color: #2ecc71; }}
+            .characteristic-parity {{ background-color: #3498db; }}
+            .characteristic-range {{ background-color: #2ecc71; }}
+            .characteristic-dozen {{ background-color: #f1c40f; color: #333; }}
+            .characteristic-column {{ background-color: #e67e22; }}
+            @keyframes fadeIn {{
+                from {{ opacity: 0; }}
+                to {{ opacity: 1; }}
             }}
         </style>
         '''
