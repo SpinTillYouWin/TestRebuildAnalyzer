@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function with JACKPOT celebration effect
+# Updated select_next_spin_top_pick function with proper import dependency
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
