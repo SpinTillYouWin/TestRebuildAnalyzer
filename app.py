@@ -5789,56 +5789,67 @@ STRATEGIES = {
 def show_strategy_recommendations(strategy_name, neighbours_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
+        # Debug logging
         print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
         print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
         print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
         print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, args = {args}")
 
+        # Handle "None" strategy
         if strategy_name == "None":
-            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
+            result = "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
+            print(f"show_strategy_recommendations: Returning for None strategy: {result}")
+            return result
         
-        # If no spins yet, provide a default for "Best Even Money Bets"
+        # Handle no spins case
         if not any(state.scores.values()) and not any(state.even_money_scores.values()):
             if strategy_name == "Best Even Money Bets":
-                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
-            return "<p>Please analyze some spins first to generate scores.</p>"
+                result = "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
+            else:
+                result = "<p>Please analyze some spins first to generate scores.</p>"
+            print(f"show_strategy_recommendations: Returning for no spins: {result}")
+            return result
 
+        # Get strategy details
         strategy_info = STRATEGIES[strategy_name]
         strategy_func = strategy_info["function"]
 
+        # Handle "Neighbours of Strong Number" strategy
         if strategy_name == "Neighbours of Strong Number":
             try:
                 neighbours_count = int(neighbours_count)
-                strong_numbers_count = int(args[0]) if args else 1  # Assuming strong_numbers_count is first in args
-                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
+                strong_numbers_count = int(args[0]) if args else 1  # Default to 1 if no args
+                print(f"show_strategy_recommendations: Neighbours of Strong Number - neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
             except (ValueError, TypeError) as e:
-                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
+                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1")
                 neighbours_count = 2
                 strong_numbers_count = 1
             result = strategy_func(neighbours_count, strong_numbers_count)
-            # Handle the tuple return value for Neighbours of Strong Number
+            # Handle tuple return value for Neighbours of Strong Number
             if isinstance(result, tuple) and len(result) == 2:
-                recommendations, _ = result  # We only need the recommendations string for display
+                recommendations, _ = result  # Only need recommendations string
             else:
                 recommendations = result
+        # Handle "Dozen Tracker" strategy
         elif strategy_name == "Dozen Tracker":
-            # Dozen Tracker expects multiple arguments and returns a tuple
             result = strategy_func(*args)
             if isinstance(result, tuple) and len(result) == 3:
-                recommendations, _, _ = result  # Unpack the tuple, we only need the first element
+                recommendations, _, _ = result  # Unpack tuple, only need first element
             else:
                 recommendations = result
         else:
             # Other strategies return a single string
             recommendations = strategy_func()
 
+        # Log raw output
         print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
 
-        # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
+        # Format output as HTML
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
-            return recommendations
-        # Special handling for "Neighbours of Strong Number" to format Suggestions section
+            # Return HTML directly
+            result = recommendations
         elif strategy_name == "Neighbours of Strong Number":
+            # Format suggestions with proper HTML
             lines = recommendations.split("\n")
             html_lines = []
             in_suggestions = False
@@ -5853,18 +5864,24 @@ def show_strategy_recommendations(strategy_name, neighbours_count, *args):
                     html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
                 else:
                     html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
-            return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
-        # Otherwise, convert plain text to HTML with proper line breaks
+            result = '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
         else:
-            # Split the output into lines, removing any empty lines
+            # Convert plain text to HTML with proper line breaks
             lines = [line for line in recommendations.split("\n") if line.strip()]
-            # Wrap each line in <p> tags and join with <br> for proper spacing
             html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
-            return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
+            result = "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
+
+        # Ensure result is not empty
+        if not result.strip():
+            result = "<p>Error: No recommendations generated. Please try a different strategy or add more spins.</p>"
+        
+        print(f"show_strategy_recommendations: Final HTML output: {result[:100]}...")  # Log first 100 chars
+        return result
 
     except Exception as e:
-        print(f"show_strategy_recommendations: Error: {str(e)}")
-        raise  # Re-raise for debugging
+        error_msg = f"<p>Error generating recommendations: {str(e)}</p>"
+        print(f"show_strategy_recommendations: Error: {str(e)}, returning: {error_msg}")
+        return error_msg
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
