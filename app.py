@@ -5957,7 +5957,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     minimum=1,
                     maximum=36,
                     step=1,
-                    value=18,
+                    value=36,
                     interactive=True,
                     elem_classes="long-slider"
                 )
