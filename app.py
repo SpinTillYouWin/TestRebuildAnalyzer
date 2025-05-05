@@ -497,7 +497,12 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
     
     # Split the spins string into a list and reverse to get the most recent first
     spin_list = spins.split(", ") if spins else []
-    spin_list = spin_list[-int(num_to_show):] if spin_list else []  # Take the last N spins
+    
+    # Ensure num_to_show is within a reasonable range (1 to 1000, matching the app's total spin limit)
+    num_to_show = int(num_to_show) if num_to_show is not None else 1000
+    num_to_show = max(1, min(num_to_show, 1000))  # Added to cap at 1000 for consistency
+    
+    spin_list = spin_list[-num_to_show:] if spin_list else []  # Take the last N spins
     
     if not spin_list:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
@@ -595,7 +600,6 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
     '''
     
     return html_output
-
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
