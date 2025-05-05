@@ -7262,30 +7262,49 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
 
-        /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
+        /* Traits Badges Layout */
         .traits-wrapper {
             width: 100% !important;
-            max-width: 1600px !important; /* Match percentage-wrapper */
-            box-sizing: border-box !important; /* Ensure consistent width calculation */
+            max-width: 1600px !important;
+            box-sizing: border-box !important;
+            overflow-x: auto !important; /* Allow horizontal scrolling for the entire wrapper */
+            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
         }
+        
         .badge-group {
             margin: 5px 0 !important;
             flex: 1 !important;
-            min-width: 150px !important; /* Ensure groups don’t collapse */
+            min-width: 150px !important;
         }
+        
         .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
         .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
         .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
         .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
+        
         .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important; /* Prevent wrapping, match percentage-badges */
+            flex-wrap: nowrap !important;
             gap: 5px !important;
             align-items: center !important;
-            white-space: nowrap !important; /* Ensure content stays in one line */
+            white-space: nowrap !important;
+            overflow-x: auto !important; /* Allow horizontal scrolling */
+            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
         }
-
-        /* TITLE: Trait Badge Styles */
+        
+        /* Responsive adjustments for mobile */
+        @media (max-width: 600px) {
+            .percentage-badges {
+                flex-wrap: wrap !important; /* Allow wrapping on small screens */
+                overflow-x: visible !important;
+            }
+            .trait-badge {
+                font-size: 10px !important; /* Smaller font for mobile */
+                padding: 4px 8px !important;
+            }
+        }
+        
+        /* Trait Badge Styles */
         .trait-badge {
             background-color: #444 !important;
             color: #fff !important;
@@ -7295,23 +7314,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 3px !important;
             transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
             cursor: pointer !important;
+            flex-shrink: 0 !important; /* Prevent badges from shrinking */
         }
         .trait-badge:hover {
             transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            filter: brightness(1.2) !important; /* Slight brightness increase */
+            box-shadow: 0 0 8px #ffd700 !important;
+            filter: brightness(1.2) !important;
         }
-        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
-        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
-        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
-        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
+        .trait-badge.even-money { background-color: #b71c1c !important; }
+        .trait-badge.column { background-color: #1565c0 !important; }
+        .trait-badge.dozen { background-color: #388e3c !important; }
+        .trait-badge.repeat { background-color: #7b1fa2 !important; }
         .trait-badge.winner {
             font-weight: bold !important;
-            color: #333 !important; /* Dark gray text for better contrast */
-            border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
-            transform: scale(1.1) !important; /* Make winners slightly larger */
+            color: #333 !important;
+            border: 2px solid #ffd700 !important;
+            box-shadow: 0 0 8px #ffd700 !important;
+            background-color: rgba(255, 215, 0, 0.2) !important;
+            transform: scale(1.1) !important;
         }
         
         /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
