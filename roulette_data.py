@@ -1,10 +1,6 @@
-# roulette_data.py
-
-# European Roulette wheel order
 WHEEL_EUROPEAN = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
                   10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
 
-# Neighbor lookup for European Roulette
 NEIGHBORS_EUROPEAN = {
     0: (26, 32), 32: (0, 15), 15: (32, 19), 19: (15, 4), 4: (19, 21), 21: (4, 2),
     2: (21, 25), 25: (2, 17), 17: (25, 34), 34: (17, 6), 6: (34, 27), 27: (6, 13),
@@ -15,7 +11,6 @@ NEIGHBORS_EUROPEAN = {
     26: (3, 0)
 }
 
-# Define sections
 EVEN_MONEY = {
     "Red": [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36],
     "Black": [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35],
@@ -116,11 +111,11 @@ LEFT_OF_ZERO_EUROPEAN = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33,
 RIGHT_OF_ZERO_EUROPEAN = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
 
 colors = {
-    "0": "green",
-    "1": "red", "3": "red", "5": "red", "7": "red", "9": "red", "12": "red",
-    "14": "red", "16": "red", "18": "red", "19": "red", "21": "red", "23": "red",
-    "25": "red", "27": "red", "30": "red", "32": "red", "34": "red", "36": "red",
-    "2": "black", "4": "black", "6": "black", "8": "black", "10": "black", "11": "black",
-    "13": "black", "15": "black", "17": "black", "20": "black", "22": "black", "24": "black",
-    "26": "black", "28": "black", "29": "black", "31": "black", "33": "black", "35": "black"
+    0: "green",
+    1: "red", 3: "red", 5: "red", 7: "red", 9: "red", 12: "red",
+    14: "red", 16: "red", 18: "red", 19: "red", 21: "red", 23: "red",
+    25: "red", 27: "red", 30: "red", 32: "red", 34: "red", 36: "red",
+    2: "black", 4: "black", 6: "black", 8: "black", 10: "black", 11: "black",
+    13: "black", 15: "black", 17: "black", 20: "black", 22: "black", 24: "black",
+    26: "black", 28: "black", 29: "black", 31: "black", 33: "black", 35: "black"
 }
