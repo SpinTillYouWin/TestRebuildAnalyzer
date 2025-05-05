@@ -8266,10 +8266,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Clear outputs to reset error state
-            fn=lambda: ("", ""),
+            # Only clear dynamic_table_output to avoid wiping strategy_output
+            fn=lambda: ("",),
             inputs=[],
-            outputs=[dynamic_table_output, strategy_output]
+            outputs=[dynamic_table_output]
         ).then(
             fn=update_casino_data,
             inputs=[
@@ -8285,7 +8285,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         ).then(
-            fn=show_strategy_recommendations,
+            # Explicitly update strategy_output to ensure it persists
+            fn=lambda strategy, neighbours_count, strong_numbers_count: show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count) or "<p>Error: Unable to generate recommendations. Please try again.</p>",
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
         ).then(
