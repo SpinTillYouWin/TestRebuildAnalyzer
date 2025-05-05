@@ -6931,7 +6931,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
         button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-
+    
         /* NEW CODE: Add glow effect for buttons (INSERT HERE) */
         .action-button, .green-btn, .roulette-button {
             transition: box-shadow 0.3s ease, transform 0.2s ease !important;
@@ -6997,7 +6997,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
     
-
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important;
@@ -7162,7 +7161,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-
+    
             /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
@@ -7214,7 +7213,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 4px 8px !important;
             }
         }
-
+    
         /* TITLE: Percentage Item Styles */
         .percentage-item {
             background-color: #444 !important;
@@ -7266,45 +7265,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transition: width 0.3s ease !important;
             display: block !important;
         }
-
-        /* TITLE: Traits Container */
+    
+        /* TITLE: Traits Container (Updated in Change 1) */
         .traits-container {
             padding: 10px !important;
-            background-color: #f5f5dc !important;
+            background-color: #f5f5dc !important; /* Light beige, matching hit-percentage-container */
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 2000px !important;
-            margin-top: 10px !important;
-            box-sizing: border-box !important;
+            max-width: 2000px !important; /* Increased to match hit-percentage-container */
+            margin-top: 10px !important; /* Space between slider and accordion */
+            box-sizing: border-box !important; /* Ensure padding/border are included in width */
         }
-        
-        /* TITLE: Traits Badges Layout */
+    
+        /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
         .traits-wrapper {
             width: 100% !important;
-            max-width: 1600px !important;
-            box-sizing: border-box !important;
+            max-width: 1600px !important; /* Match percentage-wrapper */
+            box-sizing: border-box !important; /* Ensure consistent width calculation */
         }
         .badge-group {
             margin: 5px 0 !important;
             flex: 1 !important;
-            min-width: 150px !important;
-            overflow-x: auto !important; /* Added to prevent cutoff */
+            min-width: 150px !important; /* Ensure groups don’t collapse */
         }
-        .badge-group:nth-child(1) h4 { color: #b71c1c !important; }
-        .badge-group:nth-child(2) h4 { color: #1565c0 !important; }
-        .badge-group:nth-child(3) h4 { color: #388e3c !important; }
-        .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; }
+        .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
+        .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
+        .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
+        .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
         .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important;
+            flex-wrap: nowrap !important; /* Prevent wrapping, match percentage-badges */
             gap: 5px !important;
             align-items: center !important;
-            white-space: nowrap !important;
-            overflow-x: auto !important; /* Added to prevent cutoff */
-            -webkit-overflow-scrolling: touch !important; /* Added for mobile scrolling */
+            white-space: nowrap !important; /* Ensure content stays in one line */
         }
-        
+    
         /* TITLE: Trait Badge Styles */
         .trait-badge {
             background-color: #444 !important;
@@ -7318,20 +7314,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .trait-badge:hover {
             transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-            filter: brightness(1.2) !important;
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            filter: brightness(1.2) !important; /* Slight brightness increase */
         }
-        .trait-badge.even-money { background-color: #b71c1c !important; }
-        .trait-badge.column { background-color: #1565c0 !important; }
-        .trait-badge.dozen { background-color: #388e3c !important; }
-        .trait-badge.repeat { background-color: #7b1fa2 !important; }
+        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
+        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
+        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
+        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
         .trait-badge.winner {
             font-weight: bold !important;
-            color: #333 !important;
-            border: 2px solid #ffd700 !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-            background-color: rgba(255, 215, 0, 0.2) !important;
-            transform: scale(1.1) !important;
+            color: #333 !important; /* Dark gray text for better contrast */
+            border: 2px solid #ffd700 !important; /* Gold border */
+            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
+            transform: scale(1.1) !important; /* Make winners slightly larger */
         }
         
         /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
@@ -7359,7 +7355,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
             100% { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-
+    
         /* Placeholder Section for Hit Percentage and SpinTrend Radar */
         .placeholder-section {
             background-color: #000 !important;
@@ -7374,14 +7370,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             color: #fff !important; /* For potential future text */
             font-family: Arial, sans-serif !important;
         }
-
+    
         /* Ensure the columns are truly 50/50 and aligned */
         .hit-percentage-container, .traits-container {
             width: 100% !important;
             max-width: none !important; /* Remove max-width to allow full column width */
             margin: 0 !important;
         }
-
+    
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .placeholder-section {
@@ -7414,6 +7410,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* TITLE: Fade-In Animation */
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
+        }
+    
+        /* Ensure accordion allows overflow */
+        #spin-trend-radar {
+            overflow: visible !important;
+        }
+        #spin-trend-radar .gr-box {
+            overflow: visible !important;
         }
     </style>
     """)
