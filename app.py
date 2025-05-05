@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Corrected select_next_spin_top_pick function with proper indentation
+# Updated select_next_spin_top_pick function without collapsible section
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5521,19 +5521,16 @@ def select_next_spin_top_pick(last_spin_count):
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
             print(f"select_next_spin_top_pick: Explanation={explanation}")
 
-        # Step 10: Generate HTML with updated styling and explanation (collapsed by default)
+        # Step 10: Generate HTML with updated styling and explanation (not collapsible)
         color = colors.get(str(top_pick), "black")
         html = f'''
-        <details>
-            <summary>Top Pick for Next Spin 🎯</summary>
-            <div class="top-pick-container">
-                <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
-                <p>Based on analysis of the last {last_spin_count} spins.</p>
-                <div class="explanation">
-                    {explanation}
-                </div>
+        <div class="top-pick-container">
+            <h4>Top Pick for Next Spin 🎯: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
+            <p>Based on analysis of the last {last_spin_count} spins.</p>
+            <div class="explanation">
+                {explanation}
             </div>
-        </details>
+        </div>
         <style>
             .top-pick-container {{
                 background-color: #f5f5f5;
@@ -5544,11 +5541,11 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .top-pick-container h4 {{
                 margin: 10px 0;
-                color: #fff;
+                color: #333; /* Changed to a darker color for better visibility */
             }}
             .top-pick-container p {{
                 font-style: italic;
-                color: #ddd;
+                color: #666; /* Adjusted for better contrast */
             }}
             .top-pick-badge {{
                 display: inline-block;
@@ -5590,19 +5587,6 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .explanation strong {{
                 color: #555;
-            }}
-            details {{
-                margin: 10px 0;
-            }}
-            summary {{
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 16px;
-                color: #333;
-                padding: 5px;
-            }}
-            details:not([open]) {{
-                display: block;
             }}
         </style>
         '''
