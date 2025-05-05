@@ -9379,6 +9379,84 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in top_pick_spin_count.change handler: {str(e)}")
 
+# Gradio Interface Setup
+with gr.Blocks() as demo:
+    # Inputs
+    spins_input = gr.Textbox(label="Enter Spins (comma-separated)", value="4,9,17,22,28,4,9,17,22,28,15")
+    strategy_name = gr.Dropdown(choices=["Strategy A", "Strategy B"], label="Select Strategy")  # Adjust choices as needed
+    neighbours_count = gr.Slider(minimum=1, maximum=5, value=2, step=1, label="Neighbours Count")
+    # Checkbox args for show_strategy_recommendations (adjust based on your actual checkboxes)
+    checkbox_args = [gr.Checkbox(label=f"Checkbox {i}") for i in range(len(checkbox_args))]  # Adjust based on actual checkboxes
+
+    # Outputs
+    spin_analysis_output = gr.Textbox(label="Spin Analysis")
+    even_money_output = gr.Textbox(label="Even Money Bets")
+    dozens_output = gr.Textbox(label="Dozens")
+    columns_output = gr.Textbox(label="Columns")
+    streets_output = gr.Textbox(label="Streets")
+    corners_output = gr.Textbox(label="Corners")
+    six_lines_output = gr.Textbox(label="Double Streets")
+    splits_output = gr.Textbox(label="Splits")
+    sides_output = gr.Textbox(label="Sides of Zero")
+    straight_up_html = gr.HTML(label="Strongest Numbers")
+    top_18_html = gr.HTML(label="Top 18 Strongest Numbers")
+    strongest_numbers_output = gr.Textbox(label="Strongest Numbers with Neighbors")
+    dynamic_table_html = gr.HTML(label="Dynamic Table")
+    strategy_output = gr.HTML(label="Strategy Recommendations")
+    sides_of_zero_display = gr.HTML(label="Sides of Zero Display")
+
+    # Button for manual analysis
+    analyze_button = gr.Button("Analyze Spins")
+
+    # Roulette table (simplified placeholder; adjust based on your actual implementation)
+    roulette_table = gr.HTML(...)  # Your roulette table component
+
+    # Event handler for Analyze Spins button
+    analyze_button.click(
+        fn=analyze_spins,
+        inputs=[spins_input, strategy_name, neighbours_count] + checkbox_args,
+        outputs=[
+            spin_analysis_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            dynamic_table_html,
+            strategy_output,  # Ensure this is included
+            sides_of_zero_display
+        ]
+    )
+
+    # Event handler for roulette table click (simplified example; adjust based on your actual implementation)
+    roulette_table.change(
+        fn=analyze_spins,
+        inputs=[spins_input, strategy_name, neighbours_count] + checkbox_args,
+        outputs=[
+            spin_analysis_output,
+            even_money_output,
+            dozens_output,
+            columns_output,
+            streets_output,
+            corners_output,
+            six_lines_output,
+            splits_output,
+            sides_output,
+            straight_up_html,
+            top_18_html,
+            strongest_numbers_output,
+            dynamic_table_html,
+            strategy_output,
+            sides_of_zero_display
+        ]
+    )
+
 # Launch the interface
 print("Starting Gradio launch...")
 demo.launch()
