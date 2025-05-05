@@ -8285,6 +8285,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        ).then(
             fn=create_color_code_table,
             inputs=[],
             outputs=[color_code_output]
