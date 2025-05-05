@@ -8210,11 +8210,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Clear outputs to reset error state
-            fn=lambda: ("", ""),
-            inputs=[],
-            outputs=[dynamic_table_output, strategy_output]
-        ).then(
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
