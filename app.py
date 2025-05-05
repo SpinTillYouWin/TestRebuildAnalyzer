@@ -5259,6 +5259,9 @@ def select_next_spin_top_pick(last_spin_count):
         if DEBUG:
             print("select_next_spin_top_pick: Recalculating state.scores based on last_spins")
         state.scores = {i: 0 for i in range(37)}  # Reset scores
+        # START BETTING_SECTIONS REPLACE
+        from roulette_data import WHEEL_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN, EVEN_MONEY, DOZENS, COLUMNS, colors, BETTING_SECTIONS
+        # END BETTING_SECTIONS REPLACE
         for spin in last_spins:
             try:
                 num = int(spin)
