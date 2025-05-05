@@ -4351,6 +4351,7 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
     recommendations = []
     sequence_recommendations = []
     
+    # START VALIDATION REPLACE
     # Validate inputs
     try:
         num_spins_to_check = int(num_spins_to_check)
@@ -4358,15 +4359,16 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
         sequence_length = int(sequence_length)
         follow_up_spins = int(follow_up_spins)
         if num_spins_to_check < 1:
-            return "Error: Number of spins to check must be at least 1.", "<p>Error: Number of spins to check must be at least 1.</p>", "<p>Error: Number of spins to check must be at least 1.</p>"
+            return "Please choose a number of spins to track (e.g., 5 or more).", "<p>Please choose a number of spins to track (e.g., 5 or more).</p>", "<p>Please choose a number of spins to track (e.g., 5 or more).</p>"
         if consecutive_hits_threshold < 1:
-            return "Error: Consecutive hits threshold must be at least 1.", "<p>Error: Consecutive hits threshold must be at least 1.</p>", "<p>Error: Consecutive hits threshold must be at least 1.</p>"
+            return "Please set consecutive hits to 1 or more (e.g., 3).", "<p>Please set consecutive hits to 1 or more (e.g., 3).</p>", "<p>Please set consecutive hits to 1 or more (e.g., 3).</p>"
         if sequence_length < 1:
-            return "Error: Sequence length must be at least 1.", "<p>Error: Sequence length must be at least 1.</p>", "<p>Error: Sequence length must be at least 1.</p>"
+            return "Please set sequence length to 1 or more (e.g., 3).", "<p>Please set sequence length to 1 or more (e.g., 3).</p>", "<p>Please set sequence length to 1 or more (e.g., 3).</p>"
         if follow_up_spins < 1:
-            return "Error: Follow-up spins must be at least 1.", "<p>Error: Follow-up spins must be at least 1.</p>", "<p>Error: Follow-up spins must be at least 1.</p>"
+            return "Please set follow-up spins to 1 or more (e.g., 5).", "<p>Please set follow-up spins to 1 or more (e.g., 5).</p>", "<p>Please set follow-up spins to 1 or more (e.g., 5).</p>"
     except (ValueError, TypeError):
-        return "Error: Invalid inputs. Please use positive integers.", "<p>Error: Invalid inputs. Please use positive integers.</p>", "<p>Error: Invalid inputs. Please use positive integers.</p>"
+        return "Please enter valid numbers for spins, hits, and sequence settings (e.g., 5, 3, 4).", "<p>Please enter valid numbers for spins, hits, and sequence settings (e.g., 5, 3, 4).</p>", "<p>Please enter valid numbers for spins, hits, and sequence settings (e.g., 5, 3, 4).</p>"
+    # END VALIDATION REPLACE
 
     # Get the last N spins for sequence matching
     recent_spins = state.last_spins[-num_spins_to_check:] if len(state.last_spins) >= num_spins_to_check else state.last_spins
@@ -4595,9 +4597,11 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     consecutive_hits_threshold = int(consecutive_hits_threshold) if consecutive_hits_threshold and str(consecutive_hits_threshold).strip().isdigit() else 3
     consecutive_identical_count = int(consecutive_identical_count) if consecutive_identical_count and str(consecutive_identical_count).strip().isdigit() else 2
 
+    # START VALIDATION REPLACE
     # Validate inputs
     if spins_to_check < 1 or consecutive_hits_threshold < 1 or consecutive_identical_count < 1:
-        return "Error: Inputs must be at least 1.", "<div class='even-money-tracker-container'><p>Error: Inputs must be at least 1.</p></div>"
+        return "Please set spins, hits, and identical traits to 1 or more (e.g., 5, 3, 2).", "<div class='even-money-tracker-container'><p>Please set spins, hits, and identical traits to 1 or more (e.g., 5, 3, 2).</p></div>"
+    # END VALIDATION REPLACE
 
     # Get recent spins
     recent_spins = state.last_spins[-spins_to_check:] if len(state.last_spins) >= spins_to_check else state.last_spins
