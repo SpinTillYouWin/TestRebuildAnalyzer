@@ -7250,31 +7250,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             display: block !important;
         }
 
-        /* TITLE: Traits Container (Updated in Change 1) */
+        /* Traits Container */
         .traits-container {
             padding: 10px !important;
-            background-color: #f5f5dc !important; /* Light beige, matching hit-percentage-container */
+            background-color: #f5f5dc !important;
             border-radius: 5px !important;
             border: 1px solid #d3d3d3 !important;
             width: 100% !important;
-            max-width: 2000px !important; /* Increased to match hit-percentage-container */
-            margin-top: 10px !important; /* Space between slider and accordion */
-            box-sizing: border-box !important; /* Ensure padding/border are included in width */
+            max-width: none !important; /* Remove max-width to allow full column width */
+            margin-top: 10px !important;
+            box-sizing: border-box !important;
+            overflow-x: auto !important; /* Allow horizontal scrolling for the entire container */
+            -webkit-overflow-scrolling: touch !important;
         }
-
+        
         /* Traits Badges Layout */
         .traits-wrapper {
             width: 100% !important;
-            max-width: 1600px !important;
             box-sizing: border-box !important;
-            overflow-x: auto !important; /* Allow horizontal scrolling for the entire wrapper */
-            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
         }
         
         .badge-group {
             margin: 5px 0 !important;
-            flex: 1 !important;
-            min-width: 150px !important;
+            min-width: 100% !important; /* Ensure each group takes full width */
+            box-sizing: border-box !important;
         }
         
         .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
@@ -7288,18 +7290,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gap: 5px !important;
             align-items: center !important;
             white-space: nowrap !important;
-            overflow-x: auto !important; /* Allow horizontal scrolling */
-            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on mobile */
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding-bottom: 5px !important; /* Add padding to ensure scrollbar visibility */
         }
         
         /* Responsive adjustments for mobile */
         @media (max-width: 600px) {
+            .traits-container {
+                padding: 5px !important;
+            }
             .percentage-badges {
-                flex-wrap: wrap !important; /* Allow wrapping on small screens */
+                flex-wrap: wrap !important;
                 overflow-x: visible !important;
             }
             .trait-badge {
-                font-size: 10px !important; /* Smaller font for mobile */
+                font-size: 10px !important;
                 padding: 4px 8px !important;
             }
         }
@@ -7314,7 +7320,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 3px !important;
             transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
             cursor: pointer !important;
-            flex-shrink: 0 !important; /* Prevent badges from shrinking */
+            flex-shrink: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         .trait-badge:hover {
             transform: scale(1.1) !important;
@@ -7332,6 +7341,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 8px #ffd700 !important;
             background-color: rgba(255, 215, 0, 0.2) !important;
             transform: scale(1.1) !important;
+        }
+        
+        /* Progress Bar Styles */
+        .percentage-with-bar {
+            display: inline-flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            margin: 0 3px !important;
+            margin-bottom: 6px !important;
+        }
+        
+        .progress-bar {
+            width: 100% !important;
+            height: 6px !important;
+            min-height: 6px !important;
+            background-color: #d3d3d3 !important;
+            border-radius: 3px !important;
+            margin-top: 6px !important;
+            overflow: hidden !important;
+            display: block !important;
+        }
+        
+        .progress-fill {
+            height: 100% !important;
+            border-radius: 3px !important;
+            transition: width 0.3s ease !important;
+            display: block !important;
         }
         
         /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
