@@ -110,6 +110,7 @@ SPLITS = {
 LEFT_OF_ZERO_EUROPEAN = [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5]
 RIGHT_OF_ZERO_EUROPEAN = [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
 
+# START COLORS REPLACE
 colors = {
     0: "green",
     1: "red", 3: "red", 5: "red", 7: "red", 9: "red", 12: "red",
@@ -119,3 +120,4 @@ colors = {
     13: "black", 15: "black", 17: "black", 20: "black", 22: "black", 24: "black",
     26: "black", 28: "black", 29: "black", 31: "black", 33: "black", 35: "black"
 }
+# END COLORS REPLACE
