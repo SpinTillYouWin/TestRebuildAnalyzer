@@ -9237,27 +9237,29 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         # Line 1: Enforce minimum value and reset labouchere_sequence
         target_profit = int(target_profit) if target_profit is not None else 10  # Ensure integer, default to 10
         state.target_profit = max(1, target_profit)  # Enforce minimum value of 1
+        # START LABOUCHERE VALIDATION REPLACE
         if progression == "Labouchere":
+            import gradio as gr
+            if not sequence or not sequence.strip():
+                state.progression_state = [1] * max(2, state.target_profit)
+                state.labouchere_sequence = ", ".join(["1"] * max(2, state.target_profit))
+                return bankroll, base_unit, base_unit, f"Using default Labouchere sequence: {state.labouchere_sequence}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', state.labouchere_sequence
             try:
-                # Only use the sequence if it's non-empty and valid; otherwise, auto-generate
-                if sequence and sequence.strip():
-                    parsed_sequence = [int(x.strip()) for x in sequence.split(",")]
-                    if all(isinstance(x, int) and x > 0 for x in parsed_sequence):
-                        state.progression_state = parsed_sequence
-                        state.labouchere_sequence = sequence  # Keep the user-provided sequence
-                    else:
-                        state.progression_state = [1] * state.target_profit
-                        state.labouchere_sequence = ""  # Clear the sequence to use auto-generated
-                        return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
-                else:
-                    state.progression_state = [1] * state.target_profit
-                    state.labouchere_sequence = ""  # Ensure auto-generated sequence is used
+                parsed_sequence = [int(x.strip()) for x in sequence.split(",") if x.strip()]
+                if len(parsed_sequence) < 2:
+                    gr.Warning("Please enter at least 2 positive numbers for the Labouchere sequence (e.g., 1, 2, 3).")
+                    return bankroll, base_unit, base_unit, "Please enter at least 2 positive numbers for the Labouchere sequence (e.g., 1, 2, 3).", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', state.labouchere_sequence
+                if any(x <= 0 for x in parsed_sequence):
+                    gr.Warning("Please ensure all numbers in the Labouchere sequence are positive (e.g., 1, 2, 3).")
+                    return bankroll, base_unit, base_unit, "Please ensure all numbers in the Labouchere sequence are positive (e.g., 1, 2, 3).", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', state.labouchere_sequence
+                state.progression_state = parsed_sequence
+                state.labouchere_sequence = ", ".join(str(x) for x in parsed_sequence)  # Normalize format
             except ValueError:
-                state.progression_state = [1] * state.target_profit
-                state.labouchere_sequence = ""  # Clear the sequence on error
-                return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
+                gr.Warning("Please enter valid positive numbers for the Labouchere sequence, separated by commas (e.g., 1, 2, 3).")
+                return bankroll, base_unit, base_unit, "Please enter valid positive numbers for the Labouchere sequence, separated by commas (e.g., 1, 2, 3).", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', state.labouchere_sequence
         else:
             state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
+        # END LABOUCHERE VALIDATION REPLACE
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
     
