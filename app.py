@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function without collapsible section
+# Updated select_next_spin_top_pick function with JACKPOT celebration effect
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5513,6 +5513,12 @@ def select_next_spin_top_pick(last_spin_count):
                 specific_explanation_html = "<br>".join(explanation_lines)
                 explanation = f"{general_explanation_html}<br><br>{specific_explanation_html}"
 
+        # Check if the top pick matches the last spin
+        last_spin = int(last_spins[-1]) if last_spins and last_spins[-1].isdigit() else None
+        is_jackpot = last_spin is not None and state.current_top_pick is not None and last_spin == state.current_top_pick
+        if DEBUG:
+            print(f"select_next_spin_top_pick: Last spin={last_spin}, Current top pick={state.current_top_pick}, Is jackpot={is_jackpot}")
+
         state.current_top_pick = top_pick
 
         if DEBUG:
@@ -5521,12 +5527,13 @@ def select_next_spin_top_pick(last_spin_count):
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
             print(f"select_next_spin_top_pick: Explanation={explanation}")
 
-        # Step 10: Generate HTML with updated styling and explanation (not collapsible)
+        # Step 10: Generate HTML with updated styling, explanation, and JACKPOT celebration
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
             <h4>Top Pick for Next Spin 🎯: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
             <p>Based on analysis of the last {last_spin_count} spins.</p>
+            {'<div class="jackpot-celebration">JACKPOT!</div>' if is_jackpot else ''}
             <div class="explanation">
                 {explanation}
             </div>
@@ -5538,14 +5545,15 @@ def select_next_spin_top_pick(last_spin_count):
                 padding: 10px;
                 border-radius: 5px;
                 text-align: center;
+                position: relative; /* For positioning the celebration */
             }}
             .top-pick-container h4 {{
                 margin: 10px 0;
-                color: #333; /* Changed to a darker color for better visibility */
+                color: #333;
             }}
             .top-pick-container p {{
                 font-style: italic;
-                color: #666; /* Adjusted for better contrast */
+                color: #666;
             }}
             .top-pick-badge {{
                 display: inline-block;
@@ -5587,6 +5595,23 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .explanation strong {{
                 color: #555;
+            }}
+            .jackpot-celebration {{
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 24px;
+                font-weight: bold;
+                color: gold;
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+                animation: jackpotAnimation 2s ease-in-out;
+                z-index: 1001;
+            }}
+            @keyframes jackpotAnimation {{
+                0% {{ transform: translateX(-50%) scale(0); opacity: 0; }}
+                50% {{ transform: translateX(-50%) scale(1.2); opacity: 1; }}
+                100% {{ transform: translateX(-50%) scale(1); opacity: 0; }}
             }}
         </style>
         '''
