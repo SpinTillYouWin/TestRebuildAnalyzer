@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function with corrected characteristics styling
+# Updated select_next_spin_top_pick function with collapsible explanation
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5564,9 +5564,12 @@ def select_next_spin_top_pick(last_spin_count):
             <h4>Top Pick for Next Spin 🎯: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
             <div class="characteristics">{characteristics_html}</div>
             <p>Based on analysis of the last {last_spin_count} spins.</p>
-            <div class="explanation">
-                {explanation}
-            </div>
+            <details>
+                <summary>Explanation Details</summary>
+                <div class="explanation">
+                    {explanation}
+                </div>
+            </details>
         </div>
         <style>
             .top-pick-container {{
@@ -5652,6 +5655,20 @@ def select_next_spin_top_pick(last_spin_count):
             @keyframes fadeIn {{
                 from {{ opacity: 0; }}
                 to {{ opacity: 1; }}
+            }}
+            details {{
+                margin: 10px 0;
+                text-align: left;
+            }}
+            summary {{
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                color: #333;
+                padding: 5px;
+            }}
+            details:not([open]) {{
+                display: block;
             }}
         </style>
         '''
@@ -5957,7 +5974,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     minimum=1,
                     maximum=36,
                     step=1,
-                    value=18,
+                    value=36,
                     interactive=True,
                     elem_classes="long-slider"
                 )
