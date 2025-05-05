@@ -6329,12 +6329,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value=False,
                         interactive=True
                     )
+                    # START REPLACE
                     reset_sequence_alerts_button = gr.Button("Reset Sequence Alerts", elem_classes=["action-button"])
                     reset_sequence_alerts_button.click(
                         fn=lambda: (state.alerted_patterns.clear(), "<p>Sequence alerts reset successfully.</p>"),
                         inputs=[],
-                        outputs=[gr.State(), casino_data_output]
+                        outputs=[gr.State(), dozen_tracker_sequence_output]
                     )
+                    # END REPLACE
                     dozen_tracker_output = gr.HTML(
                         label="Dozen Tracker",
                         value="<p>Select the number of spins to track and analyze spins to see the Dozen history.</p>"
