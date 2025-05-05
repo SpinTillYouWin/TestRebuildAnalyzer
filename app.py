@@ -4526,9 +4526,9 @@ def dozen_tracker(num_spins_to_check, consecutive_hits_threshold, alert_enabled,
                         else:
                             dozens_to_bet = [d for d in all_dozens if d != dozen]
                             sequence_recommendations.append(f"Spin {idx + 1}: Bet against {dozen} - Bet on {', '.join(dozens_to_bet)}")
-            else:
-                # If no match is found, reset the alerted patterns to allow future matches
-                state.alerted_patterns.clear()
+            # START REPLACE
+            # No action needed if no match is found, keep alerted patterns
+            # END REPLACE
 
     # Text summary for Dozen Tracker
     recommendations.append(f"Dozen Tracker (Last {len(recent_spins)} Spins):")
@@ -6328,6 +6328,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         label="Enable Sequence Matching Alert",
                         value=False,
                         interactive=True
+                    )
+                    reset_sequence_alerts_button = gr.Button("Reset Sequence Alerts", elem_classes=["action-button"])
+                    reset_sequence_alerts_button.click(
+                        fn=lambda: (state.alerted_patterns.clear(), "<p>Sequence alerts reset successfully.</p>"),
+                        inputs=[],
+                        outputs=[gr.State(), casino_data_output]
                     )
                     dozen_tracker_output = gr.HTML(
                         label="Dozen Tracker",
