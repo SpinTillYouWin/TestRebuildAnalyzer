@@ -4686,6 +4686,12 @@ def even_money_tracker(spins_to_check, consecutive_hits_threshold, alert_enabled
     identical_html_output = ""
     betting_recommendation = None
     if identical_traits_enabled:
+        # START VALIDATION INSERT
+        if not hasattr(state, 'even_money_scores') or not state.even_money_scores or not any(state.even_money_scores.values()):
+            identical_recommendations.append("No even money scores available yet. Please add spins to track categories like Red or Even.")
+            identical_html_output = "<div class='identical-traits-section'><h4>Consecutive Identical Traits Tracking:</h4><p>No even money scores available yet. Please add spins to track categories like Red or Even.</p></div>"
+            return "\n".join(recommendations), html_output
+        # END VALIDATION INSERT
         # Detect consecutive identical trait combinations
         identical_streak = 1
         identical_streak_start = 0
