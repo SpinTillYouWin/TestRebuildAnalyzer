@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Latest select_next_spin_top_pick function with all scoring components in explanation
+# Corrected select_next_spin_top_pick function with proper indentation
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5521,89 +5521,92 @@ def select_next_spin_top_pick(last_spin_count):
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
             print(f"select_next_spin_top_pick: Explanation={explanation}")
 
-        # Step 10: Generate HTML with updated styling and explanation
+        # Step 10: Generate HTML with updated styling and explanation (collapsed by default)
         color = colors.get(str(top_pick), "black")
         html = f'''
-        <div class="top-pick-container">
-            <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
-            <p>Based on analysis of the last {last_spin_count} spins.</p>
-            <div class="explanation">
-                {explanation}
+        <details>
+            <summary>Top Pick for Next Spin 🎯</summary>
+            <div class="top-pick-container">
+                <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
+                <p>Based on analysis of the last {last_spin_count} spins.</p>
+                <div class="explanation">
+                    {explanation}
+                </div>
             </div>
-        </div>
+        </details>
         <style>
             .top-pick-container {{
-                    background-color: #f5f5f5;
-                    border: 1px solid #d3d3d3;
-                    padding: 10px;
-                    border-radius: 5px;
-                    text-align: center;
-                }}
-                .top-pick-container h4 {{
-                    margin: 10px 0;
-                    color: #fff;
-                }}
-                .top-pick-container p {{
-                    font-style: italic;
-                    color: #ddd;
-                }}
-                .top-pick-badge {{
-                    display: inline-block;
-                    padding: 8px 12px;
-                    border-radius: 15px;
-                    font-weight: bold;
-                    font-size: 20px;
-                    color: white !important; /* Ensure text is white */
-                    background-color: {color};
-                    box-shadow: 0 0 8px rgba(0,0,0,0.3);
-                    transition: transform 0.2s ease, box-shadow 0.2s ease;
-                    text-shadow: none; /* Remove any text shadow */
-                }}
-                .top-pick-badge.red {{ background-color: red; }}
-                .top-pick-badge.black {{ background-color: black; }}
-                .top-pick-badge.green {{ background-color: green; }}
-                .top-pick-badge:hover {{
-                    transform: scale(1.1);
-                    box-shadow: 0 0 12px rgba(255,215,0,0.8);
-                }}
-                .celebration {{
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    pointer-events: none;
-                    z-index: 1000;
-                }}
-                .explanation {{
-                    text-align: left;
-                    font-size: 14px;
-                    color: #333;
-                    margin-top: 10px;
-                    padding: 5px;
-                    background-color: #fff;
-                    border-radius: 3px;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.1);
-                }}
-                .explanation strong {{
-                    color: #555;
-                }}
-                details {{
-                    margin: 10px 0;
-                }}
-                summary {{
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-size: 16px;
-                    color: #333;
-                    padding: 5px;
-                }}
-                details:not([open]) {{
-                    display: block;
-                }}
-            </style>
-            '''
-            return HTML
+                background-color: #f5f5f5;
+                border: 1px solid #d3d3d3;
+                padding: 10px;
+                border-radius: 5px;
+                text-align: center;
+            }}
+            .top-pick-container h4 {{
+                margin: 10px 0;
+                color: #fff;
+            }}
+            .top-pick-container p {{
+                font-style: italic;
+                color: #ddd;
+            }}
+            .top-pick-badge {{
+                display: inline-block;
+                padding: 8px 12px;
+                border-radius: 15px;
+                font-weight: bold;
+                font-size: 20px;
+                color: white !important; /* Ensure text is white */
+                background-color: {color};
+                box-shadow: 0 0 8px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                text-shadow: none; /* Remove any text shadow */
+            }}
+            .top-pick-badge.red {{ background-color: red; }}
+            .top-pick-badge.black {{ background-color: black; }}
+            .top-pick-badge.green {{ background-color: green; }}
+            .top-pick-badge:hover {{
+                transform: scale(1.1);
+                box-shadow: 0 0 12px rgba(255,215,0,0.8);
+            }}
+            .celebration {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1000;
+            }}
+            .explanation {{
+                text-align: left;
+                font-size: 14px;
+                color: #333;
+                margin-top: 10px;
+                padding: 5px;
+                background-color: #fff;
+                border-radius: 3px;
+                box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            }}
+            .explanation strong {{
+                color: #555;
+            }}
+            details {{
+                margin: 10px 0;
+            }}
+            summary {{
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 16px;
+                color: #333;
+                padding: 5px;
+            }}
+            details:not([open]) {{
+                display: block;
+            }}
+        </style>
+        '''
+        return html
 
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
