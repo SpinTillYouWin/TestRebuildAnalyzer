@@ -1465,6 +1465,7 @@ def render_sides_of_zero_display():
     </script>
     """
 
+
 # Line 1: Start of updated validate_spins_input function
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
@@ -1478,6 +1479,7 @@ def validate_spins_input(spins_input):
     # UNCHANGED: Handle empty input
     if not spins_input or not spins_input.strip():
         print("validate_spins_input: No spins input provided.")
+        state.last_spins = []  # Clear state.last_spins to ensure consistency
         return "", "<h4>Last Spins</h4><p>No spins entered.</p>"
 
     # CHANGED: Split and clean spins, enforce max limit
@@ -1522,9 +1524,10 @@ def validate_spins_input(spins_input):
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
 
-    # UNCHANGED: Generate output
+    # CHANGED: Generate output for spins_display (full list) and last_spin_display (limited by last_spin_count)
     spins_display_value = ", ".join(valid_spins)
-    formatted_html = format_spins_as_html(spins_display_value, 36)  # Default to showing all spins
+    # Use last_spin_count from the slider for last_spin_display, not for spins_textbox
+    formatted_html = format_spins_as_html(spins_display_value, last_spin_count.value if hasattr(last_spin_count, 'value') else 36)
     
     # CHANGED: Detailed success logging
     print(f"validate_spins_input: Processed {len(valid_spins)} valid spins, spins_display_value='{spins_display_value}', time={time.time() - start_time:.3f}s")
@@ -1556,23 +1559,43 @@ def add_spin(number, current_spins, num_to_show):
         print("add_spin: No valid numbers provided.")
         return current_spins, current_spins, "<h4>Last Spins</h4><p>Error: No valid numbers provided.</p>", update_spin_counter(), render_sides_of_zero_display()
     
-    # CHANGED: Reuse validate_spins_input for validation
-    spins_input = ", ".join(unique_numbers)
-    spins_display_value, formatted_html = validate_spins_input(spins_input)
-    
+    # CHANGED: Validate new spins without affecting the full list
+    valid_new_spins = []
+    errors = []
+    invalid_inputs = []
+    for num in unique_numbers:
+        try:
+            n = int(num)
+            if not (0 <= n <= 36):
+                errors.append(f"'{num}' is out of range (must be 0-36)")
+                invalid_inputs.append(num)
+            else:
+                valid_new_spins.append(str(n))
+        except ValueError:
+            errors.append(f"'{num}' is not a valid integer")
+            invalid_inputs.append(num)
+
     # CHANGED: Check if validation failed
-    if not spins_display_value:
-        print(f"add_spin: Validation failed, returning error HTML: {formatted_html}")
-        return current_spins, current_spins, formatted_html, update_spin_counter(), render_sides_of_zero_display()
+    if not valid_new_spins:
+        error_msg = "No valid spins to add:\n- " + "\n- ".join(errors) + "\nUse integers 0-36."
+        gr.Warning(error_msg)
+        print(f"add_spin: Validation failed - {error_msg}")
+        return current_spins, current_spins, f"<h4>Last Spins</h4><p>{error_msg}</p>", update_spin_counter(), render_sides_of_zero_display()
     
-    # CHANGED: Efficiently update current spins
-    current_spins_list = current_spins.split(", ") if current_spins and current_spins.strip() else []
-    if current_spins_list == [""]:
-        current_spins_list = []
+    # CHANGED: Append new spins to state.last_spins
+    state.last_spins.extend(valid_new_spins)
+    state.selected_numbers = set(int(s) for s in state.last_spins)
+    action_log = update_scores_batch(valid_new_spins)
+    for i, spin in enumerate(valid_new_spins):
+        state.spin_history.append(action_log[i])
+        if len(state.spin_history) > 100:
+            state.spin_history.pop(0)
     
-    # CHANGED: Append new spins only if not already processed by validate_spins_input
-    new_spins = current_spins_list + unique_numbers
-    new_spins_str = ", ".join(new_spins)
+    # CHANGED: Update displays with the full list for spins_textbox
+    spins_display_value = ", ".join(state.last_spins)
+    spins_textbox_value = spins_display_value
+    # Use num_to_show (last_spin_count) only for the last_spin_display
+    formatted_html = format_spins_as_html(spins_display_value, num_to_show)
     
     # CHANGED: Log duplicates if any
     if len(unique_numbers) < len(numbers):
@@ -1580,10 +1603,17 @@ def add_spin(number, current_spins, num_to_show):
         print(f"add_spin: Removed duplicates: {', '.join(set(duplicates))}")
     
     # CHANGED: Log success
-    print(f"add_spin: Added {len(unique_numbers)} spins, new_spins_str='{new_spins_str}', time={time.time() - start_time:.3f}s")
+    print(f"add_spin: Added {len(valid_new_spins)} spins, spins_display_value='{spins_display_value}', time={time.time() - start_time:.3f}s")
+    if invalid_inputs:
+        print(f"add_spin: Ignored invalid inputs: {', '.join(invalid_inputs)}")
     
-    # UNCHANGED: Return updated outputs
-    return new_spins_str, new_spins_str, formatted_html, update_spin_counter(), render_sides_of_zero_display()
+    # CHANGED: Include invalid inputs in warning if present
+    if errors:
+        warning_msg = f"Added {len(valid_new_spins)} valid spins. Invalid inputs ignored:\n- " + "\n- ".join(errors) + "\nUse integers 0-36."
+        gr.Warning(warning_msg)
+        print(f"add_spin: Warning - {warning_msg}")
+    
+    return spins_display_value, spins_textbox_value, formatted_html, update_spin_counter(), render_sides_of_zero_display()
 
 # Line 3: Start of next function (unchanged)
 def clear_spins():
@@ -1594,8 +1624,6 @@ def clear_spins():
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
-# Lines after (context, unchanged)
-# Function to save the session
 # In Part 1, replace save_session and load_session with:
 
 def save_session():
@@ -2678,7 +2706,9 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
 
             state.last_spins.pop()  # Remove from last_spins too
 
-        spins_input = ", ".join(state.last_spins) if state.last_spins else ""
+        # Update displays with the full list for spins_textbox
+        spins_display_value = ", ".join(state.last_spins) if state.last_spins else ""
+        spins_textbox_value = spins_display_value
         spin_analysis_output = f"Undo successful: Removed {undo_count} spin(s) - {', '.join(undone_spins)}"
 
         even_money_output = "Even Money Bets:\n" + "\n".join(f"{name}: {score}" for name, score in state.even_money_scores.items())
@@ -2718,7 +2748,7 @@ def undo_last_spin(current_spins_display, undo_count, strategy_name, neighbours_
 
         return (spin_analysis_output, even_money_output, dozens_output, columns_output,
             streets_output, corners_output, six_lines_output, splits_output, sides_output,
-            straight_up_html, top_18_html, strongest_numbers_output, spins_input, spins_input,
+            straight_up_html, top_18_html, strongest_numbers_output, spins_display_value, spins_textbox_value,
             dynamic_table_html, strategy_output, create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
     except ValueError:
         return ("Error: Invalid undo count. Please use a positive number.", "", "", "", "", "", "", "", "", "", "", current_spins_display, current_spins_display, "", create_dynamic_table(strategy_name, neighbours_count, strong_numbers_count), "", create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
@@ -2744,21 +2774,29 @@ def generate_random_spins(num_spins, current_spins_display, last_spin_count):
         if num_spins <= 0:
             return current_spins_display, current_spins_display, "Please select a number of spins greater than 0.", update_spin_counter(), render_sides_of_zero_display()
 
+        import random
         new_spins = [str(random.randint(0, 36)) for _ in range(num_spins)]
         # Update scores for the new spins
         update_scores_batch(new_spins)
 
+        # Update state.last_spins with all spins
         if current_spins_display and current_spins_display.strip():
             current_spins = current_spins_display.split(", ")
+            if current_spins == [""]:
+                current_spins = []
             updated_spins = current_spins + new_spins
         else:
             updated_spins = new_spins
 
-        # Update state.last_spins
         state.last_spins = updated_spins  # Replace the list entirely
-        spins_text = ", ".join(updated_spins)
-        print(f"generate_random_spins: Setting spins_textbox to '{spins_text}'")
-        return spins_text, spins_text, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_sides_of_zero_display()
+        state.selected_numbers = {int(num) for num in state.last_spins if num.isdigit()}
+        
+        # Update displays: spins_textbox gets the full list
+        spins_display_value = ", ".join(updated_spins)
+        spins_textbox_value = spins_display_value
+        
+        print(f"generate_random_spins: Setting spins_textbox to '{spins_textbox_value}'")
+        return spins_display_value, spins_textbox_value, f"Generated {num_spins} random spins: {', '.join(new_spins)}", update_spin_counter(), render_sides_of_zero_display()
     except ValueError:
         print("generate_random_spins: Invalid number of spins entered.")
         return current_spins_display, current_spins_display, "Please enter a valid number of spins.", update_spin_counter(), render_sides_of_zero_display()
@@ -9200,16 +9238,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_hits_dropdown,
                 even_money_tracker_alert_checkbox,
                 even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
@@ -9221,6 +9259,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
+        gr.Warning(f"Error during spin analysis: {str(e)}")
     
     try:
         play_hot_button.click(
