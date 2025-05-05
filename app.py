@@ -2520,6 +2520,22 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
             state.spin_history = state.spin_history[-100:]
         print(f"analyze_spins: Updated state.last_spins={state.last_spins}, spin_history length={len(state.spin_history)}")
 
+        # Check for a JACKPOT! match: compare the last spin with the previous top pick
+        celebration_message = ""
+        last_spin = int(state.last_spins[-1]) if state.last_spins and state.last_spins[-1].isdigit() else None
+        if (last_spin is not None and hasattr(state, 'previous_top_pick') and state.previous_top_pick is not None and last_spin == state.previous_top_pick):
+            celebration_message = '<div class="jackpot-celebration">JACKPOT!</div>'
+            print(f"analyze_spins: JACKPOT! Last spin={last_spin} matches previous top pick={state.previous_top_pick}")
+
+        # Call select_next_spin_top_pick with the celebration message
+        top_pick_html = select_next_spin_top_pick(last_spin_count, celebration_message)
+
+        return top_pick_html, "", enable_celebration
+
+    except Exception as e:
+        print(f"analyze_spins: Error: {str(e)}")
+        return "<p>Error analyzing spins.</p>", "", False
+        
         # Recalculate state.scores based on state.last_spins to ensure consistency
         state.scores = {i: 0 for i in range(37)}  # Reset scores
         for spin in state.last_spins:
@@ -5224,10 +5240,10 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function without collapsible section
+# Reverted select_next_spin_top_pick function with celebration_message parameter
 DEBUG = True  # Enable for debugging
 
-def select_next_spin_top_pick(last_spin_count):
+def select_next_spin_top_pick(last_spin_count, celebration_message=""):
     """Select the top pick number for the next spin based on the last X spins."""
     try:
         import gradio as gr
@@ -5513,7 +5529,9 @@ def select_next_spin_top_pick(last_spin_count):
                 specific_explanation_html = "<br>".join(explanation_lines)
                 explanation = f"{general_explanation_html}<br><br>{specific_explanation_html}"
 
-        state.current_top_pick = top_pick
+        # Store the top pick for the next comparison in analyze_spins
+        state.previous_top_pick = state.current_top_pick  # Store the current top pick as previous
+        state.current_top_pick = top_pick  # Update the current top pick
 
         if DEBUG:
             print(f"select_next_spin_top_pick: Final scores={scores}")
@@ -5521,12 +5539,13 @@ def select_next_spin_top_pick(last_spin_count):
             print(f"select_next_spin_top_pick: Top pick={top_pick}, score={scores.get(top_pick, 0)}")
             print(f"select_next_spin_top_pick: Explanation={explanation}")
 
-        # Step 10: Generate HTML with updated styling and explanation (not collapsible)
+        # Step 10: Generate HTML with updated styling and explanation, including celebration if provided
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
             <h4>Top Pick for Next Spin 🎯: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
             <p>Based on analysis of the last {last_spin_count} spins.</p>
+            {celebration_message}
             <div class="explanation">
                 {explanation}
             </div>
@@ -5538,14 +5557,15 @@ def select_next_spin_top_pick(last_spin_count):
                 padding: 10px;
                 border-radius: 5px;
                 text-align: center;
+                position: relative; /* For positioning the celebration */
             }}
             .top-pick-container h4 {{
                 margin: 10px 0;
-                color: #333; /* Changed to a darker color for better visibility */
+                color: #333;
             }}
             .top-pick-container p {{
                 font-style: italic;
-                color: #666; /* Adjusted for better contrast */
+                color: #666;
             }}
             .top-pick-badge {{
                 display: inline-block;
@@ -5587,6 +5607,23 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .explanation strong {{
                 color: #555;
+            }}
+            .jackpot-celebration {{
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 24px;
+                font-weight: bold;
+                color: gold;
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+                animation: jackpotAnimation 2s ease-in-out;
+                z-index: 1001;
+            }}
+            @keyframes jackpotAnimation {{
+                0% {{ transform: translateX(-50%) scale(0); opacity: 0; }}
+                50% {{ transform: translateX(-50%) scale(1.2); opacity: 1; }}
+                100% {{ transform: translateX(-50%) scale(1); opacity: 0; }}
             }}
         </style>
         '''
