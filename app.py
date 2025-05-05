@@ -4,11 +4,7 @@ import pandas as pd
 import json
 from itertools import combinations
 import random
-from roulette_data import (
-    EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
-    NEIGHBORS_EUROPEAN, LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN
-)
-
+from roulette_data import LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN, BETTING_SECTIONS, colors, NEIGHBORS_EUROPEAN
 # New: Initialize betting category mappings for faster lookups
 BETTING_MAPPINGS = {}
 
