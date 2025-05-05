@@ -5224,7 +5224,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Updated select_next_spin_top_pick function with characteristics display
+# Updated select_next_spin_top_pick function with corrected characteristics styling
 DEBUG = True  # Enable for debugging
 
 def select_next_spin_top_pick(last_spin_count):
@@ -5527,7 +5527,7 @@ def select_next_spin_top_pick(last_spin_count):
 
         # Color
         color = colors.get(top_pick_str, "unknown").capitalize()
-        characteristics.append(f'<span class="characteristic characteristic-color characteristic-{color.lower()}">{color}</span>')
+        characteristics.append(f'<span class="characteristic characteristic-color characteristic-color-{color.lower()}">{color}</span>')
 
         # Parity (Even/Odd)
         parity = "Even" if top_pick in EVEN_MONEY["Even"] else "Odd"
@@ -5642,9 +5642,9 @@ def select_next_spin_top_pick(last_spin_count):
                 color: white;
                 box-shadow: 0 0 3px rgba(0,0,0,0.2);
             }}
-            .characteristic-color.red {{ background-color: #e74c3c; }}
-            .characteristic-color.black {{ background-color: #2c3e50; }}
-            .characteristic-color.green {{ background-color: #2ecc71; }}
+            .characteristic-color-red {{ background-color: #e74c3c; }}
+            .characteristic-color-black {{ background-color: #2c3e50; }}
+            .characteristic-color-green {{ background-color: #2ecc71; }}
             .characteristic-parity {{ background-color: #3498db; }}
             .characteristic-range {{ background-color: #2ecc71; }}
             .characteristic-dozen {{ background-color: #f1c40f; color: #333; }}
