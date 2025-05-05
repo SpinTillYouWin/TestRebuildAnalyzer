@@ -598,10 +598,41 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
 
 
 def render_sides_of_zero_display():
-    left_hits = state.side_scores["Left Side of Zero"]
-    zero_hits = state.scores[0]
-    right_hits = state.side_scores["Right Side of Zero"]
+    """Render the Dealer's Spin Tracker display with Left Side, Right Side, and Zero counts."""
+    import math
+    import json
+    from roulette_data import LEFT_OF_ZERO_EUROPEAN, RIGHT_OF_ZERO_EUROPEAN, BETTING_SECTIONS, colors, NEIGHBORS_EUROPEAN
+
+    # Recalculate scores directly from state.last_spins to ensure accuracy
+    scores = {i: 0 for i in range(37)}
+    for spin in state.last_spins:
+        try:
+            num = int(spin)
+            if 0 <= num <= 36:
+                scores[num] += 1
+            else:
+                print(f"render_sides_of_zero_display: Invalid number {num} in last_spins, skipping.")
+        except ValueError:
+            print(f"render_sides_of_zero_display: ValueError converting spin '{spin}' to integer, skipping.")
+            continue
+
+    # Calculate side scores using definitions from roulette_data.py
+    side_scores = {
+        "Left Side of Zero": 0,
+        "Right Side of Zero": 0
+    }
+    for num in range(37):
+        if num in LEFT_OF_ZERO_EUROPEAN:
+            side_scores["Left Side of Zero"] += scores.get(num, 0)
+        elif num in RIGHT_OF_ZERO_EUROPEAN:
+            side_scores["Right Side of Zero"] += scores.get(num, 0)
+
+    left_hits = side_scores["Left Side of Zero"]
+    zero_hits = scores[0]
+    right_hits = side_scores["Right Side of Zero"]
     
+    print(f"render_sides_of_zero_display: Counts - Left: {left_hits}, Right: {right_hits}, Zero: {zero_hits}")
+
     # Calculate the maximum hit count for scaling
     max_hits = max(left_hits, zero_hits, right_hits, 1)  # Avoid division by zero
     
@@ -610,24 +641,23 @@ def render_sides_of_zero_display():
     zero_progress = (zero_hits / max_hits) * 100 if max_hits > 0 else 0
     right_progress = (right_hits / max_hits) * 100 if max_hits > 0 else 0
     
-    # Define the order of numbers for the European roulette wheel
-    original_order = [5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-    left_side = original_order[:18]  # 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+    # Define the order of numbers for display, using LEFT_OF_ZERO_EUROPEAN and RIGHT_OF_ZERO_EUROPEAN
+    left_side = sorted(LEFT_OF_ZERO_EUROPEAN)
     zero = [0]
-    right_side = original_order[19:]  # 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10
-    wheel_order = left_side + zero + right_side  # Used for wheel SVG, now 5, ..., 26, 0, 32, ..., 10
+    right_side = sorted(RIGHT_OF_ZERO_EUROPEAN)
+    wheel_order = left_side + zero + right_side
     
-    # Define betting sections
-    jeu_0 = [12, 35, 3, 26, 0, 32, 15]
-    voisins_du_zero = [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25]
-    orphelins = [17, 34, 6, 1, 20, 14, 31, 9]
-    tiers_du_cylindre = [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+    # Use betting sections from roulette_data.py
+    jeu_0 = BETTING_SECTIONS["Jeu 0"]
+    voisins_du_zero = BETTING_SECTIONS["Voisins du Zero"]
+    orphelins = BETTING_SECTIONS["Orphelins"]
+    tiers_du_cylindre = BETTING_SECTIONS["Tiers du Cylindre"]
     
     # Calculate hit counts for each betting section
-    jeu_0_hits = sum(state.scores.get(num, 0) for num in jeu_0)
-    voisins_du_zero_hits = sum(state.scores.get(num, 0) for num in voisins_du_zero)
-    orphelins_hits = sum(state.scores.get(num, 0) for num in orphelins)
-    tiers_du_cylindre_hits = sum(state.scores.get(num, 0) for num in tiers_du_cylindre)
+    jeu_0_hits = sum(scores.get(num, 0) for num in jeu_0)
+    voisins_du_zero_hits = sum(scores.get(num, 0) for num in voisins_du_zero)
+    orphelins_hits = sum(scores.get(num, 0) for num in orphelins)
+    tiers_du_cylindre_hits = sum(scores.get(num, 0) for num in tiers_du_cylindre)
     
     # Determine the winning section for Left/Right Side
     winning_section = "Left Side" if left_hits > right_hits else "Right Side" if right_hits > left_hits else None
@@ -637,20 +667,21 @@ def render_sides_of_zero_display():
     latest_spin_angle = 0
     has_latest_spin = latest_spin is not None
     if latest_spin is not None:
-        index = original_order.index(latest_spin) if latest_spin in original_order else 0
+        # Use the order defined in wheel_order for the SVG display
+        index = wheel_order.index(latest_spin) if latest_spin in wheel_order else 0
         latest_spin_angle = (index * (360 / 37)) + 90  # Adjust for zero at bottom
     
     # Prepare numbers with hit counts
-    wheel_numbers = [(num, state.scores.get(num, 0)) for num in wheel_order]
+    wheel_numbers = [(num, scores.get(num, 0)) for num in wheel_order]
     
     # Calculate maximum hits for scaling highlights
-    max_segment_hits = max(state.scores.values(), default=1)
+    max_segment_hits = max(scores.values(), default=1)
     
     # Hot & Cold Numbers Display with Ties Handling and Cap
     hot_cold_html = '<div class="hot-cold-numbers" style="margin-top: 10px; padding: 8px; background-color: #f9f9f9; border: 1px solid #d3d3d3; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">'
     if state.last_spins and len(state.last_spins) >= 1:
-        # Use state.scores for consistency with Strongest Numbers Tables
-        hit_counts = {n: state.scores.get(n, 0) for n in range(37)}
+        # Use scores for consistency
+        hit_counts = {n: scores.get(n, 0) for n in range(37)}
         
         # Hot numbers: Sort by score descending, number ascending
         sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
@@ -714,10 +745,7 @@ def render_sides_of_zero_display():
             return '<div class="number-list">No numbers</div>'
         
         number_html = []
-        # Use left_side as is for display
-        display_left_side = left_side  # Already 5, 24, 16, ..., 26
-        display_wheel_order = display_left_side + zero + right_side  # 5, ..., 26, 0, 32, ..., 10
-        display_numbers = [(num, state.scores.get(num, 0)) for num in display_wheel_order]
+        display_numbers = [(num, scores.get(num, 0)) for num in wheel_order]
         
         for num, hits in display_numbers:
             color = colors.get(str(num), "black")
@@ -767,14 +795,14 @@ def render_sides_of_zero_display():
     
     # Draw the wheel segments
     angle_per_number = 360 / 37
-    for i, num in enumerate(original_order):
+    for i, num in enumerate(wheel_order):
         angle = i * angle_per_number
         color = colors.get(str(num), "black")
-        hits = state.scores.get(num, 0)
+        hits = scores.get(num, 0)
         stroke_width = 2 + (hits / max_segment_hits * 3) if max_segment_hits > 0 else 2
         opacity = 0.5 + (hits / max_segment_hits * 0.5) if max_segment_hits > 0 else 0.5
         stroke_color = "#FF00FF" if hits > 0 else "#FFF"
-        is_winning_segment = (winning_section == "Left Side" and num in left_side) or (winning_section == "Right Side" and num in right_side)
+        is_winning_segment = (winning_section == "Left Side" and num in LEFT_OF_ZERO_EUROPEAN) or (winning_section == "Right Side" and num in RIGHT_OF_ZERO_EUROPEAN)
         class_name = "wheel-segment" + (" pulse" if hits > 0 else "") + (" winning-segment" if is_winning_segment else "")
         rad = angle * (3.14159 / 180)
         next_rad = (angle + angle_per_number) * (3.14159 / 180)
@@ -833,7 +861,7 @@ def render_sides_of_zero_display():
         numbers_html = []
         for num in numbers:
             num_color = colors.get(str(num), "black")
-            hit_count = state.scores.get(num, 0)
+            hit_count = scores.get(num, 0)
             is_hot = hit_count > 0
             class_name = "section-number" + (" hot-number" if is_hot else "")
             badge = f'<span class="number-hit-badge">{hit_count}</span>' if is_hot else ''
@@ -1318,7 +1346,7 @@ def render_sides_of_zero_display():
             segment.addEventListener('click', (e) => {{
                 const hits = segment.getAttribute('data-hits');
                 const num = segment.getAttribute('data-number');
-                const neighbors = {json.dumps(dict(current_neighbors))};
+                const neighbors = {json.dumps(dict(NEIGHBORS_EUROPEAN))};
                 const leftNeighbor = neighbors[num] ? neighbors[num][0] : 'None';
                 const rightNeighbor = neighbors[num] ? neighbors[num][1] : 'None';
                 const tooltipText = "Number " + num + ": " + hits + " hits\\nLeft Neighbor: " + leftNeighbor + "\\nRight Neighbor: " + rightNeighbor;
