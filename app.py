@@ -6334,7 +6334,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     reset_sequence_alerts_button.click(
                         fn=lambda: (state.alerted_patterns.clear(), "<p>Sequence alerts reset successfully.</p>"),
                         inputs=[],
-                        outputs=[gr.State(), dozen_tracker_sequence_output]
+                        outputs=[gr.State(), dozen_tracker_output]
                     )
                     # END REPLACE
                     dozen_tracker_output = gr.HTML(
