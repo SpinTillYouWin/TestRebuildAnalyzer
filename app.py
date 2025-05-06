@@ -5210,6 +5210,7 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
+# Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5277,6 +5278,7 @@ def select_next_spin_top_pick(last_spin_count):
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
         scores = []
+        top_pick_scores = None
         for num in range(37):
             hits = hit_counts[num]
             even_money_score = 0
@@ -5301,6 +5303,7 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits))
         scores.sort(key=lambda x: (-x[1], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
         top_pick = scores[0][0]
+        top_pick_scores = scores[0]  # Store the scores for the top pick
         state.current_top_pick = top_pick
         characteristics = []
         top_pick_int = int(top_pick)
@@ -5329,84 +5332,165 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
+        # Extract scores for the top pick
+        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits = top_pick_scores
+        # Generate reasons
+        reasons = []
+        if even_money_score > 0:
+            matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
+            reasons.append(f"Matches the dominant even money categories: {', '.join(matched_categories)}")
+        if top_pick in DOZENS.get(top_dozen, []) and top_pick in COLUMNS.get(top_column, []):
+            reasons.append(f"Matches both the Top Dozen ({top_dozen}) and Top Column ({top_column})")
+        elif top_pick in DOZENS.get(top_dozen, []):
+            reasons.append(f"Matches the Top Dozen ({top_dozen})")
+        elif top_pick in COLUMNS.get(top_column, []):
+            reasons.append(f"Matches the Top Column ({top_column})")
+        if section_score > 0:
+            reasons.append(f"Located in the hottest wheel section: {top_section}")
+        if recency_score > 0:
+            last_pos = last_positions[top_pick]
+            reasons.append(f"Recently appeared in the spin history (position {last_pos})")
+        if hit_bonus > 0:
+            reasons.append(f"Has appeared in the spin history")
+        if wheel_side_score > 0:
+            reasons.append(f"On the most hit side of the wheel: {most_hit_side}")
+        if neighbor_score > 0:
+            neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
+            reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
+        reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
         html = f'''
-        <div class="top-pick-container">
-            <h4>Top Pick for Next Spin</h4>
-            <div class="top-pick-wrapper">
+        <div class="accordion">
+          <input type="checkbox" id="top-pick-toggle" class="accordion-toggle">
+          <label for="top-pick-toggle" class="accordion-header">Next Spin Top Pick 🎯</label>
+          <div class="accordion-content">
+            <div class="top-pick-container">
+              <h4>Top Pick for Next Spin</h4>
+              <div class="top-pick-wrapper">
                 <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span>
                 <div class="top-pick-characteristics">{characteristics_str}</div>
+              </div>
+              <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
+              <div class="accordion">
+                <input type="checkbox" id="reasons-toggle" class="accordion-toggle">
+                <label for="reasons-toggle" class="accordion-header">Why This Number Was Chosen</label>
+                <div class="accordion-content">
+                  <div class="top-pick-reasons">
+                    {reasons_html}
+                  </div>
+                </div>
+              </div>
             </div>
-            <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
+          </div>
         </div>
         <style>
-            .top-pick-container {{
-                background: linear-gradient(135deg, #ffeb3b, #ffb300);
-                border: 3px solid #ff6f00;
-                padding: 20px;
-                border-radius: 10px;
-                text-align: center;
-                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-                margin: 10px 0;
-            }}
-            .top-pick-container h4 {{
-                margin: 0 0 15px 0;
-                color: #b71c1c;
-                font-size: 22px;
-                font-weight: bold;
-                text-transform: uppercase;
-            }}
-            .top-pick-wrapper {{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }}
-            .top-pick-badge {{
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 60px;
-                height: 60px;
-                border-radius: 30px;
-                font-weight: bold;
-                font-size: 28px;
-                color: #ffffff !important;
-                background-color: {color};
-                border: 2px solid #ffffff;
-                box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }}
-            .top-pick-badge.red {{ background-color: red; }}
-            .top-pick-badge.black {{ background-color: black; }}
-            .top-pick-badge.green {{ background-color: green; }}
-            .top-pick-badge:hover {{
-                transform: scale(1.2);
-                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-            }}
-            .top-pick-characteristics {{
-                background-color: rgba(255, 255, 255, 0.9);
-                color: #d81b60;
-                font-weight: bold;
-                font-size: 16px;
-                padding: 5px 10px;
-                border-radius: 5px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }}
-            .top-pick-description {{
-                margin-top: 15px;
-                font-style: italic;
-                color: #3e2723;
-                font-size: 14px;
-            }}
-            .celebration {{
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-                z-index: 1000;
-            }}
+          .accordion {{
+            margin: 10px 0;
+            border: 1px solid #ff6f00;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #ffeb3b, #ffb300);
+          }}
+          .accordion-toggle {{
+            display: none;
+          }}
+          .accordion-header {{
+            padding: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #b71c1c;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: block;
+          }}
+          .accordion-header:hover {{
+            background-color: rgba(255, 255, 255, 0.2);
+          }}
+          .accordion-content {{
+            display: none;
+          }}
+          .accordion-toggle:checked + .accordion-header + .accordion-content {{
+            display: block;
+          }}
+          .top-pick-container {{
+            background: linear-gradient(135deg, #ffeb3b, #ffb300);
+            border: 3px solid #ff6f00;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            margin: 10px 0;
+          }}
+          .top-pick-container h4 {{
+            margin: 0 0 15px 0;
+            color: #b71c1c;
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+          }}
+          .top-pick-wrapper {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+          }}
+          .top-pick-badge {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 28px;
+            color: #ffffff !important;
+            background-color: {color};
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }}
+          .top-pick-badge.red {{ background-color: red; }}
+          .top-pick-badge.black {{ background-color: black; }}
+          .top-pick-badge.green {{ background-color: green; }}
+          .top-pick-badge:hover {{
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+          }}
+          .top-pick-characteristics {{
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #d81b60;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }}
+          .top-pick-description {{
+            margin-top: 15px;
+            font-style: italic;
+            color: #3e2723;
+            font-size: 14px;
+          }}
+          .top-pick-reasons {{
+            padding: 10px;
+            color: #3e2723;
+            font-size: 14px;
+          }}
+          .top-pick-reasons ul {{
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 0;
+          }}
+          .top-pick-reasons li {{
+            margin-bottom: 5px;
+          }}
+          .celebration {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+          }}
         </style>
         '''
         return html
