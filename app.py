@@ -5262,96 +5262,179 @@ def select_next_spin_top_pick(last_spin_count):
         if not filtered_numbers:
             filtered_numbers = numbers.copy()
 
-        # Step 3: Get hot numbers from Dealer's Spin Tracker
-        hit_counts = {n: state.scores.get(n, 0) for n in range(37)} if hasattr(state, 'scores') else {n: 0 for n in range(37)}
-        sorted_hot = sorted(hit_counts.items(), key=lambda x: (-x[1], x[0]))
-        hot_numbers = set()
-        if len(sorted_hot) >= 5:
-            fifth_score = sorted_hot[4][1]
-            for num, score in sorted_hot:
-                if len(hot_numbers) < 5 or score == fifth_score:
-                    if score > 0:
-                        hot_numbers.add(num)
-                else:
-                    break
-        else:
-            hot_numbers = set(num for num, score in sorted_hot if score > 0)
-        hot_numbers = hot_numbers & filtered_numbers
+        # Step 3: Calculate hit counts and recency for all numbers
+        hit_counts = {n: 0 for n in range(37)}  # 0-36
+        last_positions = {n: -1 for n in range(37)}  # Position of most recent appearance
+        all_positions = {n: [] for n in range(37)}  # All positions for tiebreaker
+        for i, spin in enumerate(last_spins):
+            try:
+                num = int(spin)
+                hit_counts[num] += 1
+                last_positions[num] = i
+                all_positions[num].append(i)
+            except ValueError:
+                continue
 
-        # Step 4: Filter by top betting section (Jeu 0, Voisins du Zero, etc.)
+        # Step 4: Hot Number Boost (Top 10 numbers)
+        min_hits = max(2, int(last_spin_count / 10))
+        sorted_hits = sorted(
+            [(num, hits, last_positions[num]) for num, hits in hit_counts.items() if hits >= min_hits],
+            key=lambda x: (-x[1], -x[2])  # Sort by hits (desc), then recency (desc)
+        )
+        hot_numbers = {}
+        for i, (num, hits, _) in enumerate(sorted_hits):
+            if i < 3:
+                hot_numbers[num] = 5  # Top 3: +5
+            elif i < 6:
+                hot_numbers[num] = 3  # 4th-6th: +3
+            elif i < 10:
+                hot_numbers[num] = 1  # 7th-10th: +1
+            else:
+                break
+
+        # Step 5: Betting Section Boost
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
             "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
         }
-        section_hits = {
-            name: sum(state.scores.get(num, 0) for num in nums)
-            for name, nums in betting_sections.items()
-        }
-        max_hits = max(section_hits.values()) if section_hits else 0
-        top_sections = [name for name, hits in section_hits.items() if hits == max_hits and hits > 0]
-        section_numbers = set()
-        for name in top_sections:
-            section_numbers.update(betting_sections[name])
-        filtered_numbers = filtered_numbers.intersection(section_numbers) if section_numbers else filtered_numbers
+        section_hits = {name: 0 for name in betting_sections}
+        section_last_hit = {name: -1 for name in betting_sections}
+        for name, nums in betting_sections.items():
+            for num in nums:
+                section_hits[name] += hit_counts[num]
+                if last_positions[num] > section_last_hit[name]:
+                    section_last_hit[name] = last_positions[num]
+        sorted_sections = sorted(section_hits.items(), key=lambda x: x[1], reverse=True)
+        top_section, top_hits = sorted_sections[0] if sorted_sections else (None, 0)
+        second_section, second_hits = sorted_sections[1] if len(sorted_sections) > 1 else (None, 0)
+        section_boost = {}
+        for num in range(37):
+            boost = 0
+            for name, nums in betting_sections.items():
+                if num in nums:
+                    if name == top_section and top_hits > 0:
+                        recency_factor = (section_last_hit[name] + 1) / last_spin_count
+                        boost += 4 * recency_factor
+                    elif name == second_section and second_hits >= 0.5 * top_hits and second_hits > 0:
+                        recency_factor = (section_last_hit[name] + 1) / last_spin_count
+                        boost += 2 * recency_factor
+            section_boost[num] = boost
 
-        # Reset if no numbers remain
-        if not filtered_numbers:
-            filtered_numbers = numbers.copy()
+        # Step 6: Wheel Side Boost (Using LEFT_OF_ZERO_EUROPEAN and RIGHT_OF_ZERO_EUROPEAN)
+        left_side = set(LEFT_OF_ZERO_EUROPEAN)  # [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5]
+        right_side = set(RIGHT_OF_ZERO_EUROPEAN)  # [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
+        left_hits = sum(hit_counts[num] for num in left_side)
+        right_hits = sum(hit_counts[num] for num in right_side)
+        total_side_hits = left_hits + right_hits
+        wheel_side_boost = {}
+        for num in range(37):
+            if total_side_hits > 0:
+                if num in left_side:
+                    wheel_side_boost[num] = (left_hits / total_side_hits) * 3
+                elif num in right_side:
+                    wheel_side_boost[num] = (right_hits / total_side_hits) * 3
+                else:  # 0 is neutral
+                    wheel_side_boost[num] = 0
+            else:
+                wheel_side_boost[num] = 0
 
-        # Step 5: Boost numbers in categories with active streaks (SpinTrend Radar)
-        streak_numbers = set()
-        all_streaks = {**even_money_counts, **column_counts, **dozen_counts}
-        longest_streak = max((count for count in all_streaks.values() if count > 1), default=0)
-        if longest_streak > 1:
-            streak_categories = [name for name, count in all_streaks.items() if count == longest_streak]
-            for cat in streak_categories:
-                if cat in EVEN_MONEY:
-                    streak_numbers.update(EVEN_MONEY[cat])
-                elif cat in COLUMNS:
-                    streak_numbers.update(COLUMNS[cat])
-                elif cat in DOZENS:
-                    streak_numbers.update(DOZENS[cat])
+        # Step 7: Category Boost (Even Money, Columns, Dozens with 10% lead)
+        category_boost = {num: 0 for num in range(37)}
+        # Even Money
+        sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)
+        if sorted_even_money:
+            top_em, top_em_hits = sorted_even_money[0]
+            second_em_hits = sorted_even_money[1][1] if len(sorted_even_money) > 1 else 0
+            if top_em_hits > second_em_hits * 1.1:  # 10% lead
+                for num in EVEN_MONEY[top_em]:
+                    category_boost[num] += 2
+        # Columns
+        sorted_columns = sorted(column_counts.items(), key=lambda x: x[1], reverse=True)
+        if sorted_columns:
+            top_col, top_col_hits = sorted_columns[0]
+            second_col_hits = sorted_columns[1][1] if len(sorted_columns) > 1 else 0
+            if top_col_hits > second_col_hits * 1.1:
+                for num in COLUMNS[top_col]:
+                    category_boost[num] += 2
+        # Dozens
+        sorted_dozens = sorted(dozen_counts.items(), key=lambda x: x[1], reverse=True)
+        if sorted_dozens:
+            top_doz, top_doz_hits = sorted_dozens[0]
+            second_doz_hits = sorted_dozens[1][1] if len(sorted_dozens) > 1 else 0
+            if top_doz_hits > second_doz_hits * 1.1:
+                for num in DOZENS[top_doz]:
+                    category_boost[num] += 2
 
-        # Step 6: Get top 5 strongest numbers
-        strongest_numbers = set()
-        sorted_scores = sorted((state.scores.items() if hasattr(state, 'scores') else []), key=lambda x: (-x[1], x[0]))
-        for num, score in sorted_scores[:5]:
-            if score > 0:
-                strongest_numbers.add(num)
+        # Step 8: Streak Bonus
+        streak_bonus = {num: 0 for num in range(37)}
+        last_three = last_spins[-3:] if len(last_spins) >= 3 else last_spins
+        for num in range(37):
+            num_str = str(num)
+            hits_in_last_three = sum(1 for spin in last_three if spin == num_str)
+            if hits_in_last_three == 3:
+                streak_bonus[num] = 5
+            elif hits_in_last_three == 2:
+                streak_bonus[num] = 2
 
-        # Step 7: Score numbers
+        # Step 9: Neighbor Boost (using NEIGHBORS_EUROPEAN)
+        neighbor_boost = {num: 0 for num in range(37)}
+        last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+        last_five_set = set(last_five)
+        for num in range(37):
+            if num in NEIGHBORS_EUROPEAN:
+                left, right = NEIGHBORS_EUROPEAN[num]
+                if left is not None and str(left) in last_five_set:
+                    neighbor_boost[num] += 1
+                if right is not None and str(right) in last_five_set:
+                    neighbor_boost[num] += 1
+
+        # Step 10: Calculate Final Scores
         scores = {}
         for num in filtered_numbers:
-            score = state.scores.get(num, 0) if hasattr(state, 'scores') else 0
-            if num in hot_numbers:
-                score += 3  # Hot number boost
-            if num in section_numbers:
-                score += 2  # Top betting section boost
-            if num in streak_numbers:
-                score += 1  # Active streak boost
-            if num in strongest_numbers:
-                score += 2  # Strongest number boost
-            # Tiebreaker: Recent spins
-            for i, spin in enumerate(reversed(last_spins)):
-                if int(spin) == num:
-                    score += (last_spin_count - i) * 0.1  # Weight recent spins
-                    break
-            scores[num] = score
+            # Base Score: Hit Percentage
+            hits = hit_counts[num]
+            base_score = (hits / last_spin_count) * 10 if last_spin_count > 0 else 0
+
+            # Hot Number Boost
+            hot_boost = hot_numbers.get(num, 0)
+
+            # Betting Section Boost
+            section_score = section_boost[num]
+
+            # Wheel Side Boost
+            side_score = wheel_side_boost[num]
+
+            # Category Boost
+            cat_score = category_boost[num]
+
+            # Recency Boost
+            last_pos = last_positions[num]
+            recency_score = (last_spin_count - (last_pos + 1)) * 0.3 if last_pos >= 0 else 0
+
+            # Streak Bonus
+            streak_score = streak_bonus[num]
+
+            # Neighbor Boost
+            neighbor_score = neighbor_boost[num]
+
+            # Total Score
+            total_score = base_score + hot_boost + section_score + side_score + cat_score + recency_score + streak_score + neighbor_score
+            scores[num] = (total_score, sum((last_spin_count - pos) * 0.3 for pos in all_positions[num] if pos >= 0))
 
         if not scores:
-            # Fallback: Use hot numbers or random selection
-            filtered_numbers = hot_numbers if hot_numbers else numbers
-            scores = {num: (state.scores.get(num, 0) if hasattr(state, 'scores') else 0) for num in filtered_numbers}
-            for num in scores:
-                for i, spin in enumerate(reversed(last_spins)):
-                    if int(spin) == num:
-                        scores[num] += (last_spin_count - i) * 0.1
-                        break
+            # Fallback: Use basic hit counts with recency
+            for num in filtered_numbers:
+                hits = hit_counts[num]
+                base_score = (hits / last_spin_count) * 10 if last_spin_count > 0 else 0
+                last_pos = last_positions[num]
+                recency_score = (last_spin_count - (last_pos + 1)) * 0.3 if last_pos >= 0 else 0
+                total_score = base_score + recency_score
+                scores[num] = (total_score, recency_score)
 
-        # Select top pick
-        top_pick = max(scores.items(), key=lambda x: x[1])[0]
+        # Select top pick (sort by total score, then recency sum, then numerical order)
+        top_pick = max(scores.items(), key=lambda x: (x[1][0], x[1][1], x[0]))[0]
         state.current_top_pick = top_pick
 
         # Determine characteristics of the top pick
