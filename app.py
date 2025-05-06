@@ -5220,6 +5220,9 @@ def select_next_spin_top_pick(last_spin_count):
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
 
+        # Calculate total spins for display
+        total_spins = len(state.last_spins) if state.last_spins else 0
+
         # Step 1: Initialize all possible numbers
         numbers = set(range(37))  # 0-36
 
@@ -5279,24 +5282,7 @@ def select_next_spin_top_pick(last_spin_count):
         section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
         top_section = max(section_hits.items(), key=lambda x: x[1])[0] if section_hits else None
 
-        # Step 6: Hot Numbers (Top 5)
-        min_hits = max(2, int(last_spin_count / 10))
-        sorted_hits = sorted(
-            [(num, hits, last_positions[num]) for num, hits in hit_counts.items() if hits >= min_hits],
-            key=lambda x: (-x[1], -x[2])
-        )
-        hot_numbers = {}
-        for i, (num, hits, _) in enumerate(sorted_hits):
-            if i < 3:
-                hot_numbers[num] = 10
-            elif i < 6:
-                hot_numbers[num] = 5
-            elif i < 10:
-                hot_numbers[num] = 2
-            else:
-                break
-
-        # Step 7: Streak Bonus
+        # Step 6: Streak Bonus
         streak_bonus = {num: 0 for num in range(37)}
         last_three = last_spins[-3:] if len(last_spins) >= 3 else last_spins
         for num in range(37):
@@ -5307,7 +5293,7 @@ def select_next_spin_top_pick(last_spin_count):
             elif hits_in_last_three == 2:
                 streak_bonus[num] = 10
 
-        # Step 8: Neighbor Boost
+        # Step 7: Neighbor Boost
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5315,11 +5301,11 @@ def select_next_spin_top_pick(last_spin_count):
             if num in NEIGHBORS_EUROPEAN:
                 left, right = NEIGHBORS_EUROPEAN[num]
                 if left is not None and str(left) in last_five_set:
-                    neighbor_boost[num] += 2
+                    neighbor_boost[num] += 5
                 if right is not None and str(right) in last_five_set:
-                    neighbor_boost[num] += 2
+                    neighbor_boost[num] += 5
 
-        # Step 9: Category Streaks (Black, Even, 1st Column, 3rd Dozen)
+        # Step 8: Category Streaks (Black, Even, 1st Column, 3rd Dozen)
         category_streaks = {"Black": 0, "Even": 0, "High": 0, top_column: 0, top_dozen: 0}
         last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         for spin in reversed(last_five_spins):
@@ -5344,7 +5330,7 @@ def select_next_spin_top_pick(last_spin_count):
             except ValueError:
                 continue
 
-        # Step 10: Calculate Scores
+        # Step 9: Calculate Scores
         scores = {}
         for num in range(37):
             # Base Score
@@ -5355,19 +5341,19 @@ def select_next_spin_top_pick(last_spin_count):
             even_money_score = 0
             for cat in dominant_even_money:
                 if num in EVEN_MONEY[cat]:
-                    even_money_score += 5
+                    even_money_score += 3
 
             # Dozen and Column Match
             dozen_column_score = 0
             if top_dozen and num in DOZENS[top_dozen]:
-                dozen_column_score += 5
+                dozen_column_score += 10
             if top_column and num in COLUMNS[top_column]:
-                dozen_column_score += 5
+                dozen_column_score += 10
 
             # Wheel Side
             wheel_side_score = 0
             if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
+                wheel_side_score = 10
 
             # Betting Section
             section_score = 5 if top_section and num in betting_sections[top_section] else 0
@@ -5375,38 +5361,35 @@ def select_next_spin_top_pick(last_spin_count):
             # Streak Bonus
             streak_score = streak_bonus[num]
 
-            # Hot Number Boost
-            hot_score = hot_numbers.get(num, 0)
-
             # Neighbor Boost
             neighbor_score = neighbor_boost[num]
 
             # Recency Boost
             last_pos = last_positions[num]
-            recency_score = (last_spin_count - (last_pos + 1)) * 0.5 if last_pos >= 0 else 0
+            recency_score = (last_spin_count - (last_pos + 1)) * 0.3 if last_pos >= 0 else 0
             if last_pos == last_spin_count - 1:
-                recency_score = max(recency_score, 5)
+                recency_score = max(recency_score, 3)
 
             # Category Streak Boost
             cat_streak_score = 0
             for cat in ["Black", "Even", "High"]:
                 if cat in category_streaks and category_streaks[cat] > 1 and num in EVEN_MONEY[cat]:
-                    cat_streak_score += 3
+                    cat_streak_score += 2
             if top_column in category_streaks and category_streaks[top_column] > 1 and num in COLUMNS[top_column]:
-                cat_streak_score += 3
+                cat_streak_score += 2
             if top_dozen in category_streaks and category_streaks[top_dozen] > 1 and num in DOZENS[top_dozen]:
-                cat_streak_score += 3
+                cat_streak_score += 2
 
             # Total Score
             total_score = (base_score + even_money_score + dozen_column_score + wheel_side_score +
-                           section_score + streak_score + hot_score + neighbor_score + recency_score + cat_streak_score)
-            scores[num] = (total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0))
+                           section_score + streak_score + neighbor_score + recency_score + cat_streak_score)
+            scores[num] = (total_score, sum((last_spin_count - pos) * 0.3 for pos in all_positions[num] if pos >= 0))
 
-        # Step 11: Select Top Pick
+        # Step 10: Select Top Pick
         top_pick = max(scores.items(), key=lambda x: (x[1][0], x[1][1], x[0]))[0]
         state.current_top_pick = top_pick
 
-        # Step 12: Determine Characteristics
+        # Step 11: Determine Characteristics
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
@@ -5434,7 +5417,7 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
 
-        # Step 13: Generate HTML
+        # Step 12: Generate HTML with Total Spins Display
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
@@ -5443,6 +5426,7 @@ def select_next_spin_top_pick(last_spin_count):
                 <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span>
                 <div class="top-pick-characteristics">{characteristics_str}</div>
             </div>
+            <p class="top-pick-total-spins">Total Spins in "Selected Spins (Edit manually with commas, e.g., 5, 12, 0)": {total_spins}</p>
             <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
         </div>
         <style>
@@ -5499,8 +5483,14 @@ def select_next_spin_top_pick(last_spin_count):
                 border-radius: 5px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }}
+            .top-pick-total-spins {{
+                margin-top: 10px;
+                font-style: italic;
+                color: #3e2723;
+                font-size: 14px;
+            }}
             .top-pick-description {{
-                margin-top: 15px;
+                margin-top: 5px;
                 font-style: italic;
                 color: #3e2723;
                 font-size: 14px;
