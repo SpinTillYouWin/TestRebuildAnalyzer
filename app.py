@@ -5398,62 +5398,72 @@ def select_next_spin_top_pick(last_spin_count):
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
-            <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
-            <p class="top-pick-characteristics">Characteristics: {characteristics_str}</p>
+            <h4>Top Pick for Next Spin</h4>
+            <div class="top-pick-wrapper">
+                <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span>
+                <div class="top-pick-characteristics">{characteristics_str}</div>
+            </div>
             <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
         </div>
         <style>
             .top-pick-container {{
-                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                border: 2px solid #2196f3;
-                padding: 15px;
-                border-radius: 8px;
+                background: linear-gradient(135deg, #ffeb3b, #ffb300);
+                border: 3px solid #ff6f00;
+                padding: 20px;
+                border-radius: 10px;
                 text-align: center;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s ease;
-            }}
-            .top-pick-container:hover {{
-                transform: scale(1.02);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+                margin: 10px 0;
             }}
             .top-pick-container h4 {{
-                margin: 0 0 10px 0;
-                color: #1a237e;
-                font-size: 20px;
-                font-weight: 600;
+                margin: 0 0 15px 0;
+                color: #b71c1c;
+                font-size: 22px;
+                font-weight: bold;
+                text-transform: uppercase;
+            }}
+            .top-pick-wrapper {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
             }}
             .top-pick-badge {{
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                width: 50px;
-                height: 50px;
-                border-radius: 25px;
+                width: 60px;
+                height: 60px;
+                border-radius: 30px;
                 font-weight: bold;
-                font-size: 24px;
-                color: white !important;
+                font-size: 28px;
+                color: #ffffff !important;
                 background-color: {color};
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                border: 2px solid #ffffff;
+                box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
                 transition: transform 0.3s ease, box-shadow 0.3s ease;
-                margin-left: 10px;
             }}
             .top-pick-badge.red {{ background-color: red; }}
             .top-pick-badge.black {{ background-color: black; }}
             .top-pick-badge.green {{ background-color: green; }}
             .top-pick-badge:hover {{
-                transform: scale(1.15);
-                box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+                transform: scale(1.2);
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
             }}
             .top-pick-characteristics {{
-                margin: 8px 0;
+                background-color: rgba(255, 255, 255, 0.9);
                 color: #d81b60;
-                font-weight: 500;
+                font-weight: bold;
                 font-size: 16px;
+                padding: 5px 10px;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }}
             .top-pick-description {{
+                margin-top: 15px;
                 font-style: italic;
-                color: #455a64;
+                color: #3e2723;
                 font-size: 14px;
-                margin: 0;
             }}
             .celebration {{
                 position: fixed;
