@@ -5280,9 +5280,12 @@ def select_next_spin_top_pick(last_spin_count):
         for num in range(37):
             hits = hit_counts[num]
             even_money_score = 0
+            even_money_matches = 0
             for cat in dominant_even_money:
                 if num in EVEN_MONEY[cat]:
                     even_money_score += 20
+                    even_money_matches += 1
+            high_confidence_bonus = 15 if even_money_matches == 3 else 0
             dozen_column_score = 0
             if top_dozen and num in DOZENS[top_dozen]:
                 dozen_column_score += 15
@@ -5293,9 +5296,9 @@ def select_next_spin_top_pick(last_spin_count):
                 wheel_side_score = 5
             section_score = 10 if top_section and num in betting_sections[top_section] else 0
             neighbor_score = neighbor_boost[num]
-            total_score = even_money_score + dozen_column_score + section_score + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, wheel_side_score, neighbor_score, hits))
-        scores.sort(key=lambda x: (-x[1], -x[2], -x[3], -x[4], -x[5], -x[6], -x[7]))
+            total_score = even_money_score + high_confidence_bonus + dozen_column_score + section_score + wheel_side_score + neighbor_score
+            scores.append((num, total_score, even_money_score, high_confidence_bonus, dozen_column_score, section_score, wheel_side_score, neighbor_score, hits))
+        scores.sort(key=lambda x: (-x[1], -x[2], -x[3], -x[4], -x[5], -x[6], -x[7], -x[8]))
         top_pick = scores[0][0]
         state.current_top_pick = top_pick
         characteristics = []
