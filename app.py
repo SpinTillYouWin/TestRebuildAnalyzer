@@ -5324,7 +5324,7 @@ def select_next_spin_top_pick(last_spin_count):
                         category_streaks[top_dozen] += 1
                 except ValueError:
                     continue
-        scores = {}
+        scores = []
         for num in range(37):
             hits = hit_counts[num]
             base_score = (hits / last_spin_count) * 10 if last_spin_count > 0 else 0
@@ -5358,8 +5358,9 @@ def select_next_spin_top_pick(last_spin_count):
                 cat_streak_score += 5
             total_score = (base_score + even_money_score + dozen_column_score + wheel_side_score +
                            section_score + streak_score + hot_score + neighbor_score + recency_score + cat_streak_score)
-            scores[num] = (total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0), hits)
-        top_pick = max(scores.items(), key=lambda x: (x[1][0], x[1][1], x[1][2], x[0]))[0]
+            scores.append((num, total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0), hits))
+        scores.sort(key=lambda x: (x[1], x[2], x[3], x[0]), reverse=True)
+        top_pick = scores[0][0]
         state.current_top_pick = top_pick
         characteristics = []
         top_pick_int = int(top_pick)
