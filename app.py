@@ -5356,8 +5356,14 @@ def select_next_spin_top_pick(last_spin_count):
                 cat_streak_score += 5
             if top_dozen in category_streaks and category_streaks[top_dozen] > 1 and num in DOZENS[top_dozen]:
                 cat_streak_score += 5
+            dominant_category_bonus = 0
+            dominant_categories = ["Black", "Odd", "High", top_dozen, top_column]
+            for cat in dominant_categories:
+                if (cat in EVEN_MONEY and num in EVEN_MONEY[cat]) or (cat in DOZENS and num in DOZENS[cat]) or (cat in COLUMNS and num in COLUMNS[cat]):
+                    dominant_category_bonus += 5
             total_score = (base_score + even_money_score + dozen_column_score + wheel_side_score +
-                           section_score + streak_score + hot_score + neighbor_score + recency_score + cat_streak_score)
+                           section_score + streak_score + hot_score + neighbor_score + recency_score + 
+                           cat_streak_score + dominant_category_bonus)
             scores.append((num, total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0), hits))
         scores.sort(key=lambda x: (-x[1], -x[2], -x[3], -x[0]))
         top_pick = scores[0][0]
