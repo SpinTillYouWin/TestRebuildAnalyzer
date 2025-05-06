@@ -5222,6 +5222,7 @@ def select_next_spin_top_pick(last_spin_count):
 
         # Calculate total spins for display
         total_spins = len(state.last_spins) if state.last_spins else 0
+        print(f"Total spins provided: {total_spins}")  # Debug print to confirm
 
         # Step 1: Initialize all possible numbers
         numbers = set(range(37))  # 0-36
@@ -5485,9 +5486,9 @@ def select_next_spin_top_pick(last_spin_count):
             }}
             .top-pick-total-spins {{
                 margin-top: 10px;
-                font-style: italic;
-                color: #3e2723;
-                font-size: 14px;
+                font-weight: bold;
+                color: #d81b60;
+                font-size: 16px;
             }}
             .top-pick-description {{
                 margin-top: 5px;
