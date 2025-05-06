@@ -5223,11 +5223,23 @@ def select_next_spin_top_pick(last_spin_count):
         # Step 1: Initialize all possible numbers
         numbers = set(range(37))  # 0-36
 
-        # Step 2: Filter by dominant categories (Hit Percentage Overview)
+        # Step 2: Calculate hit counts and recency for all numbers
+        hit_counts = {n: 0 for n in range(37)}  # 0-36
+        last_positions = {n: -1 for n in range(37)}  # Position of most recent appearance
+        all_positions = {n: [] for n in range(37)}  # All positions for tiebreaker
+        for i, spin in enumerate(last_spins):
+            try:
+                num = int(spin)
+                hit_counts[num] += 1
+                last_positions[num] = i
+                all_positions[num].append(i)
+            except ValueError:
+                continue
+
+        # Step 3: Compute Hit Percentage Overview (Even Money, Dozen, Column)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
-
         for spin in last_spins:
             try:
                 num = int(spin)
@@ -5243,142 +5255,59 @@ def select_next_spin_top_pick(last_spin_count):
             except ValueError:
                 continue
 
-        # Identify single winners (no ties)
-        filtered_numbers = numbers.copy()
-        max_even_money = max(even_money_counts.values()) if even_money_counts else 0
-        even_money_winners = [name for name, count in even_money_counts.items() if count == max_even_money]
-        if len(even_money_winners) == 1 and max_even_money > 0:
-            filtered_numbers = filtered_numbers.intersection(EVEN_MONEY[even_money_winners[0]])
-        max_columns = max(column_counts.values()) if column_counts else 0
-        column_winners = [name for name, count in column_counts.items() if count == max_columns]
-        if len(column_winners) == 1 and max_columns > 0:
-            filtered_numbers = filtered_numbers.intersection(COLUMNS[column_winners[0]])
-        max_dozens = max(dozen_counts.values()) if dozen_counts else 0
-        dozen_winners = [name for name, count in dozen_counts.items() if count == max_dozens]
-        if len(dozen_winners) == 1 and max_dozens > 0:
-            filtered_numbers = filtered_numbers.intersection(DOZENS[dozen_winners[0]])
+        # Identify dominant Even Money categories (top 3)
+        sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+        dominant_even_money = {name for name, _ in sorted_even_money}
+        # Identify dominant Dozen and Column
+        top_dozen = max(dozen_counts.items(), key=lambda x: x[1])[0] if dozen_counts else None
+        top_column = max(column_counts.items(), key=lambda x: x[1])[0] if column_counts else None
 
-        # Reset if no numbers remain
-        if not filtered_numbers:
-            filtered_numbers = numbers.copy()
+        # Step 4: Wheel Side
+        left_side = set(LEFT_OF_ZERO_EUROPEAN)
+        right_side = set(RIGHT_OF_ZERO_EUROPEAN)
+        left_hits = sum(hit_counts[num] for num in left_side)
+        right_hits = sum(hit_counts[num] for num in right_side)
+        most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
 
-        # Step 3: Calculate hit counts and recency for all numbers
-        hit_counts = {n: 0 for n in range(37)}  # 0-36
-        last_positions = {n: -1 for n in range(37)}  # Position of most recent appearance
-        all_positions = {n: [] for n in range(37)}  # All positions for tiebreaker
-        for i, spin in enumerate(last_spins):
-            try:
-                num = int(spin)
-                hit_counts[num] += 1
-                last_positions[num] = i
-                all_positions[num].append(i)
-            except ValueError:
-                continue
-
-        # Step 4: Hot Number Boost (Top 10 numbers)
-        min_hits = max(2, int(last_spin_count / 10))
-        sorted_hits = sorted(
-            [(num, hits, last_positions[num]) for num, hits in hit_counts.items() if hits >= min_hits],
-            key=lambda x: (-x[1], -x[2])  # Sort by hits (desc), then recency (desc)
-        )
-        hot_numbers = {}
-        for i, (num, hits, _) in enumerate(sorted_hits):
-            if i < 3:
-                hot_numbers[num] = 5  # Top 3: +5
-            elif i < 6:
-                hot_numbers[num] = 3  # 4th-6th: +3
-            elif i < 10:
-                hot_numbers[num] = 1  # 7th-10th: +1
-            else:
-                break
-
-        # Step 5: Betting Section Boost
+        # Step 5: Betting Section
         betting_sections = {
             "Jeu 0": [12, 35, 3, 26, 0, 32, 15],
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
             "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
         }
-        section_hits = {name: 0 for name in betting_sections}
-        section_last_hit = {name: -1 for name in betting_sections}
-        for name, nums in betting_sections.items():
-            for num in nums:
-                section_hits[name] += hit_counts[num]
-                if last_positions[num] > section_last_hit[name]:
-                    section_last_hit[name] = last_positions[num]
-        sorted_sections = sorted(section_hits.items(), key=lambda x: x[1], reverse=True)
-        top_section, top_hits = sorted_sections[0] if sorted_sections else (None, 0)
-        second_section, second_hits = sorted_sections[1] if len(sorted_sections) > 1 else (None, 0)
-        section_boost = {}
-        for num in range(37):
-            boost = 0
-            for name, nums in betting_sections.items():
-                if num in nums:
-                    if name == top_section and top_hits > 0:
-                        recency_factor = (section_last_hit[name] + 1) / last_spin_count
-                        boost += 4 * recency_factor
-                    elif name == second_section and second_hits >= 0.5 * top_hits and second_hits > 0:
-                        recency_factor = (section_last_hit[name] + 1) / last_spin_count
-                        boost += 2 * recency_factor
-            section_boost[num] = boost
+        section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
+        top_section = max(section_hits.items(), key=lambda x: x[1])[0] if section_hits else None
 
-        # Step 6: Wheel Side Boost (Using LEFT_OF_ZERO_EUROPEAN and RIGHT_OF_ZERO_EUROPEAN)
-        left_side = set(LEFT_OF_ZERO_EUROPEAN)  # [26, 3, 35, 12, 28, 7, 29, 18, 22, 9, 31, 14, 20, 1, 33, 16, 24, 5]
-        right_side = set(RIGHT_OF_ZERO_EUROPEAN)  # [32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10]
-        left_hits = sum(hit_counts[num] for num in left_side)
-        right_hits = sum(hit_counts[num] for num in right_side)
-        total_side_hits = left_hits + right_hits
-        wheel_side_boost = {}
-        for num in range(37):
-            if total_side_hits > 0:
-                if num in left_side:
-                    wheel_side_boost[num] = (left_hits / total_side_hits) * 3
-                elif num in right_side:
-                    wheel_side_boost[num] = (right_hits / total_side_hits) * 3
-                else:  # 0 is neutral
-                    wheel_side_boost[num] = 0
+        # Step 6: Hot Numbers (Top 5)
+        min_hits = max(2, int(last_spin_count / 10))
+        sorted_hits = sorted(
+            [(num, hits, last_positions[num]) for num, hits in hit_counts.items() if hits >= min_hits],
+            key=lambda x: (-x[1], -x[2])
+        )
+        hot_numbers = {}
+        for i, (num, hits, _) in enumerate(sorted_hits):
+            if i < 3:
+                hot_numbers[num] = 10
+            elif i < 6:
+                hot_numbers[num] = 5
+            elif i < 10:
+                hot_numbers[num] = 2
             else:
-                wheel_side_boost[num] = 0
+                break
 
-        # Step 7: Category Boost (Even Money, Columns, Dozens with 10% lead)
-        category_boost = {num: 0 for num in range(37)}
-        # Even Money
-        sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)
-        if sorted_even_money:
-            top_em, top_em_hits = sorted_even_money[0]
-            second_em_hits = sorted_even_money[1][1] if len(sorted_even_money) > 1 else 0
-            if top_em_hits > second_em_hits * 1.1:  # 10% lead
-                for num in EVEN_MONEY[top_em]:
-                    category_boost[num] += 2
-        # Columns
-        sorted_columns = sorted(column_counts.items(), key=lambda x: x[1], reverse=True)
-        if sorted_columns:
-            top_col, top_col_hits = sorted_columns[0]
-            second_col_hits = sorted_columns[1][1] if len(sorted_columns) > 1 else 0
-            if top_col_hits > second_col_hits * 1.1:
-                for num in COLUMNS[top_col]:
-                    category_boost[num] += 2
-        # Dozens
-        sorted_dozens = sorted(dozen_counts.items(), key=lambda x: x[1], reverse=True)
-        if sorted_dozens:
-            top_doz, top_doz_hits = sorted_dozens[0]
-            second_doz_hits = sorted_dozens[1][1] if len(sorted_dozens) > 1 else 0
-            if top_doz_hits > second_doz_hits * 1.1:
-                for num in DOZENS[top_doz]:
-                    category_boost[num] += 2
-
-        # Step 8: Streak Bonus
+        # Step 7: Streak Bonus
         streak_bonus = {num: 0 for num in range(37)}
         last_three = last_spins[-3:] if len(last_spins) >= 3 else last_spins
         for num in range(37):
             num_str = str(num)
             hits_in_last_three = sum(1 for spin in last_three if spin == num_str)
             if hits_in_last_three == 3:
-                streak_bonus[num] = 5
+                streak_bonus[num] = 20
             elif hits_in_last_three == 2:
-                streak_bonus[num] = 2
+                streak_bonus[num] = 10
 
-        # Step 9: Neighbor Boost (using NEIGHBORS_EUROPEAN)
+        # Step 8: Neighbor Boost
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5386,98 +5315,126 @@ def select_next_spin_top_pick(last_spin_count):
             if num in NEIGHBORS_EUROPEAN:
                 left, right = NEIGHBORS_EUROPEAN[num]
                 if left is not None and str(left) in last_five_set:
-                    neighbor_boost[num] += 1
+                    neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
-                    neighbor_boost[num] += 1
+                    neighbor_boost[num] += 2
 
-        # Step 10: Calculate Final Scores
+        # Step 9: Category Streaks (Black, Even, 1st Column, 3rd Dozen)
+        category_streaks = {"Black": 0, "Even": 0, "High": 0, top_column: 0, top_dozen: 0}
+        last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+        for spin in reversed(last_five_spins):
+            try:
+                num = int(spin)
+                streak_broken = False
+                for cat in ["Black", "Even", "High"]:
+                    if cat in category_streaks and num in EVEN_MONEY[cat]:
+                        category_streaks[cat] += 1
+                    else:
+                        streak_broken = True
+                if top_column in column_counts and num in COLUMNS[top_column]:
+                    category_streaks[top_column] += 1
+                else:
+                    streak_broken = True
+                if top_dozen in dozen_counts and num in DOZENS[top_dozen]:
+                    category_streaks[top_dozen] += 1
+                else:
+                    streak_broken = True
+                if streak_broken:
+                    break
+            except ValueError:
+                continue
+
+        # Step 10: Calculate Scores
         scores = {}
-        for num in filtered_numbers:
-            # Base Score: Hit Percentage
+        for num in range(37):
+            # Base Score
             hits = hit_counts[num]
             base_score = (hits / last_spin_count) * 10 if last_spin_count > 0 else 0
 
-            # Hot Number Boost
-            hot_boost = hot_numbers.get(num, 0)
+            # Even Money Match
+            even_money_score = 0
+            for cat in dominant_even_money:
+                if num in EVEN_MONEY[cat]:
+                    even_money_score += 5
 
-            # Betting Section Boost
-            section_score = section_boost[num]
+            # Dozen and Column Match
+            dozen_column_score = 0
+            if top_dozen and num in DOZENS[top_dozen]:
+                dozen_column_score += 5
+            if top_column and num in COLUMNS[top_column]:
+                dozen_column_score += 5
 
-            # Wheel Side Boost
-            side_score = wheel_side_boost[num]
+            # Wheel Side
+            wheel_side_score = 0
+            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
+                wheel_side_score = 5
 
-            # Category Boost
-            cat_score = category_boost[num]
-
-            # Recency Boost
-            last_pos = last_positions[num]
-            recency_score = (last_spin_count - (last_pos + 1)) * 0.3 if last_pos >= 0 else 0
+            # Betting Section
+            section_score = 5 if top_section and num in betting_sections[top_section] else 0
 
             # Streak Bonus
             streak_score = streak_bonus[num]
 
+            # Hot Number Boost
+            hot_score = hot_numbers.get(num, 0)
+
             # Neighbor Boost
             neighbor_score = neighbor_boost[num]
 
+            # Recency Boost
+            last_pos = last_positions[num]
+            recency_score = (last_spin_count - (last_pos + 1)) * 0.5 if last_pos >= 0 else 0
+            if last_pos == last_spin_count - 1:
+                recency_score = max(recency_score, 5)
+
+            # Category Streak Boost
+            cat_streak_score = 0
+            for cat in ["Black", "Even", "High"]:
+                if cat in category_streaks and category_streaks[cat] > 1 and num in EVEN_MONEY[cat]:
+                    cat_streak_score += 3
+            if top_column in category_streaks and category_streaks[top_column] > 1 and num in COLUMNS[top_column]:
+                cat_streak_score += 3
+            if top_dozen in category_streaks and category_streaks[top_dozen] > 1 and num in DOZENS[top_dozen]:
+                cat_streak_score += 3
+
             # Total Score
-            total_score = base_score + hot_boost + section_score + side_score + cat_score + recency_score + streak_score + neighbor_score
-            scores[num] = (total_score, sum((last_spin_count - pos) * 0.3 for pos in all_positions[num] if pos >= 0))
+            total_score = (base_score + even_money_score + dozen_column_score + wheel_side_score +
+                           section_score + streak_score + hot_score + neighbor_score + recency_score + cat_streak_score)
+            scores[num] = (total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0))
 
-        if not scores:
-            # Fallback: Use basic hit counts with recency
-            for num in filtered_numbers:
-                hits = hit_counts[num]
-                base_score = (hits / last_spin_count) * 10 if last_spin_count > 0 else 0
-                last_pos = last_positions[num]
-                recency_score = (last_spin_count - (last_pos + 1)) * 0.3 if last_pos >= 0 else 0
-                total_score = base_score + recency_score
-                scores[num] = (total_score, recency_score)
-
-        # Select top pick (sort by total score, then recency sum, then numerical order)
+        # Step 11: Select Top Pick
         top_pick = max(scores.items(), key=lambda x: (x[1][0], x[1][1], x[0]))[0]
         state.current_top_pick = top_pick
 
-        # Determine characteristics of the top pick
+        # Step 12: Determine Characteristics
         characteristics = []
         top_pick_int = int(top_pick)
-        
-        # Color (Red/Black/Green)
         if top_pick_int == 0:
             characteristics.append("Green")
         elif "Red" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Red"]:
             characteristics.append("Red")
         elif "Black" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Black"]:
             characteristics.append("Black")
-
-        # Even/Odd
         if top_pick_int != 0:
             if "Even" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Even"]:
                 characteristics.append("Even")
             elif "Odd" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Odd"]:
                 characteristics.append("Odd")
-
-        # High/Low
-        if top_pick_int != 0:
             if "Low" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Low"]:
                 characteristics.append("Low")
             elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
                 characteristics.append("High")
-
-        # Dozen
         for name, nums in DOZENS.items():
             if top_pick_int in nums:
                 characteristics.append(name)
                 break
-
-        # Column
         for name, nums in COLUMNS.items():
             if top_pick_int in nums:
                 characteristics.append(name)
                 break
-
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
 
-        # Generate HTML with updated styling
+        # Step 13: Generate HTML
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
