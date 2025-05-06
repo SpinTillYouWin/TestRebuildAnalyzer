@@ -5255,18 +5255,6 @@ def select_next_spin_top_pick(last_spin_count):
         left_hits = sum(hit_counts[num] for num in left_side)
         right_hits = sum(hit_counts[num] for num in right_side)
         most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
-        betting_sections = {
-            "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
-            "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
-            "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
-        }
-        section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
-        badge_numbers = {
-            "Tiers du Cylindre": 3,
-            "Voisins du Zero": 2,
-            "Orphelins": 1
-        }
-        top_section = max(section_hits.items(), key=lambda x: (badge_numbers[x[0]], x[1]))[0] if section_hits else None
         min_hits = max(2, int(last_spin_count / 10))
         sorted_hits = sorted(
             [(num, hits, last_positions[num]) for num, hits in hit_counts.items() if hits >= min_hits],
@@ -5282,52 +5270,6 @@ def select_next_spin_top_pick(last_spin_count):
                 hot_numbers[num] = 5
             else:
                 break
-        streak_bonus = {num: 0 for num in range(37)}
-        last_three = last_spins[-3:] if len(last_spins) >= 3 else last_spins
-        for num in range(37):
-            num_str = str(num)
-            hits_in_last_three = sum(1 for spin in last_three if spin == num_str)
-            if hits_in_last_three == 3:
-                streak_bonus[num] = 20
-            elif hits_in_last_three == 2:
-                streak_bonus[num] = 10
-        neighbor_boost = {num: 0 for num in range(37)}
-        last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        last_five_set = set(last_five)
-        for num in range(37):
-            if num in NEIGHBORS_EUROPEAN:
-                left, right = NEIGHBORS_EUROPEAN[num]
-                if left is not None and str(left) in last_five_set:
-                    neighbor_boost[num] += 1
-                if right is not None and str(right) in last_five_set:
-                    neighbor_boost[num] += 1
-        category_streaks = {"Black": 0, "Even": 0, "High": 0, top_column: 0, top_dozen: 0}
-        last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        for cat in ["Black", "Even", "High"]:
-            if cat in category_streaks:
-                for spin in last_five_spins:
-                    try:
-                        num = int(spin)
-                        if num in EVEN_MONEY[cat]:
-                            category_streaks[cat] += 1
-                    except ValueError:
-                        continue
-        if top_column in column_counts:
-            for spin in last_five_spins:
-                try:
-                    num = int(spin)
-                    if num in COLUMNS[top_column]:
-                        category_streaks[top_column] += 1
-                except ValueError:
-                    continue
-        if top_dozen in dozen_counts:
-            for spin in last_five_spins:
-                try:
-                    num = int(spin)
-                    if num in DOZENS[top_dozen]:
-                        category_streaks[top_dozen] += 1
-                except ValueError:
-                    continue
         scores = []
         for num in range(37):
             hits = hit_counts[num]
@@ -5344,30 +5286,14 @@ def select_next_spin_top_pick(last_spin_count):
             wheel_side_score = 0
             if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
                 wheel_side_score = 7
-            section_score = 4 if top_section and num in betting_sections[top_section] else 0
-            streak_score = streak_bonus[num]
-            hot_score = hot_numbers.get(num, 0)
-            neighbor_score = neighbor_boost[num]
-            last_pos = last_positions[num]
-            recency_score = (last_spin_count - (last_pos + 1)) * 0.3 if last_pos >= 0 else 0
-            if last_pos == last_spin_count - 1:
-                recency_score = max(recency_score, 3)
-            cat_streak_score = 0
-            for cat in ["Black", "Even", "High"]:
-                if cat in category_streaks and category_streaks[cat] > 1 and num in EVEN_MONEY[cat]:
-                    cat_streak_score += 7
-            if top_column in category_streaks and category_streaks[top_column] > 1 and num in COLUMNS[top_column]:
-                cat_streak_score += 7
-            if top_dozen in category_streaks and category_streaks[top_dozen] > 1 and num in DOZENS[top_dozen]:
-                cat_streak_score += 7
             dominant_category_bonus = 0
             dominant_categories = ["Black", "Odd", "High", top_dozen, top_column]
-            if all(num in EVEN_MONEY.get(cat, []) or num in DOZENS.get(cat, []) or num in COLUMNS.get(cat, []) for cat in dominant_categories):
-                dominant_category_bonus = 20
-            total_score = round((base_score + even_money_score + dozen_column_score + wheel_side_score +
-                           section_score + streak_score + hot_score + neighbor_score + recency_score + cat_streak_score + dominant_category_bonus), 2)
-            scores.append((num, total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0), hits))
-        scores.sort(key=lambda x: (-x[1], -x[2], -x[3]))
+            for cat in dominant_categories:
+                if (cat in EVEN_MONEY and num in EVEN_MONEY[cat]) or (cat in DOZENS and num in DOZENS[cat]) or (cat in COLUMNS and num in COLUMNS[cat]):
+                    dominant_category_bonus += 5
+            total_score = round((base_score + even_money_score + dozen_column_score + wheel_side_score + hot_score + dominant_category_bonus), 2)
+            scores.append((num, total_score, hits))
+        scores.sort(key=lambda x: (-x[1], -x[2]))
         top_pick = scores[0][0]
         state.current_top_pick = top_pick
         characteristics = []
