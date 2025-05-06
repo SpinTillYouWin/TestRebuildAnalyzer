@@ -5210,7 +5210,6 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
-# Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5405,10 +5404,10 @@ def select_next_spin_top_pick(last_spin_count):
             background-color: rgba(255, 255, 255, 0.2);
           }}
           .accordion-content {{
-            display: none;
+            display: none !important;
           }}
           .accordion-toggle:checked + .accordion-header + .accordion-content {{
-            display: block;
+            display: block !important;
           }}
           .top-pick-container {{
             background: linear-gradient(135deg, #ffeb3b, #ffb300);
