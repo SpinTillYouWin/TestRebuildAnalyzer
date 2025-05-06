@@ -5284,9 +5284,9 @@ def select_next_spin_top_pick(last_spin_count):
             num_str = str(num)
             hits_in_last_three = sum(1 for spin in last_three if spin == num_str)
             if hits_in_last_three == 3:
-                streak_bonus[num] = 20
+                streak_bonus[num] = 40
             elif hits_in_last_three == 2:
-                streak_bonus[num] = 10
+                streak_bonus[num] = 20
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5299,27 +5299,31 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
         category_streaks = {"Black": 0, "Even": 0, "High": 0, top_column: 0, top_dozen: 0}
         last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        for spin in reversed(last_five_spins):
-            try:
-                num = int(spin)
-                streak_broken = False
-                for cat in ["Black", "Even", "High"]:
-                    if cat in category_streaks and num in EVEN_MONEY[cat]:
-                        category_streaks[cat] += 1
-                    else:
-                        streak_broken = True
-                if top_column in column_counts and num in COLUMNS[top_column]:
-                    category_streaks[top_column] += 1
-                else:
-                    streak_broken = True
-                if top_dozen in dozen_counts and num in DOZENS[top_dozen]:
-                    category_streaks[top_dozen] += 1
-                else:
-                    streak_broken = True
-                if streak_broken:
-                    break
-            except ValueError:
-                continue
+        for cat in ["Black", "Even", "High"]:
+            if cat in category_streaks:
+                for spin in reversed(last_five_spins):
+                    try:
+                        num = int(spin)
+                        if num in EVEN_MONEY[cat]:
+                            category_streaks[cat] += 1
+                    except ValueError:
+                        continue
+        if top_column in column_counts:
+            for spin in reversed(last_five_spins):
+                try:
+                    num = int(spin)
+                    if num in COLUMNS[top_column]:
+                        category_streaks[top_column] += 1
+                except ValueError:
+                    continue
+        if top_dozen in dozen_counts:
+            for spin in reversed(last_five_spins):
+                try:
+                    num = int(spin)
+                    if num in DOZENS[top_dozen]:
+                        category_streaks[top_dozen] += 1
+                except ValueError:
+                    continue
         scores = {}
         for num in range(37):
             hits = hit_counts[num]
