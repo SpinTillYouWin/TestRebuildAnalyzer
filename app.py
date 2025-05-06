@@ -5783,7 +5783,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
 
     # Line 1: Updated Next Spin Top Pick accordion
-    with gr.Accordion("Next Spin Top Pick 🎯", open=True, elem_id="next-spin-top-pick"):
+    with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
         with gr.Row():
             with gr.Column(scale=1):
                 gr.Markdown("### 🎯 Select Your Top Pick")
