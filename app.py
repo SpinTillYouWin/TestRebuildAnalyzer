@@ -5354,46 +5354,106 @@ def select_next_spin_top_pick(last_spin_count):
         top_pick = max(scores.items(), key=lambda x: x[1])[0]
         state.current_top_pick = top_pick
 
+        # Determine characteristics of the top pick
+        characteristics = []
+        top_pick_int = int(top_pick)
+        
+        # Color (Red/Black/Green)
+        if top_pick_int == 0:
+            characteristics.append("Green")
+        elif "Red" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Red"]:
+            characteristics.append("Red")
+        elif "Black" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Black"]:
+            characteristics.append("Black")
+
+        # Even/Odd
+        if top_pick_int != 0:
+            if "Even" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Even"]:
+                characteristics.append("Even")
+            elif "Odd" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Odd"]:
+                characteristics.append("Odd")
+
+        # High/Low
+        if top_pick_int != 0:
+            if "Low" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Low"]:
+                characteristics.append("Low")
+            elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+                characteristics.append("High")
+
+        # Dozen
+        for name, nums in DOZENS.items():
+            if top_pick_int in nums:
+                characteristics.append(name)
+                break
+
+        # Column
+        for name, nums in COLUMNS.items():
+            if top_pick_int in nums:
+                characteristics.append(name)
+                break
+
+        characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
+
         # Generate HTML with updated styling
         color = colors.get(str(top_pick), "black")
         html = f'''
         <div class="top-pick-container">
             <h4>Top Pick for Next Spin: <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span></h4>
-            <p>Based on analysis of the last {last_spin_count} spins.</p>
+            <p class="top-pick-characteristics">Characteristics: {characteristics_str}</p>
+            <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
         </div>
         <style>
             .top-pick-container {{
-                background-color: #f5f5f5;
-                border: 1px solid #d3d3d3;
-                padding: 10px;
-                border-radius: 5px;
+                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                border: 2px solid #2196f3;
+                padding: 15px;
+                border-radius: 8px;
                 text-align: center;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                transition: transform 0.2s ease;
+            }}
+            .top-pick-container:hover {{
+                transform: scale(1.02);
             }}
             .top-pick-container h4 {{
-                margin: 10px 0;
-                color: #fff; /* Whiter text */
-            }}
-            .top-pick-container p {{
-                font-style: italic;
-                color: #ddd; /* Slightly off-white for contrast */
+                margin: 0 0 10px 0;
+                color: #1a237e;
+                font-size: 20px;
+                font-weight: 600;
             }}
             .top-pick-badge {{
-                display: inline-block;
-                padding: 8px 12px; /* Increased padding for larger square */
-                border-radius: 15px; /* Adjusted for larger size */
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 50px;
+                height: 50px;
+                border-radius: 25px;
                 font-weight: bold;
-                font-size: 20px; /* Larger font size */
-                color: white;
+                font-size: 24px;
+                color: white !important;
                 background-color: {color};
-                box-shadow: 0 0 8px rgba(0,0,0,0.3);
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                margin-left: 10px;
             }}
             .top-pick-badge.red {{ background-color: red; }}
             .top-pick-badge.black {{ background-color: black; }}
             .top-pick-badge.green {{ background-color: green; }}
             .top-pick-badge:hover {{
-                transform: scale(1.1);
-                box-shadow: 0 0 12px rgba(255,215,0,0.8);
+                transform: scale(1.15);
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            }}
+            .top-pick-characteristics {{
+                margin: 8px 0;
+                color: #d81b60;
+                font-weight: 500;
+                font-size: 16px;
+            }}
+            .top-pick-description {{
+                font-style: italic;
+                color: #455a64;
+                font-size: 14px;
+                margin: 0;
             }}
             .celebration {{
                 position: fixed;
