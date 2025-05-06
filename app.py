@@ -5301,7 +5301,7 @@ def select_next_spin_top_pick(last_spin_count):
         last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         for cat in ["Black", "Even", "High"]:
             if cat in category_streaks:
-                for spin in reversed(last_five_spins):
+                for spin in last_five_spins:
                     try:
                         num = int(spin)
                         if num in EVEN_MONEY[cat]:
@@ -5309,7 +5309,7 @@ def select_next_spin_top_pick(last_spin_count):
                     except ValueError:
                         continue
         if top_column in column_counts:
-            for spin in reversed(last_five_spins):
+            for spin in last_five_spins:
                 try:
                     num = int(spin)
                     if num in COLUMNS[top_column]:
@@ -5317,7 +5317,7 @@ def select_next_spin_top_pick(last_spin_count):
                 except ValueError:
                     continue
         if top_dozen in dozen_counts:
-            for spin in reversed(last_five_spins):
+            for spin in last_five_spins:
                 try:
                     num = int(spin)
                     if num in DOZENS[top_dozen]:
@@ -5359,7 +5359,7 @@ def select_next_spin_top_pick(last_spin_count):
             total_score = (base_score + even_money_score + dozen_column_score + wheel_side_score +
                            section_score + streak_score + hot_score + neighbor_score + recency_score + cat_streak_score)
             scores.append((num, total_score, sum((last_spin_count - pos) * 0.5 for pos in all_positions[num] if pos >= 0), hits))
-        scores.sort(key=lambda x: (x[1], x[2], x[3], x[0]), reverse=True)
+        scores.sort(key=lambda x: (-x[1], -x[2], -x[3], -x[0]))
         top_pick = scores[0][0]
         state.current_top_pick = top_pick
         characteristics = []
