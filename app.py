@@ -5277,6 +5277,7 @@ def select_next_spin_top_pick(last_spin_count):
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
         scores = []
+        top_pick_scores = None
         for num in range(37):
             hits = hit_counts[num]
             even_money_score = 0
@@ -5301,6 +5302,7 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits))
         scores.sort(key=lambda x: (-x[1], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
         top_pick = scores[0][0]
+        top_pick_scores = scores[0]  # Store the scores for the top pick
         state.current_top_pick = top_pick
         characteristics = []
         top_pick_int = int(top_pick)
@@ -5329,6 +5331,9 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
+        # Extract scores for the top pick
+        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits = top_pick_scores
+        # Generate reasons
         reasons = []
         if even_money_score > 0:
             matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
