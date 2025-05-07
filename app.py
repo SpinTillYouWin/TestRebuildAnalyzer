@@ -5304,9 +5304,39 @@ def select_next_spin_top_pick(last_spin_count):
                 recency_score = max(recency_score, 10)
             hit_bonus = 5 if hits > 0 else 0
             neighbor_score = neighbor_boost[num]
+            # Calculate tiebreaker score based on aggregated scores of traits
+            tiebreaker_score = 0
+            # Even Money traits
+            if num == 0:
+                # 0 is green, doesn't count for Red/Black, Even/Odd, Low/High
+                pass
+            else:
+                if num in EVEN_MONEY["Red"]:
+                    tiebreaker_score += even_money_counts["Red"]
+                elif num in EVEN_MONEY["Black"]:
+                    tiebreaker_score += even_money_counts["Black"]
+                if num in EVEN_MONEY["Even"]:
+                    tiebreaker_score += even_money_counts["Even"]
+                elif num in EVEN_MONEY["Odd"]:
+                    tiebreaker_score += even_money_counts["Odd"]
+                if num in EVEN_MONEY["Low"]:
+                    tiebreaker_score += even_money_counts["Low"]
+                elif num in EVEN_MONEY["High"]:
+                    tiebreaker_score += even_money_counts["High"]
+            # Dozen traits
+            for name, nums in DOZENS.items():
+                if num in nums:
+                    tiebreaker_score += dozen_counts[name]
+                    break
+            # Column traits
+            for name, nums in COLUMNS.items():
+                if num in nums:
+                    tiebreaker_score += column_counts[name]
+                    break
             total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches))
-        scores.sort(key=lambda x: (-x[1], -x[10], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
+            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, tiebreaker_score))
+        # Sort with tiebreaker_score as an additional criterion
+        scores.sort(key=lambda x: (-x[1], -x[10], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9], -x[11]))
         top_picks = scores[:3]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
@@ -5315,6 +5345,7 @@ def select_next_spin_top_pick(last_spin_count):
             if top_pick in EVEN_MONEY[cat]:
                 top_pick_matches.add(cat)
         remaining_dominant_traits = dominant_even_money - top_pick_matches
+        # Second scoring pass with tiebreaker
         scores = []
         for num in range(37):
             hits = hit_counts[num]
@@ -5342,11 +5373,37 @@ def select_next_spin_top_pick(last_spin_count):
                 recency_score = max(recency_score, 10)
             hit_bonus = 5 if hits > 0 else 0
             neighbor_score = neighbor_boost[num]
+            # Calculate tiebreaker score again for the second pass
+            tiebreaker_score = 0
+            if num == 0:
+                pass
+            else:
+                if num in EVEN_MONEY["Red"]:
+                    tiebreaker_score += even_money_counts["Red"]
+                elif num in EVEN_MONEY["Black"]:
+                    tiebreaker_score += even_money_counts["Black"]
+                if num in EVEN_MONEY["Even"]:
+                    tiebreaker_score += even_money_counts["Even"]
+                elif num in EVEN_MONEY["Odd"]:
+                    tiebreaker_score += even_money_counts["Odd"]
+                if num in EVEN_MONEY["Low"]:
+                    tiebreaker_score += even_money_counts["Low"]
+                elif num in EVEN_MONEY["High"]:
+                    tiebreaker_score += even_money_counts["High"]
+            for name, nums in DOZENS.items():
+                if num in nums:
+                    tiebreaker_score += dozen_counts[name]
+                    break
+            for name, nums in COLUMNS.items():
+                if num in nums:
+                    tiebreaker_score += column_counts[name]
+                    break
             total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches))
-        scores.sort(key=lambda x: (-x[1], -x[10], -x[11], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
+            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches, tiebreaker_score))
+        # Sort with tiebreaker_score in the second pass
+        scores.sort(key=lambda x: (-x[1], -x[10], -x[11], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9], -x[12]))
         top_picks = scores[:3]
-        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10
+        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10  # Even Money (3×10) + Dozen/Column (2×15) + Section (10) + Recency (10) + Hit Bonus (5) + Neighbors (2×5)
         top_score = top_picks[0][1]
         confidence = int((top_score / max_possible_score) * 100)
         top_pick = top_picks[0][0]
@@ -5377,7 +5434,7 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
-        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches = top_picks[0]
+        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches, tiebreaker_score = top_picks[0]
         reasons = []
         if even_money_score > 0:
             matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
@@ -5400,6 +5457,8 @@ def select_next_spin_top_pick(last_spin_count):
         if neighbor_score > 0:
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
+        if tiebreaker_score > 0:
+            reasons.append(f"Boosted by aggregated trait scores (tiebreaker: {tiebreaker_score})")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
         last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_spins_html = ""
@@ -5407,7 +5466,7 @@ def select_next_spin_top_pick(last_spin_count):
             spin_color = colors.get(str(spin), "black")
             last_five_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
         top_3_html = ""
-        for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches) in enumerate(top_picks[1:3], 1):
+        for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches, tiebreaker_score) in enumerate(top_picks[1:3], 1):
             num_color = colors.get(str(num), "black")
             num_characteristics = []
             if num == 0:
@@ -5442,6 +5501,8 @@ def select_next_spin_top_pick(last_spin_count):
                 if num in nums:
                     num_reasons.append(f"In {section_name}")
                     break
+            if tiebreaker_score > 0:
+                num_reasons.append(f"Tiebreaker: {tiebreaker_score}")
             num_reasons_str = ", ".join(num_reasons) if num_reasons else "No notable reasons"
             top_3_html += f'''
             <div class="secondary-pick">
