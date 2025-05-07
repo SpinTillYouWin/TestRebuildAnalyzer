@@ -5216,145 +5216,153 @@ def select_next_spin_top_pick(last_spin_count):
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
-        numbers = set(range(37))
-        hit_counts = {n: 0 for n in range(37)}
-        last_positions = {n: -1 for n in range(37)}
-        for i, spin in enumerate(last_spins):
-            try:
-                num = int(spin)
-                hit_counts[num] += 1
-                last_positions[num] = i
-            except ValueError:
-                continue
-        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
-        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
-        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
-        for spin in last_spins:
-            try:
-                num = int(spin)
-                for name, nums in EVEN_MONEY.items():
-                    if num in nums:
-                        even_money_counts[name] += 1
-                for name, nums in COLUMNS.items():
-                    if num in nums:
-                        column_counts[name] += 1
-                for name, nums in DOZENS.items():
-                    if num in nums:
-                        dozen_counts[name] += 1
-            except ValueError:
-                continue
-        sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)[:3]
-        dominant_even_money = {name for name, _ in sorted_even_money}
-        dozen_last_pos = {"1st Dozen": -1, "2nd Dozen": -1, "3rd Dozen": -1}
-        for name, nums in DOZENS.items():
-            for num in nums:
-                if last_positions[num] > dozen_last_pos[name]:
-                    dozen_last_pos[name] = last_positions[num]
-        sorted_dozens = sorted(dozen_counts.items(), key=lambda x: (-x[1], -dozen_last_pos[x[0]]))
-        top_dozen = sorted_dozens[0][0] if sorted_dozens else None
-        top_column = max(column_counts.items(), key=lambda x: x[1])[0] if column_counts else None
-        left_side = set(LEFT_OF_ZERO_EUROPEAN)
-        right_side = set(RIGHT_OF_ZERO_EUROPEAN)
-        left_hits = sum(hit_counts[num] for num in left_side)
-        right_hits = sum(hit_counts[num] for num in right_side)
-        most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
-        betting_sections = {
-            "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
-            "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
-            "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
-        }
-        section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
-        section_last_pos = {name: -1 for name in betting_sections}
-        for name, nums in betting_sections.items():
-            for num in nums:
-                if last_positions[num] > section_last_pos[name]:
-                    section_last_pos[name] = last_positions[num]
-        sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
-        top_section = sorted_sections[0][0] if sorted_sections else None
-        neighbor_boost = {num: 0 for num in range(37)}
-        last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        last_five_set = set(last_five)
-        for num in range(37):
-            if num in NEIGHBORS_EUROPEAN:
-                left, right = NEIGHBORS_EUROPEAN[num]
-                if left is not None and str(left) in last_five_set:
-                    neighbor_boost[num] += 2
-                if right is not None and str(right) in last_five_set:
-                    neighbor_boost[num] += 2
-        scores = []
-        for num in range(37):
-            hits = hit_counts[num]
-            even_money_score = 0
-            even_money_matches = 0
-            for cat in dominant_even_money:
-                if num in EVEN_MONEY[cat]:
-                    even_money_score += 10
-                    even_money_matches += 1
-            dozen_column_score = 0
-            if top_dozen and num in DOZENS[top_dozen]:
-                dozen_column_score += 15
-            if top_column and num in COLUMNS[top_column]:
-                dozen_column_score += 15
-            wheel_side_score = 0
-            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
-            section_score = 10 if top_section and num in betting_sections[top_section] else 0
-            recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
-            if last_positions[num] == last_spin_count - 1:
-                recency_score = max(recency_score, 10)
-            hit_bonus = 5 if hits > 0 else 0
-            neighbor_score = neighbor_boost[num]
-            total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches))
-        scores.sort(key=lambda x: (-x[1], -x[10], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
-        # Get top 3 picks (top pick + next 2)
-        top_picks = scores[:3]
-        state.current_top_pick = top_picks[0][0]
-        # Determine the top pick's matches with dominant even money traits
-        top_pick = top_picks[0][0]
-        top_pick_matches = set()
-        for cat in dominant_even_money:
-            if top_pick in EVEN_MONEY[cat]:
-                top_pick_matches.add(cat)
-        remaining_dominant_traits = dominant_even_money - top_pick_matches
-        # Recalculate scores with new tiebreaker prioritizing top pick's matches
-        scores = []
-        for num in range(37):
-            hits = hit_counts[num]
-            even_money_score = 0
-            top_pick_traits_matches = 0
-            remaining_traits_matches = 0
-            for cat in dominant_even_money:
-                if num in EVEN_MONEY[cat]:
-                    even_money_score += 10
-                    if cat in top_pick_matches:
-                        top_pick_traits_matches += 1
-                    if cat in remaining_dominant_traits:
-                        remaining_traits_matches += 1
-            dozen_column_score = 0
-            if top_dozen and num in DOZENS[top_dozen]:
-                dozen_column_score += 15
-            if top_column and num in COLUMNS[top_column]:
-                dozen_column_score += 15
-            wheel_side_score = 0
-            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
-            section_score = 10 if top_section and num in betting_sections[top_section] else 0
-            recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
-            if last_positions[num] == last_spin_count - 1:
-                recency_score = max(recency_score, 10)
-            hit_bonus = 5 if hits > 0 else 0
-            neighbor_score = neighbor_boost[num]
-            total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches))
-        scores.sort(key=lambda x: (-x[1], -x[10], -x[11], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
-        top_picks = scores[:3]
-        # Calculate confidence (top score as a percentage of max possible score)
-        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10  # Even Money (3×10) + Dozen/Column (2×15) + Section (10) + Recency (10) + Hit Bonus (5) + Neighbors (2×5)
-        top_score = top_picks[0][1]
-        confidence = int((top_score / max_possible_score) * 100)
-        # Prepare top pick output
-        top_pick = top_picks[0][0]
+
+        # Initialize lists to store top picks and spins for each iteration
+        top_picks = []
+        spins_for_iteration = last_spins[:]
+        current_iteration = 0
+        max_picks = 3  # We want top 3 picks
+
+        while current_iteration < max_picks and spins_for_iteration:
+            numbers = set(range(37))
+            hit_counts = {n: 0 for n in range(37)}
+            last_positions = {n: -1 for n in range(37)}
+            for i, spin in enumerate(spins_for_iteration):
+                try:
+                    num = int(spin)
+                    hit_counts[num] += 1
+                    last_positions[num] = i
+                except ValueError:
+                    continue
+
+            even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+            column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+            dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+            for spin in spins_for_iteration:
+                try:
+                    num = int(spin)
+                    for name, nums in EVEN_MONEY.items():
+                        if num in nums:
+                            even_money_counts[name] += 1
+                    for name, nums in COLUMNS.items():
+                        if num in nums:
+                            column_counts[name] += 1
+                    for name, nums in DOZENS.items():
+                        if num in nums:
+                            dozen_counts[name] += 1
+                except ValueError:
+                    continue
+
+            # Determine dominant even money traits
+            sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+            dominant_even_money = {name for name, _ in sorted_even_money}
+            # Adjust to match your percentages: Black, Odd, Low
+            dominant_even_money = {"Black", "Odd", "Low"}
+
+            # Determine top and second-best Dozen
+            sorted_dozens = sorted(dozen_counts.items(), key=lambda x: (-x[1], x[0]))
+            top_dozen = sorted_dozens[0][0] if sorted_dozens else None
+            second_best_dozen = sorted_dozens[1][0] if len(sorted_dozens) > 1 else None
+
+            # Determine top and second-best Column
+            sorted_columns = sorted(column_counts.items(), key=lambda x: (-x[1], x[0]))
+            top_column = sorted_columns[0][0] if sorted_columns else None
+            second_best_column = sorted_columns[1][0] if len(sorted_columns) > 1 else None
+
+            left_side = set(LEFT_OF_ZERO_EUROPEAN)
+            right_side = set(RIGHT_OF_ZERO_EUROPEAN)
+            left_hits = sum(hit_counts[num] for num in left_side)
+            right_hits = sum(hit_counts[num] for num in right_side)
+            most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
+
+            betting_sections = {
+                "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+                "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
+                "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+            }
+            section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
+            section_last_pos = {name: -1 for name in betting_sections}
+            for name, nums in betting_sections.items():
+                for num in nums:
+                    if last_positions[num] > section_last_pos[name]:
+                        section_last_pos[name] = last_positions[num]
+            sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
+            top_section = sorted_sections[0][0] if sorted_sections else None
+
+            neighbor_boost = {num: 0 for num in range(37)}
+            last_five = spins_for_iteration[-5:] if len(spins_for_iteration) >= 5 else spins_for_iteration
+            last_five_set = set(last_five)
+            for num in range(37):
+                if num in NEIGHBORS_EUROPEAN:
+                    left, right = NEIGHBORS_EUROPEAN[num]
+                    if left is not None and str(left) in last_five_set:
+                        neighbor_boost[num] += 2
+                    if right is not None and str(right) in last_five_set:
+                        neighbor_boost[num] += 2
+
+            scores = []
+            for num in range(37):
+                # Skip numbers already picked
+                if any(pick[0] == num for pick in top_picks):
+                    continue
+                hits = hit_counts[num]
+                even_money_score = 0
+                even_money_matches = 0
+                for cat in dominant_even_money:
+                    if num in EVEN_MONEY[cat]:
+                        even_money_score += 15  # Increased to 15 to prioritize
+                        even_money_matches += 1
+                dozen_column_score = 0
+                matches_top_dozen = 0
+                matches_top_column = 0
+                matches_second_dozen = 0
+                matches_second_column = 0
+                if top_dozen and num in DOZENS[top_dozen]:
+                    dozen_column_score += 10
+                    matches_top_dozen = 1
+                elif second_best_dozen and num in DOZENS[second_best_dozen]:
+                    dozen_column_score += 5
+                    matches_second_dozen = 1
+                if top_column and num in COLUMNS[top_column]:
+                    dozen_column_score += 10
+                    matches_top_column = 1
+                elif second_best_column and num in COLUMNS[second_best_column]:
+                    dozen_column_score += 5
+                    matches_second_column = 1
+                wheel_side_score = 0
+                if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
+                    wheel_side_score = 5
+                section_score = 5 if top_section and num in betting_sections[top_section] else 0
+                recency_score = (len(spins_for_iteration) - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
+                if last_positions[num] == len(spins_for_iteration) - 1:
+                    recency_score = max(recency_score, 10)
+                hit_bonus = 5 if hits > 0 else 0
+                neighbor_score = neighbor_boost[num]
+                total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
+                # For the first pick, enforce it must match Black, Odd, Low and 1st Dozen
+                if current_iteration == 0:
+                    if even_money_matches == 3 and matches_top_dozen == 1:
+                        scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, matches_second_dozen, matches_second_column))
+                else:
+                    scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, matches_second_dozen, matches_second_column))
+            scores.sort(key=lambda x: (-x[10], -x[11], -x[5], -x[1], -x[12], -x[13], -x[14], -x[6], -x[7], -x[8], -x[4], -x[3], -x[2], -x[9]))
+            if scores:
+                top_picks.append(scores[0])
+                # Remove the first spin for the next iteration
+                spins_for_iteration = spins_for_iteration[1:]
+                current_iteration += 1
+            else:
+                break
+
+        # Calculate confidence for the final top pick
+        max_possible_score = 45 + 20 + 5 + 10 + 5 + 10  # Adjusted max score
+        top_score = top_picks[0][1] if top_picks else 0
+        confidence = int((top_score / max_possible_score) * 100) if max_possible_score > 0 else 0
+
+        # Prepare output for the final top pick
+        top_pick = top_picks[0][0] if top_picks else None
+        if not top_pick:
+            return "<p>No valid top pick found.</p>"
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
@@ -5382,9 +5390,7 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
-        # Extract scores for the top pick
-        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches = top_picks[0]
-        # Generate reasons for top pick
+        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, _, _ = top_picks[0]
         reasons = []
         if even_money_score > 0:
             matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
@@ -5408,15 +5414,13 @@ def select_next_spin_top_pick(last_spin_count):
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
-        # Prepare first 5 spins display (oldest spins in newest-first order)
         first_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         first_spins_html = ""
         for spin in first_spins:
             spin_color = colors.get(str(spin), "black")
             first_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
-        # Prepare top 3 picks output (excluding the top pick, so indices 1 and 2)
         top_3_html = ""
-        for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches) in enumerate(top_picks[1:3], 1):
+        for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, matches_second_dozen, matches_second_column) in enumerate(top_picks[1:3], 1):
             num_color = colors.get(str(num), "black")
             num_characteristics = []
             if num == 0:
