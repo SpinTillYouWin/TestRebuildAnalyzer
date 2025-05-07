@@ -5242,95 +5242,81 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 continue
-        # Determine hottest trends without ties from Hit Percentage (last 36 spins)
-        sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)
-        dominant_even_money = {name for name, count in sorted_even_money[:3]}
-        # Determine hottest even money traits by sub-categories (Red/Black, Even/Odd, Low/High)
-        hottest_even_money_traits = set()
-        # Red vs. Black
-        if even_money_counts["Red"] > even_money_counts["Black"]:
-            hottest_even_money_traits.add("Red")
-        elif even_money_counts["Black"] > even_money_counts["Red"]:
-            hottest_even_money_traits.add("Black")
-        # Even vs. Odd
-        if even_money_counts["Even"] > even_money_counts["Odd"]:
-            hottest_even_money_traits.add("Even")
-        elif even_money_counts["Odd"] > even_money_counts["Even"]:
-            hottest_even_money_traits.add("Odd")
-        # Low vs. High
-        if even_money_counts["Low"] > even_money_counts["High"]:
-            hottest_even_money_traits.add("Low")
-        elif even_money_counts["High"] > even_money_counts["Low"]:
-            hottest_even_money_traits.add("High")
-        # Second best even money traits (next highest in each sub-category)
-        second_best_even_money = {}
-        if "Red" not in hottest_even_money_traits and "Black" not in hottest_even_money_traits:
-            second_best_even_money["Red"] = even_money_counts["Red"]
-            second_best_even_money["Black"] = even_money_counts["Black"]
-        elif "Red" in hottest_even_money_traits:
-            second_best_even_money["Black"] = even_money_counts["Black"]
-        else:
-            second_best_even_money["Red"] = even_money_counts["Red"]
-        if "Even" not in hottest_even_money_traits and "Odd" not in hottest_even_money_traits:
-            second_best_even_money["Even"] = even_money_counts["Even"]
-            second_best_even_money["Odd"] = even_money_counts["Odd"]
-        elif "Even" in hottest_even_money_traits:
-            second_best_even_money["Odd"] = even_money_counts["Odd"]
-        else:
-            second_best_even_money["Even"] = even_money_counts["Even"]
-        if "Low" not in hottest_even_money_traits and "High" not in hottest_even_money_traits:
-            second_best_even_money["Low"] = even_money_counts["Low"]
-            second_best_even_money["High"] = even_money_counts["High"]
-        elif "Low" in hottest_even_money_traits:
-            second_best_even_money["High"] = even_money_counts["High"]
-        else:
-            second_best_even_money["Low"] = even_money_counts["Low"]
-        # Tied even money traits (remaining traits after hottest and second best)
-        tied_even_money = {}
-        for name, count in sorted_even_money:
-            if (name not in hottest_even_money_traits and 
-                name not in second_best_even_money and 
-                name not in ["Red", "Black", "Even", "Odd", "Low", "High"]):
-                if count not in tied_even_money:
-                    tied_even_money[count] = []
-                tied_even_money[count].append(name)
-        tied_even_money_traits = []
-        for count in sorted(tied_even_money.keys(), reverse=True):
-            tied_even_money_traits.extend(tied_even_money[count])
-        dozen_last_pos = {"1st Dozen": -1, "2nd Dozen": -1, "3rd Dozen": -1}
-        for name, nums in DOZENS.items():
-            for num in nums:
-                if last_positions[num] > dozen_last_pos[name]:
-                    dozen_last_pos[name] = last_positions[num]
-        sorted_dozens = sorted(dozen_counts.items(), key=lambda x: (-x[1], -dozen_last_pos[x[0]]))
-        top_dozen = sorted_dozens[0][0] if sorted_dozens else None
-        hottest_dozen = sorted_dozens[0][0] if sorted_dozens and sorted_dozens[0][1] > (sorted_dozens[1][1] if len(sorted_dozens) > 1 else -1) else None
-        second_best_dozen = sorted_dozens[1][0] if sorted_dozens and len(sorted_dozens) > 1 and sorted_dozens[1][1] > (sorted_dozens[2][1] if len(sorted_dozens) > 2 else -1) else None
-        tied_dozens = []
-        for i, (name, count) in enumerate(sorted_dozens):
-            if name == hottest_dozen or name == second_best_dozen:
+        # Calculate percentages for all traits
+        total_spins = len(last_spins)
+        trait_percentages = {}
+        # Even Money
+        for trait, count in even_money_counts.items():
+            trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+        # Dozens
+        for trait, count in dozen_counts.items():
+            trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+        # Columns
+        for trait, count in column_counts.items():
+            trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+        # Sort traits by percentage (highest to lowest)
+        sorted_traits = sorted(trait_percentages.items(), key=lambda x: -x[1])
+        # Determine hottest traits (top non-conflicting traits)
+        hottest_traits = []
+        seen_categories = set()
+        for trait, percentage in sorted_traits:
+            # Skip if this trait conflicts with a higher-percentage trait in the same category
+            if trait in ["Red", "Black"]:
+                if "Red-Black" in seen_categories:
+                    continue
+                hottest_traits.append(trait)
+                seen_categories.add("Red-Black")
+            elif trait in ["Even", "Odd"]:
+                if "Even-Odd" in seen_categories:
+                    continue
+                hottest_traits.append(trait)
+                seen_categories.add("Even-Odd")
+            elif trait in ["Low", "High"]:
+                if "Low-High" in seen_categories:
+                    continue
+                hottest_traits.append(trait)
+                seen_categories.add("Low-High")
+            elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+                if "Dozens" in seen_categories:
+                    continue
+                hottest_traits.append(trait)
+                seen_categories.add("Dozens")
+            elif trait in ["1st Column", "2nd Column", "3rd Column"]:
+                if "Columns" in seen_categories:
+                    continue
+                hottest_traits.append(trait)
+                seen_categories.add("Columns")
+        # Second best traits for tiebreakers
+        second_best_traits = []
+        seen_categories = set()
+        for trait, percentage in sorted_traits:
+            if trait in hottest_traits:
                 continue
-            if i > 0 and count == sorted_dozens[i-1][1]:
-                tied_dozens.append(name)
-            elif i < len(sorted_dozens) - 1 and count == sorted_dozens[i+1][1]:
-                tied_dozens.append(name)
-        column_last_pos = {"1st Column": -1, "2nd Column": -1, "3rd Column": -1}
-        for name, nums in COLUMNS.items():
-            for num in nums:
-                if last_positions[num] > column_last_pos[name]:
-                    column_last_pos[name] = last_positions[num]
-        sorted_columns = sorted(column_counts.items(), key=lambda x: (-x[1], -column_last_pos[x[0]]))
-        top_column = sorted_columns[0][0] if sorted_columns else None
-        hottest_column = sorted_columns[0][0] if sorted_columns and sorted_columns[0][1] > (sorted_columns[1][1] if len(sorted_columns) > 1 else -1) else None
-        second_best_column = sorted_columns[1][0] if sorted_columns and len(sorted_columns) > 1 and sorted_columns[1][1] > (sorted_columns[2][1] if len(sorted_columns) > 2 else -1) else None
-        tied_columns = []
-        for i, (name, count) in enumerate(sorted_columns):
-            if name == hottest_column or name == second_best_column:
-                continue
-            if i > 0 and count == sorted_columns[i-1][1]:
-                tied_columns.append(name)
-            elif i < len(sorted_columns) - 1 and count == sorted_columns[i+1][1]:
-                tied_columns.append(name)
+            if trait in ["Red", "Black"]:
+                if "Red-Black" in seen_categories:
+                    continue
+                second_best_traits.append(trait)
+                seen_categories.add("Red-Black")
+            elif trait in ["Even", "Odd"]:
+                if "Even-Odd" in seen_categories:
+                    continue
+                second_best_traits.append(trait)
+                seen_categories.add("Even-Odd")
+            elif trait in ["Low", "High"]:
+                if "Low-High" in seen_categories:
+                    continue
+                second_best_traits.append(trait)
+                seen_categories.add("Low-High")
+            elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+                if "Dozens" in seen_categories:
+                    continue
+                second_best_traits.append(trait)
+                seen_categories.add("Dozens")
+            elif trait in ["1st Column", "2nd Column", "3rd Column"]:
+                if "Columns" in seen_categories:
+                    continue
+                second_best_traits.append(trait)
+                seen_categories.add("Columns")
         left_side = set(LEFT_OF_ZERO_EUROPEAN)
         right_side = set(RIGHT_OF_ZERO_EUROPEAN)
         left_hits = sum(hit_counts[num] for num in left_side)
@@ -5349,12 +5335,6 @@ def select_next_spin_top_pick(last_spin_count):
                     section_last_pos[name] = last_positions[num]
         sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
         top_section = sorted_sections[0][0] if sorted_sections else None
-        # Define hot section traits based on Hit Percentage Overview
-        hot_section_traits = set(hottest_even_money_traits)
-        if hottest_dozen:
-            hot_section_traits.add(hottest_dozen)
-        if hottest_column:
-            hot_section_traits.add(hottest_column)
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5365,48 +5345,30 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
-        # Pre-filter numbers that match ALL hot section traits
-        candidate_numbers = []
-        for num in range(37):
-            matches_hot_traits = True
-            for trait in hot_section_traits:
-                if trait in EVEN_MONEY and num not in EVEN_MONEY[trait]:
-                    matches_hot_traits = False
-                    break
-                if trait in DOZENS and num not in DOZENS[trait]:
-                    matches_hot_traits = False
-                    break
-                if trait in COLUMNS and num not in COLUMNS[trait]:
-                    matches_hot_traits = False
-                    break
-            if matches_hot_traits:
-                candidate_numbers.append(num)
-        # If no candidates match all traits, relax to match core even money traits and at least one of 2nd Dozen or 2nd Column
-        if not candidate_numbers:
-            for num in range(37):
-                matches_core_traits = True
-                for trait in hottest_even_money_traits:
-                    if num not in EVEN_MONEY[trait]:
-                        matches_core_traits = False
-                        break
-                matches_dozen_or_column = (num in DOZENS.get(hottest_dozen, []) or num in COLUMNS.get(hottest_column, []))
-                if matches_core_traits and matches_dozen_or_column:
-                    candidate_numbers.append(num)
-        # Score only candidate numbers
+        # Score numbers based on the number of matching traits in order
         scores = []
-        for num in candidate_numbers:
-            hits = hit_counts[num]
-            even_money_score = 0
-            even_money_matches = 0
-            for cat in dominant_even_money:
-                if num in EVEN_MONEY[cat]:
-                    even_money_score += 10
-                    even_money_matches += 1
-            dozen_column_score = 0
-            if top_dozen and num in DOZENS[top_dozen]:
-                dozen_column_score += 15
-            if top_column and num in COLUMNS[top_column]:
-                dozen_column_score += 15
+        for num in range(37):
+            if num not in hit_counts or hit_counts[num] == 0:
+                continue  # Only consider numbers that appear in the spins
+            # Count matching traits in order
+            matching_traits = 0
+            for trait in hottest_traits:
+                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
+                    matching_traits += 1
+                elif trait in DOZENS and num in DOZENS[trait]:
+                    matching_traits += 1
+                elif trait in COLUMNS and num in COLUMNS[trait]:
+                    matching_traits += 1
+            # Secondary score for second best traits
+            secondary_matches = 0
+            for trait in second_best_traits:
+                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
+                    secondary_matches += 1
+                elif trait in DOZENS and num in DOZENS[trait]:
+                    secondary_matches += 1
+                elif trait in COLUMNS and num in COLUMNS[trait]:
+                    secondary_matches += 1
+            # Additional scoring factors
             wheel_side_score = 0
             if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
                 wheel_side_score = 5
@@ -5416,33 +5378,6 @@ def select_next_spin_top_pick(last_spin_count):
                 recency_score = max(recency_score, 10)
             hit_bonus = 5 if hits > 0 else 0
             neighbor_score = neighbor_boost[num]
-            hot_section_bonus = 0
-            for trait in hot_section_traits:
-                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                    hot_section_bonus += 15
-                if trait in DOZENS and num in DOZENS[trait]:
-                    hot_section_bonus += 20  # Extra weight for 2nd Dozen
-                if trait in COLUMNS and num in COLUMNS[trait]:
-                    hot_section_bonus += 20  # Extra weight for 2nd Column
-            second_best_bonus = 0
-            for trait in second_best_even_money:
-                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                    second_best_bonus += 5
-            if second_best_dozen and num in DOZENS[second_best_dozen]:
-                second_best_bonus += 5
-            if second_best_column and num in COLUMNS[second_best_column]:
-                second_best_bonus += 5
-            tied_traits_bonus = 0
-            for trait in tied_even_money_traits:
-                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                    tied_traits_bonus += 2
-            for name in tied_dozens:
-                if num in DOZENS[name]:
-                    tied_traits_bonus += 2
-            for name in tied_columns:
-                if num in COLUMNS[name]:
-                    tied_traits_bonus += 2
-            not_in_spins_penalty = -50 if hits == 0 else 0
             tiebreaker_score = 0
             if num == 0:
                 pass
@@ -5467,214 +5402,17 @@ def select_next_spin_top_pick(last_spin_count):
                 if num in nums:
                     tiebreaker_score += column_counts[name]
                     break
-            total_score = (even_money_score + dozen_column_score + section_score + recency_score + 
-                           hit_bonus + wheel_side_score + neighbor_score + hot_section_bonus + 
-                           second_best_bonus + tied_traits_bonus + not_in_spins_penalty)
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, 
-                           hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, 
-                           tiebreaker_score, hot_section_bonus, second_best_bonus, tied_traits_bonus))
-        # Sort candidates
-        scores.sort(key=lambda x: (-x[1], -x[10], -x[4], -x[5], -x[11]))
-        top_picks = scores[:3] if len(scores) >= 3 else scores
-        # If fewer than 3 candidates, fall back to broader scoring with relaxed constraints
-        if len(top_picks) < 3:
-            remaining_numbers = [num for num in range(37) if num not in [p[0] for p in top_picks]]
-            remaining_scores = []
-            for num in remaining_numbers:
-                hits = hit_counts[num]
-                even_money_score = 0
-                even_money_matches = 0
-                for cat in dominant_even_money:
-                    if num in EVEN_MONEY[cat]:
-                        even_money_score += 10
-                        even_money_matches += 1
-                dozen_column_score = 0
-                if top_dozen and num in DOZENS[top_dozen]:
-                    dozen_column_score += 15
-                if top_column and num in COLUMNS[top_column]:
-                    dozen_column_score += 15
-                wheel_side_score = 0
-                if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                    wheel_side_score = 5
-                section_score = 10 if top_section and num in betting_sections[top_section] else 0
-                recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
-                if last_positions[num] == last_spin_count - 1:
-                    recency_score = max(recency_score, 10)
-                hit_bonus = 5 if hits > 0 else 0
-                neighbor_score = neighbor_boost[num]
-                hot_section_bonus = 0
-                for trait in hot_section_traits:
-                    if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                        hot_section_bonus += 15
-                    if trait in DOZENS and num in DOZENS[trait]:
-                        hot_section_bonus += 20
-                    if trait in COLUMNS and num in COLUMNS[trait]:
-                        hot_section_bonus += 20
-                second_best_bonus = 0
-                for trait in second_best_even_money:
-                    if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                        second_best_bonus += 5
-                if second_best_dozen and num in DOZENS[second_best_dozen]:
-                    second_best_bonus += 5
-                if second_best_column and num in COLUMNS[second_best_column]:
-                    second_best_bonus += 5
-                tied_traits_bonus = 0
-                for trait in tied_even_money_traits:
-                    if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                        tied_traits_bonus += 2
-                for name in tied_dozens:
-                    if num in DOZENS[name]:
-                        tied_traits_bonus += 2
-                for name in tied_columns:
-                    if num in COLUMNS[name]:
-                        tied_traits_bonus += 2
-                not_in_spins_penalty = -50 if hits == 0 else 0
-                tiebreaker_score = 0
-                if num == 0:
-                    pass
-                else:
-                    if num in EVEN_MONEY["Red"]:
-                        tiebreaker_score += even_money_counts["Red"]
-                    elif num in EVEN_MONEY["Black"]:
-                        tiebreaker_score += even_money_counts["Black"]
-                    if num in EVEN_MONEY["Even"]:
-                        tiebreaker_score += even_money_counts["Even"]
-                    elif num in EVEN_MONEY["Odd"]:
-                        tiebreaker_score += even_money_counts["Odd"]
-                    if num in EVEN_MONEY["Low"]:
-                        tiebreaker_score += even_money_counts["Low"]
-                    elif num in EVEN_MONEY["High"]:
-                        tiebreaker_score += even_money_counts["High"]
-                for name, nums in DOZENS.items():
-                    if num in nums:
-                        tiebreaker_score += dozen_counts[name]
-                        break
-                for name, nums in COLUMNS.items():
-                    if num in nums:
-                        tiebreaker_score += column_counts[name]
-                        break
-                total_score = (even_money_score + dozen_column_score + section_score + recency_score + 
-                               hit_bonus + wheel_side_score + neighbor_score + hot_section_bonus + 
-                               second_best_bonus + tied_traits_bonus + not_in_spins_penalty)
-                remaining_scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, 
-                                        hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, 
-                                        tiebreaker_score, hot_section_bonus, second_best_bonus, tied_traits_bonus))
-            remaining_scores.sort(key=lambda x: (-x[1], -x[10], -x[4], -x[5], -x[11]))
-            top_picks.extend(remaining_scores[:3 - len(top_picks)])
+            total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
+            scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+        # Sort by number of matching traits, then secondary matches, then tiebreaker
+        scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[0]))
+        top_picks = scores[:5]  # Expand to top 5 picks
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
-        top_pick_matches = set()
-        for cat in dominant_even_money:
-            if top_pick in EVEN_MONEY[cat]:
-                top_pick_matches.add(cat)
-        remaining_dominant_traits = dominant_even_money - top_pick_matches
-        # Second pass: re-score all numbers, strictly enforcing hot section traits
-        scores = []
-        for num in range(37):
-            hits = hit_counts[num]
-            even_money_score = 0
-            top_pick_traits_matches = 0
-            remaining_traits_matches = 0
-            for cat in dominant_even_money:
-                if num in EVEN_MONEY[cat]:
-                    even_money_score += 10
-                    if cat in top_pick_matches:
-                        top_pick_traits_matches += 1
-                    if cat in remaining_dominant_traits:
-                        remaining_traits_matches += 1
-            dozen_column_score = 0
-            if top_dozen and num in DOZENS[top_dozen]:
-                dozen_column_score += 15
-            if top_column and num in COLUMNS[top_column]:
-                dozen_column_score += 15
-            wheel_side_score = 0
-            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
-            section_score = 10 if top_section and num in betting_sections[top_section] else 0
-            recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
-            if last_positions[num] == last_spin_count - 1:
-                recency_score = max(recency_score, 10)
-            hit_bonus = 5 if hits > 0 else 0
-            neighbor_score = neighbor_boost[num]
-            hot_section_bonus = 0
-            for trait in hot_section_traits:
-                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                    hot_section_bonus += 15
-                if trait in DOZENS and num in DOZENS[trait]:
-                    hot_section_bonus += 20
-                if trait in COLUMNS and num in COLUMNS[trait]:
-                    hot_section_bonus += 20
-            second_best_bonus = 0
-            for trait in second_best_even_money:
-                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                    second_best_bonus += 5
-            if second_best_dozen and num in DOZENS[second_best_dozen]:
-                second_best_bonus += 5
-            if second_best_column and num in COLUMNS[second_best_column]:
-                second_best_bonus += 5
-            tied_traits_bonus = 0
-            for trait in tied_even_money_traits:
-                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
-                    tied_traits_bonus += 2
-            for name in tied_dozens:
-                if num in DOZENS[name]:
-                    tied_traits_bonus += 2
-            for name in tied_columns:
-                if num in COLUMNS[name]:
-                    tied_traits_bonus += 2
-            not_in_spins_penalty = -50 if hits == 0 else 0
-            tiebreaker_score = 0
-            if num == 0:
-                pass
-            else:
-                if num in EVEN_MONEY["Red"]:
-                    tiebreaker_score += even_money_counts["Red"]
-                elif num in EVEN_MONEY["Black"]:
-                    tiebreaker_score += even_money_counts["Black"]
-                if num in EVEN_MONEY["Even"]:
-                    tiebreaker_score += even_money_counts["Even"]
-                elif num in EVEN_MONEY["Odd"]:
-                    tiebreaker_score += even_money_counts["Odd"]
-                if num in EVEN_MONEY["Low"]:
-                    tiebreaker_score += even_money_counts["Low"]
-                elif num in EVEN_MONEY["High"]:
-                    tiebreaker_score += even_money_counts["High"]
-            for name, nums in DOZENS.items():
-                if num in nums:
-                    tiebreaker_score += dozen_counts[name]
-                    break
-            for name, nums in COLUMNS.items():
-                if num in nums:
-                    tiebreaker_score += column_counts[name]
-                    break
-            total_score = (even_money_score + dozen_column_score + section_score + recency_score + 
-                           hit_bonus + wheel_side_score + neighbor_score + hot_section_bonus + 
-                           second_best_bonus + tied_traits_bonus + not_in_spins_penalty)
-            # Ensure the number matches all hot section traits
-            matches_hot_traits = True
-            for trait in hot_section_traits:
-                if trait in EVEN_MONEY and num not in EVEN_MONEY[trait]:
-                    matches_hot_traits = False
-                    break
-                if trait in DOZENS and num not in DOZENS[trait]:
-                    matches_hot_traits = False
-                    break
-                if trait in COLUMNS and num not in COLUMNS[trait]:
-                    matches_hot_traits = False
-                    break
-            if not matches_hot_traits:
-                total_score -= 1000  # Large penalty to exclude non-matching numbers
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, 
-                           hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, 
-                           remaining_traits_matches, tiebreaker_score, hot_section_bonus, second_best_bonus, tied_traits_bonus))
-        # Sort by total score first, then by tiebreaker to align with expected order (18, 12, 16)
-        scores.sort(key=lambda x: (-x[11], -x[0]))
-        top_picks = scores[:3] if len(scores) >= 3 else scores
-        # Fix confidence score calculation to ensure it's positive and meaningful
-        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10 + (15 * 3) + (20 * 2) + 15 + 6  # Adjusted for all bonuses
-        top_score = top_picks[0][1]
-        confidence = max(0, min(100, int((top_score / max_possible_score) * 100)))  # Ensure confidence is between 0 and 100
-        top_pick = top_picks[0][0]
+        # Calculate confidence based on matching traits
+        max_possible_traits = len(hottest_traits)
+        top_traits_matched = top_picks[0][2]
+        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
@@ -5702,23 +5440,24 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
-        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches, tiebreaker_score, hot_section_bonus, second_best_bonus, tied_traits_bonus = top_picks[0]
+        _, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score = top_picks[0]
         reasons = []
-        if even_money_score > 0:
-            matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
-            reasons.append(f"Matches the dominant even money categories: {', '.join(matched_categories)}")
-        if top_pick in DOZENS.get(top_dozen, []) and top_pick in COLUMNS.get(top_column, []):
-            reasons.append(f"Matches both the Top Dozen ({top_dozen}) and Top Column ({top_column})")
-        elif top_pick in DOZENS.get(top_dozen, []):
-            reasons.append(f"Matches the Top Dozen ({top_dozen})")
-        elif top_pick in COLUMNS.get(top_column, []):
-            reasons.append(f"Matches the Top Column ({top_column})")
+        matched_traits = []
+        for trait in hottest_traits:
+            if trait in EVEN_MONEY and top_pick in EVEN_MONEY[trait]:
+                matched_traits.append(trait)
+            elif trait in DOZENS and top_pick in DOZENS[trait]:
+                matched_traits.append(trait)
+            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+                matched_traits.append(trait)
+        if matched_traits:
+            reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
         if section_score > 0:
             reasons.append(f"Located in the hottest wheel section: {top_section}")
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
-        if hits > 0:
+        if hit_bonus > 0:
             reasons.append(f"Has appeared in the spin history")
         if wheel_side_score > 0:
             reasons.append(f"On the most hit side of the wheel: {most_hit_side}")
@@ -5727,20 +5466,14 @@ def select_next_spin_top_pick(last_spin_count):
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         if tiebreaker_score > 0:
             reasons.append(f"Boosted by aggregated trait scores (tiebreaker: {tiebreaker_score})")
-        if hot_section_bonus > 0:
-            reasons.append(f"Matches hot section traits (bonus: {hot_section_bonus})")
-        if second_best_bonus > 0:
-            reasons.append(f"Matches second best traits (bonus: {second_best_bonus})")
-        if tied_traits_bonus > 0:
-            reasons.append(f"Matches tied traits (bonus: {tied_traits_bonus})")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
         last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_spins_html = ""
         for spin in last_five_spins:
             spin_color = colors.get(str(spin), "black")
             last_five_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
-        top_3_html = ""
-        for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches, tiebreaker_score, hot_section_bonus, second_best_bonus, tied_traits_bonus) in enumerate(top_picks[1:3], 1):
+        top_5_html = ""
+        for i, (num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score) in enumerate(top_picks[1:5], 1):
             num_color = colors.get(str(num), "black")
             num_characteristics = []
             if num == 0:
@@ -5768,23 +5501,24 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             num_characteristics_str = ", ".join(num_characteristics) if num_characteristics else "No notable characteristics"
             num_reasons = []
-            if even_money_score > 0:
-                matched_categories = [cat for cat in dominant_even_money if num in EVEN_MONEY[cat]]
-                num_reasons.append(f"Matches: {', '.join(matched_categories)}")
+            num_matched_traits = []
+            for trait in hottest_traits:
+                if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
+                    num_matched_traits.append(trait)
+                elif trait in DOZENS and num in DOZENS[trait]:
+                    num_matched_traits.append(trait)
+                elif trait in COLUMNS and num in DOZENS[trait]:
+                    num_matched_traits.append(trait)
+            if num_matched_traits:
+                num_reasons.append(f"Matches: {', '.join(num_matched_traits)}")
             for section_name, nums in betting_sections.items():
                 if num in nums:
                     num_reasons.append(f"In {section_name}")
                     break
             if tiebreaker_score > 0:
                 num_reasons.append(f"Tiebreaker: {tiebreaker_score}")
-            if hot_section_bonus > 0:
-                num_reasons.append(f"Hot Section Bonus: {hot_section_bonus}")
-            if second_best_bonus > 0:
-                num_reasons.append(f"Second Best Bonus: {second_best_bonus}")
-            if tied_traits_bonus > 0:
-                num_reasons.append(f"Tied Traits Bonus: {tied_traits_bonus}")
             num_reasons_str = ", ".join(num_reasons) if num_reasons else "No notable reasons"
-            top_3_html += f'''
+            top_5_html += f'''
             <div class="secondary-pick">
               <span class="secondary-badge {num_color}" data-number="{num}">{num}</span>
               <div class="secondary-info">
@@ -5827,7 +5561,7 @@ def select_next_spin_top_pick(last_spin_count):
           <div class="secondary-picks">
             <h5>Other Top Picks</h5>
             <div class="secondary-picks-container">
-              {top_3_html}
+              {top_5_html}
             </div>
           </div>
         </div>
