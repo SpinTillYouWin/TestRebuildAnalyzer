@@ -7143,1037 +7143,1037 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </script>
                 """)
     
-    # CSS (end of the previous section, for context)
+# CSS (end of the previous section, for context)
 gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
-    <script>
-      function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
-        script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
-        };
-        document.head.appendChild(script);
-    
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        document.head.appendChild(link);
-      }
-    </script>
-    <style>
-        /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-        .gr-column { margin: 0 !important; padding: 5px !important; }
-        .gr-box { border-radius: 5px !important; }
-        
-        /* Style for Dealer’s Spin Tracker accordion */
-        #sides-of-zero-accordion {
-            background-color: #f5c6cb !important;
-            padding: 10px !important;
-        }
-        #sides-of-zero-accordion > div {
-            background-color: #f5c6cb !important;
-        }
-        #sides-of-zero-accordion summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* Style for Feedback Section accordion */
-        #feedback-section summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* Hide stray labels in the Sides of Zero section */
-        .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
-            display: none !important;
-        }
-        
-        /* Header Styling */
-        #header-row {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex-wrap: wrap !important;
-            background-color: white !important;
-            padding: 10px 0 !important;
-            width: 100% !important;
-            margin: 0 auto !important;
-            margin-bottom: 20px !important;
-        }
-        
-        .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
-        
-        /* Fix Selected Spins Label Cutoff */
-        #selected-spins-row {
-            width: 100% !important;
-            max-width: none !important;
-            overflow: visible !important;
-        }
-        #selected-spins label {
-            white-space: normal !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            display: block !important;
-            background-color: #87CEEB;
-            color: black;
-            padding: 10px 5px !important;
-            border-radius: 3px;
-            line-height: 1.5em !important;
-            font-size: 14px !important;
-            margin-top: 5px !important;
-        }
-        #selected-spins {
-            width: 100% !important;
-            min-width: 800px !important;
-        }
-    
-        /* Roulette Table */
-        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button:hover { opacity: 0.8; }
-        .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .roulette-table { 
-            display: flex !important; 
-            flex-direction: column !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 5px !important; 
-            background-color: #2e7d32 !important;
-            border: 2px solid #d3d3d3 !important; 
-            border-radius: 5px !important; 
-            width: 100% !important; 
-            max-width: 600px !important; 
-            margin: 0 auto !important; 
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-        }
-        .table-row { 
-            display: flex !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            flex-wrap: nowrap !important; 
-            line-height: 0 !important; 
-            min-width: 580px !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Responsive adjustments for desktop */
-        @media (min-width: 768px) {
-            .roulette-table {
-                max-width: 800px !important;
-            }
-            .table-row {
-                min-width: 754px !important;
-            }
-            .roulette-button, .empty-button {
-                width: 48px !important;
-                height: 48px !important;
-                font-size: 16px !important;
-            }
-        }
-        
-        /* Buttons */    
-        .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-        button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
-        button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
-        
-        button.green-btn {
-            background-color: #28a745 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            padding: 8px 16px !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-            box-sizing: border-box !important;
-        }
-        button.green-btn:hover {
-            background-color: #218838 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        
-        button.clear-spins-btn {
-            background-color: #ff4444 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            box-sizing: border-box !important;
-            display: inline-block !important;
-        }
-        button.clear-spins-btn:hover {
-            background-color: #cc0000 !important;
-        }
-        button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-        button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+<link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
+<script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
+<script>
+  function loadShepherdFallback() {
+    console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
+    script.onerror = () => {
+      console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
+      alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
+    };
+    document.head.appendChild(script);
 
-        /* NEW CODE: Add glow effect for buttons (INSERT HERE) */
-        .action-button, .green-btn, .roulette-button {
-            transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
+    document.head.appendChild(link);
+  }
+</script>
+<style>
+    /* General Layout */
+    .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+    .gr-column { margin: 0 !important; padding: 5px !important; }
+    .gr-box { border-radius: 5px !important; }
+    
+    /* Style for Dealer’s Spin Tracker accordion */
+    #sides-of-zero-accordion {
+        background-color: #f5c6cb !important;
+        padding: 10px !important;
+    }
+    #sides-of-zero-accordion > div {
+        background-color: #f5c6cb !important;
+    }
+    #sides-of-zero-accordion summary {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+    }
+    
+    /* Style for Feedback Section accordion */
+    #feedback-section summary {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+    }
+    
+    /* Hide stray labels in the Sides of Zero section */
+    .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
+        display: none !important;
+    }
+    
+    /* Header Styling */
+    #header-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        background-color: white !important;
+        padding: 10px 0 !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
+    
+    /* Fix Selected Spins Label Cutoff */
+    #selected-spins-row {
+        width: 100% !important;
+        max-width: none !important;
+        overflow: visible !important;
+    }
+    #selected-spins label {
+        white-space: normal !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+        background-color: #87CEEB;
+        color: black;
+        padding: 10px 5px !important;
+        border-radius: 3px;
+        line-height: 1.5em !important;
+        font-size: 14px !important;
+        margin-top: 5px !important;
+    }
+    #selected-spins {
+        width: 100% !important;
+        min-width: 800px !important;
+    }
+
+    /* Roulette Table */
+    .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+    .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+    .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+    .roulette-button:hover { opacity: 0.8; }
+    .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+    .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+    .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+    .roulette-table { 
+        display: flex !important; 
+        flex-direction: column !important; 
+        gap: 0 !important; 
+        margin: 0 !important; 
+        padding: 5px !important; 
+        background-color: #2e7d32 !important;
+        border: 2px solid #d3d3d3 !important; 
+        border-radius: 5px !important; 
+        width: 100% !important; 
+        max-width: 600px !important; 
+        margin: 0 auto !important; 
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
+    .table-row { 
+        display: flex !important; 
+        gap: 0 !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        flex-wrap: nowrap !important; 
+        line-height: 0 !important; 
+        min-width: 580px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Responsive adjustments for desktop */
+    @media (min-width: 768px) {
+        .roulette-table {
+            max-width: 800px !important;
         }
-        
+        .table-row {
+            min-width: 754px !important;
+        }
+        .roulette-button, .empty-button {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 16px !important;
+        }
+    }
+    
+    /* Buttons */    
+    .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
+    button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
+    button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
+    
+    button.green-btn {
+        background-color: #28a745 !important;
+        color: white !important;
+        border: 1px solid #000 !important;
+        padding: 8px 16px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        box-sizing: border-box !important;
+    }
+    button.green-btn:hover {
+        background-color: #218838 !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    }
+    
+    button.clear-spins-btn {
+        background-color: #ff4444 !important;
+        color: white !important;
+        border: 1px solid #000 !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+    button.clear-spins-btn:hover {
+        background-color: #cc0000 !important;
+    }
+    button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+    button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+
+    /* NEW CODE: Add glow effect for buttons (INSERT HERE) */
+    .action-button, .green-btn, .roulette-button {
+        transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+    }
+    
+    .action-button:active, .green-btn:active, .roulette-button:active {
+        box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
+        transform: scale(1.05) !important; /* Slight scale for emphasis */
+    }
+    
+    /* Ensure glow works on mobile touch */
+    @media (max-width: 600px) {
         .action-button:active, .green-btn:active, .roulette-button:active {
-            box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
-            transform: scale(1.05) !important; /* Slight scale for emphasis */
+            box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
         }
-        
-        /* Ensure glow works on mobile touch */
-        @media (max-width: 600px) {
-            .action-button:active, .green-btn:active, .roulette-button:active {
-                box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
-            }
-        }
-        
-        /* Optional: Glow for specific buttons like Analyze Spins */
-        .green-btn:active {
-            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
-        }
-        
-        /* Ensure columns have appropriate spacing */
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        
-        /* Compact Components */
-        .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .long-slider .gr-box { width: 100% !important; }
-        
-        /* Target the Accordion and its children */
-        .gr-accordion { background-color: #ffffff !important; }
-        .gr-accordion * { background-color: #ffffff !important; }
-        .gr-accordion .gr-column { background-color: #ffffff !important; }
-        .gr-accordion .gr-row { background-color: #ffffff !important; }
+    }
     
-        /* Section Labels */
-        #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-        #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        
-        /* Compact dropdown styling for Select Category and Select Strategy */
-        #select-category select, #strategy-dropdown select {
-            max-height: 150px !important;
-            overflow-y: auto !important;
-            scrollbar-width: thin !important;
-            font-size: 14px;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
-            width: 6px;
-        }
-        #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 3px;
-        }
-        
-        /* Scrollable Tables */
-        .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-        
-        /* Dynamic Table Styling */
-        .dynamic-table-container {
-            background-color: #2e7d32 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            border: 2px solid #d3d3d3 !important;
-        }
-        .dynamic-table td {
-            width: 40px !important;
-            height: 40px !important;
-            text-align: center !important;
-            color: white !important;
-            font-weight: normal !important;
-            transition: all 0.3s ease !important;
-        }
-        .dynamic-table .red { background-color: red !important; }
-        .dynamic-table .black { background-color: black !important; }
-        .dynamic-table .green { background-color: green !important; }
-        .dynamic-number:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-        }
-        
-        /* Dynamic Table Buttons */
-        .dynamic-table-btn {
-            background-color: #28a745 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            padding: 8px 16px !important;
-            margin: 5px !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-            box-sizing: border-box !important;
-        }
-        .dynamic-table-btn:hover {
-            background-color: #218838 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        .dynamic-table-btn:active {
-            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important;
-        }
-                
-        /* Last Spins Container */
-        .last-spins-container {
-            background-color: #f5f5f5 !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Fade-in animation for Last Spins */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Pattern Badge for Spin Patterns */
-        .pattern-badge {
-            background-color: #ffd700 !important;
-            color: #333 !important;
-            padding: 2px 5px !important;
-            border-radius: 3px !important;
-            font-size: 10px !important;
-            margin-left: 5px !important;
-            cursor: pointer !important;
-            transition: transform 0.2s ease !important;
-        }
-        .pattern-badge:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-        }
-        
-        /* Quick Trends Section for SpinTrend Radar */
-        .quick-trends {
-            background-color: #fff3e0 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-bottom: 10px !important;
-            border: 1px solid #ff9800 !important;
-        }
-        .quick-trends h4 {
-            margin: 0 0 5px 0 !important;
-            font-size: 14px !important;
-        }
-        .quick-trends ul {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        
-        /* Spin animation for roulette table buttons */
-        .roulette-button:active {
-            animation: spin 0.5s ease-in-out !important;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Flash animation for new spins */
-        .flash.red {
-            animation: flashRed 0.3s ease-in-out;
-        }
-        .flash.green {
-            animation: flashGreen 0.3s ease-in-out;
-        }
-        .flash.black {
-            animation: flashBlack 0.3s ease-in-out;
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
-        }
-        @keyframes flashGreen {
-            0%, 100% { background-color: green; }
-            50% { background-color: #33cc33; }
-        }
-        @keyframes flashBlack {
-            0%, 100% { background-color: black; }
-            50% { background-color: #333333; }
-        }
-        
-        /* Bounce animation for Dealer's Spin Tracker numbers */
-        .bounce {
-            animation: bounce 0.4s ease-in-out;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        
-        /* New: Flip animation for Last Spins new numbers */
-        .flip {
-            animation: flip 0.5s ease-in-out;
-        }
-        @keyframes flip {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
-        }
-        /* New Spin Highlight Effect */
-        .new-spin {
-            position: relative !important;
-            animation: pulse-highlight 1s ease-in-out !important;
-        }
-        
-        @keyframes pulse-highlight {
-            0%, 100% { box-shadow: none; }
-            50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
-        }
-        
-        /* Color-coded highlights for new spins */
-        .new-spin.spin-red {
-            --highlight-color: rgba(255, 0, 0, 0.8) !important;
-        }
-        .new-spin.spin-black {
-            --highlight-color: rgba(255, 255, 255, 0.8) !important; /* White for visibility */
-        }
-        .new-spin.spin-green {
-            --highlight-color: rgba(0, 255, 0, 0.8) !important;
-        }
-        
-        /* Spin Counter Styling */
-        .spin-counter {
-            font-size: 14px !important;
-            font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-            padding: 4px 8px !important;
-            border: 2px solid #3498DB !important;
-            border-radius: 6px !important;
-            margin-top: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-        }
-        .spin-counter:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        .spin-counter.glow {
-            animation: counter-glow 0.5s ease-in-out !important;
-        }
-        
-        @keyframes counter-glow {
-            0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-            50% { box-shadow: 0 0 10px 5px rgba(52, 152, 219, 0.8); } /* Blue glow matching the counter's gradient */
-        }
-        .sides-of-zero-container {
-            background-color: #ffffff !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin: 10px 0 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
+    /* Optional: Glow for specific buttons like Analyze Spins */
+    .green-btn:active {
+        box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
+    }
+    
+    /* Ensure columns have appropriate spacing */
+    .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+    
+    /* Compact Components */
+    .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .long-slider .gr-box { width: 100% !important; }
+    
+    /* Target the Accordion and its children */
+    .gr-accordion { background-color: #ffffff !important; }
+    .gr-accordion * { background-color: #ffffff !important; }
+    .gr-accordion .gr-column { background-color: #ffffff !important; }
+    .gr-accordion .gr-row { background-color: #ffffff !important; }
 
-            /* Hit Percentage Overview */
-        .hit-percentage-container {
-            padding: 10px !important;
-            background-color: #f5f5dc !important; /* Light beige */
-            border-radius: 5px !important;
-            border: 1px solid #d3d3d3 !important;
-            width: 100% !important;
-            max-width: 2000px !important; /* Kept to fit all percentages */
-            margin-top: 10px !important; /* Space between slider and accordion */
-            box-sizing: border-box !important; /* Ensure padding/border are included in width */
-        }
-        .hit-percentage-overview {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-        }
-        .percentage-wrapper {
-            width: 100% !important;
-            max-width: 1600px !important; /* Kept to fit all percentages */
-            box-sizing: border-box !important; /* Ensure consistent width calculation */
-        }
-        .percentage-group {
-            margin: 5px 0 !important;
-            flex: 1 !important;
-            min-width: 150px !important;
-            overflow-x: auto !important; /* Enable horizontal scrolling for the group */
-        }
-        .percentage-group h4 {
-            margin: 5px 0 !important;
-        }
+    /* Section Labels */
+    #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
+    #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
+    #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
+    #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
+    #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
+    #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+    
+    /* Compact dropdown styling for Select Category and Select Strategy */
+    #select-category select, #strategy-dropdown select {
+        max-height: 150px !important;
+        overflow-y: auto !important;
+        scrollbar-width: thin !important;
+        font-size: 14px;
+        padding: 5px;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+    #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
+        width: 6px;
+    }
+    #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 3px;
+    }
+    
+    /* Scrollable Tables */
+    .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+    
+    /* Dynamic Table Styling */
+    .dynamic-table-container {
+        background-color: #2e7d32 !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+        border: 2px solid #d3d3d3 !important;
+    }
+    .dynamic-table td {
+        width: 40px !important;
+        height: 40px !important;
+        text-align: center !important;
+        color: white !important;
+        font-weight: normal !important;
+        transition: all 0.3s ease !important;
+    }
+    .dynamic-table .red { background-color: red !important; }
+    .dynamic-table .black { background-color: black !important; }
+    .dynamic-table .green { background-color: green !important; }
+    .dynamic-number:hover {
+        transform: scale(1.1) !important;
+        box-shadow: 0 0 8px #ffd700 !important;
+    }
+    
+    /* Dynamic Table Buttons */
+    .dynamic-table-btn {
+        background-color: #28a745 !important;
+        color: white !important;
+        border: 1px solid #000 !important;
+        padding: 8px 16px !important;
+        margin: 5px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        box-sizing: border-box !important;
+    }
+    .dynamic-table-btn:hover {
+        background-color: #218838 !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    }
+    .dynamic-table-btn:active {
+        box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important;
+    }
+            
+    /* Last Spins Container */
+    .last-spins-container {
+        background-color: #f5f5f5 !important;
+        border: 1px solid #d3d3d3 !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+        margin-top: 10px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Fade-in animation for Last Spins */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Pattern Badge for Spin Patterns */
+    .pattern-badge {
+        background-color: #ffd700 !important;
+        color: #333 !important;
+        padding: 2px 5px !important;
+        border-radius: 3px !important;
+        font-size: 10px !important;
+        margin-left: 5px !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease !important;
+    }
+    .pattern-badge:hover {
+        transform: scale(1.1) !important;
+        box-shadow: 0 0 8px #ffd700 !important;
+    }
+    
+    /* Quick Trends Section for SpinTrend Radar */
+    .quick-trends {
+        background-color: #fff3e0 !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+        margin-bottom: 10px !important;
+        border: 1px solid #ff9800 !important;
+    }
+    .quick-trends h4 {
+        margin: 0 0 5px 0 !important;
+        font-size: 14px !important;
+    }
+    .quick-trends ul {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Spin animation for roulette table buttons */
+    .roulette-button:active {
+        animation: spin 0.5s ease-in-out !important;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Flash animation for new spins */
+    .flash.red {
+        animation: flashRed 0.3s ease-in-out;
+    }
+    .flash.green {
+        animation: flashGreen 0.3s ease-in-out;
+    }
+    .flash.black {
+        animation: flashBlack 0.3s ease-in-out;
+    }
+    @keyframes flashRed {
+        0%, 100% { background-color: red; }
+        50% { background-color: #ff3333; }
+    }
+    @keyframes flashRed {
+        0%, 100% { background-color: red; }
+        50% { background-color: #ff3333; }
+    }
+    @keyframes flashGreen {
+        0%, 100% { background-color: green; }
+        50% { background-color: #33cc33; }
+    }
+    @keyframes flashBlack {
+        0%, 100% { background-color: black; }
+        50% { background-color: #333333; }
+    }
+    
+    /* Bounce animation for Dealer's Spin Tracker numbers */
+    .bounce {
+        animation: bounce 0.4s ease-in-out;
+    }
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    
+    /* New: Flip animation for Last Spins new numbers */
+    .flip {
+        animation: flip 0.5s ease-in-out;
+    }
+    @keyframes flip {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(360deg); }
+    }
+    /* New Spin Highlight Effect */
+    .new-spin {
+        position: relative !important;
+        animation: pulse-highlight 1s ease-in-out !important;
+    }
+    
+    @keyframes pulse-highlight {
+        0%, 100% { box-shadow: none; }
+        50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
+    }
+    
+    /* Color-coded highlights for new spins */
+    .new-spin.spin-red {
+        --highlight-color: rgba(255, 0, 0, 0.8) !important;
+    }
+    .new-spin.spin-black {
+        --highlight-color: rgba(255, 255, 255, 0.8) !important; /* White for visibility */
+    }
+    .new-spin.spin-green {
+        --highlight-color: rgba(0, 255, 0, 0.8) !important;
+    }
+    
+    /* Spin Counter Styling */
+    .spin-counter {
+        font-size: 14px !important;
+        font-weight: bold !important;
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
+        padding: 4px 8px !important;
+        border: 2px solid #3498DB !important;
+        border-radius: 6px !important;
+        margin-top: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    .spin-counter:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+    }
+    .spin-counter.glow {
+        animation: counter-glow 0.5s ease-in-out !important;
+    }
+    
+    @keyframes counter-glow {
+        0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        50% { box-shadow: 0 0 10px 5px rgba(52, 152, 219, 0.8); } /* Blue glow matching the counter's gradient */
+    }
+    .sides-of-zero-container {
+        background-color: #ffffff !important;
+        border: 1px solid #d3d3d3 !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+        margin: 10px 0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Hit Percentage Overview */
+    .hit-percentage-container {
+        padding: 10px !important;
+        background-color: #f5f5dc !important; /* Light beige */
+        border-radius: 5px !important;
+        border: 1px solid #d3d3d3 !important;
+        width: 100% !important;
+        max-width: 2000px !important; /* Kept to fit all percentages */
+        margin-top: 10px !important; /* Space between slider and accordion */
+        box-sizing: border-box !important; /* Ensure padding/border are included in width */
+    }
+    .hit-percentage-overview {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+    .percentage-wrapper {
+        width: 100% !important;
+        max-width: 1600px !important; /* Kept to fit all percentages */
+        box-sizing: border-box !important; /* Ensure consistent width calculation */
+    }
+    .percentage-group {
+        margin: 5px 0 !important;
+        flex: 1 !important;
+        min-width: 150px !important;
+        overflow-x: auto !important; /* Enable horizontal scrolling for the group */
+    }
+    .percentage-group h4 {
+        margin: 5px 0 !important;
+    }
+    .percentage-badges, .percentage-badges {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 5px !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Responsive adjustments for mobile */
+    @media (max-width: 600px) {
         .percentage-badges, .percentage-badges {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            gap: 5px !important;
-            align-items: center !important;
-            white-space: nowrap !important;
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
+            flex-wrap: wrap !important; /* Allow wrapping on small screens */
+            overflow-x: visible !important;
         }
-        
-        /* Responsive adjustments for mobile */
-        @media (max-width: 600px) {
-            .percentage-badges, .percentage-badges {
-                flex-wrap: wrap !important; /* Allow wrapping on small screens */
-                overflow-x: visible !important;
-            }
-            .percentage-item, .trait-badge {
-                font-size: 10px !important; /* Smaller font for mobile */
-                padding: 4px 8px !important;
-            }
+        .percentage-item, .trait-badge {
+            font-size: 10px !important; /* Smaller font for mobile */
+            padding: 4px 8px !important;
         }
+    }
 
-        /* TITLE: Percentage Item Styles */
-        .percentage-item {
-            background-color: #444 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 12px !important;
-            font-size: 12px !important;
-            margin: 3px !important;
-            transition: transform 0.2s, box-shadow 0.2s !important;
-            cursor: pointer !important;
-            display: inline-block !important;
-        }
-        .percentage-item:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-        }
-        .percentage-item.even-money { background-color: #b71c1c !important; }
-        .percentage-item.column { background-color: #1565c0 !important; }
-        .percentage-item.dozen { background-color: #388e3c !important; }
-        .percentage-item.winner {
-            font-weight: bold !important;
-            color: #333 !important;
-            border: 2px solid #ffd700 !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-            background-color: rgba(255, 215, 0, 0.2) !important;
-            transform: scale(1.1) !important;
-        }
-        .percentage-with-bar {
-            display: inline-block !important;
-            text-align: center !important;
-            margin: 0 3px !important;
-            margin-bottom: 6px !important; /* Add vertical spacing below each badge + bar */
-        }
-        
-        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
-        .progress-bar {
-            width: 100% !important;
-            height: 6px !important;
-            min-height: 6px !important;
-            background-color: #d3d3d3 !important;
-            border-radius: 3px !important;
-            margin-top: 6px !important; /* Increased for more spacing */
-            overflow: hidden !important;
-            display: block !important;
-        }
-        .progress-fill {
-            height: 100% !important;
-            border-radius: 3px !important;
-            transition: width 0.3s ease !important;
-            display: block !important;
-        }
+    /* TITLE: Percentage Item Styles */
+    .percentage-item {
+        background-color: #444 !important;
+        color: #fff !important;
+        padding: 5px 10px !important;
+        border-radius: 12px !important;
+        font-size: 12px !important;
+        margin: 3px !important;
+        transition: transform 0.2s, box-shadow 0.2s !important;
+        cursor: pointer !important;
+        display: inline-block !important;
+    }
+    .percentage-item:hover {
+        transform: scale(1.1) !important;
+        box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+    }
+    .percentage-item.even-money { background-color: #b71c1c !important; }
+    .percentage-item.column { background-color: #1565c0 !important; }
+    .percentage-item.dozen { background-color: #388e3c !important; }
+    .percentage-item.winner {
+        font-weight: bold !important;
+        color: #333 !important;
+        border: 2px solid #ffd700 !important;
+        box-shadow: 0 0 8px #ffd700 !important;
+        background-color: rgba(255, 215, 0, 0.2) !important;
+        transform: scale(1.1) !important;
+    }
+    .percentage-with-bar {
+        display: inline-block !important;
+        text-align: center !important;
+        margin: 0 3px !important;
+        margin-bottom: 6px !important; /* Add vertical spacing below each badge + bar */
+    }
+    
+    /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
+    .progress-bar {
+        width: 100% !important;
+        height: 6px !important;
+        min-height: 6px !important;
+        background-color: #d3d3d3 !important;
+        border-radius: 3px !important;
+        margin-top: 6px !important; /* Increased for more spacing */
+        overflow: hidden !important;
+        display: block !important;
+    }
+    .progress-fill {
+        height: 100% !important;
+        border-radius: 3px !important;
+        transition: width 0.3s ease !important;
+        display: block !important;
+    }
 
-        /* TITLE: Traits Container (Updated in Change 1) */
-        .traits-container {
-            padding: 10px !important;
-            background-color: #f5f5dc !important; /* Light beige, matching hit-percentage-container */
-            border-radius: 5px !important;
-            border: 1px solid #d3d3d3 !important;
-            width: 100% !important;
-            max-width: 2000px !important; /* Increased to match hit-percentage-container */
-            margin-top: 10px !important; /* Space between slider and accordion */
-            box-sizing: border-box !important; /* Ensure padding/border are included in width */
-        }
+    /* TITLE: Traits Container (Updated in Change 1) */
+    .traits-container {
+        padding: 10px !important;
+        background-color: #f5f5dc !important; /* Light beige, matching hit-percentage-container */
+        border-radius: 5px !important;
+        border: 1px solid #d3d3d3 !important;
+        width: 100% !important;
+        max-width: 2000px !important; /* Increased to match hit-percentage-container */
+        margin-top: 10px !important; /* Space between slider and accordion */
+        box-sizing: border-box !important; /* Ensure padding/border are included in width */
+    }
 
-        /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
-        .traits-wrapper {
-            width: 100% !important;
-            max-width: 1600px !important; /* Match percentage-wrapper */
-            box-sizing: border-box !important; /* Ensure consistent width calculation */
-        }
-        .badge-group {
-            margin: 5px 0 !important;
-            flex: 1 !important;
-            min-width: 150px !important; /* Ensure groups don’t collapse */
-        }
-        .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
-        .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
-        .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
-        .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
-        .percentage-badges {
-            display: flex !important;
-            flex-wrap: nowrap !important; /* Prevent wrapping, match percentage-badges */
-            gap: 5px !important;
-            align-items: center !important;
-            white-space: nowrap !important; /* Ensure content stays in one line */
-        }
+    /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
+    .traits-wrapper {
+        width: 100% !important;
+        max-width: 1600px !important; /* Match percentage-wrapper */
+        box-sizing: border-box !important; /* Ensure consistent width calculation */
+    }
+    .badge-group {
+        margin: 5px 0 !important;
+        flex: 1 !important;
+        min-width: 150px !important; /* Ensure groups don’t collapse */
+    }
+    .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
+    .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
+    .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
+    .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
+    .percentage-badges {
+        display: flex !important;
+        flex-wrap: nowrap !important; /* Prevent wrapping, match percentage-badges */
+        gap: 5px !important;
+        align-items: center !important;
+        white-space: nowrap !important; /* Ensure content stays in one line */
+    }
 
-        /* TITLE: Trait Badge Styles */
-        .trait-badge {
-            background-color: #444 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 12px !important;
-            font-size: 12px !important;
-            margin: 3px !important;
-            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
-            cursor: pointer !important;
-        }
-        .trait-badge:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            filter: brightness(1.2) !important; /* Slight brightness increase */
-        }
-        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
-        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
-        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
-        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
-        .trait-badge.winner {
-            font-weight: bold !important;
-            color: #333 !important; /* Dark gray text for better contrast */
-            border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
-            transform: scale(1.1) !important; /* Make winners slightly larger */
-        }
-        
-        /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
-        .hot-streak {
-            display: none !important; /* Hidden, as streak info is now in tooltip */
-        }
-        .hot-streak:hover:after {
-            content: attr(title);
-            position: absolute;
-            background-color: #333 !important;
-            color: white !important;
-            padding: 6px 10px !important;
-            border-radius: 5px !important;
-            font-size: 12px !important;
-            font-family: Arial, sans-serif !important;
-            white-space: nowrap !important;
-            z-index: 20 !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
-            animation: fadeInTooltip 0.3s ease-in !important;
-        }
-        @keyframes fadeInTooltip {
-            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
+    /* TITLE: Trait Badge Styles */
+    .trait-badge {
+        background-color: #444 !important;
+        color: #fff !important;
+        padding: 5px 10px !important;
+        border-radius: 12px !important;
+        font-size: 12px !important;
+        margin: 3px !important;
+        transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
+        cursor: pointer !important;
+    }
+    .trait-badge:hover {
+        transform: scale(1.1) !important;
+        box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+        filter: brightness(1.2) !important; /* Slight brightness increase */
+    }
+    .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
+    .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
+    .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
+    .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
+    .trait-badge.winner {
+        font-weight: bold !important;
+        color: #333 !important; /* Dark gray text for better contrast */
+        border: 2px solid #ffd700 !important; /* Gold border */
+        box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+        background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
+        transform: scale(1.1) !important; /* Make winners slightly larger */
+    }
+    
+    /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
+    .hot-streak {
+        display: none !important; /* Hidden, as streak info is now in tooltip */
+    }
+    .hot-streak:hover:after {
+        content: attr(title);
+        position: absolute;
+        background-color: #333 !important;
+        color: white !important;
+        padding: 6px 10px !important;
+        border-radius: 5px !important;
+        font-size: 12px !important;
+        font-family: Arial, sans-serif !important;
+        white-space: nowrap !important;
+        z-index: 20 !important;
+        top: -35px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+        animation: fadeInTooltip 0.3s ease-in !important;
+    }
+    @keyframes fadeInTooltip {
+        0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+        100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
 
-        /* Placeholder Section for Hit Percentage and SpinTrend Radar */
+    /* Placeholder Section for Hit Percentage and SpinTrend Radar */
+    .placeholder-section {
+        background-color: #000 !important;
+        min-height: 200px !important; /* Ensure a minimum height to match the left side */
+        height: 100% !important;
+        width: 100% !important;
+        border-radius: 5px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important; /* For potential future text */
+        font-family: Arial, sans-serif !important;
+    }
+
+    /* Ensure the columns are truly 50/50 and aligned */
+    .hit-percentage-container, .traits-container {
+        width: 100% !important;
+        max-width: none !important; /* Remove max-width to allow full column width */
+        margin: 0 !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
         .placeholder-section {
-            background-color: #000 !important;
-            min-height: 200px !important; /* Ensure a minimum height to match the left side */
-            height: 100% !important;
-            width: 100% !important;
-            border-radius: 5px !important;
-            box-sizing: border-box !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            color: #fff !important; /* For potential future text */
-            font-family: Arial, sans-serif !important;
+            min-height: 150px !important; /* Smaller height on mobile */
         }
-
-        /* Ensure the columns are truly 50/50 and aligned */
         .hit-percentage-container, .traits-container {
-            width: 100% !important;
-            max-width: none !important; /* Remove max-width to allow full column width */
-            margin: 0 !important;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .placeholder-section {
-                min-height: 150px !important; /* Smaller height on mobile */
-            }
-            .hit-percentage-container, .traits-container {
-                padding: 5px !important;
-            }
-        }
-        
-        /* Lines after (unchanged) */
-        /* TITLE: Suggestion Box */
-        .suggestion-box {
-            background-color: #f0f8ff !important;
-            border: 1px solid #4682b4 !important;
-            border-radius: 5px !important;
             padding: 5px !important;
-            font-size: 14px !important;
         }
-        
-        /* TITLE: Spin Animation */
-        .play-btn:active {
-            animation: spin 0.5s ease-in-out !important;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* TITLE: Fade-In Animation */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in !important;
-        }
+    }
+    
+    /* Lines after (unchanged) */
+    /* TITLE: Suggestion Box */
+    .suggestion-box {
+        background-color: #f0f8ff !important;
+        border: 1px solid #4682b4 !important;
+        border-radius: 5px !important;
+        padding: 5px !important;
+        font-size: 14px !important;
+    }
+    
+    /* TITLE: Spin Animation */
+    .play-btn:active {
+        animation: spin 0.5s ease-in-out !important;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* TITLE: Fade-In Animation */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in !important;
+    }
 
-        /* Extracted CSS for select_next_spin_top_pick */
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    /* Extracted CSS for select_next_spin_top_pick */
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 
-        @keyframes confetti {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
+    @keyframes confetti {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
 
-        .first-spins {
-            margin-bottom: 10px;
-            text-align: center;
-        }
+    .first-spins {
+        margin-bottom: 10px;
+        text-align: center;
+    }
 
-        .first-spins h5 {
-            margin: 0 0 5px 0;
-            color: #FFD700;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            text-transform: uppercase;
-        }
+    .first-spins h5 {
+        margin: 0 0 5px 0;
+        color: #FFD700;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 16px;
+        text-transform: uppercase;
+    }
 
-        .first-spins-container {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-        }
+    .first-spins-container {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
 
-        .first-spin {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffffff !important;
-            border: 1px solid #ffffff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        }
+    .first-spin {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #ffffff !important;
+        border: 1px solid #ffffff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
 
-        .first-spin.red { background-color: red; }
-        .first-spin.black { background-color: black; }
-        .first-spin.green { background-color: green; }
+    .first-spin.red { background-color: red; }
+    .first-spin.black { background-color: black; }
+    .first-spin.green { background-color: green; }
 
-        .accordion {
-            margin: 10px 0;
-            border: 1px solid #FFD700;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #2E8B57, #FFD700);
-            transition: all 0.3s ease;
-        }
+    .accordion {
+        margin: 10px 0;
+        border: 1px solid #FFD700;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #2E8B57, #FFD700);
+        transition: all 0.3s ease;
+    }
 
-        .accordion-toggle {
-            display: none;
-        }
+    .accordion-toggle {
+        display: none;
+    }
 
-        .accordion-header {
-            padding: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #FFD700;
-            cursor: pointer;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Montserrat', sans-serif;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: inherit;
-        }
+    .accordion-header {
+        padding: 12px;
+        font-weight: bold;
+        font-size: 18px;
+        color: #FFD700;
+        cursor: pointer;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Montserrat', sans-serif;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: inherit;
+    }
 
-        .accordion-header:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
+    .accordion-header:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
 
-        .accordion-content {
-            display: none !important;
-            animation: fadeIn 0.5s ease-in-out;
-        }
+    .accordion-content {
+        display: none !important;
+        animation: fadeIn 0.5s ease-in-out;
+    }
 
-        .accordion-toggle:checked + .accordion-header + .accordion-content {
-            display: block !important;
-        }
+    .accordion-toggle:checked + .accordion-header + .accordion-content {
+        display: block !important;
+    }
 
-        .top-pick-container {
-            background: linear-gradient(135deg, #2E8B57, #FFD700);
-            border: 3px solid #FFD700;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-            margin: 10px 0;
-        }
+    .top-pick-container {
+        background: linear-gradient(135deg, #2E8B57, #FFD700);
+        border: 3px solid #FFD700;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        margin: 10px 0;
+    }
 
-        .top-pick-container h4 {
-            margin: 0 0 15px 0;
-            color: #FFD700;
-            font-size: 24px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-family: 'Montserrat', sans-serif;
-        }
+    .top-pick-container h4 {
+        margin: 0 0 15px 0;
+        color: #FFD700;
+        font-size: 24px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-family: 'Montserrat', sans-serif;
+    }
 
-        .top-pick-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+    .top-pick-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .badge-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .badge-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
+    .top-pick-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        font-weight: bold;
+        font-size: 28px;
+        color: #ffffff !important;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .top-pick-badge:hover {
+        transform: rotate(360deg) scale(1.2);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    }
+
+    .top-pick-badge.red { background-color: red; }
+    .top-pick-badge.black { background-color: black; }
+    .top-pick-badge.green { background-color: green; }
+
+    .top-pick-characteristics {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .char-badge {
+        background-color: rgba(255, 213, 0, 0.9);
+        color: #FFD700;
+        font-weight: bold;
+        font-size: 14px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .char-badge.red { background-color: #FF0000; color: #ffffff; }
+    .char-badge.black { background-color: #000000; color: #ffffff; }
+    .char-badge.even { background-color: #4682B4; color: #ffffff; }
+    .char-badge.odd { background-color: #4682B4; color: #ffffff; }
+    .char-badge.low { background-color: #32CD32; color: #ffffff; }
+    .char-badge.high { background-color: #32CD32; color: #ffffff; }
+
+    .confidence-bar {
+        margin-top: 10px;
+        background-color: #2E8B57;
+        border-radius: 5px;
+        height: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .confidence-fill {
+        height: 100%;
+        background-color: #FFD700;
+        transition: width 1s ease;
+    }
+
+    .confidence-bar span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #2E8B57;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .top-pick-description {
+        margin-top: 15px;
+        font-style: italic;
+        color: #3e2723;
+        font-size: 14px;
+    }
+
+    .top-pick-reasons {
+        padding: 10px;
+        color: #3e2723;
+        font-size: 14px;
+    }
+
+    .top-pick-reasons ul {
+        list-style-type: disc;
+        padding-left: 20px;
+        margin: 0;
+    }
+
+    .top-pick-reasons li {
+        margin-bottom: 5px;
+    }
+
+    .secondary-picks {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .secondary-picks h5 {
+        margin: 0 0 10px 0;
+        color: #FFD700;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 16px;
+        text-transform: uppercase;
+    }
+
+    .secondary-picks-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .secondary-pick {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .secondary-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 28px;
+        color: #ffffff !important;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+
+    .secondary-badge:hover {
+        transform: rotate(360deg) scale(1.2);
+    }
+
+    .secondary-badge.red { background-color: red; }
+    .secondary-badge.black { background-color: black; }
+    .secondary-badge.green { background-color: green; }
+
+    .secondary-info {
+        text-align: center;
+    }
+
+    .secondary-characteristics {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .secondary-reasons {
+        font-size: 10px;
+        color: #3e2723;
+        font-style: italic;
+    }
+
+    .celebration {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #FFD700;
+        animation: confetti 2s ease infinite;
+    }
+
+    @media (max-width: 600px) {
         .top-pick-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 28px;
-            color: #ffffff !important;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .top-pick-badge:hover {
-            transform: rotate(360deg) scale(1.2);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-        }
-
-        .top-pick-badge.red { background-color: red; }
-        .top-pick-badge.black { background-color: black; }
-        .top-pick-badge.green { background-color: green; }
-
-        .top-pick-characteristics {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .char-badge {
-            background-color: rgba(255, 213, 0, 0.9);
-            color: #FFD700;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        .char-badge.red { background-color: #FF0000; color: #ffffff; }
-        .char-badge.black { background-color: #000000; color: #ffffff; }
-        .char-badge.even { background-color: #4682B4; color: #ffffff; }
-        .char-badge.odd { background-color: #4682B4; color: #ffffff; }
-        .char-badge.low { background-color: #32CD32; color: #ffffff; }
-        .char-badge.high { background-color: #32CD32; color: #ffffff; }
-
-        .confidence-bar {
-            margin-top: 10px;
-            background-color: #2E8B57;
-            border-radius: 5px;
-            height: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .confidence-fill {
-            height: 100%;
-            background-color: #FFD700;
-            transition: width 1s ease;
-        }
-
-        .confidence-bar span {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #2E8B57;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .top-pick-description {
-            margin-top: 15px;
-            font-style: italic;
-            color: #3e2723;
-            font-size: 14px;
-        }
-
-        .top-pick-reasons {
-            padding: 10px;
-            color: #3e2723;
-            font-size: 14px;
-        }
-
-        .top-pick-reasons ul {
-            list-style-type: disc;
-            padding-left: 20px;
-            margin: 0;
-        }
-
-        .top-pick-reasons li {
-            margin-bottom: 5px;
-        }
-
-        .secondary-picks {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .secondary-picks h5 {
-            margin: 0 0 10px 0;
-            color: #FFD700;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            text-transform: uppercase;
-        }
-
-        .secondary-picks-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .secondary-pick {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .secondary-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             width: 50px;
             height: 50px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 28px;
-            color: #ffffff !important;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-            position: relative;
-            transition: transform 0.3s ease;
+            font-size: 24px;
         }
-
-        .secondary-badge:hover {
-            transform: rotate(360deg) scale(1.2);
+        .first-spin {
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
         }
-
-        .secondary-badge.red { background-color: red; }
-        .secondary-badge.black { background-color: black; }
-        .secondary-badge.green { background-color: green; }
-
-        .secondary-info {
-            text-align: center;
+        .secondary-badge {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
         }
-
-        .secondary-characteristics {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            justify-content: center;
+        .top-pick-container h4 {
+            font-size: 20px;
         }
-
-        .secondary-reasons {
-            font-size: 10px;
-            color: #3e2723;
-            font-style: italic;
+        .accordion-header {
+            font-size: 16px;
         }
-
-        .celebration {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #FFD700;
-            animation: confetti 2s ease infinite;
-        }
-
-        @media (max-width: 600px) {
-            .top-pick-badge {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
-            }
-            .first-spin {
-                width: 25px;
-                height: 25px;
-                font-size: 14px;
-            }
-            .secondary-badge {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
-            }
-            .top-pick-container h4 {
-                font-size: 20px;
-            }
-            .accordion-header {
-                font-size: 16px;
-            }
-        }
-    </style>
-    """)
+    }
+</style>
+""")
 print("CSS Updated")
 
 # Shepherd.js Tour Script
@@ -8200,449 +8200,449 @@ gr.HTML("""
       tour.next();
     };
   }
-    
-      // Force accordion open with direct DOM manipulation and Promise
-      function forceAccordionOpen(accordionId) {
-        console.log(`Checking accordion: ${accordionId}`);
-        return new Promise(resolve => {
-          const accordion = document.querySelector(accordionId);
-          if (!accordion) {
-            console.warn(`Accordion ${accordionId} not found`);
-            resolve();
-            return;
-          }
-          const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-          if (content && window.getComputedStyle(content).display === 'none') {
-            console.log(`Forcing ${accordionId} open`);
-            content.style.display = 'block';
-            accordion.setAttribute('open', '');
-            setTimeout(() => {
-              if (window.getComputedStyle(content).display === 'none') {
-                console.warn(`Fallback: Forcing visibility for ${accordionId}`);
-                content.style.display = 'block';
-              }
-              resolve();
-            }, 500);
-          } else {
-            console.log(`${accordionId} already open or no content found`);
-            resolve();
-          }
-        });
+
+  // Force accordion open with direct DOM manipulation and Promise
+  function forceAccordionOpen(accordionId) {
+    console.log(`Checking accordion: ${accordionId}`);
+    return new Promise(resolve => {
+      const accordion = document.querySelector(accordionId);
+      if (!accordion) {
+        console.warn(`Accordion ${accordionId} not found`);
+        resolve();
+        return;
       }
-    
-      // Step 1: Header
-      tour.addStep({
-        id: 'part1',
-        title: 'Your Roulette Adventure Begins!',
-        text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#header-row', on: 'bottom' },
-        buttons: [
-          { text: 'Next', action: logStep('Part 1', 'Part 2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 2: Roulette Table
-      tour.addStep({
-        id: 'part2',
-        title: 'Spin the Wheel, Start the Thrill!',
-        text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.roulette-table', on: 'right' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 2', 'Part 3') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 3: Last Spins Display
-      tour.addStep({
-        id: 'part3',
-        title: 'Peek at Your Spin Streak!',
-        text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.last-spins-container', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 3', 'Part 4') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 4: Spin Controls
-      tour.addStep({
-        id: 'part4',
-        title: 'Master Your Spin Moves!',
-        text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#undo-spins-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 4', 'Part 5') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 5: Selected Spins Textbox
-      tour.addStep({
-        id: 'part5',
-        title: 'Jot Spins, Count Wins!',
-        text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#selected-spins', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 5', 'Part 6') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 6: Analyze Button
-      tour.addStep({
-        id: 'part6',
-        title: 'Analyze and Reset Like a Pro!',
-        text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.green-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 6', 'Part 7') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 7: Dynamic Table
-      tour.addStep({
-        id: 'part7',
-        title: 'Light Up Your Lucky Spots!',
-        text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 7', 'Part 8') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 8: Betting Progression Tracker
-      tour.addStep({
-        id: 'part8',
-        title: 'Bet Smart, Track the Art!',
-        text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.betting-progression', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('.betting-progression');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 8', 'Part 9') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 9: Color Code Key
-      tour.addStep({
-        id: 'part9',
-        title: 'Paint Your Winning Hue!',
-        text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#color-code-key', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#color-code-key');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 9', 'Part 10') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 10: Color Code Key (Continued)
-      tour.addStep({
-        id: 'part10',
-        title: 'Decode the Color Clue!',
-        text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#color-code-key', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#color-code-key');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 10', 'Part 11') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 11: Spin Analysis
-      tour.addStep({
-        id: 'part11',
-        title: 'Unleash the Spin Secrets!',
-        text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#spin-analysis', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#spin-analysis');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 11', 'Part 12') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 12: Save/Load Session
-      tour.addStep({
-        id: 'part12',
-        title: 'Save Your Spin Glory!',
-        text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#save-load-session', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#save-load-session');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 12', 'Part 13') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 13: Strategy Selection
-      tour.addStep({
-        id: 'part13',
-        title: 'Pick Your Strategy Groove!',
-        text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#select-category', on: 'left' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 13', 'Part 14') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 14: Casino Data Insights
-      tour.addStep({
-        id: 'part14',
-        title: 'Boost Wins with Casino Intel!',
-        text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#casino-data-insights', on: 'bottom' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#casino-data-insights');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 14', 'Part 14a') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 14a: Hot and Cold Numbers
-      tour.addStep({
-          id: 'part14',
-          title: 'Boost Wins with Casino Intel!',
-          text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#casino-data-insights', on: 'bottom' },
-          beforeShowPromise: function() {
-            console.log('Starting Step 14: Casino Data Insights');
-            return forceAccordionOpen('#casino-data-insights');
-          },
-          buttons: [
-            { text: 'Back', action: tour.back },
-            { text: 'Finish', action: function() { console.log('Tour completed at Step 14'); tour.complete(); } },
-            { text: 'Skip', action: tour.cancel }
-          ]
-        });
-    
-      // Step 15: Dealer’s Spin Tracker
-      tour.addStep({
-        id: 'part15',
-        title: 'Spot the Dealer’s Bias!',
-        text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#sides-of-zero-accordion');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 15', 'Part 16a') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 16a: Create Dozen/Even Bet Triggers - Dozen Triggers
-      tour.addStep({
-        id: 'part16a',
-        title: 'Trigger Dozen Wins!',
-        text: 'Set up Dozen Triggers to catch hot streaks and patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iYfhd8_C1IM?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16a', 'Part 16a1') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 16a1: Create Dozen/Even Bet Triggers - Dozen Triggers: Alert on Consecutive Dozen Hits
-      tour.addStep({
-        id: 'part16a1',
-        title: 'Catch Dozen Streaks!',
-        text: 'Enable alerts for consecutive Dozen hits to spot trends fast.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/e6KAOAoImNQ?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16a1', 'Part 16a2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 16a2: Create Dozen/Even Bet Triggers - Dozen Triggers: Sequence Length to Match (X), Follow-Up Spins to Track (Y)
-      tour.addStep({
-        id: 'part16a2',
-        title: 'Match Dozen Sequences!',
-        text: 'Track sequences and follow-ups to predict Dozen patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/X4mFSMMc21g?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16a2', 'Part 16b') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 16b: Create Dozen/Even Bet Triggers - Even Money Bet Triggers
-      tour.addStep({
-        id: 'part16b',
-        title: 'Trigger Even Money Magic!',
-        text: 'Set Even Money Triggers to catch winning streaks and traits.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/5z7TjjwpTs0?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16b', 'Part 16b1') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 16b1: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Alert on Consecutive Even Money Hits (And/Or)
-      tour.addStep({
-        id: 'part16b1',
-        title: 'Even Money Streaks On!',
-        text: 'Get alerts for consecutive Even Money hits with And/Or logic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/gjQcOdNDGKc?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16b1', 'Part 16b2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 16b2: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Track Consecutive Identical Traits
-      tour.addStep({
-        id: 'part16b2',
-        title: 'Track Even Money Traits!',
-        text: 'Spot consecutive identical traits to refine your Even Money bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iRz_y8DeqCU?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16b2', 'Part 17') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 17: Top Strategies with Roulette Spin Analyzer
-      tour.addStep({
-        id: 'part17',
-        title: 'Learn Top Strategies!',
-        text: 'Explore winning strategies with video tutorials to level up your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/t_5gvje0SKI?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#top-strategies', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#top-strategies');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 17', 'Part 18') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      // Step 18: Feedback & Suggestions
-      tour.addStep({
-        id: 'part18',
-        title: 'Share Your Winning Ideas!',
-        text: 'Submit feedback or suggest new strategies to enhance the app.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/9MgXNg2oDvk?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#feedback-section', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#feedback-section');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
-        ]
-      });
-    
-      function startTour() {
-        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
-        if (typeof Shepherd === 'undefined') {
-          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
-          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
-          return;
-        }
+      const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
+      if (content && window.getComputedStyle(content).display === 'none') {
+        console.log(`Forcing ${accordionId} open`);
+        content.style.display = 'block';
+        accordion.setAttribute('open', '');
         setTimeout(() => {
-          console.log('Checking DOM elements for tour...');
-          const criticalElements = [
-            '#header-row',
-            '.roulette-table',
-            '#selected-spins',
-            '#undo-spins-btn',
-            '.last-spins-container',
-            '.green-btn',
-            '#dynamic-table-heading',
-            '.betting-progression',
-            '#color-code-key',
-            '#spin-analysis',
-            '#save-load-session',
-            '#select-category',
-            '#casino-data-insights',
-            '#hot-cold-numbers',  // Added for Hot and Cold Numbers
-            '#sides-of-zero-accordion',
-            '#dozen-tracker',
-            '#top-strategies',
-            '#feedback-section'
-          ];
-          const missingElements = criticalElements.filter(el => !document.querySelector(el));
-          if (missingElements.length > 0) {
-            console.error(`Cannot start tour: Missing elements: ${missingElements.join(', ')}`);
-            alert(`Tour unavailable: Missing components (${missingElements.join(', ')}). Please refresh the page or contact support.`);
-            return;
+          if (window.getComputedStyle(content).display === 'none') {
+            console.warn(`Fallback: Forcing visibility for ${accordionId}`);
+            content.style.display = 'block';
           }
-          console.log('All critical elements found. Starting tour.');
-          try {
-            tour.start();
-            console.log('Tour started successfully.');
-          } catch (error) {
-            console.error('Error starting tour:', error);
-            alert('Tour failed to start due to an unexpected error. Please check the console for details.');
-          }
-        }, 2000);
+          resolve();
+        }, 500);
+      } else {
+        console.log(`${accordionId} already open or no content found`);
+        resolve();
       }
+    });
+  }
+
+  // Step 1: Header
+  tour.addStep({
+    id: 'part1',
+    title: 'Your Roulette Adventure Begins!',
+    text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#header-row', on: 'bottom' },
+    buttons: [
+      { text: 'Next', action: logStep('Part 1', 'Part 2') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 2: Roulette Table
+  tour.addStep({
+    id: 'part2',
+    title: 'Spin the Wheel, Start the Thrill!',
+    text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.roulette-table', on: 'right' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 2', 'Part 3') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 3: Last Spins Display
+  tour.addStep({
+    id: 'part3',
+    title: 'Peek at Your Spin Streak!',
+    text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.last-spins-container', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 3', 'Part 4') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 4: Spin Controls
+  tour.addStep({
+    id: 'part4',
+    title: 'Master Your Spin Moves!',
+    text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#undo-spins-btn', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 4', 'Part 5') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 5: Selected Spins Textbox
+  tour.addStep({
+    id: 'part5',
+    title: 'Jot Spins, Count Wins!',
+    text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#selected-spins', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 5', 'Part 6') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 6: Analyze Button
+  tour.addStep({
+    id: 'part6',
+    title: 'Analyze and Reset Like a Pro!',
+    text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.green-btn', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 6', 'Part 7') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 7: Dynamic Table
+  tour.addStep({
+    id: 'part7',
+    title: 'Light Up Your Lucky Spots!',
+    text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 7', 'Part 8') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 8: Betting Progression Tracker
+  tour.addStep({
+    id: 'part8',
+    title: 'Bet Smart, Track the Art!',
+    text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '.betting-progression', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('.betting-progression');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 8', 'Part 9') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 9: Color Code Key
+  tour.addStep({
+    id: 'part9',
+    title: 'Paint Your Winning Hue!',
+    text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#color-code-key');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 9', 'Part 10') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 10: Color Code Key (Continued)
+  tour.addStep({
+    id: 'part10',
+    title: 'Decode the Color Clue!',
+    text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#color-code-key', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#color-code-key');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 10', 'Part 11') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 11: Spin Analysis
+  tour.addStep({
+    id: 'part11',
+    title: 'Unleash the Spin Secrets!',
+    text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#spin-analysis', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#spin-analysis');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 11', 'Part 12') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 12: Save/Load Session
+  tour.addStep({
+    id: 'part12',
+    title: 'Save Your Spin Glory!',
+    text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#save-load-session', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#save-load-session');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 12', 'Part 13') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 13: Strategy Selection
+  tour.addStep({
+    id: 'part13',
+    title: 'Pick Your Strategy Groove!',
+    text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#select-category', on: 'left' },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 13', 'Part 14') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 14: Casino Data Insights
+  tour.addStep({
+    id: 'part14',
+    title: 'Boost Wins with Casino Intel!',
+    text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#casino-data-insights', on: 'bottom' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#casino-data-insights');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 14', 'Part 14a') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 14a: Hot and Cold Numbers
+  tour.addStep({
+      id: 'part14',
+      title: 'Boost Wins with Casino Intel!',
+      text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+      attachTo: { element: '#casino-data-insights', on: 'bottom' },
+      beforeShowPromise: function() {
+        console.log('Starting Step 14: Casino Data Insights');
+        return forceAccordionOpen('#casino-data-insights');
+      },
+      buttons: [
+        { text: 'Back', action: tour.back },
+        { text: 'Finish', action: function() { console.log('Tour completed at Step 14'); tour.complete(); } },
+        { text: 'Skip', action: tour.cancel }
+      ]
+    });
+
+  // Step 15: Dealer’s Spin Tracker
+  tour.addStep({
+    id: 'part15',
+    title: 'Spot the Dealer’s Bias!',
+    text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#sides-of-zero-accordion');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 15', 'Part 16a') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 16a: Create Dozen/Even Bet Triggers - Dozen Triggers
+  tour.addStep({
+    id: 'part16a',
+    title: 'Trigger Dozen Wins!',
+    text: 'Set up Dozen Triggers to catch hot streaks and patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iYfhd8_C1IM?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dozen-tracker', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#dozen-tracker');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 16a', 'Part 16a1') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 16a1: Create Dozen/Even Bet Triggers - Dozen Triggers: Alert on Consecutive Dozen Hits
+  tour.addStep({
+    id: 'part16a1',
+    title: 'Catch Dozen Streaks!',
+    text: 'Enable alerts for consecutive Dozen hits to spot trends fast.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/e6KAOAoImNQ?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dozen-tracker', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#dozen-tracker');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 16a1', 'Part 16a2') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 16a2: Create Dozen/Even Bet Triggers - Dozen Triggers: Sequence Length to Match (X), Follow-Up Spins to Track (Y)
+  tour.addStep({
+    id: 'part16a2',
+    title: 'Match Dozen Sequences!',
+    text: 'Track sequences and follow-ups to predict Dozen patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/X4mFSMMc21g?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dozen-tracker', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#dozen-tracker');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 16a2', 'Part 16b') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 16b: Create Dozen/Even Bet Triggers - Even Money Bet Triggers
+  tour.addStep({
+    id: 'part16b',
+    title: 'Trigger Even Money Magic!',
+    text: 'Set Even Money Triggers to catch winning streaks and traits.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/5z7TjjwpTs0?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dozen-tracker', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#dozen-tracker');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 16b', 'Part 16b1') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 16b1: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Alert on Consecutive Even Money Hits (And/Or)
+  tour.addStep({
+    id: 'part16b1',
+    title: 'Even Money Streaks On!',
+    text: 'Get alerts for consecutive Even Money hits with And/Or logic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/gjQcOdNDGKc?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dozen-tracker', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#dozen-tracker');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 16b1', 'Part 16b2') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 16b2: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Track Consecutive Identical Traits
+  tour.addStep({
+    id: 'part16b2',
+    title: 'Track Even Money Traits!',
+    text: 'Spot consecutive identical traits to refine your Even Money bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iRz_y8DeqCU?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#dozen-tracker', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#dozen-tracker');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 16b2', 'Part 17') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 17: Top Strategies with Roulette Spin Analyzer
+  tour.addStep({
+    id: 'part17',
+    title: 'Learn Top Strategies!',
+    text: 'Explore winning strategies with video tutorials to level up your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/t_5gvje0SKI?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#top-strategies', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#top-strategies');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Next', action: logStep('Part 17', 'Part 18') },
+      { text: 'Skip', action: tour.cancel }
+    ]
+  });
+
+  // Step 18: Feedback & Suggestions
+  tour.addStep({
+    id: 'part18',
+    title: 'Share Your Winning Ideas!',
+    text: 'Submit feedback or suggest new strategies to enhance the app.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/9MgXNg2oDvk?fs=0" frameborder="0"></iframe>',
+    attachTo: { element: '#feedback-section', on: 'top' },
+    beforeShowPromise: function() {
+      return forceAccordionOpen('#feedback-section');
+    },
+    buttons: [
+      { text: 'Back', action: tour.back },
+      { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+    ]
+  });
+
+  function startTour() {
+    console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
+    if (typeof Shepherd === 'undefined') {
+      console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
+      alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
+      return;
+    }
+    setTimeout(() => {
+      console.log('Checking DOM elements for tour...');
+      const criticalElements = [
+        '#header-row',
+        '.roulette-table',
+        '#selected-spins',
+        '#undo-spins-btn',
+        '.last-spins-container',
+        '.green-btn',
+        '#dynamic-table-heading',
+        '.betting-progression',
+        '#color-code-key',
+        '#spin-analysis',
+        '#save-load-session',
+        '#select-category',
+        '#casino-data-insights',
+        '#hot-cold-numbers',  // Added for Hot and Cold Numbers
+        '#sides-of-zero-accordion',
+        '#dozen-tracker',
+        '#top-strategies',
+        '#feedback-section'
+      ];
+      const missingElements = criticalElements.filter(el => !document.querySelector(el));
+      if (missingElements.length > 0) {
+        console.error(`Cannot start tour: Missing elements: ${missingElements.join(', ')}`);
+        alert(`Tour unavailable: Missing components (${missingElements.join(', ')}). Please refresh the page or contact support.`);
+        return;
+      }
+      console.log('All critical elements found. Starting tour.');
+      try {
+        tour.start();
+        console.log('Tour started successfully.');
+      } catch (error) {
+        console.error('Error starting tour:', error);
+        alert('Tour failed to start due to an unexpected error. Please check the console for details.');
+      }
+    }, 2000);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
+    console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
+  });
+</script>
+""")
     
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
-      });
-    </script>
-    """)
-    
-    # Event Handlers
+# Event Handlers
     try:
         spins_textbox.change(
             fn=validate_spins_input,
