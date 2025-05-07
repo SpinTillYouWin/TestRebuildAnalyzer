@@ -210,6 +210,90 @@ class RouletteState:
         self.alerted_patterns = set()
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
+        # Existing attributes
+        self.last_spins = []
+        self.bankroll = 1000
+        self.base_unit = 2
+        self.bet_type = "Even Money"
+        self.progression = "Martingale"
+        self.progression_state = []
+        self.status = "Active"
+        self.status_color = "white"
+        self.magic_numbers = []
+        self.tracked_losing_numbers = []
+        self.loss_count = 0
+        self.bet_multiplier = 1
+        self.initial_bankroll = 1000
+        self.stop_loss = -500
+        self.stop_win = 200
+        self.current_bet = 36
+        self.next_bet = 36
+        self.message = "Start with 2 unit bets on 18 non-repeating numbers."
+        self.oldest_number = None
+        self.newest_number = None
+        self.number_count = 18
+
+    def update_progression(self, win):
+        if self.progression == "Magic Roundabout TMR (18 Numbers)":
+            if win:
+                # Win: Reset to new set of non-repeating numbers
+                total_bet = self.number_count * self.base_unit * self.bet_multiplier + len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2)
+                self.bankroll += 36 * self.base_unit * self.bet_multiplier - total_bet
+                self.magic_numbers = []
+                self.tracked_losing_numbers = []
+                self.oldest_number = None
+                self.newest_number = None
+                self.loss_count = 0
+                self.bet_multiplier = 1
+                # Find new set of non-repeating numbers
+                unique_spins = []
+                for spin in reversed(self.last_spins):
+                    try:
+                        num = int(spin)
+                        if num not in unique_spins:
+                            unique_spins.append(num)
+                        if len(unique_spins) >= self.number_count:
+                            break
+                    except ValueError:
+                        continue
+                if len(unique_spins) >= self.number_count:
+                    self.magic_numbers = unique_spins[:self.number_count]
+                    self.oldest_number = self.magic_numbers[0] if self.magic_numbers else None
+                    self.newest_number = self.magic_numbers[-1] if self.magic_numbers else None
+                self.message = f"Win! Resetting to new set of {self.number_count} numbers. Add spins if needed."
+                self.status = "Active"
+                self.status_color = "white"
+            else:
+                # Loss: Update numbers and bets
+                self.loss_count += 1
+                last_spin = int(self.last_spins[-1]) if self.last_spins else None
+                if last_spin is not None and last_spin not in self.magic_numbers:
+                    if len(self.magic_numbers) >= self.number_count:
+                        self.magic_numbers.pop(0)
+                        self.magic_numbers.append(last_spin)
+                        self.oldest_number = self.magic_numbers[0] if self.magic_numbers else None
+                        self.newest_number = last_spin
+                    if last_spin not in self.tracked_losing_numbers:
+                        self.tracked_losing_numbers.append(last_spin)
+                        if len(self.tracked_losing_numbers) > 3:
+                            self.tracked_losing_numbers.pop(0)
+                if self.loss_count % 2 == 0:
+                    self.bet_multiplier *= 2
+                total_bet = (self.number_count * self.base_unit * self.bet_multiplier) + (len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2))
+                self.bankroll -= total_bet
+                self.message = f"Loss #{self.loss_count}. Betting {self.base_unit * self.bet_multiplier} units on {self.magic_numbers}, {self.base_unit * self.bet_multiplier / 2} units on {self.tracked_losing_numbers}. Total bet: {total_bet} units."
+                if self.bankroll <= self.stop_loss:
+                    self.status = "Stop Loss Reached"
+                    self.status_color = "red"
+                elif self.bankroll >= self.initial_bankroll + self.stop_win:
+                    self.status = "Stop Win Reached"
+                    self.status_color = "green"
+                else:
+                    self.status = "Active"
+                    self.status_color = "white"
+            self.current_bet = self.number_count * self.base_unit * self.bet_multiplier + len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2)
+            self.next_bet = self.current_bet if self.loss_count % 2 != 0 else self.current_bet * 2
+        elif self.progression == "Magic Roundabout TMR":
 
     def reset(self):
         # Preserve use_casino_winners and casino_data before resetting
@@ -2391,48 +2475,82 @@ def reset_casino_data():
     )
 
 # Line 1: Start of create_dynamic_table function (updated)
-def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color="rgba(255, 255, 0, 0.5)", middle_color="rgba(0, 255, 255, 0.5)", lower_color="rgba(255, 0, 0, 0.5)", number_count=18):
+    """Create a dynamic roulette table highlighting numbers based on the selected strategy."""
     try:
-        print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
-        print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
+        table_layout = [
+            ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
+            ["0", "2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
+            ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
+        ]
+        html = '<div class="dynamic-table-container" style="background-color: #2e7d32; padding: 10px; border-radius: 5px; border: 2px solid #d3d3d3;">'
+        html += '<table class="dynamic-table" style="width: 100%; border-collapse: collapse;">'
         
-        print("create_dynamic_table: Calculating trending sections")
-        sorted_sections = calculate_trending_sections()
-        print(f"create_dynamic_table: sorted_sections={sorted_sections}")
+        # Initialize number styles
+        number_styles = {str(i): "" for i in range(37)}
+        number_colors = {str(i): colors.get(str(i), "black") for i in range(37)}
         
-        # If no spins yet, initialize with default even money focus
-        if sorted_sections is None and strategy_name == "Best Even Money Bets":
-            print("create_dynamic_table: No spins yet, using default even money focus")
-            trending_even_money = "Red"  # Default to "Red" as an example
-            second_even_money = "Black"
-            third_even_money = "Even"
-            trending_dozen = None
-            second_dozen = None
-            trending_column = None
-            second_column = None
-            number_highlights = {}
-            top_color = top_color if top_color else "rgba(255, 255, 0, 0.5)"
-            middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
-            lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
-            suggestions = None
-        else:
-            print("create_dynamic_table: Applying strategy highlights")
-            trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
-            print(f"create_dynamic_table: Strategy highlights applied - trending_even_money={trending_even_money}, second_even_money={second_even_money}, third_even_money={third_even_money}, trending_dozen={trending_dozen}, second_dozen={second_dozen}, trending_column={trending_column}, second_column={second_column}, number_highlights={number_highlights}")
+        if strategy_name and strategy_name != "None":
+            if strategy_name == "Magic Roundabout TMR (18 Numbers)":
+                # Get last N non-repeating numbers (N from number_count)
+                last_spins = state.last_spins if hasattr(state, 'last_spins') else []
+                unique_spins = []
+                for spin in reversed(last_spins):
+                    try:
+                        num = int(spin)
+                        if num not in unique_spins:
+                            unique_spins.append(num)
+                        if len(unique_spins) >= number_count:
+                            break
+                    except ValueError:
+                        continue
+                
+                if len(unique_spins) >= number_count:
+                    state.magic_numbers = unique_spins[:number_count]
+                    state.oldest_number = state.magic_numbers[0] if state.magic_numbers else None
+                    state.newest_number = state.magic_numbers[-1] if state.magic_numbers else None
+                
+                # Apply styles
+                for num in state.magic_numbers:
+                    num_str = str(num)
+                    number_styles[num_str] = f"background-color: {top_color}; border: 2px solid #ffffff;"
+                if state.oldest_number is not None:
+                    number_styles[str(state.oldest_number)] = f"background-color: {middle_color}; border: 2px solid #000000; font-weight: bold;"
+                if state.newest_number is not None:
+                    number_styles[str(state.newest_number)] = f"background-color: rgba(0, 128, 0, 0.5); border: 2px solid #ffffff;"
+                for num in state.tracked_losing_numbers:
+                    num_str = str(num)
+                    if num_str in number_styles and "background-color" in number_styles[num_str]:
+                        number_styles[num_str] = number_styles[num_str].replace("border: 2px solid #ffffff;", "border: 2px solid #ff0000; box-shadow: 0 0 5px #ff0000;")
+                    else:
+                        number_styles[num_str] = f"background-color: {lower_color}; border: 2px solid #ff0000; box-shadow: 0 0 5px #ff0000;"
+            
+            elif strategy_name == "Best Even Money Bets":
+                # Existing logic for other strategies
+                scores = state.even_money_scores if hasattr(state, 'even_money_scores') else {}
+                top_bets = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:3]
+                for bet, _ in top_bets:
+                    for num in EVEN_MONEY.get(bet, []):
+                        num_str = str(num)
+                        number_styles[num_str] = f"background-color: {top_color};"
         
-        # If still no highlights and no sorted_sections, provide a default message
-        if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-            print("create_dynamic_table: No spins and no highlights, returning default message")
-            return "<p>No spins yet. Select a strategy to see default highlights.</p>"
-        
-        print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
-        print("create_dynamic_table: Table generated successfully")
+        # Generate table
+        for row in table_layout:
+            html += '<tr>'
+            for num in row:
+                if num == "":
+                    html += '<td style="width: 40px; height: 40px; border: 1px solid #ffffff;"></td>'
+                else:
+                    style = number_styles.get(num, "")
+                    color = number_colors.get(num, "black")
+                    html += f'<td style="width: 40px; height: 40px; border: 1px solid #ffffff; text-align: center; color: white; {style}" class="dynamic-number {color}">{num}</td>'
+            html += '</tr>'
+        html += '</table>'
+        html += '</div>'
         return html
-    
     except Exception as e:
         print(f"create_dynamic_table: Error: {str(e)}")
-        raise  # Re-raise for debugging
+        return "<p>Error creating dynamic table.</p>"
     
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
@@ -6231,7 +6349,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=1, min_width=200):
             spin_counter  # Restore side-by-side layout with styling
       
-
     # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
@@ -6242,8 +6359,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         "Double Street Strategies": ["Best Double Streets", "Non-Overlapping Double Street Strategy"],
         "Corner Strategies": ["Best Corners", "Non-Overlapping Corner Strategy"],
         "Split Strategies": ["Best Splits"],
-        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours"],
-        "Neighbours Strategies": ["Neighbours of Strong Number"]
+        "Number Strategies": ["Top Numbers with Neighbours (Tiered)", "Top Pick 18 Numbers without Neighbours", "Magic Roundabout TMR", "Magic Roundabout TMR (18 Numbers)"],
+        "Neighbours Strategies": ["Neighbours of Strong Number"],
+        "Dynamic Tracking Strategies": ["Magic Roundabout TMR (18 Numbers)"]  # New category
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
 
@@ -6430,6 +6548,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 visible=False,
                 elem_classes="long-slider"
             )
+            number_count_slider = gr.Slider(
+                label="Number of Tracked Numbers (Dynamic Tracking)",
+                minimum=1,
+                maximum=18,
+                step=1,
+                value=18,
+                interactive=True,
+                visible=False,
+                elem_classes="long-slider"
+            )
+        with gr.Column(scale=3):
+            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+            dynamic_table_output = gr.HTML(
+                label="Dynamic Table",
+                value=create_dynamic_table(strategy_name="Best Even Money Bets")
+            )
+            with gr.Row(visible=False, elem_id="dynamic-table-buttons"):
+                win_button_dynamic = gr.Button("Win", elem_classes=["action-button", "dynamic-table-btn"], visible=False)
+                lose_button_dynamic = gr.Button("Lose", elem_classes=["action-button", "dynamic-table-btn"], visible=False)
+                clear_button_dynamic = gr.Button("Clear", elem_classes=["action-button", "dynamic-table-btn"], visible=False)
     
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -7120,8 +7258,49 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Scrollable Tables */
         .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
-    
-
+        
+        /* Dynamic Table Styling */
+        .dynamic-table-container {
+            background-color: #2e7d32 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            border: 2px solid #d3d3d3 !important;
+        }
+        .dynamic-table td {
+            width: 40px !important;
+            height: 40px !important;
+            text-align: center !important;
+            color: white !important;
+            font-weight: normal !important;
+            transition: all 0.3s ease !important;
+        }
+        .dynamic-table .red { background-color: red !important; }
+        .dynamic-table .black { background-color: black !important; }
+        .dynamic-table .green { background-color: green !important; }
+        .dynamic-number:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 8px #ffd700 !important;
+        }
+        
+        /* Dynamic Table Buttons */
+        .dynamic-table-btn {
+            background-color: #28a745 !important;
+            color: white !important;
+            border: 1px solid #000 !important;
+            padding: 8px 16px !important;
+            margin: 5px !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            box-sizing: border-box !important;
+        }
+        .dynamic-table-btn:hover {
+            background-color: #218838 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        .dynamic-table-btn:active {
+            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important;
+        }
+                
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important;
@@ -8274,11 +8453,29 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in reset_strategy_button.click handler: {str(e)}")
     
     def toggle_neighbours_slider(strategy_name):
-        is_visible = strategy_name == "Neighbours of Strong Number"
+        is_neighbours = strategy_name == "Neighbours of Strong Number"
+        is_dynamic_tracking = strategy_name == "Magic Roundabout TMR (18 Numbers)"
         return (
-            gr.update(visible=is_visible),
-            gr.update(visible=is_visible)
+            gr.update(visible=is_neighbours),
+            gr.update(visible=is_neighbours),
+            gr.update(visible=is_dynamic_tracking)
         )
+
+    try:
+        strategy_dropdown.change(
+            fn=toggle_neighbours_slider,
+            inputs=[strategy_dropdown],
+            outputs=[neighbours_count_slider, strong_numbers_count_slider, number_count_slider]
+        ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        )
+    
 
     # New: Orchestrating function to combine analysis steps
     def orchestrate_analysis(spins_display, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
@@ -8314,22 +8511,82 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             even_money_text, even_money_html, color_code, analysis_cache.value
         )
     
+    def update_dynamic_table_buttons(strategy_name):
+        is_dynamic_tracking = strategy_name == "Magic Roundabout TMR (18 Numbers)"
+        return (
+            gr.update(visible=is_dynamic_tracking),
+            gr.update(visible=is_dynamic_tracking),
+            gr.update(visible=is_dynamic_tracking),
+            gr.update(visible=is_dynamic_tracking)
+        )
+
     try:
         strategy_dropdown.change(
             fn=toggle_neighbours_slider,
             inputs=[strategy_dropdown],
-            outputs=[neighbours_count_slider, strong_numbers_count_slider]
+            outputs=[neighbours_count_slider, strong_numbers_count_slider, number_count_slider]
+        ).then(
+            fn=update_dynamic_table_buttons,
+            inputs=[strategy_dropdown],
+            outputs=[dynamic_table_buttons, win_button_dynamic, lose_button_dynamic, clear_button_dynamic]
         ).then(
             fn=show_strategy_recommendations,
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}, Number Count: {number_count}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count))[-1],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, number_count_slider],
             outputs=[dynamic_table_output]
         )
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
+    
+    try:
+        win_button_dynamic.click(
+            fn=lambda: state.update_progression(True),
+            inputs=[],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, dynamic_table_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, number_count_slider],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in win_button_dynamic.click handler: {str(e)}")
+
+    try:
+        lose_button_dynamic.click(
+            fn=lambda: state.update_progression(False),
+            inputs=[],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, dynamic_table_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, number_count_slider],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in lose_button_dynamic.click handler: {str(e)}")
+
+    try:
+        clear_button_dynamic.click(
+            fn=lambda: (setattr(state, 'magic_numbers', []), setattr(state, 'tracked_losing_numbers', []), setattr(state, 'oldest_number', None), setattr(state, 'newest_number', None), create_dynamic_table(strategy_name="Magic Roundabout TMR (18 Numbers)", number_count=state.number_count))[-1],
+            inputs=[],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, number_count_slider],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in clear_button_dynamic.click handler: {str(e)}")
+    
+    try:
+        reset_colors_button.click(
+            fn=reset_colors,
+            inputs=[],
+            outputs=[top_color_picker, middle_color_picker, lower_color_picker]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
 
     try:
         analyze_button.click(
@@ -8593,6 +8850,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strong_numbers_count_slider.change handler: {str(e)}")
+    
+    try:
+        number_count_slider.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: (setattr(state, 'number_count', number_count), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count))[-1],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, number_count_slider],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in number_count_slider.change handler: {str(e)}")
+    
+    try:
+        reset_strategy_button.click(
+            fn=reset_strategy_dropdowns,
+            inputs=[],
+            outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
+        ).then(
+            fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
+            inputs=[category_dropdown],
+            outputs=[strategy_dropdown]
+        )
+    except Exception as e:
+        print(f"Error in reset_strategy_button.click handler: {str(e)}")
     
     try:
         reset_colors_button.click(
