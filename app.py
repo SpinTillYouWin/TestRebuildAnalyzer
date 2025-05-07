@@ -5211,7 +5211,7 @@ def cache_analysis(spins, last_spin_count):
 # Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
-        last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
