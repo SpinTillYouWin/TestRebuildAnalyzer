@@ -8528,12 +8528,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in last_spin_count.change handler: {str(e)}")
-    
+
     def update_strategy_dropdown(category):
         if category == "None":
             return gr.update(choices=["None"], value="None")
         return gr.update(choices=strategy_categories[category], value=strategy_categories[category][0])
-    
+
     try:
         category_dropdown.change(
             fn=update_strategy_dropdown,
@@ -8542,7 +8542,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in category_dropdown.change handler: {str(e)}")
-    
+
     try:
         reset_strategy_button.click(
             fn=reset_strategy_dropdowns,
@@ -8555,7 +8555,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_strategy_button.click handler: {str(e)}")
-    
+
     def toggle_neighbours_slider(strategy_name):
         is_neighbours = strategy_name == "Neighbours of Strong Number"
         is_dynamic_tracking = strategy_name == "Magic Roundabout TMR (18 Numbers)"
@@ -8565,56 +8565,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gr.update(visible=is_dynamic_tracking)
         )
 
-    try:
-        strategy_dropdown.change(
-            fn=toggle_neighbours_slider,
-            inputs=[strategy_dropdown],
-            outputs=[neighbours_count_slider, strong_numbers_count_slider, number_count_slider]
-        ).then(
-            fn=show_strategy_recommendations,
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[strategy_output]
-        ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: (print(f"Updating Dynamic Table with Strategy: {strategy}, Neighbours Count: {neighbours_count}, Strong Numbers Count: {strong_numbers_count}, Dozen Tracker Spins: {dozen_tracker_spins}, Colors: {top_color}, {middle_color}, {lower_color}"), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color))[-1],
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        )
-    
-
-    # New: Orchestrating function to combine analysis steps
-    def orchestrate_analysis(spins_display, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
-        """Orchestrate analysis, producing all outputs in one pass with scores always reset."""
-        import time
-        start_time = time.time()
-        
-        # Run analysis (scores are always reset in analyze_spins)
-        spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = analyze_spins(spins_display, strategy, neighbours_count, strong_numbers_count)
-        
-        # Run trackers and dynamic table
-        dozen_text, dozen_html, dozen_sequence_html = dozen_tracker(
-            dozen_tracker_spins, dozen_consecutive_hits, dozen_alert,
-            dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert
-        )
-        even_money_text, even_money_html = even_money_tracker(
-            even_money_spins, even_money_consecutive_hits, even_money_alert,
-            even_money_combination_mode, red, black, even, odd, low, high,
-            identical_traits, consecutive_identical
-        )
-        dynamic_table = create_dynamic_table(
-            strategy if strategy != "None" else None, neighbours_count,
-            strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
-        )
-        color_code = create_color_code_table()
-        
-        print(f"Analysis completed in {time.time() - start_time:.3f} seconds")
-        return (
-            spins_analysis, even_money, dozens, columns, streets, corners, six_lines,
-            splits, sides, straight_up, top_18, strongest_numbers, dynamic_table,
-            show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count),
-            render_sides_of_zero_display(), dozen_text, dozen_html, dozen_sequence_html,
-            even_money_text, even_money_html, color_code, analysis_cache.value
-        )
-    
     def update_dynamic_table_buttons(strategy_name):
         is_dynamic_tracking = strategy_name == "Magic Roundabout TMR (18 Numbers)"
         return (
@@ -8644,7 +8594,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
-    
+
+    try:
+        number_count_slider.change(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: (setattr(state, 'number_count', number_count), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count))[-1],
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker, number_count_slider],
+            outputs=[dynamic_table_output]
+        )
+    except Exception as e:
+        print(f"Error in number_count_slider.change handler: {str(e)}")
+
     try:
         win_button_dynamic.click(
             fn=lambda: state.update_progression(True),
@@ -8683,14 +8642,40 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_button_dynamic.click handler: {str(e)}")
-    
-    try:
-        reset_colors_button.click(
-            fn=reset_colors,
-            inputs=[],
-            outputs=[top_color_picker, middle_color_picker, lower_color_picker]
-        ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
+
+    # New: Orchestrating function to combine analysis steps
+    def orchestrate_analysis(spins_display, strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, dozen_consecutive_hits, dozen_alert, dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert, even_money_spins, even_money_consecutive_hits, even_money_alert, even_money_combination_mode, red, black, even, odd, low, high, identical_traits, consecutive_identical, top_color, middle_color, lower_color):
+        """Orchestrate analysis, producing all outputs in one pass with scores always reset."""
+        import time
+        start_time = time.time()
+        
+        # Run analysis (scores are always reset in analyze_spins)
+        spins_analysis, even_money, dozens, columns, streets, corners, six_lines, splits, sides, straight_up, top_18, strongest_numbers = analyze_spins(spins_display, strategy, neighbours_count, strong_numbers_count)
+        
+        # Run trackers and dynamic table
+        dozen_text, dozen_html, dozen_sequence_html = dozen_tracker(
+            dozen_tracker_spins, dozen_consecutive_hits, dozen_alert,
+            dozen_sequence_length, dozen_follow_up_spins, dozen_sequence_alert
+        )
+        even_money_text, even_money_html = even_money_tracker(
+            even_money_spins, even_money_consecutive_hits, even_money_alert,
+            even_money_combination_mode, red, black, even, odd, low, high,
+            identical_traits, consecutive_identical
+        )
+        dynamic_table = create_dynamic_table(
+            strategy if strategy != "None" else None, neighbours_count,
+            strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+        )
+        color_code = create_color_code_table()
+        
+        print(f"Analysis completed in {time.time() - start_time:.3f} seconds")
+        return (
+            spins_analysis, even_money, dozens, columns, streets, corners, six_lines,
+            splits, sides, straight_up, top_18, strongest_numbers, dynamic_table,
+            show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count),
+            render_sides_of_zero_display(), dozen_text, dozen_html, dozen_sequence_html,
+            even_money_text, even_money_html, color_code, analysis_cache.value
+        )
 
     try:
         analyze_button.click(
@@ -8712,7 +8697,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Clear outputs to reset error state
             fn=lambda: ("", ""),
             inputs=[],
             outputs=[dynamic_table_output, strategy_output]
@@ -8770,7 +8754,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
         gr.Warning(f"Error during analysis: {str(e)}")
-    
+
+    try:
+        top_pick_spin_count.change(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
+        )
+    except Exception as e:
+        print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+
     try:
         save_button.click(
             fn=save_session,
@@ -8779,7 +8776,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in save_button.click handler: {str(e)}")
-    
+
     try:
         load_input.change(
             fn=load_session,
@@ -8800,7 +8797,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -8852,7 +8849,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in load_input.change handler: {str(e)}")
-    
+
     try:
         undo_button.click(
             fn=undo_last_spin,
@@ -8928,7 +8925,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
-    
+
     try:
         neighbours_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -8941,7 +8938,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in neighbours_count_slider.change handler: {str(e)}")
-    
+
     try:
         strong_numbers_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -8954,7 +8951,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strong_numbers_count_slider.change handler: {str(e)}")
-    
+
     try:
         number_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count: (setattr(state, 'number_count', number_count), create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color, number_count))[-1],
@@ -8963,20 +8960,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in number_count_slider.change handler: {str(e)}")
-    
-    try:
-        reset_strategy_button.click(
-            fn=reset_strategy_dropdowns,
-            inputs=[],
-            outputs=[category_dropdown, strategy_dropdown, strategy_dropdown]
-        ).then(
-            fn=lambda category: gr.update(choices=strategy_categories[category], value=strategy_categories[category][0]),
-            inputs=[category_dropdown],
-            outputs=[strategy_dropdown]
-        )
-    except Exception as e:
-        print(f"Error in reset_strategy_button.click handler: {str(e)}")
-    
+
     try:
         reset_colors_button.click(
             fn=reset_colors,
@@ -9011,13 +8995,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in clear_last_spins_button.click handler: {str(e)}")
 
-    # Define the toggle_trends function to update both state and label
     def toggle_trends(show_trends, current_label):
         new_show_trends = not show_trends
         new_label = "Hide Trends" if new_show_trends else "Show Trends"
         return new_show_trends, new_label, gr.update(value=new_label)
 
-    # Event handler for toggle_trends_button (at the top level, not indented under the function)
     try:
         toggle_trends_button.click(
             fn=toggle_trends,
@@ -9066,7 +9048,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in lower_color_picker.change handler: {str(e)}")
 
-    # Dozen Tracker Event Handlers
     try:
         dozen_tracker_spins_dropdown.change(
             fn=dozen_tracker,
@@ -9079,7 +9060,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_spins_dropdown.change handler: {str(e)}")
-    
+
     try:
         dozen_tracker_consecutive_hits_dropdown.change(
             fn=dozen_tracker,
@@ -9092,7 +9073,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
-    
+
     try:
         dozen_tracker_alert_checkbox.change(
             fn=dozen_tracker,
@@ -9105,7 +9086,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_alert_checkbox.change handler: {str(e)}")
-    
+
     try:
         dozen_tracker_sequence_length_dropdown.change(
             fn=dozen_tracker,
@@ -9118,7 +9099,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_sequence_length_dropdown.change handler: {str(e)}")
-    
+
     try:
         dozen_tracker_follow_up_spins_dropdown.change(
             fn=dozen_tracker,
@@ -9131,7 +9112,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_follow_up_spins_dropdown.change handler: {str(e)}")
-    
+
     try:
         dozen_tracker_sequence_alert_checkbox.change(
             fn=dozen_tracker,
@@ -9167,8 +9148,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen_tracker_sequence_alert_checkbox.change handler: {str(e)}")
-    
-    # Even Money Tracker Event Handlers
+
     try:
         even_money_tracker_spins_dropdown.change(
             fn=even_money_tracker,
@@ -9190,7 +9170,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_spins_dropdown.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_consecutive_hits_dropdown.change(
             fn=even_money_tracker,
@@ -9212,7 +9192,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_consecutive_hits_dropdown.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_combination_mode_dropdown.change(
             fn=even_money_tracker,
@@ -9234,7 +9214,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_combination_mode_dropdown.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_red_checkbox.change(
             fn=even_money_tracker,
@@ -9256,7 +9236,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_red_checkbox.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_black_checkbox.change(
             fn=even_money_tracker,
@@ -9278,7 +9258,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_black_checkbox.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_even_checkbox.change(
             fn=even_money_tracker,
@@ -9300,7 +9280,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_even_checkbox.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_odd_checkbox.change(
             fn=even_money_tracker,
@@ -9322,7 +9302,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_odd_checkbox.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_low_checkbox.change(
             fn=even_money_tracker,
@@ -9344,7 +9324,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_low_checkbox.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_high_checkbox.change(
             fn=even_money_tracker,
@@ -9366,7 +9346,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_high_checkbox.change handler: {str(e)}")
-    
+
     try:
         even_money_tracker_alert_checkbox.change(
             fn=even_money_tracker,
@@ -9388,13 +9368,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_money_tracker_alert_checkbox.change handler: {str(e)}")
-    
-    # Casino data event handlers
+
     inputs_list = [
         spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
         low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
         col1_percent, col2_percent, col3_percent, use_winners_checkbox
     ]
+
     try:
         spins_count_dropdown.change(
             fn=update_casino_data,
@@ -9403,7 +9383,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_count_dropdown.change handler: {str(e)}")
-    
+
     try:
         even_percent.change(
             fn=update_casino_data,
@@ -9412,7 +9392,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in even_percent.change handler: {str(e)}")
-    
+
     try:
         odd_percent.change(
             fn=update_casino_data,
@@ -9421,7 +9401,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in odd_percent.change handler: {str(e)}")
-    
+
     try:
         red_percent.change(
             fn=update_casino_data,
@@ -9430,7 +9410,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in red_percent.change handler: {str(e)}")
-    
+
     try:
         black_percent.change(
             fn=update_casino_data,
@@ -9439,7 +9419,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in black_percent.change handler: {str(e)}")
-    
+
     try:
         low_percent.change(
             fn=update_casino_data,
@@ -9448,7 +9428,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in low_percent.change handler: {str(e)}")
-    
+
     try:
         high_percent.change(
             fn=update_casino_data,
@@ -9457,7 +9437,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in high_percent.change handler: {str(e)}")
-    
+
     try:
         dozen1_percent.change(
             fn=update_casino_data,
@@ -9466,7 +9446,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen1_percent.change handler: {str(e)}")
-    
+
     try:
         dozen2_percent.change(
             fn=update_casino_data,
@@ -9475,7 +9455,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen2_percent.change handler: {str(e)}")
-    
+
     try:
         dozen3_percent.change(
             fn=update_casino_data,
@@ -9484,7 +9464,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in dozen3_percent.change handler: {str(e)}")
-    
+
     try:
         col1_percent.change(
             fn=update_casino_data,
@@ -9493,7 +9473,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in col1_percent.change handler: {str(e)}")
-    
+
     try:
         col2_percent.change(
             fn=update_casino_data,
@@ -9502,7 +9482,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in col2_percent.change handler: {str(e)}")
-    
+
     try:
         col3_percent.change(
             fn=update_casino_data,
@@ -9511,7 +9491,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in col3_percent.change handler: {str(e)}")
-    
+
     try:
         use_winners_checkbox.change(
             fn=update_casino_data,
@@ -9523,20 +9503,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[dynamic_table_output]
         )
     except Exception as e:
-        print(f"Error in use_winners_checkbox.change handler: {str(e)}")    
-    
+        print(f"Error in use_winners_checkbox.change handler: {str(e)}")
+
     try:
         reset_casino_data_button.click(
             fn=lambda: (
                 "100", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", "00", False,
-                "", "", "<p>Casino data reset to defaults.</p>"  # Added hot_numbers_input, cold_numbers_input
+                "", "", "<p>Casino data reset to defaults.</p>"
             ),
             inputs=[],
             outputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
                 low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
                 col1_percent, col2_percent, col3_percent, use_winners_checkbox,
-                hot_numbers_input, cold_numbers_input, casino_data_output  # Added new inputs
+                hot_numbers_input, cold_numbers_input, casino_data_output
             ]
         ).then(
             fn=create_dynamic_table,
@@ -9570,7 +9550,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
-    
+
     try:
         play_cold_button.click(
             fn=play_specific_numbers,
@@ -9595,7 +9575,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in play_cold_button.click handler: {str(e)}")
-    
+
     try:
         clear_hot_button.click(
             fn=clear_hot_cold_picks,
@@ -9612,7 +9592,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_hot_button.click handler: {str(e)}")
-    
+
     try:
         clear_cold_button.click(
             fn=clear_hot_cold_picks,
@@ -9663,14 +9643,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_hits_dropdown,
                 even_money_tracker_alert_checkbox,
                 even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
@@ -9684,97 +9660,67 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-    
-    try:
-        play_hot_button.click(
-            fn=play_specific_numbers,
-            inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=suggest_hot_cold_numbers,
-            inputs=[],
-            outputs=[hot_suggestions, cold_suggestions]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in play_hot_button.click handler: {str(e)}")
-    
-    try:
-        play_cold_button.click(
-            fn=play_specific_numbers,
-            inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=suggest_hot_cold_numbers,
-            inputs=[],
-            outputs=[hot_suggestions, cold_suggestions]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in play_cold_button.click handler: {str(e)}")
 
     def toggle_labouchere(progression):
         """Show/hide Labouchere sequence input based on selected progression."""
         return gr.update(visible=progression == "Labouchere")
-    
-    # Betting progression event handlers
+
     def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
-        state.base_unit = base_unit
+        state.base_unit = base_unit if base_unit is not None else 2
         state.stop_loss = stop_loss
         state.stop_win = stop_win
         state.bet_type = bet_type
         state.progression = progression
-        # Line 1: Enforce minimum value and reset labouchere_sequence
-        target_profit = int(target_profit) if target_profit is not None else 10  # Ensure integer, default to 10
-        state.target_profit = max(1, target_profit)  # Enforce minimum value of 1
+        target_profit = int(target_profit) if target_profit is not None else 10
+        state.target_profit = max(1, target_profit)
         if progression == "Labouchere":
             try:
-                # Only use the sequence if it's non-empty and valid; otherwise, auto-generate
                 if sequence and sequence.strip():
                     parsed_sequence = [int(x.strip()) for x in sequence.split(",")]
                     if all(isinstance(x, int) and x > 0 for x in parsed_sequence):
                         state.progression_state = parsed_sequence
-                        state.labouchere_sequence = sequence  # Keep the user-provided sequence
+                        state.labouchere_sequence = sequence
                     else:
                         state.progression_state = [1] * state.target_profit
-                        state.labouchere_sequence = ""  # Clear the sequence to use auto-generated
+                        state.labouchere_sequence = ""
                         return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
                 else:
                     state.progression_state = [1] * state.target_profit
-                    state.labouchere_sequence = ""  # Ensure auto-generated sequence is used
+                    state.labouchere_sequence = ""
             except ValueError:
                 state.progression_state = [1] * state.target_profit
-                state.labouchere_sequence = ""  # Clear the sequence on error
+                state.labouchere_sequence = ""
                 return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
+        elif progression == "Magic Roundabout TMR":
+            state.magic_numbers = []
+            state.tracked_losing_numbers = []
+            state.oldest_number = None
+            state.newest_number = None
+            state.loss_count = 0
+            state.bet_multiplier = 1
+            state.labouchere_sequence = ""
+            state.current_bet = 9 * state.base_unit
+            state.next_bet = state.current_bet
+            state.message = f"Start with {state.base_unit} unit bets on nine non-repeating numbers."
+        elif progression == "Magic Roundabout TMR (18 Numbers)":
+            state.magic_numbers = []
+            state.tracked_losing_numbers = []
+            state.oldest_number = None
+            state.newest_number = None
+            state.loss_count = 0
+            state.bet_multiplier = 1
+            state.labouchere_sequence = ""
+            state.current_bet = state.number_count * state.base_unit
+            state.next_bet = state.current_bet
+            state.message = f"Start with {state.base_unit} unit bets on {state.number_count} non-repeating numbers."
         else:
-            state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
-        state.reset_progression()
+            state.labouchere_sequence = ""
+            state.progression_state = []
+            state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
-    
+
     try:
         bankroll_input.change(
             fn=update_config,
@@ -9783,7 +9729,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in bankroll_input.change handler: {str(e)}")
-    
+
     try:
         base_unit_input.change(
             fn=update_config,
@@ -9792,7 +9738,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in base_unit_input.change handler: {str(e)}")
-    
+
     try:
         stop_loss_input.change(
             fn=update_config,
@@ -9801,7 +9747,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in stop_loss_input.change handler: {str(e)}")
-    
+
     try:
         stop_win_input.change(
             fn=update_config,
@@ -9810,7 +9756,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in stop_win_input.change handler: {str(e)}")
-    
+
     try:
         bet_type_dropdown.change(
             fn=update_config,
@@ -9819,7 +9765,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in bet_type_dropdown.change handler: {str(e)}")
-    
+
     try:
         progression_dropdown.change(
             fn=update_config,
@@ -9830,10 +9776,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[progression_dropdown],
             outputs=[labouchere_sequence]
         )
-
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
-    
+
     try:
         labouchere_sequence.change(
             fn=update_config,
@@ -9842,7 +9787,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in labouchere_sequence.change handler: {str(e)}")
-    
+
     try:
         win_button.click(
             fn=lambda: state.update_progression(True),
@@ -9851,7 +9796,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in win_button.click handler: {str(e)}")
-    
+
     try:
         lose_button.click(
             fn=lambda: state.update_progression(False),
@@ -9860,7 +9805,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in lose_button.click handler: {str(e)}")
-    
+
     try:
         reset_progression_button.click(
             fn=lambda: state.reset_progression(),
@@ -9869,8 +9814,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
-    
-    # Video Category and Video Selection Event Handlers
+
     def update_video_dropdown(category):
         videos = video_categories.get(category, [])
         choices = [video["title"] for video in videos]
@@ -9879,7 +9823,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             gr.update(choices=choices, value=default_value),
             gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
         )
-    
+
     def update_video_display(video_title, category):
         videos = video_categories.get(category, [])
         selected_video = next((video for video in videos if video["title"] == video_title), None)
@@ -9887,7 +9831,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             video_id = selected_video["link"].split("/")[-1]
             return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
         return "<p>Please select a video to watch.</p>"
-    
+
     try:
         video_category_dropdown.change(
             fn=update_video_dropdown,
@@ -9896,7 +9840,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in video_category_dropdown.change handler: {str(e)}")
-    
+
     try:
         video_dropdown.change(
             fn=update_video_display,
@@ -9906,21 +9850,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
-# Add the top pick slider change handler (was previously missing in your code)
-    try:
-        top_pick_spin_count.change(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+    print("Starting Gradio launch...")
+    demo.launch()
+    print("Gradio launch completed.")
 
-# Launch the interface
-print("Starting Gradio launch...")
-demo.launch()
-print("Gradio launch completed.")
