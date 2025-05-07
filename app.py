@@ -5531,7 +5531,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_matched_traits.append(trait)
                 elif trait in DOZENS and num in DOZENS[trait]:
                     num_matched_traits.append(trait)
-                elif trait in COLUMNS and num in COLUMNS[trait]:
+                elif trait in COLUMNS and top_pick in DOZENS[trait]:
                     num_matched_traits.append(trait)
             if num_matched_traits:
                 num_reasons.append(f"Matches: {', '.join(num_matched_traits)}")
