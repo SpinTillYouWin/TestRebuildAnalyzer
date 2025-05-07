@@ -5408,12 +5408,8 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
-        # Ensure top 4 picks have at least as many matches as the 4th pick
-        if len(scores) > 4:
-            min_traits = sorted([x[2] for x in scores[:4]], reverse=True)[3]
-            top_picks = [x for x in scores if x[2] >= min_traits][:4]
-        else:
-            top_picks = scores[:4]
+        # Take the top 4 picks strictly after sorting
+        top_picks = scores[:4]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
         # Calculate confidence based on matching traits
@@ -5455,7 +5451,7 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
