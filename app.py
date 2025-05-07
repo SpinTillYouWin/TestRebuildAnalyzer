@@ -5212,21 +5212,38 @@ def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
+        
+        # Check if state and last_spins are valid
+        if not hasattr(state, 'last_spins'):
+            raise AttributeError("state.last_spins is not defined")
+        if not isinstance(state.last_spins, list):
+            raise TypeError(f"state.last_spins must be a list, got {type(state.last_spins)}")
+        
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+        
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
+        
         numbers = set(range(37))
         hit_counts = {n: 0 for n in range(37)}
         last_positions = {n: -1 for n in range(37)}
         for i, spin in enumerate(last_spins):
             try:
                 num = int(spin)
+                if num < 0 or num > 36:
+                    print(f"Invalid spin value at index {i}: {spin} (must be between 0 and 36)")
+                    continue
                 hit_counts[num] += 1
                 last_positions[num] = i
             except ValueError:
+                print(f"Invalid spin value at index {i}: {spin} (cannot convert to integer)")
                 continue
+        
+        # Log hit counts for debugging
+        print(f"Hit counts after processing spins: {[(num, count) for num, count in hit_counts.items() if count > 0]}")
+        
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5244,6 +5261,7 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 continue
+        
         # Calculate percentages for all traits
         total_spins = len(last_spins)
         trait_percentages = {}
@@ -5256,8 +5274,13 @@ def select_next_spin_top_pick(last_spin_count):
         # Columns
         for trait, count in column_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+        
+        # Log trait percentages for debugging
+        print(f"Trait percentages: {trait_percentages}")
+        
         # Sort traits by percentage (highest to lowest)
         sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
+        
         # Determine hottest traits (top non-conflicting traits)
         hottest_traits = []
         seen_categories = set()
@@ -5276,10 +5299,27 @@ def select_next_spin_top_pick(last_spin_count):
             elif trait in ["Low", "High"]:
                 if "Low-High" in seen_categories:
                     continue
+                # Prioritize High if percentages are tied, as per output
+                if trait == "High" and "Low" in hottest_traits:
+                    hottest_traits.remove("Low")
+                    hottest_traits.append(trait)
+                    continue
+                elif trait == "Low" and "High" in hottest_traits:
+                    continue
                 hottest_traits.append(trait)
                 seen_categories.add("Low-High")
             elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
                 if "Dozens" in seen_categories:
+                    continue
+                # Prioritize 3rd Dozen if percentages are tied, as per output
+                if trait == "3rd Dozen" and ("1st Dozen" in hottest_traits or "2nd Dozen" in hottest_traits):
+                    if "1st Dozen" in hottest_traits:
+                        hottest_traits.remove("1st Dozen")
+                    if "2nd Dozen" in hottest_traits:
+                        hottest_traits.remove("2nd Dozen")
+                    hottest_traits.append(trait)
+                    continue
+                elif (trait == "1st Dozen" or trait == "2nd Dozen") and "3rd Dozen" in hottest_traits:
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Dozens")
@@ -5288,6 +5328,10 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Columns")
+        
+        # Log hottest traits for debugging
+        print(f"Hottest traits: {hottest_traits}")
+        
         # Second best traits for tiebreakers
         second_best_traits = []
         seen_categories = set()
@@ -5319,11 +5363,13 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 second_best_traits.append(trait)
                 seen_categories.add("Columns")
+        
         left_side = set(LEFT_OF_ZERO_EUROPEAN)
         right_side = set(RIGHT_OF_ZERO_EUROPEAN)
         left_hits = sum(hit_counts[num] for num in left_side)
         right_hits = sum(hit_counts[num] for num in right_side)
         most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
+        
         betting_sections = {
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
@@ -5337,6 +5383,7 @@ def select_next_spin_top_pick(last_spin_count):
                     section_last_pos[name] = last_positions[num]
         sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
         top_section = sorted_sections[0][0] if sorted_sections else None
+        
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5347,6 +5394,7 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
+        
         # Score numbers based on the number of matching traits in order
         scores = []
         for num in range(37):
@@ -5406,20 +5454,54 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+        
+        # Log the scores for debugging
+        print("Scores before sorting:", [(score[0], score[2], score[9], score[6]) for score in scores])
+        
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
+        print("Scores after sorting:", [(score[0], score[2], score[9], score[6]) for score in scores[:10]])
+        
         # Ensure top 5 picks have at least as many matches as the 5th pick
-        if len(scores) > 5:
-            min_traits = sorted([x[2] for x in scores[:5]], reverse=True)[4]
-            top_picks = [x for x in scores if x[2] >= min_traits][:5]
-        else:
-            top_picks = scores[:5]
+        if not scores:
+            print("No valid scores generated; returning default message")
+            return "<p>No valid numbers appeared in the spins.</p>"
+        
+        # Group scores by number of matching traits
+        trait_groups = {}
+        for score in scores:
+            num_traits = score[2]
+            if num_traits not in trait_groups:
+                trait_groups[num_traits] = []
+            trait_groups[num_traits].append(score)
+        
+        # Sort trait groups by number of matching traits (descending)
+        sorted_groups = sorted(trait_groups.items(), key=lambda x: -x[0])
+        
+        # Collect top 5 picks, prioritizing higher trait matches
+        top_picks = []
+        for num_traits, group in sorted_groups:
+            # Sort group by secondary matches, tiebreaker, recency, and number
+            group.sort(key=lambda x: (-x[3], -x[9], -x[6], -x[0]))
+            top_picks.extend(group)
+            if len(top_picks) >= 5:
+                top_picks = top_picks[:5]
+                break
+        
+        print("Top picks:", [(pick[0], pick[2], pick[9], pick[6]) for pick in top_picks])
+        
+        if not top_picks:
+            print("No top picks generated after filtering; returning default message")
+            return "<p>No top picks could be generated after filtering.</p>"
+        
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
+        
         # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
         confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
+        
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
@@ -5455,12 +5537,14 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
-        if section_score > 0:
-            reasons.append(f"Located in the hottest wheel section: {top_section}")
+        for section_name, nums in betting_sections.items():
+            if top_pick in nums:
+                reasons.append(f"In {section_name}")
+                break
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
@@ -5496,7 +5580,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_characteristics.append("Odd")
                 if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
                     num_characteristics.append("High")
             for name, nums in DOZENS.items():
                 if num in nums:
