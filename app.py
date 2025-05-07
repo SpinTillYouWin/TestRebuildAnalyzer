@@ -5215,6 +5215,8 @@ def select_next_spin_top_pick(last_spin_count):
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+        # Log the spins being analyzed
+        print(f"Analyzing last {last_spin_count} spins: {last_spins}")
         numbers = set(range(37))
         hit_counts = {n: 0 for n in range(37)}
         last_positions = {n: -1 for n in range(37)}
@@ -5406,7 +5408,12 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
-        top_picks = scores[:5]  # Expand to top 5 picks
+        # Ensure top 5 picks have at least as many matches as the 5th pick
+        if len(scores) > 5:
+            min_traits = sorted([x[2] for x in scores[:5]], reverse=True)[4]
+            top_picks = [x for x in scores if x[2] >= min_traits][:5]
+        else:
+            top_picks = scores[:5]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
         # Calculate confidence based on matching traits
@@ -5489,7 +5496,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_characteristics.append("Odd")
                 if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
                     num_characteristics.append("High")
             for name, nums in DOZENS.items():
                 if num in nums:
