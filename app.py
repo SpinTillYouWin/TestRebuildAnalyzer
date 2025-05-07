@@ -5233,13 +5233,16 @@ def select_next_spin_top_pick(last_spin_count):
             try:
                 num = int(spin)
                 if num < 0 or num > 36:
-                    print(f"Invalid spin value at index {i}: {spin}")
+                    print(f"Invalid spin value at index {i}: {spin} (must be between 0 and 36)")
                     continue
                 hit_counts[num] += 1
                 last_positions[num] = i
             except ValueError:
-                print(f"Invalid spin value at index {i}: {spin}")
+                print(f"Invalid spin value at index {i}: {spin} (cannot convert to integer)")
                 continue
+        
+        # Log hit counts for debugging
+        print(f"Hit counts after processing spins: {[(num, count) for num, count in hit_counts.items() if count > 0]}")
         
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
@@ -5438,7 +5441,8 @@ def select_next_spin_top_pick(last_spin_count):
         
         # Ensure top 5 picks have at least as many matches as the 5th pick
         if not scores:
-            raise ValueError("No valid scores generated; possibly no numbers appeared in the spins")
+            print("No valid scores generated; returning default message")
+            return "<p>No valid numbers appeared in the spins.</p>"
         if len(scores) > 5:
             min_traits = sorted([x[2] for x in scores[:5]], reverse=True)[4]
             print(f"Minimum traits for top 5: {min_traits}")
@@ -5448,7 +5452,8 @@ def select_next_spin_top_pick(last_spin_count):
         print("Top picks:", [(pick[0], pick[2], pick[9], pick[6]) for pick in top_picks])
         
         if not top_picks:
-            raise ValueError("No top picks generated after filtering")
+            print("No top picks generated after filtering; returning default message")
+            return "<p>No top picks could be generated after filtering.</p>"
         
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
