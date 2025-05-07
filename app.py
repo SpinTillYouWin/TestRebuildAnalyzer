@@ -5339,13 +5339,14 @@ def select_next_spin_top_pick(last_spin_count):
                 hit_bonus = 5 if hits > 0 else 0
                 neighbor_score = neighbor_boost[num]
                 total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-                # For the first pick, enforce it must match Black, Odd, Low and 1st Dozen
+                # For the first pick, enforce it must match Black, Odd, Low, 1st Dozen, and 1st Column
                 if current_iteration == 0:
-                    if even_money_matches == 3 and matches_top_dozen == 1:
+                    if even_money_matches == 3 and matches_top_dozen == 1 and matches_top_column == 1:
                         scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, matches_second_dozen, matches_second_column))
+                # For other picks, try to match Black, Odd, Low, 1st Dozen, 1st Column, else prioritize hottest
                 else:
                     scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, matches_second_dozen, matches_second_column))
-            scores.sort(key=lambda x: (-x[10], -x[11], -x[5], -x[1], -x[12], -x[13], -x[14], -x[6], -x[7], -x[8], -x[4], -x[3], -x[2], -x[9]))
+            scores.sort(key=lambda x: (-x[10], -x[11], -x[12], -x[5], -x[1], -x[13], -x[14], -x[6], -x[7], -x[8], -x[4], -x[3], -x[2], -x[9]))
             if scores:
                 top_picks.append(scores[0])
                 # Remove the first spin for the next iteration
