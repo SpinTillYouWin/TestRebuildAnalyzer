@@ -5311,7 +5311,7 @@ def select_next_spin_top_pick(last_spin_count):
                 even_money_matches = 0
                 for cat in dominant_even_money:
                     if num in EVEN_MONEY[cat]:
-                        even_money_score += 5  # Reduced from 10 to 5
+                        even_money_score += 15  # Increased to 15
                         even_money_matches += 1
                 dozen_column_score = 0
                 matches_top_dozen = 0
@@ -5319,21 +5319,21 @@ def select_next_spin_top_pick(last_spin_count):
                 matches_second_dozen = 0
                 matches_second_column = 0
                 if top_dozen and num in DOZENS[top_dozen]:
-                    dozen_column_score += 15
+                    dozen_column_score += 10  # Reduced to 10
                     matches_top_dozen = 1
                 elif second_best_dozen and num in DOZENS[second_best_dozen]:
-                    dozen_column_score += 10  # Bonus for second-best Dozen
+                    dozen_column_score += 5  # Reduced to 5
                     matches_second_dozen = 1
                 if top_column and num in COLUMNS[top_column]:
-                    dozen_column_score += 15
+                    dozen_column_score += 10  # Reduced to 10
                     matches_top_column = 1
                 elif second_best_column and num in COLUMNS[second_best_column]:
-                    dozen_column_score += 10  # Bonus for second-best Column
+                    dozen_column_score += 5  # Reduced to 5
                     matches_second_column = 1
                 wheel_side_score = 0
                 if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
                     wheel_side_score = 5
-                section_score = 10 if top_section and num in betting_sections[top_section] else 0
+                section_score = 5 if top_section and num in betting_sections[top_section] else 0  # Reduced to 5
                 recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
                 if last_positions[num] == last_spin_count - 1:
                     recency_score = max(recency_score, 10)
@@ -5341,7 +5341,7 @@ def select_next_spin_top_pick(last_spin_count):
                 neighbor_score = neighbor_boost[num]
                 total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
                 scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches, matches_top_dozen, matches_top_column, matches_second_dozen, matches_second_column))
-            scores.sort(key=lambda x: (-x[1], -x[10], -x[11], -x[12], -x[13], -x[14], -x[5], -x[6], -x[7], -x[8], -x[4], -x[3], -x[2], -x[9]))
+            scores.sort(key=lambda x: (-x[10], -x[5], -x[1], -x[11], -x[12], -x[13], -x[14], -x[6], -x[7], -x[8], -x[4], -x[3], -x[2], -x[9]))
             if scores:
                 top_picks.append(scores[0])
                 # Remove the first spin for the next iteration
@@ -5351,7 +5351,7 @@ def select_next_spin_top_pick(last_spin_count):
                 break
 
         # Calculate confidence for the final top pick
-        max_possible_score = 15 + 30 + 10 + 10 + 5 + 10  # Adjusted max score
+        max_possible_score = 45 + 20 + 5 + 10 + 5 + 10  # Adjusted max score
         top_score = top_picks[0][1] if top_picks else 0
         confidence = int((top_score / max_possible_score) * 100) if max_possible_score > 0 else 0
 
@@ -5432,7 +5432,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_characteristics.append("Odd")
                 if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
                     num_characteristics.append("High")
             for name, nums in DOZENS.items():
                 if num in nums:
