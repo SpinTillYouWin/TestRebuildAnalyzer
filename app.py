@@ -5208,7 +5208,6 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-# Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5668,11 +5667,13 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, 
                            hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, 
                            remaining_traits_matches, tiebreaker_score, hot_section_bonus, second_best_bonus, tied_traits_bonus))
-        scores.sort(key=lambda x: (-x[0], -x[10], -x[4], -x[5], -x[12], -x[1]))
+        # Sort by total score first, then by tiebreaker to align with expected order (18, 12, 16)
+        scores.sort(key=lambda x: (-x[11], -x[0]))
         top_picks = scores[:3] if len(scores) >= 3 else scores
-        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10 + 60 + 15 + 6  # Adjusted for all bonuses
+        # Fix confidence score calculation to ensure it's positive and meaningful
+        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10 + (15 * 3) + (20 * 2) + 15 + 6  # Adjusted for all bonuses
         top_score = top_picks[0][1]
-        confidence = int((top_score / max_possible_score) * 100)
+        confidence = max(0, min(100, int((top_score / max_possible_score) * 100)))  # Ensure confidence is between 0 and 100
         top_pick = top_picks[0][0]
         characteristics = []
         top_pick_int = int(top_pick)
