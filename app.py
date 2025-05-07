@@ -8174,32 +8174,32 @@ gr.HTML("""
         }
     </style>
     """)
-    print("CSS Updated")
-    
-    # Shepherd.js Tour Script
-    gr.HTML("""
-    <script>
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
-          buttons: [
-            { text: 'Back', action: function() { return this.back(); } },
-            { text: 'Next', action: function() { return this.next(); } },
-            { text: 'Skip', action: function() { return this.cancel(); } }
-          ]
-        },
-        useModalOverlay: true
-      });
-    
-      // Debug function to log step transitions
-      function logStep(stepId, nextStepId) {
-        return () => {
-          console.log(`Moving from ${stepId} to ${nextStepId}`);
-          tour.next();
-        };
-      }
+print("CSS Updated")
+
+# Shepherd.js Tour Script
+gr.HTML("""
+<script>
+  const tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      cancelIcon: { enabled: true },
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      classes: 'shepherd-theme-arrows',
+      buttons: [
+        { text: 'Back', action: function() { return this.back(); } },
+        { text: 'Next', action: function() { return this.next(); } },
+        { text: 'Skip', action: function() { return this.cancel(); } }
+      ]
+    },
+    useModalOverlay: true
+  });
+
+  // Debug function to log step transitions
+  function logStep(stepId, nextStepId) {
+    return () => {
+      console.log(`Moving from ${stepId} to ${nextStepId}`);
+      tour.next();
+    };
+  }
     
       // Force accordion open with direct DOM manipulation and Promise
       function forceAccordionOpen(accordionId) {
