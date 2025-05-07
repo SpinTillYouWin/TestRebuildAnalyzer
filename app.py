@@ -5255,7 +5255,7 @@ def select_next_spin_top_pick(last_spin_count):
         for trait, count in column_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
         # Sort traits by percentage (highest to lowest)
-        sorted_traits = sorted(trait_percentages.items(), key=lambda x: -x[1])
+        sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
         # Determine hottest traits (top non-conflicting traits)
         hottest_traits = []
         seen_categories = set()
@@ -5404,8 +5404,8 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
-        # Sort by number of matching traits, then secondary matches, then tiebreaker
-        scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[0]))
+        # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
+        scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
         top_picks = scores[:5]  # Expand to top 5 picks
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
