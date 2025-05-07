@@ -5408,12 +5408,12 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
-        # Ensure top 5 picks have at least as many matches as the 5th pick
-        if len(scores) > 5:
-            min_traits = sorted([x[2] for x in scores[:5]], reverse=True)[4]
-            top_picks = [x for x in scores if x[2] >= min_traits][:5]
+        # Ensure top 4 picks have at least as many matches as the 4th pick
+        if len(scores) > 4:
+            min_traits = sorted([x[2] for x in scores[:4]], reverse=True)[3]
+            top_picks = [x for x in scores if x[2] >= min_traits][:4]
         else:
-            top_picks = scores[:5]
+            top_picks = scores[:4]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
         # Calculate confidence based on matching traits
@@ -5480,7 +5480,7 @@ def select_next_spin_top_pick(last_spin_count):
             spin_color = colors.get(str(spin), "black")
             last_five_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
         top_5_html = ""
-        for i, (num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score) in enumerate(top_picks[1:5], 1):
+        for i, (num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score) in enumerate(top_picks[1:4], 1):
             num_color = colors.get(str(num), "black")
             num_characteristics = []
             if num == 0:
