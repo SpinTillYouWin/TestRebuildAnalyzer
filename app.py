@@ -5406,14 +5406,19 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+        # Log the scores for debugging
+        print("Scores before sorting:", [(score[0], score[2], score[9], score[6]) for score in scores])
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
+        print("Scores after sorting:", [(score[0], score[2], score[9], score[6]) for score in scores[:10]])
         # Ensure top 5 picks have at least as many matches as the 5th pick
         if len(scores) > 5:
             min_traits = sorted([x[2] for x in scores[:5]], reverse=True)[4]
+            print(f"Minimum traits for top 5: {min_traits}")
             top_picks = [x for x in scores if x[2] >= min_traits][:5]
         else:
             top_picks = scores[:5]
+        print("Top picks:", [(pick[0], pick[2], pick[9], pick[6]) for pick in top_picks])
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
         # Calculate confidence based on matching traits
@@ -5455,12 +5460,14 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
-        if section_score > 0:
-            reasons.append(f"Located in the hottest wheel section: {top_section}")
+        for section_name, nums in betting_sections.items():
+            if top_pick in nums:
+                reasons.append(f"In {section_name}")
+                break
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
@@ -5496,7 +5503,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_characteristics.append("Odd")
                 if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
                     num_characteristics.append("High")
             for name, nums in DOZENS.items():
                 if num in nums:
