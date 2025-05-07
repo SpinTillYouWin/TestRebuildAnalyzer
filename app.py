@@ -5469,42 +5469,34 @@ def select_next_spin_top_pick(last_spin_count):
           <h5>First 5 Spins</h5>
           <div class="first-spins-container">{first_spins_html}</div>
         </div>
-        <div class="accordion">
-          <input type="checkbox" id="top-pick-toggle" class="accordion-toggle" onchange="if(this.checked) triggerConfetti();">
-          <label for="top-pick-toggle" class="accordion-header">
-            Next Spin Top Pick 🎯
-          </label>
-          <div class="accordion-content">
-            <div class="top-pick-container">
-              <h4>Top Pick for Next Spin</h4>
-              <div class="top-pick-wrapper">
-                <div class="badge-wrapper">
-                  <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
-                </div>
-                <div class="top-pick-characteristics">
-                  {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
-                </div>
+        <div class="top-pick-container">
+          <h4>Top Pick for Next Spin</h4>
+          <div class="top-pick-wrapper">
+            <div class="badge-wrapper">
+              <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+            </div>
+            <div class="top-pick-characteristics">
+              {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill" style="width: {confidence}%"></div>
+            <span>Confidence: {confidence}%</span>
+          </div>
+          <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
+          <div class="accordion">
+            <input type="checkbox" id="reasons-toggle" class="accordion-toggle">
+            <label for="reasons-toggle" class="accordion-header">Why This Number Was Chosen</label>
+            <div class="accordion-content">
+              <div class="top-pick-reasons">
+                {reasons_html}
               </div>
-              <div class="confidence-bar">
-                <div class="confidence-fill" style="width: {confidence}%"></div>
-                <span>Confidence: {confidence}%</span>
-              </div>
-              <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
-              <div class="accordion">
-                <input type="checkbox" id="reasons-toggle" class="accordion-toggle">
-                <label for="reasons-toggle" class="accordion-header">Why This Number Was Chosen</label>
-                <div class="accordion-content">
-                  <div class="top-pick-reasons">
-                    {reasons_html}
-                  </div>
-                </div>
-              </div>
-              <div class="secondary-picks">
-                <h5>Other Top Picks</h5>
-                <div class="secondary-picks-container">
-                  {top_3_html}
-                </div>
-              </div>
+            </div>
+          </div>
+          <div class="secondary-picks">
+            <h5>Other Top Picks</h5>
+            <div class="secondary-picks-container">
+              {top_3_html}
             </div>
           </div>
         </div>
