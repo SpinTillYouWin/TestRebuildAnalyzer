@@ -5471,7 +5471,7 @@ def select_next_spin_top_pick(last_spin_count):
         <div class="accordion">
           <input type="checkbox" id="top-pick-toggle" class="accordion-toggle" onchange="if(this.checked) triggerConfetti();">
           <label for="top-pick-toggle" class="accordion-header">
-            <span class="chip-icon">🎰</span> Next Spin Top Pick 🎯
+            Next Spin Top Pick 🎯
           </label>
           <div class="accordion-content">
             <div class="top-pick-container">
