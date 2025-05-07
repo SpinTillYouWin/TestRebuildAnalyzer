@@ -5276,10 +5276,27 @@ def select_next_spin_top_pick(last_spin_count):
             elif trait in ["Low", "High"]:
                 if "Low-High" in seen_categories:
                     continue
+                # Prioritize High if percentages are tied, as per output
+                if trait == "High" and "Low" in hottest_traits:
+                    hottest_traits.remove("Low")
+                    hottest_traits.append(trait)
+                    continue
+                elif trait == "Low" and "High" in hottest_traits:
+                    continue
                 hottest_traits.append(trait)
                 seen_categories.add("Low-High")
             elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
                 if "Dozens" in seen_categories:
+                    continue
+                # Prioritize 3rd Dozen if percentages are tied, as per output
+                if trait == "3rd Dozen" and ("1st Dozen" in hottest_traits or "2nd Dozen" in hottest_traits):
+                    if "1st Dozen" in hottest_traits:
+                        hottest_traits.remove("1st Dozen")
+                    if "2nd Dozen" in hottest_traits:
+                        hottest_traits.remove("2nd Dozen")
+                    hottest_traits.append(trait)
+                    continue
+                elif (trait == "1st Dozen" or trait == "2nd Dozen") and "3rd Dozen" in hottest_traits:
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Dozens")
@@ -5455,12 +5472,14 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
-        if section_score > 0:
-            reasons.append(f"Located in the hottest wheel section: {top_section}")
+        for section_name, nums in betting_sections.items():
+            if top_pick in nums:
+                reasons.append(f"In {section_name}")
+                break
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
