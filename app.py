@@ -5209,6 +5209,7 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
+# Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5647,7 +5648,7 @@ def select_next_spin_top_pick(last_spin_count):
             justify-content: center;
           }}
           .char-badge {{
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 213, 0, 0.9);
             color: #FFD700;
             font-weight: bold;
             font-size: 14px;
