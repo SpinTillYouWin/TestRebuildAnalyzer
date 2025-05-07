@@ -5408,10 +5408,16 @@ def cache_analysis(spins, last_spin_count):
     if not spins_list and isinstance(spins, str) and spins.strip():
         spins_list = [s.strip() for s in spins.split(",") if s.strip()]
     
+    # Validate spins_list to prevent hashing errors
+    if not all(isinstance(s, str) and s.isdigit() for s in spins_list):
+        if DEBUG:
+            print("cache_analysis: Invalid spins_list, skipping cache")
+        return summarize_spin_traits(last_spin_count)
+    
     cache_key = f"{last_spin_count}_{hash(tuple(spins_list))}"
     if cache_key in state.analysis_cache:
         if DEBUG:
-            print(f"cache_analysis: Cache hit for key {cache_key}")
+            print(f"cache_analysis: Cache hit for key {cache_key}, returning cached result")
         return state.analysis_cache[cache_key]
     
     # Limit cache size
@@ -5420,17 +5426,15 @@ def cache_analysis(spins, last_spin_count):
         oldest_key = next(iter(state.analysis_cache))
         del state.analysis_cache[oldest_key]
         if DEBUG:
-            print(f"cache_analysis: Removed oldest cache entry {oldest_key}")
+            print(f"cache_analysis: Removed oldest cache entry {oldest_key} due to size limit")
     
     # Perform analysis
     result = summarize_spin_traits(last_spin_count)
     state.analysis_cache[cache_key] = result
     if DEBUG:
-        print(f"cache_analysis: Cached result for key {cache_key}")
+        print(f"cache_analysis: Cached new result for key {cache_key}")
     return result
 
-
-# Line 1: Start of updated select_next_spin_top_pick function
 # Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
@@ -5439,6 +5443,8 @@ def select_next_spin_top_pick(last_spin_count):
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+        
+        # Initialize tracking dictionaries
         numbers = set(range(37))
         hit_counts = {n: 0 for n in range(37)}
         last_positions = {n: -1 for n in range(37)}
@@ -5449,6 +5455,8 @@ def select_next_spin_top_pick(last_spin_count):
                 last_positions[num] = i
             except ValueError:
                 continue
+        
+        # Calculate counts for even money, columns, and dozens
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5466,8 +5474,12 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 continue
+        
+        # Determine dominant even money bets
         sorted_even_money = sorted(even_money_counts.items(), key=lambda x: x[1], reverse=True)[:3]
         dominant_even_money = {name for name, _ in sorted_even_money}
+        
+        # Calculate dozen and column rankings
         dozen_last_pos = {"1st Dozen": -1, "2nd Dozen": -1, "3rd Dozen": -1}
         for name, nums in DOZENS.items():
             for num in nums:
@@ -5476,11 +5488,15 @@ def select_next_spin_top_pick(last_spin_count):
         sorted_dozens = sorted(dozen_counts.items(), key=lambda x: (-x[1], -dozen_last_pos[x[0]]))
         top_dozen = sorted_dozens[0][0] if sorted_dozens else None
         top_column = max(column_counts.items(), key=lambda x: x[1])[0] if column_counts else None
+        
+        # Wheel side analysis
         left_side = set(LEFT_OF_ZERO_EUROPEAN)
         right_side = set(RIGHT_OF_ZERO_EUROPEAN)
         left_hits = sum(hit_counts[num] for num in left_side)
         right_hits = sum(hit_counts[num] for num in right_side)
         most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
+        
+        # Betting sections analysis
         betting_sections = {
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
@@ -5494,6 +5510,8 @@ def select_next_spin_top_pick(last_spin_count):
                     section_last_pos[name] = last_positions[num]
         sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
         top_section = sorted_sections[0][0] if sorted_sections else None
+        
+        # Neighbor boost for recent spins
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5504,43 +5522,53 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
+        
+        # Scoring for each number
         scores = []
         for num in range(37):
             hits = hit_counts[num]
-            even_money_score = 0
-            even_money_matches = 0
-            for cat in dominant_even_money:
-                if num in EVEN_MONEY[cat]:
-                    even_money_score += 10
-                    even_money_matches += 1
+            even_money_score = sum(10 for cat in dominant_even_money if num in EVEN_MONEY[cat])
+            even_money_matches = sum(1 for cat in dominant_even_money if num in EVEN_MONEY[cat])
+            
             dozen_column_score = 0
             if top_dozen and num in DOZENS[top_dozen]:
                 dozen_column_score += 15
             if top_column and num in COLUMNS[top_column]:
                 dozen_column_score += 15
-            wheel_side_score = 0
-            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
+            
+            wheel_side_score = 5 if (most_hit_side == "Both" or 
+                                    (most_hit_side == "Left" and num in left_side) or 
+                                    (most_hit_side == "Right" and num in right_side)) else 0
+            
             section_score = 10 if top_section and num in betting_sections[top_section] else 0
             recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
             if last_positions[num] == last_spin_count - 1:
                 recency_score = max(recency_score, 10)
+            
             hit_bonus = 5 if hits > 0 else 0
             neighbor_score = neighbor_boost[num]
-            total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches))
+            
+            # Boost for Magic Roundabout TMR (18 Numbers) strategy
+            strategy_boost = 0
+            if getattr(state, 'strategy_name', None) == "Magic Roundabout TMR (18 Numbers)" and num in state.magic_numbers:
+                strategy_boost = 20  # Significant boost for tracked numbers
+            
+            total_score = (even_money_score + dozen_column_score + section_score + 
+                          recency_score + hit_bonus + wheel_side_score + neighbor_score + strategy_boost)
+            
+            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, 
+                          recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches))
+        
+        # Sort scores for top picks
         scores.sort(key=lambda x: (-x[1], -x[10], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
-        # Get top 3 picks (top pick + next 2)
         top_picks = scores[:3]
         state.current_top_pick = top_picks[0][0]
-        # Determine the top pick's matches with dominant even money traits
+        
+        # Recalculate with tiebreaker for dominant traits
         top_pick = top_picks[0][0]
-        top_pick_matches = set()
-        for cat in dominant_even_money:
-            if top_pick in EVEN_MONEY[cat]:
-                top_pick_matches.add(cat)
+        top_pick_matches = {cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]}
         remaining_dominant_traits = dominant_even_money - top_pick_matches
-        # Recalculate scores with new tiebreaker prioritizing top pick's matches
+        
         scores = []
         for num in range(37):
             hits = hit_counts[num]
@@ -5554,28 +5582,45 @@ def select_next_spin_top_pick(last_spin_count):
                         top_pick_traits_matches += 1
                     if cat in remaining_dominant_traits:
                         remaining_traits_matches += 1
+            
             dozen_column_score = 0
             if top_dozen and num in DOZENS[top_dozen]:
                 dozen_column_score += 15
             if top_column and num in COLUMNS[top_column]:
                 dozen_column_score += 15
-            wheel_side_score = 0
-            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
+            
+            wheel_side_score = 5 if (most_hit_side == "Both" or 
+                                    (most_hit_side == "Left" and num in left_side) or 
+                                    (most_hit_side == "Right" and num in right_side)) else 0
+            
             section_score = 10 if top_section and num in betting_sections[top_section] else 0
             recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
             if last_positions[num] == last_spin_count - 1:
                 recency_score = max(recency_score, 10)
+            
             hit_bonus = 5 if hits > 0 else 0
             neighbor_score = neighbor_boost[num]
-            total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
-            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches))
+            
+            # Apply strategy boost again
+            strategy_boost = 0
+            if getattr(state, 'strategy_name', None) == "Magic Roundabout TMR (18 Numbers)" and num in state.magic_numbers:
+                strategy_boost = 20
+            
+            total_score = (even_money_score + dozen_column_score + section_score + 
+                          recency_score + hit_bonus + wheel_side_score + neighbor_score + strategy_boost)
+            
+            scores.append((num, total_score, even_money_score, dozen_column_score, section_score, 
+                          recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, 
+                          top_pick_traits_matches, remaining_traits_matches))
+        
         scores.sort(key=lambda x: (-x[1], -x[10], -x[11], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
         top_picks = scores[:3]
-        # Calculate confidence (top score as a percentage of max possible score)
-        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10  # Even Money (3×10) + Dozen/Column (2×15) + Section (10) + Recency (10) + Hit Bonus (5) + Neighbors (2×5)
+        
+        # Calculate confidence
+        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10 + 20  # Adjusted for strategy_boost
         top_score = top_picks[0][1]
         confidence = int((top_score / max_possible_score) * 100)
+        
         # Prepare top pick output
         top_pick = top_picks[0][0]
         characteristics = []
@@ -5605,9 +5650,9 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
-        # Extract scores for the top pick
-        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches = top_picks[0]
+        
         # Generate reasons for top pick
+        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches = top_picks[0]
         reasons = []
         if even_money_score > 0:
             matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
@@ -5630,14 +5675,15 @@ def select_next_spin_top_pick(last_spin_count):
         if neighbor_score > 0:
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
+        if getattr(state, 'strategy_name', None) == "Magic Roundabout TMR (18 Numbers)" and top_pick in state.magic_numbers:
+            reasons.append("Prioritized by the Magic Roundabout TMR (18 Numbers) strategy")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
-        # Prepare first 5 spins display (oldest spins in newest-first order)
+        
+        # Prepare first 5 spins display
         first_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        first_spins_html = ""
-        for spin in first_spins:
-            spin_color = colors.get(str(spin), "black")
-            first_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
-        # Prepare top 3 picks output (excluding the top pick, so indices 1 and 2)
+        first_spins_html = "".join(f'<span class="first-spin {colors.get(str(spin), "black")}">{spin}</span>' for spin in first_spins)
+        
+        # Prepare top 3 picks output (excluding the top pick)
         top_3_html = ""
         for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches) in enumerate(top_picks[1:3], 1):
             num_color = colors.get(str(num), "black")
@@ -5686,7 +5732,9 @@ def select_next_spin_top_pick(last_spin_count):
               </div>
             </div>
             '''
-        html = f'''
+        
+        # Construct the final HTML
+        html_content = f'''
         <div class="first-spins">
           <h5>First 5 Spins</h5>
           <div class="first-spins-container">{first_spins_html}</div>
@@ -5722,299 +5770,7 @@ def select_next_spin_top_pick(last_spin_count):
             </div>
           </div>
         </div>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-          @keyframes fadeIn {{
-            from {{ opacity: 0; }}
-            to {{ opacity: 1; }}
-          }}
-          @keyframes confetti {{
-            0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
-            100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
-          }}
-          .first-spins {{
-            margin-bottom: 10px;
-            text-align: center;
-          }}
-          .first-spins h5 {{
-            margin: 0 0 5px 0;
-            color: #FFD700;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            text-transform: uppercase;
-          }}
-          .first-spins-container {{
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-          }}
-          .first-spin {{
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffffff !important;
-            border: 1px solid #ffffff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-          }}
-          .first-spin.red {{ background-color: red; }}
-          .first-spin.black {{ background-color: black; }}
-          .first-spin.green {{ background-color: green; }}
-          .accordion {{
-            margin: 10px 0;
-            border: 1px solid #FFD700;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #2E8B57, #FFD700);
-            transition: all 0.3s ease;
-          }}
-          .accordion-toggle {{
-            display: none;
-          }}
-          .accordion-header {{
-            padding: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #FFD700;
-            cursor: pointer;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Montserrat', sans-serif;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: inherit;
-          }}
-          .chip-icon {{
-            font-size: 20px;
-          }}
-          .accordion-header:hover {{
-            background-color: rgba(255, 255, 255, 0.2);
-          }}
-          .accordion-content {{
-            display: none !important;
-            animation: fadeIn 0.5s ease-in-out;
-          }}
-          .accordion-toggle:checked + .accordion-header + .accordion-content {{
-            display: block !important;
-          }}
-          .top-pick-container {{
-            background: linear-gradient(135deg, #2E8B57, #FFD700);
-            border: 3px solid #FFD700;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-            margin: 10px 0;
-          }}
-          .top-pick-container h4 {{
-            margin: 0 0 15px 0;
-            color: #FFD700;
-            font-size: 24px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-family: 'Montserrat', sans-serif;
-          }}
-          .top-pick-wrapper {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-          }}
-          .badge-wrapper {{
-            display: flex;
-            align-items: center;
-            gap: 10px;
-          }}
-          .top-pick-badge {{
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 28px;
-            color: #ffffff !important;
-            background-color: {color};
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-            position: relative;
-          }}
-          .top-pick-badge:hover {{
-            transform: rotate(360deg) scale(1.2);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-          }}
-          .top-pick-badge.red {{ background-color: red; }}
-          .top-pick-badge.black {{ background-color: black; }}
-          .top-pick-badge.green {{ background-color: green; }}
-          .top-pick-characteristics {{
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            justify-content: center;
-          }}
-          .char-badge {{
-            background-color: rgba(255, 213, 0, 0.9);
-            color: #FFD700;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-          }}
-          .char-badge.red {{ background-color: #FF0000; color: #ffffff; }}
-          .char-badge.black {{ background-color: #000000; color: #ffffff; }}
-          .char-badge.even {{ background-color: #4682B4; color: #ffffff; }}
-          .char-badge.odd {{ background-color: #4682B4; color: #ffffff; }}
-          .char-badge.low {{ background-color: #32CD32; color: #ffffff; }}
-          .char-badge.high {{ background-color: #32CD32; color: #ffffff; }}
-          .confidence-bar {{
-            margin-top: 10px;
-            background-color: #2E8B57;
-            border-radius: 5px;
-            height: 20px;
-            position: relative;
-            overflow: hidden;
-          }}
-          .confidence-fill {{
-            height: 100%;
-            background-color: #FFD700;
-            transition: width 1s ease;
-          }}
-          .confidence-bar span {{
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #2E8B57;
-            font-size: 12px;
-            font-weight: bold;
-          }}
-          .top-pick-description {{
-            margin-top: 15px;
-            font-style: italic;
-            color: #3e2723;
-            font-size: 14px;
-          }}
-          .top-pick-reasons {{
-            padding: 10px;
-            color: #3e2723;
-            font-size: 14px;
-          }}
-          .top-pick-reasons ul {{
-            list-style-type: disc;
-            padding-left: 20px;
-            margin: 0;
-          }}
-          .top-pick-reasons li {{
-            margin-bottom: 5px;
-          }}
-          .secondary-picks {{
-            margin-top: 20px;
-            text-align: center;
-          }}
-          .secondary-picks h5 {{
-            margin: 0 0 10px 0;
-            color: #FFD700;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            text-transform: uppercase;
-          }}
-          .secondary-picks-container {{
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-          }}
-          .secondary-pick {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-          }}
-          .secondary-badge {{
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 28px;
-            color: #ffffff !important;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-            position: relative;
-            transition: transform 0.3s ease;
-          }}
-          .secondary-badge:hover {{
-            transform: rotate(360deg) scale(1.2);
-          }}
-          .secondary-badge.red {{ background-color: red; }}
-          .secondary-badge.black {{ background-color: black; }}
-          .secondary-badge.green {{ background-color: green; }}
-          .secondary-info {{
-            text-align: center;
-          }}
-          .secondary-characteristics {{
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            justify-content: center;
-          }}
-          .secondary-reasons {{
-            font-size: 10px;
-            color: #3e2723;
-            font-style: italic;
-          }}
-          .celebration {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1000;
-          }}
-          .confetti {{
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #FFD700;
-            animation: confetti 2s ease infinite;
-          }}
-          @media (max-width: 600px) {{
-            .top-pick-badge {{
-              width: 50px;
-              height: 50px;
-              font-size: 24px;
-            }}
-            .first-spin {{
-              width: 25px;
-              height: 25px;
-              font-size: 14px;
-            }}
-            .secondary-badge {{
-              width: 40px;
-              height: 40px;
-              font-size: 20px;
-            }}
-            .top-pick-container h4 {{
-              font-size: 20px;
-            }}
-            .accordion-header {{
-              font-size: 16px;
-            }}
-          }}
-        </style>
+        <div class="celebration"></div>
         <script>
           function triggerConfetti() {{
             const celebration = document.querySelector('.celebration');
@@ -6034,12 +5790,16 @@ def select_next_spin_top_pick(last_spin_count):
               console.error('Failed to copy: ', err);
             }});
           }}
+          window.onload = triggerConfetti;
         </script>
         '''
-        return html
+
+        return html_content
+    
     except Exception as e:
-        print(f"select_next_spin_top_pick: Error: {str(e)}")
-        return "<p>Error selecting top pick.</p>"
+        if DEBUG:
+            print(f"select_next_spin_top_pick: Error: {str(e)} - Last spins: {state.last_spins}, Last spin count: {last_spin_count}")
+        return "<p>Error selecting top pick. Please check the input data and try again.</p>"
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -6152,15 +5912,19 @@ STRATEGIES = {
 def show_strategy_recommendations(strategy_name, neighbours_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
-        print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
-        print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
-        print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
-        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, args = {args}")
+        if DEBUG:
+            print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
+            print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
+            print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
+            print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, args = {args}")
 
         if strategy_name == "None":
             return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
         
-        # If no spins yet, provide a default for "Best Even Money Bets"
+        # Store the active strategy in state
+        state.strategy_name = strategy_name
+        
+        # Default for "Best Even Money Bets" with no spins
         if not any(state.scores.values()) and not any(state.even_money_scores.values()):
             if strategy_name == "Best Even Money Bets":
                 return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
@@ -6172,35 +5936,43 @@ def show_strategy_recommendations(strategy_name, neighbours_count, *args):
         if strategy_name == "Neighbours of Strong Number":
             try:
                 neighbours_count = int(neighbours_count)
-                strong_numbers_count = int(args[0]) if args else 1  # Assuming strong_numbers_count is first in args
-                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
+                strong_numbers_count = int(args[0]) if args else 1
+                if DEBUG:
+                    print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
             except (ValueError, TypeError) as e:
-                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
+                if DEBUG:
+                    print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
                 neighbours_count = 2
                 strong_numbers_count = 1
             result = strategy_func(neighbours_count, strong_numbers_count)
-            # Handle the tuple return value for Neighbours of Strong Number
             if isinstance(result, tuple) and len(result) == 2:
-                recommendations, _ = result  # We only need the recommendations string for display
+                recommendations, _ = result
             else:
                 recommendations = result
         elif strategy_name == "Dozen Tracker":
-            # Dozen Tracker expects multiple arguments and returns a tuple
             result = strategy_func(*args)
             if isinstance(result, tuple) and len(result) == 3:
-                recommendations, _, _ = result  # Unpack the tuple, we only need the first element
+                recommendations, _, _ = result
             else:
                 recommendations = result
+        elif strategy_name == "Magic Roundabout TMR (18 Numbers)":
+            result = strategy_func()
+            recommendations = result
+            # Update state.magic_numbers based on the strategy's recommendations
+            # Assuming the strategy_func returns a string with numbers, parse them
+            if "Numbers to bet:" in recommendations:
+                numbers_part = recommendations.split("Numbers to bet:")[1].strip()
+                numbers = [int(n.strip()) for n in numbers_part.split(",") if n.strip().isdigit()]
+                state.magic_numbers = numbers[:18]  # Ensure exactly 18 numbers
         else:
-            # Other strategies return a single string
             recommendations = strategy_func()
 
-        print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
+        if DEBUG:
+            print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
 
-        # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
+        # Format the output as HTML
         if strategy_name == "Top Numbers with Neighbours (Tiered)":
             return recommendations
-        # Special handling for "Neighbours of Strong Number" to format Suggestions section
         elif strategy_name == "Neighbours of Strong Number":
             lines = recommendations.split("\n")
             html_lines = []
@@ -6217,17 +5989,15 @@ def show_strategy_recommendations(strategy_name, neighbours_count, *args):
                 else:
                     html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
             return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
-        # Otherwise, convert plain text to HTML with proper line breaks
         else:
-            # Split the output into lines, removing any empty lines
             lines = [line for line in recommendations.split("\n") if line.strip()]
-            # Wrap each line in <p> tags and join with <br> for proper spacing
             html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
             return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
 
     except Exception as e:
-        print(f"show_strategy_recommendations: Error: {str(e)}")
-        raise  # Re-raise for debugging
+        if DEBUG:
+            print(f"show_strategy_recommendations: Error: {str(e)}")
+        return "<p>Error generating strategy recommendations. Please try again.</p>"
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
