@@ -5401,6 +5401,77 @@ def summarize_spin_traits(last_spin_count):
             print(f"summarize_spin_traits: Caught exception: {str(e)}")
         raise  # Re-raise to see the full stack trace in logs
         return "<p>Error analyzing spin traits.</p>"
+# Add summarize_spin_traits here
+
+def summarize_spin_traits(last_spin_count):
+    """Summarize the traits of the last spins."""
+    try:
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        if not last_spins:
+            return "<p>No spins available for trait analysis.</p>"
+        
+        # Count occurrences of traits
+        even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+        column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+        dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        repeat_numbers = {}
+        
+        for spin in last_spins:
+            try:
+                num = int(spin)
+                for name, nums in EVEN_MONEY.items():
+                    if num in nums:
+                        even_money_counts[name] += 1
+                for name, nums in COLUMNS.items():
+                    if num in nums:
+                        column_counts[name] += 1
+                for name, nums in DOZENS.items():
+                    if num in nums:
+                        dozen_counts[name] += 1
+                repeat_numbers[num] = repeat_numbers.get(num, 0) + 1
+            except ValueError:
+                continue
+        
+        # Format the output
+        html = '<div class="traits-wrapper">'
+        
+        # Even Money Bets
+        html += '<div class="badge-group"><h4>Even Money Bets</h4><div class="percentage-badges">'
+        for name, count in even_money_counts.items():
+            if count > 0:
+                percentage = (count / len(last_spins)) * 100
+                html += f'<span class="trait-badge even-money">{name}: {percentage:.1f}%</span>'
+        html += '</div></div>'
+        
+        # Columns
+        html += '<div class="badge-group"><h4>Columns</h4><div class="percentage-badges">'
+        for name, count in column_counts.items():
+            if count > 0:
+                percentage = (count / len(last_spins)) * 100
+                html += f'<span class="trait-badge column">{name}: {percentage:.1f}%</span>'
+        html += '</div></div>'
+        
+        # Dozens
+        html += '<div class="badge-group"><h4>Dozens</h4><div class="percentage-badges">'
+        for name, count in dozen_counts.items():
+            if count > 0:
+                percentage = (count / len(last_spins)) * 100
+                html += f'<span class="trait-badge dozen">{name}: {percentage:.1f}%</span>'
+        html += '</div></div>'
+        
+        # Repeat Numbers
+        html += '<div class="badge-group"><h4>Repeat Numbers</h4><div class="percentage-badges">'
+        for num, count in repeat_numbers.items():
+            if count > 1:
+                html += f'<span class="trait-badge repeat">{num}: {count} times</span>'
+        html += '</div></div>'
+        
+        html += '</div>'
+        return html
+    except Exception as e:
+        if DEBUG:
+            print(f"summarize_spin_traits: Error: {str(e)}")
+        return "<p>Error summarizing spin traits.</p>"
 
 def cache_analysis(spins, last_spin_count):
     """Cache the results of summarize_spin_traits to avoid redundant calculations."""
@@ -5877,6 +5948,23 @@ def suggest_hot_cold_numbers():
     except Exception as e:
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", "<p>Error generating suggestions.</p>"
+# Add mocked strategy functions here
+def magic_roundabout_tmr_18_numbers():
+    """Mock implementation for Magic Roundabout TMR (18 Numbers) strategy."""
+    try:
+        # Use scores to determine the top 18 numbers
+        sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+        top_numbers = [int(num) for num, score in sorted_scores[:18] if score > 0]
+        if not top_numbers:
+            # Fallback: select 18 random numbers
+            import random
+            top_numbers = random.sample(range(1, 37), 18)
+        state.magic_numbers = top_numbers
+        return f"Magic Roundabout TMR (18 Numbers) Strategy:\nNumbers to bet: {', '.join(map(str, top_numbers))}"
+    except Exception as e:
+        if DEBUG:
+            print(f"magic_roundabout_tmr_18_numbers: Error: {str(e)}")
+        return "Error in Magic Roundabout TMR (18 Numbers) strategy."
 
 STRATEGIES = {
     "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -5998,6 +6086,169 @@ def show_strategy_recommendations(strategy_name, neighbours_count, *args):
         if DEBUG:
             print(f"show_strategy_recommendations: Error: {str(e)}")
         return "<p>Error generating strategy recommendations. Please try again.</p>"
+
+# Add mocked missing functions here
+def render_sides_of_zero_display():
+    return "<p>Sides of Zero: Left - 0 hits, Right - 0 hits</p>"
+
+def calculate_hit_percentages(last_spin_count):
+    return "<p>Hit Percentages: Even - 0%, Odd - 0%</p>"
+
+def add_spin(num, spins_display, last_spin_count):
+    state.last_spins.append(num)
+    spins_display = ", ".join(state.last_spins)
+    return spins_display, spins_display, format_spins_as_html(spins_display, last_spin_count), update_spin_counter(), render_sides_of_zero_display()
+
+def format_spins_as_html(spins_display, last_spin_count, show_trends=True):
+    spins = spins_display.split(", ") if spins_display else []
+    spins = spins[-last_spin_count:] if last_spin_count else spins
+    html = "<h4>Last Spins</h4>"
+    if not spins:
+        return html + "<p>No spins yet.</p>"
+    html += '<div class="spins-container">'
+    for spin in spins:
+        color = colors.get(spin, "black")
+        html += f'<span class="spin {color}">{spin}</span>'
+    html += '</div>'
+    return html
+
+def update_spin_counter():
+    return f'<span class="spin-counter">Total Spins: {len(state.last_spins)}</span>'
+
+def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins="5", top_color="rgba(255, 255, 0, 0.5)", middle_color="rgba(0, 255, 255, 0.5)", lower_color="rgba(0, 255, 0, 0.5)", number_count=18):
+    return "<p>Dynamic Table: Showing highlighted numbers based on strategy.</p>"
+
+def validate_spins_input(spins_textbox):
+    spins = [s.strip() for s in spins_textbox.split(",") if s.strip().isdigit() and 0 <= int(s.strip()) <= 36]
+    state.last_spins = spins
+    spins_display = ", ".join(spins)
+    return spins_display, format_spins_as_html(spins_display, 36)
+
+def analyze_spins(spins_display, strategy, neighbours_count, strong_numbers_count, *args):
+    # Mock analysis: update scores
+    for num in range(37):
+        state.scores[num] = random.randint(0, 10)
+    for category in state.even_money_scores:
+        state.even_money_scores[category] = random.randint(0, 5)
+    return ("Analysis complete", "Even Money: Red - 5", "Dozens: 1st - 3", "Columns: 1st - 2",
+            "Streets: 1-3 - 1", "Corners: 1-4 - 1", "Double Streets: 1-6 - 1", "Splits: 1-2 - 1",
+            "Sides: Left - 2", "<p>Strongest Numbers: 1, 2, 3</p>", "<p>Top 18: 1 to 18</p>",
+            "Strongest Numbers: 1, 2, 3", create_dynamic_table(strategy), show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count), render_sides_of_zero_display())
+
+def clear_spins():
+    state.last_spins = []
+    state.scores = {n: 0 for n in range(37)}
+    state.even_money_scores = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+    return "", "", "", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
+
+def clear_all():
+    state.last_spins = []
+    state.scores = {n: 0 for n in range(37)}
+    state.even_money_scores = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+    return ("", "", "", "<h4>Last Spins</h4><p>No spins yet.</p>", "", "", "", "", "", "", "", "", "", "", "", update_spin_counter(), render_sides_of_zero_display())
+
+def generate_random_spins(count, spins_display, last_spin_count):
+    import random
+    new_spins = [str(random.randint(0, 36)) for _ in range(int(count))]
+    state.last_spins.extend(new_spins)
+    spins_display = ", ".join(state.last_spins)
+    return spins_display, spins_display, "Random spins generated", update_spin_counter(), render_sides_of_zero_display()
+
+def reset_strategy_dropdowns():
+    return "Even Money Strategies", "Best Even Money Bets", "Best Even Money Bets"
+
+def dozen_tracker(spins_to_track, consecutive_hits, alert_checkbox, sequence_length, follow_up_spins, sequence_alert_checkbox):
+    return "", "<p>Dozen Tracker: Tracking...</p>", "<p>Sequence Matching: No matches yet.</p>"
+
+def even_money_tracker(*args):
+    return "", "<p>Even Money Tracker: Tracking...</p>"
+
+def update_casino_data(*args):
+    return "<p>Casino Data Updated</p>"
+
+def create_color_code_table():
+    return "<p>Color Code Key: Top - Yellow, Middle - Cyan, Lower - Green</p>"
+
+def save_session():
+    import json
+    session_data = {"last_spins": state.last_spins, "scores": state.scores}
+    return json.dumps(session_data)
+
+def load_session(file, strategy, neighbours_count, strong_numbers_count):
+    import json
+    session_data = json.loads(file.read().decode('utf-8'))
+    state.last_spins = session_data.get("last_spins", [])
+    state.scores = session_data.get("scores", {n: 0 for n in range(37)})
+    spins_display = ", ".join(state.last_spins)
+    return (spins_display, spins_display, "Session loaded", "", "", "", "", "", "", "", "", "", "", "", create_dynamic_table(strategy), show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count))
+
+def undo_last_spin(spins_display, count, strategy, neighbours_count, strong_numbers_count):
+    if state.last_spins:
+        state.last_spins = state.last_spins[:-int(count)]
+    spins_display = ", ".join(state.last_spins)
+    return ("Undo complete", "", "", "", "", "", "", "", "", "", "", "", spins_display, spins_display, create_dynamic_table(strategy), show_strategy_recommendations(strategy, neighbours_count, strong_numbers_count), create_color_code_table(), update_spin_counter(), render_sides_of_zero_display())
+
+def play_specific_numbers(numbers_input, type_, spins_display, last_spin_count):
+    numbers = [n.strip() for n in numbers_input.split(",") if n.strip().isdigit()]
+    state.last_spins.extend(numbers)
+    spins_display = ", ".join(state.last_spins)
+    return spins_display, spins_display, f"Played {type_} numbers", update_spin_counter(), render_sides_of_zero_display()
+
+def clear_hot_cold_picks(type_, spins_display):
+    return "", "<p>Cleared picks</p>", update_spin_counter(), render_sides_of_zero_display(), spins_display
+
+# Add progression methods to State class
+def reset_progression(self):
+    self.bankroll = self.initial_bankroll
+    self.current_bet = self.base_unit
+    self.next_bet = self.base_unit
+    self.message = f"Start with base bet of {self.current_bet} on {self.bet_type} ({self.progression})"
+    self.status = "Active"
+    self.status_color = "white"
+
+def update_progression(self, win):
+    if self.progression == "Martingale":
+        if win:
+            self.bankroll += self.current_bet * (2 if self.bet_type == "Even Money" else 35)
+            self.current_bet = self.base_unit
+            self.message = f"Win! Resetting to base bet of {self.current_bet}."
+        else:
+            self.bankroll -= self.current_bet
+            self.current_bet *= 2
+            self.message = f"Loss. Doubling bet to {self.current_bet}."
+        self.next_bet = self.current_bet
+    elif self.progression == "Magic Roundabout TMR (18 Numbers)":
+        if win:
+            self.bankroll += self.current_bet * 35 / self.number_count
+            self.loss_count = 0
+            self.bet_multiplier = 1
+            self.message = f"Win! Resetting bet multiplier."
+        else:
+            self.bankroll -= self.current_bet
+            self.loss_count += 1
+            self.bet_multiplier = min(self.bet_multiplier + 0.5, 5)
+            self.message = f"Loss. Increasing bet multiplier to {self.bet_multiplier}."
+        self.current_bet = self.base_unit * self.number_count * self.bet_multiplier
+        self.next_bet = self.current_bet
+    else:
+        self.message = "Progression not implemented."
+    
+    if self.bankroll <= self.stop_loss:
+        self.status = "Stop Loss Reached"
+        self.status_color = "red"
+    elif self.bankroll >= self.initial_bankroll + self.stop_win:
+        self.status = "Stop Win Reached"
+        self.status_color = "green"
+    else:
+        self.status = "Active"
+        self.status_color = "white"
+    
+    return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+
+# Attach methods to State class
+import types
+state.reset_progression = types.MethodType(reset_progression, state)
+state.update_progression = types.MethodType(update_progression, state)
 
 # Line 3: Start of clear_outputs function (unchanged)
 def clear_outputs():
@@ -6893,7 +7144,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 """)
     
     # CSS (end of the previous section, for context)
-    gr.HTML("""
+gr.HTML("""
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
@@ -7588,6 +7839,338 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* TITLE: Fade-In Animation */
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
+        }
+
+        /* Extracted CSS for select_next_spin_top_pick */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .first-spins {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .first-spins h5 {
+            margin: 0 0 5px 0;
+            color: #FFD700;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .first-spins-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .first-spin {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff !important;
+            border: 1px solid #ffffff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .first-spin.red { background-color: red; }
+        .first-spin.black { background-color: black; }
+        .first-spin.green { background-color: green; }
+
+        .accordion {
+            margin: 10px 0;
+            border: 1px solid #FFD700;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2E8B57, #FFD700);
+            transition: all 0.3s ease;
+        }
+
+        .accordion-toggle {
+            display: none;
+        }
+
+        .accordion-header {
+            padding: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #FFD700;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: inherit;
+        }
+
+        .accordion-header:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .accordion-content {
+            display: none !important;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .accordion-toggle:checked + .accordion-header + .accordion-content {
+            display: block !important;
+        }
+
+        .top-pick-container {
+            background: linear-gradient(135deg, #2E8B57, #FFD700);
+            border: 3px solid #FFD700;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            margin: 10px 0;
+        }
+
+        .top-pick-container h4 {
+            margin: 0 0 15px 0;
+            color: #FFD700;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .top-pick-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-pick-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 28px;
+            color: #ffffff !important;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .top-pick-badge:hover {
+            transform: rotate(360deg) scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        .top-pick-badge.red { background-color: red; }
+        .top-pick-badge.black { background-color: black; }
+        .top-pick-badge.green { background-color: green; }
+
+        .top-pick-characteristics {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .char-badge {
+            background-color: rgba(255, 213, 0, 0.9);
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .char-badge.red { background-color: #FF0000; color: #ffffff; }
+        .char-badge.black { background-color: #000000; color: #ffffff; }
+        .char-badge.even { background-color: #4682B4; color: #ffffff; }
+        .char-badge.odd { background-color: #4682B4; color: #ffffff; }
+        .char-badge.low { background-color: #32CD32; color: #ffffff; }
+        .char-badge.high { background-color: #32CD32; color: #ffffff; }
+
+        .confidence-bar {
+            margin-top: 10px;
+            background-color: #2E8B57;
+            border-radius: 5px;
+            height: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background-color: #FFD700;
+            transition: width 1s ease;
+        }
+
+        .confidence-bar span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #2E8B57;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .top-pick-description {
+            margin-top: 15px;
+            font-style: italic;
+            color: #3e2723;
+            font-size: 14px;
+        }
+
+        .top-pick-reasons {
+            padding: 10px;
+            color: #3e2723;
+            font-size: 14px;
+        }
+
+        .top-pick-reasons ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .top-pick-reasons li {
+            margin-bottom: 5px;
+        }
+
+        .secondary-picks {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .secondary-picks h5 {
+            margin: 0 0 10px 0;
+            color: #FFD700;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .secondary-picks-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .secondary-pick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .secondary-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 28px;
+            color: #ffffff !important;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .secondary-badge:hover {
+            transform: rotate(360deg) scale(1.2);
+        }
+
+        .secondary-badge.red { background-color: red; }
+        .secondary-badge.black { background-color: black; }
+        .secondary-badge.green { background-color: green; }
+
+        .secondary-info {
+            text-align: center;
+        }
+
+        .secondary-characteristics {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .secondary-reasons {
+            font-size: 10px;
+            color: #3e2723;
+            font-style: italic;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #FFD700;
+            animation: confetti 2s ease infinite;
+        }
+
+        @media (max-width: 600px) {
+            .top-pick-badge {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            .first-spin {
+                width: 25px;
+                height: 25px;
+                font-size: 14px;
+            }
+            .secondary-badge {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            .top-pick-container h4 {
+                font-size: 20px;
+            }
+            .accordion-header {
+                font-size: 16px;
+            }
         }
     </style>
     """)
