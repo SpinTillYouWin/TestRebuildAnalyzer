@@ -5210,6 +5210,7 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
+# Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5368,6 +5369,12 @@ def select_next_spin_top_pick(last_spin_count):
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
+        # Prepare first 5 spins display (oldest spins in newest-first order)
+        first_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+        first_spins_html = ""
+        for spin in first_spins:
+            spin_color = colors.get(str(spin), "black")
+            first_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
         # Prepare top 3 picks output
         top_3_html = ""
         for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits) in enumerate(top_picks):
@@ -5408,21 +5415,17 @@ def select_next_spin_top_pick(last_spin_count):
             <div class="secondary-pick">
               <span class="secondary-badge {num_color}" data-number="{num}">{num}</span>
               <div class="secondary-info">
-                <div class="secondary-characteristics">{num_characteristics_str}</div>
+                <div class="secondary-characteristics">
+                  {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in num_characteristics_str.split(", "))}
+                </div>
                 <div class="secondary-reasons">{num_reasons_str}</div>
               </div>
             </div>
             '''
-        # Prepare recent spins display
-        recent_spins = last_spins[:5]
-        recent_spins_html = ""
-        for spin in recent_spins:
-            spin_color = colors.get(str(spin), "black")
-            recent_spins_html += f'<span class="recent-spin {spin_color}">{spin}</span>'
         html = f'''
-        <div class="recent-spins">
-          <h5>Last 5 Spins</h5>
-          <div class="recent-spins-container">{recent_spins_html}</div>
+        <div class="first-spins">
+          <h5>First 5 Spins</h5>
+          <div class="first-spins-container">{first_spins_html}</div>
         </div>
         <div class="accordion">
           <input type="checkbox" id="top-pick-toggle" class="accordion-toggle" onchange="if(this.checked) triggerConfetti();">
@@ -5435,7 +5438,6 @@ def select_next_spin_top_pick(last_spin_count):
               <div class="top-pick-wrapper">
                 <div class="badge-wrapper">
                   <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
-                  <button class="copy-btn" onclick="copyToClipboard('{top_pick}')">Copy</button>
                 </div>
                 <div class="top-pick-characteristics">
                   {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
@@ -5474,37 +5476,38 @@ def select_next_spin_top_pick(last_spin_count):
             0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
             100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
           }}
-          .recent-spins {{
+          .first-spins {{
             margin-bottom: 10px;
             text-align: center;
           }}
-          .recent-spins h5 {{
+          .first-spins h5 {{
             margin: 0 0 5px 0;
             color: #FFD700;
             font-family: 'Montserrat', sans-serif;
             font-size: 16px;
             text-transform: uppercase;
           }}
-          .recent-spins-container {{
+          .first-spins-container {{
             display: flex;
             justify-content: center;
             gap: 5px;
           }}
-          .recent-spin {{
+          .first-spin {{
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            font-size: 12px;
-            color: #ffffff;
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff !important;
             border: 1px solid #ffffff;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
           }}
-          .recent-spin.red {{ background-color: red; }}
-          .recent-spin.black {{ background-color: black; }}
-          .recent-spin.green {{ background-color: green; }}
+          .first-spin.red {{ background-color: red; }}
+          .first-spin.black {{ background-color: black; }}
+          .first-spin.green {{ background-color: green; }}
           .accordion {{
             margin: 10px 0;
             border: 1px solid #FFD700;
@@ -5596,20 +5599,6 @@ def select_next_spin_top_pick(last_spin_count):
           .top-pick-badge.red {{ background-color: red; }}
           .top-pick-badge.black {{ background-color: black; }}
           .top-pick-badge.green {{ background-color: green; }}
-          .copy-btn {{
-            padding: 5px 10px;
-            font-size: 12px;
-            color: #FFD700;
-            background-color: #2E8B57;
-            border: 1px solid #FFD700;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-          }}
-          .copy-btn:hover {{
-            background-color: #FFD700;
-            color: #2E8B57;
-          }}
           .top-pick-characteristics {{
             display: flex;
             gap: 5px;
@@ -5699,19 +5688,19 @@ def select_next_spin_top_pick(last_spin_count):
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
             font-weight: bold;
-            font-size: 18px;
-            color: #ffffff;
-            border: 1px solid #ffffff;
+            font-size: 28px;
+            color: #ffffff !important;
+            border: 2px solid #ffffff;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
             position: relative;
             transition: transform 0.3s ease;
           }}
           .secondary-badge:hover {{
-            transform: scale(1.1);
+            transform: rotate(360deg) scale(1.2);
           }}
           .secondary-badge.red {{ background-color: red; }}
           .secondary-badge.black {{ background-color: black; }}
@@ -5720,11 +5709,10 @@ def select_next_spin_top_pick(last_spin_count):
             text-align: center;
           }}
           .secondary-characteristics {{
-            background-color: #FFF8E1;
-            color: #d81b60;
-            font-size: 12px;
-            padding: 3px 6px;
-            border-radius: 5px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
           }}
           .secondary-reasons {{
             font-size: 10px;
@@ -5753,10 +5741,15 @@ def select_next_spin_top_pick(last_spin_count):
               height: 50px;
               font-size: 24px;
             }}
-            .secondary-badge {{
-              width: 30px;
-              height: 30px;
+            .first-spin {{
+              width: 25px;
+              height: 25px;
               font-size: 14px;
+            }}
+            .secondary-badge {{
+              width: 40px;
+              height: 40px;
+              font-size: 20px;
             }}
             .top-pick-container h4 {{
               font-size: 20px;
