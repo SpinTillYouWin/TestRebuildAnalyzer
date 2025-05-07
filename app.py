@@ -5376,7 +5376,7 @@ def select_next_spin_top_pick(last_spin_count):
             recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
             if last_positions[num] == last_spin_count - 1:
                 recency_score = max(recency_score, 10)
-            hit_bonus = 5 if hits > 0 else 0
+            hit_bonus = 5 if hit_counts[num] > 0 else 0
             neighbor_score = neighbor_boost[num]
             tiebreaker_score = 0
             if num == 0:
@@ -5507,7 +5507,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_matched_traits.append(trait)
                 elif trait in DOZENS and num in DOZENS[trait]:
                     num_matched_traits.append(trait)
-                elif trait in COLUMNS and num in DOZENS[trait]:
+                elif trait in COLUMNS and num in COLUMNS[trait]:
                     num_matched_traits.append(trait)
             if num_matched_traits:
                 num_reasons.append(f"Matches: {', '.join(num_matched_traits)}")
