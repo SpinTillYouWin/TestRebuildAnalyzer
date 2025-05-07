@@ -5476,10 +5476,8 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
-        for section_name, nums in betting_sections.items():
-            if top_pick in nums:
-                reasons.append(f"In {section_name}")
-                break
+        if section_score > 0:
+            reasons.append(f"Located in the hottest wheel section: {top_section}")
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
