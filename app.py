@@ -5209,7 +5209,6 @@ def cache_analysis(spins, last_spin_count):
 
 
 # Line 1: Start of updated select_next_spin_top_pick function
-# Line 1: Start of updated select_next_spin_top_pick function
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5308,17 +5307,14 @@ def select_next_spin_top_pick(last_spin_count):
             total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
             scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, even_money_matches))
         scores.sort(key=lambda x: (-x[1], -x[10], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
-        # Get top 3 picks (top pick + next 2)
         top_picks = scores[:3]
         state.current_top_pick = top_picks[0][0]
-        # Determine the top pick's matches with dominant even money traits
         top_pick = top_picks[0][0]
         top_pick_matches = set()
         for cat in dominant_even_money:
             if top_pick in EVEN_MONEY[cat]:
                 top_pick_matches.add(cat)
         remaining_dominant_traits = dominant_even_money - top_pick_matches
-        # Recalculate scores with new tiebreaker prioritizing top pick's matches
         scores = []
         for num in range(37):
             hits = hit_counts[num]
@@ -5350,11 +5346,9 @@ def select_next_spin_top_pick(last_spin_count):
             scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches))
         scores.sort(key=lambda x: (-x[1], -x[10], -x[11], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
         top_picks = scores[:3]
-        # Calculate confidence (top score as a percentage of max possible score)
-        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10  # Even Money (3×10) + Dozen/Column (2×15) + Section (10) + Recency (10) + Hit Bonus (5) + Neighbors (2×5)
+        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10
         top_score = top_picks[0][1]
         confidence = int((top_score / max_possible_score) * 100)
-        # Prepare top pick output
         top_pick = top_picks[0][0]
         characteristics = []
         top_pick_int = int(top_pick)
@@ -5383,9 +5377,7 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
-        # Extract scores for the top pick
         _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches = top_picks[0]
-        # Generate reasons for top pick
         reasons = []
         if even_money_score > 0:
             matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
@@ -5409,13 +5401,11 @@ def select_next_spin_top_pick(last_spin_count):
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
-        # Prepare first 5 spins display (oldest spins in newest-first order)
-        first_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        first_spins_html = ""
-        for spin in first_spins:
+        last_five_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+        last_five_spins_html = ""
+        for spin in last_five_spins:
             spin_color = colors.get(str(spin), "black")
-            first_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
-        # Prepare top 3 picks output (excluding the top pick, so indices 1 and 2)
+            last_five_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
         top_3_html = ""
         for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits, top_pick_traits_matches, remaining_traits_matches) in enumerate(top_picks[1:3], 1):
             num_color = colors.get(str(num), "black")
@@ -5466,8 +5456,8 @@ def select_next_spin_top_pick(last_spin_count):
             '''
         html = f'''
         <div class="first-spins">
-          <h5>First 5 Spins</h5>
-          <div class="first-spins-container">{first_spins_html}</div>
+          <h5>Last 5 Spins</h5>
+          <div class="first-spins-container">{last_five_spins_html}</div>
         </div>
         <div class="top-pick-container">
           <h4>Top Pick for Next Spin</h4>
