@@ -5265,7 +5265,13 @@ def select_next_spin_top_pick(last_spin_count):
             "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
         }
         section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
-        top_section = max(section_hits.items(), key=lambda x: x[1])[0] if section_hits else None
+        section_last_pos = {name: -1 for name in betting_sections}
+        for name, nums in betting_sections.items():
+            for num in nums:
+                if last_positions[num] > section_last_pos[name]:
+                    section_last_pos[name] = last_positions[num]
+        sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
+        top_section = sorted_sections[0][0] if sorted_sections else None
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5277,7 +5283,6 @@ def select_next_spin_top_pick(last_spin_count):
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
         scores = []
-        top_pick_scores = None
         for num in range(37):
             hits = hit_counts[num]
             even_money_score = 0
@@ -5301,9 +5306,15 @@ def select_next_spin_top_pick(last_spin_count):
             total_score = even_money_score + dozen_column_score + section_score + recency_score + hit_bonus + wheel_side_score + neighbor_score
             scores.append((num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits))
         scores.sort(key=lambda x: (-x[1], -x[3], -x[4], -x[2], -x[5], -x[6], -x[7], -x[8], -x[9]))
-        top_pick = scores[0][0]
-        top_pick_scores = scores[0]  # Store the scores for the top pick
-        state.current_top_pick = top_pick
+        # Get top 3 picks
+        top_picks = scores[:3]
+        state.current_top_pick = top_picks[0][0]
+        # Calculate confidence (top score as a percentage of max possible score)
+        max_possible_score = 30 + 30 + 10 + 10 + 5 + 10  # Even Money (3×10) + Dozen/Column (2×15) + Section (10) + Recency (10) + Hit Bonus (5) + Neighbors (2×5)
+        top_score = top_picks[0][1]
+        confidence = int((top_score / max_possible_score) * 100)
+        # Prepare top pick output
+        top_pick = top_picks[0][0]
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
@@ -5332,8 +5343,8 @@ def select_next_spin_top_pick(last_spin_count):
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
         # Extract scores for the top pick
-        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits = top_pick_scores
-        # Generate reasons
+        _, _, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits = top_picks[0]
+        # Generate reasons for top pick
         reasons = []
         if even_money_score > 0:
             matched_categories = [cat for cat in dominant_even_money if top_pick in EVEN_MONEY[cat]]
@@ -5349,7 +5360,7 @@ def select_next_spin_top_pick(last_spin_count):
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
-        if hit_bonus > 0:
+        if hits > 0:
             reasons.append(f"Has appeared in the spin history")
         if wheel_side_score > 0:
             reasons.append(f"On the most hit side of the wheel: {most_hit_side}")
@@ -5357,16 +5368,82 @@ def select_next_spin_top_pick(last_spin_count):
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
+        # Prepare top 3 picks output
+        top_3_html = ""
+        for i, (num, total_score, even_money_score, dozen_column_score, section_score, recency_score, hit_bonus, wheel_side_score, neighbor_score, hits) in enumerate(top_picks):
+            num_color = colors.get(str(num), "black")
+            num_characteristics = []
+            if num == 0:
+                num_characteristics.append("Green")
+            elif "Red" in EVEN_MONEY and num in EVEN_MONEY["Red"]:
+                num_characteristics.append("Red")
+            elif "Black" in EVEN_MONEY and num in EVEN_MONEY["Black"]:
+                num_characteristics.append("Black")
+            if num != 0:
+                if "Even" in EVEN_MONEY and num in EVEN_MONEY["Even"]:
+                    num_characteristics.append("Even")
+                elif "Odd" in EVEN_MONEY and num in EVEN_MONEY["Odd"]:
+                    num_characteristics.append("Odd")
+                if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
+                    num_characteristics.append("Low")
+                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
+                    num_characteristics.append("High")
+            for name, nums in DOZENS.items():
+                if num in nums:
+                    num_characteristics.append(name)
+                    break
+            for name, nums in COLUMNS.items():
+                if num in nums:
+                    num_characteristics.append(name)
+                    break
+            num_characteristics_str = ", ".join(num_characteristics) if num_characteristics else "No notable characteristics"
+            num_reasons = []
+            if even_money_score > 0:
+                matched_categories = [cat for cat in dominant_even_money if num in EVEN_MONEY[cat]]
+                num_reasons.append(f"Matches: {', '.join(matched_categories)}")
+            if section_score > 0:
+                num_reasons.append(f"In {top_section}")
+            num_reasons_str = ", ".join(num_reasons) if num_reasons else "No notable reasons"
+            top_3_html += f'''
+            <div class="secondary-pick">
+              <span class="secondary-badge {num_color}" data-number="{num}">{num}</span>
+              <div class="secondary-info">
+                <div class="secondary-characteristics">{num_characteristics_str}</div>
+                <div class="secondary-reasons">{num_reasons_str}</div>
+              </div>
+            </div>
+            '''
+        # Prepare recent spins display
+        recent_spins = last_spins[:5]
+        recent_spins_html = ""
+        for spin in recent_spins:
+            spin_color = colors.get(str(spin), "black")
+            recent_spins_html += f'<span class="recent-spin {spin_color}">{spin}</span>'
         html = f'''
+        <div class="recent-spins">
+          <h5>Last 5 Spins</h5>
+          <div class="recent-spins-container">{recent_spins_html}</div>
+        </div>
         <div class="accordion">
-          <input type="checkbox" id="top-pick-toggle" class="accordion-toggle">
-          <label for="top-pick-toggle" class="accordion-header">Next Spin Top Pick 🎯</label>
+          <input type="checkbox" id="top-pick-toggle" class="accordion-toggle" onchange="if(this.checked) triggerConfetti();">
+          <label for="top-pick-toggle" class="accordion-header">
+            <span class="chip-icon">🎰</span> Next Spin Top Pick 🎯
+          </label>
           <div class="accordion-content">
             <div class="top-pick-container">
               <h4>Top Pick for Next Spin</h4>
               <div class="top-pick-wrapper">
-                <span class="top-pick-badge {color}" data-number="{top_pick}">{top_pick}</span>
-                <div class="top-pick-characteristics">{characteristics_str}</div>
+                <div class="badge-wrapper">
+                  <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+                  <button class="copy-btn" onclick="copyToClipboard('{top_pick}')">Copy</button>
+                </div>
+                <div class="top-pick-characteristics">
+                  {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
+                </div>
+              </div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width: {confidence}%"></div>
+                <span>Confidence: {confidence}%</span>
               </div>
               <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
               <div class="accordion">
@@ -5378,56 +5455,120 @@ def select_next_spin_top_pick(last_spin_count):
                   </div>
                 </div>
               </div>
+              <div class="secondary-picks">
+                <h5>Other Top Picks</h5>
+                <div class="secondary-picks-container">
+                  {top_3_html}
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <style>
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+          @keyframes fadeIn {{
+            from {{ opacity: 0; }}
+            to {{ opacity: 1; }}
+          }}
+          @keyframes confetti {{
+            0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
+            100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
+          }}
+          .recent-spins {{
+            margin-bottom: 10px;
+            text-align: center;
+          }}
+          .recent-spins h5 {{
+            margin: 0 0 5px 0;
+            color: #FFD700;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+          }}
+          .recent-spins-container {{
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+          }}
+          .recent-spin {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+          }}
+          .recent-spin.red {{ background-color: red; }}
+          .recent-spin.black {{ background-color: black; }}
+          .recent-spin.green {{ background-color: green; }}
           .accordion {{
             margin: 10px 0;
-            border: 1px solid #ff6f00;
-            border-radius: 5px;
-            background: linear-gradient(135deg, #ffeb3b, #ffb300);
+            border: 1px solid #FFD700;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2E8B57, #FFD700);
+            transition: all 0.3s ease;
           }}
           .accordion-toggle {{
             display: none;
           }}
           .accordion-header {{
-            padding: 10px;
+            padding: 12px;
             font-weight: bold;
             font-size: 18px;
-            color: #b71c1c;
+            color: #FFD700;
             cursor: pointer;
             text-transform: uppercase;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: inherit;
+          }}
+          .chip-icon {{
+            font-size: 20px;
           }}
           .accordion-header:hover {{
             background-color: rgba(255, 255, 255, 0.2);
           }}
           .accordion-content {{
             display: none !important;
+            animation: fadeIn 0.5s ease-in-out;
           }}
           .accordion-toggle:checked + .accordion-header + .accordion-content {{
             display: block !important;
           }}
           .top-pick-container {{
-            background: linear-gradient(135deg, #ffeb3b, #ffb300);
-            border: 3px solid #ff6f00;
+            background: linear-gradient(135deg, #2E8B57, #FFD700);
+            border: 3px solid #FFD700;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
             margin: 10px 0;
           }}
           .top-pick-container h4 {{
             margin: 0 0 15px 0;
-            color: #b71c1c;
-            font-size: 22px;
+            color: #FFD700;
+            font-size: 24px;
             font-weight: bold;
             text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
           }}
           .top-pick-wrapper {{
             display: flex;
             flex-direction: column;
+            align-items: center;
+            gap: 10px;
+          }}
+          .badge-wrapper {{
+            display: flex;
             align-items: center;
             gap: 10px;
           }}
@@ -5445,22 +5586,72 @@ def select_next_spin_top_pick(last_spin_count):
             border: 2px solid #ffffff;
             box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+          }}
+          .top-pick-badge:hover {{
+            transform: rotate(360deg) scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
           }}
           .top-pick-badge.red {{ background-color: red; }}
           .top-pick-badge.black {{ background-color: black; }}
           .top-pick-badge.green {{ background-color: green; }}
-          .top-pick-badge:hover {{
-            transform: scale(1.2);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+          .copy-btn {{
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #FFD700;
+            background-color: #2E8B57;
+            border: 1px solid #FFD700;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+          }}
+          .copy-btn:hover {{
+            background-color: #FFD700;
+            color: #2E8B57;
           }}
           .top-pick-characteristics {{
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+          }}
+          .char-badge {{
             background-color: rgba(255, 255, 255, 0.9);
-            color: #d81b60;
+            color: #FFD700;
             font-weight: bold;
-            font-size: 16px;
-            padding: 5px 10px;
+            font-size: 14px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          }}
+          .char-badge.red {{ background-color: #FF0000; color: #ffffff; }}
+          .char-badge.black {{ background-color: #000000; color: #ffffff; }}
+          .char-badge.even {{ background-color: #4682B4; color: #ffffff; }}
+          .char-badge.odd {{ background-color: #4682B4; color: #ffffff; }}
+          .char-badge.low {{ background-color: #32CD32; color: #ffffff; }}
+          .char-badge.high {{ background-color: #32CD32; color: #ffffff; }}
+          .confidence-bar {{
+            margin-top: 10px;
+            background-color: #2E8B57;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 20px;
+            position: relative;
+            overflow: hidden;
+          }}
+          .confidence-fill {{
+            height: 100%;
+            background-color: #FFD700;
+            transition: width 1s ease;
+          }}
+          .confidence-bar span {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #2E8B57;
+            font-size: 12px;
+            font-weight: bold;
           }}
           .top-pick-description {{
             margin-top: 15px;
@@ -5481,6 +5672,65 @@ def select_next_spin_top_pick(last_spin_count):
           .top-pick-reasons li {{
             margin-bottom: 5px;
           }}
+          .secondary-picks {{
+            margin-top: 20px;
+            text-align: center;
+          }}
+          .secondary-picks h5 {{
+            margin: 0 0 10px 0;
+            color: #FFD700;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+          }}
+          .secondary-picks-container {{
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+          }}
+          .secondary-pick {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+          }}
+          .secondary-badge {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: transform 0.3s ease;
+          }}
+          .secondary-badge:hover {{
+            transform: scale(1.1);
+          }}
+          .secondary-badge.red {{ background-color: red; }}
+          .secondary-badge.black {{ background-color: black; }}
+          .secondary-badge.green {{ background-color: green; }}
+          .secondary-info {{
+            text-align: center;
+          }}
+          .secondary-characteristics {{
+            background-color: #FFF8E1;
+            color: #d81b60;
+            font-size: 12px;
+            padding: 3px 6px;
+            border-radius: 5px;
+          }}
+          .secondary-reasons {{
+            font-size: 10px;
+            color: #3e2723;
+            font-style: italic;
+          }}
           .celebration {{
             position: fixed;
             top: 0;
@@ -5490,7 +5740,52 @@ def select_next_spin_top_pick(last_spin_count):
             pointer-events: none;
             z-index: 1000;
           }}
+          .confetti {{
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #FFD700;
+            animation: confetti 2s ease infinite;
+          }}
+          @media (max-width: 600px) {{
+            .top-pick-badge {{
+              width: 50px;
+              height: 50px;
+              font-size: 24px;
+            }}
+            .secondary-badge {{
+              width: 30px;
+              height: 30px;
+              font-size: 14px;
+            }}
+            .top-pick-container h4 {{
+              font-size: 20px;
+            }}
+            .accordion-header {{
+              font-size: 16px;
+            }}
+          }}
         </style>
+        <script>
+          function triggerConfetti() {{
+            const celebration = document.querySelector('.celebration');
+            for (let i = 0; i < 50; i++) {{
+              const confetti = document.createElement('div');
+              confetti.className = 'confetti';
+              confetti.style.left = Math.random() * 100 + 'vw';
+              confetti.style.backgroundColor = ['#FFD700', '#FF0000', '#2E8B57'][Math.floor(Math.random() * 3)];
+              confetti.style.animationDelay = Math.random() * 2 + 's';
+              celebration.appendChild(confetti);
+            }}
+          }}
+          function copyToClipboard(text) {{
+            navigator.clipboard.writeText(text).then(() => {{
+              alert('Number ' + text + ' copied to clipboard!');
+            }}).catch(err => {{
+              console.error('Failed to copy: ', err);
+            }});
+          }}
+        </script>
         '''
         return html
     except Exception as e:
