@@ -164,7 +164,6 @@ def validate_roulette_data():
     return errors if errors else None
 
 # In Part 1, replace the RouletteState class with the following:
-
 class RouletteState:
     def __init__(self):
         self.scores = {n: 0 for n in range(37)}
@@ -181,20 +180,20 @@ class RouletteState:
         self.spin_history = []
         self.casino_data = {
             "spins_count": 100,
-            "hot_numbers": [],  # Store 5 user-specified hot numbers
-            "cold_numbers": [],  # Store 5 user-specified cold numbers
+            "hot_numbers": [],
+            "cold_numbers": [],
             "even_odd": {"Even": 0.0, "Odd": 0.0},
             "red_black": {"Red": 0.0, "Black": 0.0},
             "low_high": {"Low": 0.0, "High": 0.0},
             "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
             "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
         }
-        self.hot_suggestions = ""  # Store suggested hot numbers
-        self.cold_suggestions = ""  # Store suggested cold numbers
+        self.hot_suggestions = ""
+        self.cold_suggestions = ""
         self.use_casino_winners = False
         self.bankroll = 1000
         self.initial_bankroll = 1000
-        self.base_unit = 10
+        self.base_unit = 2  # Updated to 2 units for Magic Roundabout
         self.stop_loss = -500
         self.stop_win = 200
         self.target_profit = 10
@@ -202,7 +201,7 @@ class RouletteState:
         self.progression = "Martingale"
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
-        self.progression_state = None
+        self.progression_state = []
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         self.status_color = "white"
@@ -210,25 +209,10 @@ class RouletteState:
         self.alerted_patterns = set()
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
-        # Existing attributes
-        self.last_spins = []
-        self.bankroll = 1000
-        self.base_unit = 2
-        self.bet_type = "Even Money"
-        self.progression = "Martingale"
-        self.progression_state = []
-        self.status = "Active"
-        self.status_color = "white"
         self.magic_numbers = []
         self.tracked_losing_numbers = []
         self.loss_count = 0
         self.bet_multiplier = 1
-        self.initial_bankroll = 1000
-        self.stop_loss = -500
-        self.stop_win = 200
-        self.current_bet = 36
-        self.next_bet = 36
-        self.message = "Start with 2 unit bets on 18 non-repeating numbers."
         self.oldest_number = None
         self.newest_number = None
         self.number_count = 18
@@ -294,11 +278,131 @@ class RouletteState:
             self.current_bet = self.number_count * self.base_unit * self.bet_multiplier + len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2)
             self.next_bet = self.current_bet if self.loss_count % 2 != 0 else self.current_bet * 2
         elif self.progression == "Magic Roundabout TMR":
+            if win:
+                # Win: Reset to new set of 9 non-repeating numbers
+                total_bet = 9 * self.base_unit * self.bet_multiplier + len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2)
+                self.bankroll += 36 * self.base_unit * self.bet_multiplier - total_bet
+                self.magic_numbers = []
+                self.tracked_losing_numbers = []
+                self.oldest_number = None
+                self.newest_number = None
+                self.loss_count = 0
+                self.bet_multiplier = 1
+                # Find new set of 9 non-repeating numbers
+                unique_spins = []
+                for spin in reversed(self.last_spins):
+                    try:
+                        num = int(spin)
+                        if num not in unique_spins:
+                            unique_spins.append(num)
+                        if len(unique_spins) >= 9:
+                            break
+                    except ValueError:
+                        continue
+                if len(unique_spins) >= 9:
+                    self.magic_numbers = unique_spins[:9]
+                    self.oldest_number = self.magic_numbers[0] if self.magic_numbers else None
+                    self.newest_number = self.magic_numbers[-1] if self.magic_numbers else None
+                self.message = "Win! Resetting to new set of nine numbers. Add spins to continue."
+                self.status = "Active"
+                self.status_color = "white"
+            else:
+                # Loss: Update numbers and bets
+                self.loss_count += 1
+                last_spin = int(self.last_spins[-1]) if self.last_spins else None
+                if last_spin is not None and last_spin not in self.magic_numbers:
+                    if len(self.magic_numbers) >= 9:
+                        self.magic_numbers.pop(0)
+                        self.magic_numbers.append(last_spin)
+                        self.oldest_number = self.magic_numbers[0] if self.magic_numbers else None
+                        self.newest_number = last_spin
+                    if last_spin not in self.tracked_losing_numbers:
+                        self.tracked_losing_numbers.append(last_spin)
+                        if len(self.tracked_losing_numbers) > 3:
+                            self.tracked_losing_numbers.pop(0)
+                if self.loss_count % 2 == 0:
+                    self.bet_multiplier *= 2
+                total_bet = (9 * self.base_unit * self.bet_multiplier) + (len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2))
+                self.bankroll -= total_bet
+                self.message = f"Loss #{self.loss_count}. Betting {self.base_unit * self.bet_multiplier} units on {self.magic_numbers}, {self.base_unit * self.bet_multiplier / 2} units on {self.tracked_losing_numbers}. Total bet: {total_bet} units."
+                if self.bankroll <= self.stop_loss:
+                    self.status = "Stop Loss Reached"
+                    self.status_color = "red"
+                elif self.bankroll >= self.initial_bankroll + self.stop_win:
+                    self.status = "Stop Win Reached"
+                    self.status_color = "green"
+                else:
+                    self.status = "Active"
+                    self.status_color = "white"
+            self.current_bet = 9 * self.base_unit * self.bet_multiplier + len(self.tracked_losing_numbers) * (self.base_unit * self.bet_multiplier / 2)
+            self.next_bet = self.current_bet if self.loss_count % 2 != 0 else self.current_bet * 2
+        else:
+            # Existing logic for other progressions
+            if self.progression == "Martingale":
+                if win:
+                    self.bankroll += self.current_bet * 2
+                    self.current_bet = self.base_unit
+                    self.next_bet = self.base_unit
+                    self.message = f"Win! Reset to base bet of {self.base_unit}."
+                    self.status = "Active"
+                    self.status_color = "white"
+                else:
+                    self.bankroll -= self.current_bet
+                    self.current_bet *= 2
+                    self.next_bet = self.current_bet
+                    self.message = f"Loss. Next bet: {self.next_bet} units."
+                    if self.bankroll <= self.stop_loss:
+                        self.status = "Stop Loss Reached"
+                        self.status_color = "red"
+                    elif self.bankroll >= self.initial_bankroll + self.stop_win:
+                        self.status = "Stop Win Reached"
+                        self.status_color = "green"
+                    else:
+                        self.status = "Active"
+                        self.status_color = "white"
+            # Add other progressions (e.g., Fibonacci, Labouchere) as needed
+        return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+
+    def reset_progression(self):
+        if self.progression == "Magic Roundabout TMR (18 Numbers)":
+            self.bankroll = self.initial_bankroll
+            self.magic_numbers = []
+            self.tracked_losing_numbers = []
+            self.oldest_number = None
+            self.newest_number = None
+            self.loss_count = 0
+            self.bet_multiplier = 1
+            self.current_bet = self.number_count * self.base_unit
+            self.next_bet = self.current_bet
+            self.message = f"Reset progression. Start with {self.base_unit} unit bets on {self.number_count} numbers."
+            self.status = "Active"
+            self.status_color = "white"
+        elif self.progression == "Magic Roundabout TMR":
+            self.bankroll = self.initial_bankroll
+            self.magic_numbers = []
+            self.tracked_losing_numbers = []
+            self.oldest_number = None
+            self.newest_number = None
+            self.loss_count = 0
+            self.bet_multiplier = 1
+            self.current_bet = 9 * self.base_unit
+            self.next_bet = self.current_bet
+            self.message = f"Reset progression. Start with {self.base_unit} unit bets on nine numbers."
+            self.status = "Active"
+            self.status_color = "white"
+        else:
+            self.current_bet = self.base_unit
+            self.next_bet = self.base_unit
+            self.progression_state = []
+            self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
+            self.status = "Active"
+            self.status_color = "white"
+        return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
 
     def reset(self):
         # Preserve use_casino_winners and casino_data before resetting
         use_casino_winners = self.use_casino_winners
-        casino_data = self.casino_data.copy()  # Create a deep copy to preserve the data
+        casino_data = self.casino_data.copy()
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -311,9 +415,9 @@ class RouletteState:
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
-        # Restore use_casino_winners and casino_data
         self.use_casino_winners = use_casino_winners
         self.casino_data = casino_data
+        self282
         self.reset_progression()
 
     def calculate_aggregated_scores_for_spins(self, numbers):
