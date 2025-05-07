@@ -5212,21 +5212,35 @@ def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
+        
+        # Check if state and last_spins are valid
+        if not hasattr(state, 'last_spins'):
+            raise AttributeError("state.last_spins is not defined")
+        if not isinstance(state.last_spins, list):
+            raise TypeError(f"state.last_spins must be a list, got {type(state.last_spins)}")
+        
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+        
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
+        
         numbers = set(range(37))
         hit_counts = {n: 0 for n in range(37)}
         last_positions = {n: -1 for n in range(37)}
         for i, spin in enumerate(last_spins):
             try:
                 num = int(spin)
+                if num < 0 or num > 36:
+                    print(f"Invalid spin value at index {i}: {spin}")
+                    continue
                 hit_counts[num] += 1
                 last_positions[num] = i
             except ValueError:
+                print(f"Invalid spin value at index {i}: {spin}")
                 continue
+        
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5244,6 +5258,7 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 continue
+        
         # Calculate percentages for all traits
         total_spins = len(last_spins)
         trait_percentages = {}
@@ -5256,8 +5271,10 @@ def select_next_spin_top_pick(last_spin_count):
         # Columns
         for trait, count in column_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+        
         # Sort traits by percentage (highest to lowest)
         sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
+        
         # Determine hottest traits (top non-conflicting traits)
         hottest_traits = []
         seen_categories = set()
@@ -5288,6 +5305,7 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Columns")
+        
         # Second best traits for tiebreakers
         second_best_traits = []
         seen_categories = set()
@@ -5319,11 +5337,13 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 second_best_traits.append(trait)
                 seen_categories.add("Columns")
+        
         left_side = set(LEFT_OF_ZERO_EUROPEAN)
         right_side = set(RIGHT_OF_ZERO_EUROPEAN)
         left_hits = sum(hit_counts[num] for num in left_side)
         right_hits = sum(hit_counts[num] for num in right_side)
         most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
+        
         betting_sections = {
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
@@ -5337,6 +5357,7 @@ def select_next_spin_top_pick(last_spin_count):
                     section_last_pos[name] = last_positions[num]
         sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
         top_section = sorted_sections[0][0] if sorted_sections else None
+        
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
@@ -5347,6 +5368,7 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
+        
         # Score numbers based on the number of matching traits in order
         scores = []
         for num in range(37):
@@ -5406,12 +5428,17 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+        
         # Log the scores for debugging
         print("Scores before sorting:", [(score[0], score[2], score[9], score[6]) for score in scores])
+        
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
         print("Scores after sorting:", [(score[0], score[2], score[9], score[6]) for score in scores[:10]])
+        
         # Ensure top 5 picks have at least as many matches as the 5th pick
+        if not scores:
+            raise ValueError("No valid scores generated; possibly no numbers appeared in the spins")
         if len(scores) > 5:
             min_traits = sorted([x[2] for x in scores[:5]], reverse=True)[4]
             print(f"Minimum traits for top 5: {min_traits}")
@@ -5419,12 +5446,18 @@ def select_next_spin_top_pick(last_spin_count):
         else:
             top_picks = scores[:5]
         print("Top picks:", [(pick[0], pick[2], pick[9], pick[6]) for pick in top_picks])
+        
+        if not top_picks:
+            raise ValueError("No top picks generated after filtering")
+        
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
+        
         # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
         confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
+        
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
