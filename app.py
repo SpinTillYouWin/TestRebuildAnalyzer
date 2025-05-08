@@ -8405,58 +8405,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     try:
         analyze_button.click(
-            fn=orchestrate_analysis,
+            fn=analyze_spins,
             inputs=[
-                spins_display,
-                strategy_dropdown,
-                neighbours_count_slider,
+                spins_display, strategy_dropdown, neighbours_count_slider,
                 strong_numbers_count_slider,
-                dozen_tracker_spins_dropdown,
-                dozen_tracker_consecutive_hits_dropdown,
-                dozen_tracker_alert_checkbox,
-                dozen_tracker_sequence_length_dropdown,
-                dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox,
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown,
-                top_color_picker,
-                middle_color_picker,
-                lower_color_picker
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
+                even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown, even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox, even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[
-                spin_analysis_output,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                dynamic_table_output,
-                strategy_output,
-                sides_of_zero_display,
-                gr.State(),  # Dozen tracker text
-                dozen_tracker_output,
-                dozen_tracker_sequence_output,
-                gr.State(),  # Even money tracker text
-                even_money_tracker_output,
-                color_code_output,
-                analysis_cache
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
             ]
+        ).then(
+            # Clear only dynamic_table_output to reset error state, preserve strategy_output
+            fn=lambda: ("",),
+            inputs=[],
+            outputs=[dynamic_table_output]
         ).then(
             fn=update_casino_data,
             inputs=[
@@ -8465,6 +8435,40 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 col1_percent, col2_percent, col3_percent, use_winners_checkbox
             ],
             outputs=[casino_data_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
