@@ -7359,140 +7359,142 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
-        /* Hit Percentage Overview - Revamped for High-Tech Look */
-        .hit-percentage-container {
-            padding: 20px !important; /* Increased padding for space */
-            background: linear-gradient(135deg, #2a1a44 0%, #3b2e55 100%) !important; /* Deep purple-blue gradient */
-            border-radius: 10px !important;
-            border: 2px solid #cc33ff !important; /* Neon purple border */
-            box-shadow: 0 0 15px rgba(204, 51, 255, 0.3) !important; /* Subtle purple glow */
+        /* Hit Percentage Overview - Revamped for High-Tech Look with Increased Specificity */
+        #hit-percentage-overview .hit-percentage-container {
+            padding: 20px !important;
+            background: linear-gradient(135deg, #3a1a5a 0%, #5a2e7a 100%) !important; /* Vibrant purple gradient */
+            border-radius: 12px !important;
+            border: 3px solid #ff66cc !important; /* Bright neon pink border */
+            box-shadow: 0 0 20px rgba(255, 102, 204, 0.5) !important; /* Stronger pink glow */
             width: 100% !important;
             max-width: 2000px !important;
             margin-top: 10px !important;
             box-sizing: border-box !important;
             position: relative !important;
-            overflow: visible !important; /* Prevent clipping */
-            animation: dataPulse 4s ease-in-out infinite !important; /* Subtle pulsing effect */
+            overflow: visible !important;
+            animation: dataPulse 3s ease-in-out infinite !important; /* Faster pulse for more dynamic effect */
+            outline: 2px solid yellow !important; /* Temporary outline for debugging */
         }
         
         /* Data scanning pulse effect */
         @keyframes dataPulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(204, 51, 255, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(204, 51, 255, 0.5); }
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 102, 204, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 102, 204, 0.8); }
         }
         
         /* Add a subtle grid overlay for high-tech effect */
-        .hit-percentage-container::before {
+        #hit-percentage-overview .hit-percentage-container::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(204, 51, 255, 0.1) 0%, transparent 70%) !important;
-            opacity: 0.3;
+            background: radial-gradient(circle, rgba(255, 102, 204, 0.15) 0%, transparent 70%) !important;
+            opacity: 0.4;
             pointer-events: none;
         }
         
-        .hit-percentage-overview {
+        #hit-percentage-overview .hit-percentage-overview {
             display: flex !important;
             flex-wrap: wrap !important;
-            gap: 15px !important; /* Increased gap for better spacing */
+            gap: 20px !important; /* Increased gap for better spacing */
         }
         
-        .percentage-wrapper {
+        #hit-percentage-overview .percentage-wrapper {
             width: 100% !important;
             max-width: 1600px !important;
             box-sizing: border-box !important;
-            padding-top: 10px !important; /* Added padding to prevent top cutoff */
+            padding-top: 15px !important; /* Increased padding to prevent top cutoff */
         }
         
-        .percentage-group {
-            margin: 10px 0 !important; /* Increased margin for spacing */
-            padding-top: 10px !important; /* Added padding to prevent top badges from being cut off */
+        #hit-percentage-overview .percentage-group {
+            margin: 10px 0 !important;
+            padding-top: 15px !important; /* Increased padding to prevent top badges from being cut off */
             flex: 1 !important;
             min-width: 150px !important;
-            overflow: visible !important; /* Prevent clipping */
+            overflow: visible !important;
         }
         
-        .percentage-group h4 {
+        #hit-percentage-overview .percentage-group h4 {
             margin: 5px 0 !important;
-            color: #fff !important; /* White for better contrast on dark background */
+            color: #ffccff !important; /* Light pink for contrast on dark background */
+            text-shadow: 0 0 5px rgba(255, 102, 204, 0.5) !important; /* Subtle glow */
         }
         
-        .percentage-badges, .percentage-badges {
+        #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
             display: flex !important;
-            flex-wrap: wrap !important; /* Allow wrapping for better responsiveness */
-            gap: 8px !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important; /* Increased gap for better spacing */
             align-items: center !important;
-            padding: 5px 0 !important; /* Added padding for spacing */
+            padding: 5px 0 !important;
         }
         
         /* Responsive adjustments for mobile */
         @media (max-width: 600px) {
-            .percentage-badges, .percentage-badges {
+            #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
                 flex-wrap: wrap !important;
                 overflow-x: visible !important;
             }
-            .percentage-item, .trait-badge {
+            #hit-percentage-overview .percentage-item {
                 font-size: 10px !important;
                 padding: 4px 8px !important;
             }
         }
         
         /* TITLE: Percentage Item Styles - Revamped for High-Tech Effect */
-        .percentage-item {
+        #hit-percentage-overview .percentage-item {
             background: transparent !important;
             color: #fff !important;
-            padding: 5px 12px !important;
+            padding: 6px 14px !important; /* Slightly larger padding for prominence */
             border-radius: 15px !important;
             font-size: 12px !important;
-            margin: 5px 3px !important; /* Increased margin to prevent overlap */
+            margin: 5px 3px !important;
             transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
             cursor: pointer !important;
             border: 1px solid transparent !important;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
             font-weight: bold !important;
             display: inline-block !important;
         }
         
-        .percentage-item:hover {
-            transform: scale(1.1) !important;
-            filter: brightness(1.3) !important;
+        #hit-percentage-overview .percentage-item:hover {
+            transform: scale(1.15) !important; /* Slightly larger scale for emphasis */
+            filter: brightness(1.4) !important;
         }
         
-        .percentage-item.even-money {
-            background: rgba(255, 77, 77, 0.2) !important; /* Semi-transparent red */
+        #hit-percentage-overview .percentage-item.even-money {
+            background: rgba(255, 77, 77, 0.3) !important; /* More vibrant red */
             border-color: #ff4d4d !important;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+            box-shadow: 0 0 12px rgba(255, 77, 77, 0.7) !important; /* Stronger glow */
         }
         
-        .percentage-item.column {
-            background: rgba(77, 121, 255, 0.2) !important; /* Semi-transparent blue */
+        #hit-percentage-overview .percentage-item.column {
+            background: rgba(77, 121, 255, 0.3) !important; /* More vibrant blue */
             border-color: #4d79ff !important;
-            box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
+            box-shadow: 0 0 12px rgba(77, 121, 255, 0.7) !important;
         }
         
-        .percentage-item.dozen {
-            background: rgba(77, 255, 77, 0.2) !important; /* Semi-transparent green */
+        #hit-percentage-overview .percentage-item.dozen {
+            background: rgba(77, 255, 77, 0.3) !important; /* More vibrant green */
             border-color: #4dff4d !important;
-            box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
+            box-shadow: 0 0 12px rgba(77, 255, 77, 0.7) !important;
         }
         
-        .percentage-item.winner {
+        #hit-percentage-overview .percentage-item.winner {
             font-weight: bold !important;
             color: #fff !important;
-            border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 12px #ffd700 !important; /* Gold glow */
-            background: rgba(255, 215, 0, 0.3) !important;
-            transform: scale(1.1) !important;
+            border: 2px solid #ffcc00 !important; /* Brighter gold border */
+            box-shadow: 0 0 15px #ffcc00 !important; /* Stronger gold glow */
+            background: rgba(255, 204, 0, 0.4) !important;
+            transform: scale(1.15) !important;
         }
         
-        .percentage-with-bar {
+        #hit-percentage-overview .percentage-with-bar {
             display: inline-block !important;
             text-align: center !important;
             margin: 0 3px !important;
-            margin-bottom: 6px !important;
+            margin-bottom: 8px !important; /* Increased spacing */
         }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
