@@ -5999,6 +5999,7 @@ STRATEGIES = {
 
 
 # Line 1: Start of show_strategy_recommendations function (updated)
+# Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
@@ -6041,6 +6042,40 @@ def show_strategy_recommendations(strategy_name, neighbours_count, *args):
                 recommendations, _, _ = result  # Unpack the tuple, we only need the first element
             else:
                 recommendations = result
+        elif strategy_name == "Top Numbers Strategy":
+            # Handle Top Numbers Strategy
+            try:
+                strong_numbers_count = int(args[0]) if args else 5  # Number of top numbers to show
+                print(f"show_strategy_recommendations: Using strong_numbers_count = {strong_numbers_count} for Top Numbers Strategy")
+            except (ValueError, TypeError) as e:
+                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 5.")
+                strong_numbers_count = 5
+            # Call the strategy function to get the top numbers
+            top_numbers = strategy_func()  # Assuming this returns a list of (number, score) tuples
+            if not top_numbers:
+                return "<p>No top numbers available. Please analyze more spins.</p>"
+            # Limit to strong_numbers_count and sort by score
+            top_numbers = sorted(top_numbers, key=lambda x: x[1], reverse=True)[:strong_numbers_count]
+            # Generate neighbors for each number
+            html = "<p>Here are the top numbers to consider based on recent spins:</p>"
+            html += '<table class="strongest-numbers-table">'
+            html += "<tr><th>Number</th><th>Score</th><th>Neighbors</th><th>Number</th><th>Score</th><th>Neighbors</th><th>Number</th><th>Score</th><th>Neighbors</th></tr>"
+            # Pad the list with empty entries to make it divisible by 3
+            while len(top_numbers) % 3 != 0:
+                top_numbers.append(("", ""))
+            # Group numbers into sets of 3
+            for i in range(0, len(top_numbers), 3):
+                group = top_numbers[i:i+3]
+                html += "<tr>"
+                for number, score in group:
+                    if number:
+                        neighbors = get_neighbors(number, neighbours_count)
+                        html += f"<td>{number}</td><td>{score}</td><td>{', '.join(map(str, neighbors))}</td>"
+                    else:
+                        html += "<td></td><td></td><td></td>"
+                html += "</tr>"
+            html += "</table>"
+            return html
         else:
             # Other strategies return a single string
             recommendations = strategy_func()
@@ -7229,8 +7264,39 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         .strategy-box, .strategy-box p, .strategy-box span, .strategy-box ul, .strategy-box li {
-            color: #ffffff !important; /* White text for contrast */
-            text-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 12px rgba(59, 130, 246, 0.5) !important; /* Neon blue glow */
+            color: #ffffff !important;
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 12px rgba(59, 130, 246, 0.5) !important;
+        }
+        
+        .strongest-numbers-table {
+            width: 100% !important;
+            max-width: 100% !important; /* Fit within the strategy-box */
+            background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Slightly darker blue gradient */
+            border-collapse: collapse !important;
+            border: 1px solid #3b82f6 !important; /* Neon blue border */
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important; /* Glowing shadow */
+            margin: 10px 0 !important; /* Spacing around the table */
+        }
+        
+        .strongest-numbers-table th, .strongest-numbers-table td {
+            padding: 8px 12px !important; /* Increased padding for readability */
+            border: 1px solid #3b82f6 !important; /* Neon blue borders for cells */
+            text-align: center !important;
+            color: #ffffff !important; /* White text */
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7) !important; /* Subtle neon glow */
+        }
+        
+        .strongest-numbers-table th {
+            background: rgba(59, 130, 246, 0.2) !important; /* Slightly transparent neon blue for headers */
+            font-weight: bold !important;
+        }
+        
+        .strongest-numbers-table td:nth-child(3), 
+        .strongest-numbers-table td:nth-child(6), 
+        .strongest-numbers-table td:nth-child(9) {
+            white-space: normal !important; /* Allow wrapping for Neighbors columns */
+            word-wrap: break-word !important; /* Ensure long neighbor lists wrap */
+            max-width: 150px !important; /* Limit the width of Neighbors columns */
         }
         
         /* Last Spins Container */
