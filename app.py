@@ -6462,7 +6462,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.Markdown("### Strategy Recommendations")
         strategy_output = gr.HTML(
             label="Strategy Recommendations",
-            value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
+            value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
+            elem_classes=["strategy-box"]
         )
     with gr.Column(scale=1, min_width=200):
         category_dropdown = gr.Dropdown(
@@ -6596,6 +6597,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
     
+
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -7212,6 +7214,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             width: 100% !important;
             max-width: 1000px !important; /* Increased to make the table wider */
             margin: 0 auto !important; /* Center the container horizontally */
+        }
+        
+        .strategy-box {
+            max-height: 300px !important; /* Limit the height */
+            overflow-y: auto !important; /* Enable vertical scrolling */
+            max-width: 1000px !important; /* Match the container's max-width */
+            margin: 0 auto !important; /* Center within the container */
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important; /* Blue gradient */
+            border: 2px solid #3b82f6 !important; /* Neon blue border */
+            border-radius: 10px !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important; /* Glowing shadow */
+            padding: 15px !important; /* Internal padding */
+            color: #ffffff !important; /* White text for contrast */
         }
         
         /* Last Spins Container */
