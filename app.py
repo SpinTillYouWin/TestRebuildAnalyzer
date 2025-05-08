@@ -7497,25 +7497,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-bottom: 8px !important; /* Increased spacing */
         }
 
-        /* TITLE: Accordion Titles for Hit Percentage Overview and SpinTrend Radar */
-        #hit-percentage-overview summary {
+        /* TITLE: Fix Content Titles for Hit Percentage Overview and SpinTrend Radar */
+        .hit-percentage-overview > h4 {
             color: #ff66cc !important; /* Neon pink to match the section's border */
             text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important; /* Glowing effect */
             font-size: 18px !important;
             font-weight: bold !important;
-            padding: 10px !important;
-            background: rgba(255, 102, 204, 0.1) !important; /* Subtle background to enhance readability */
-            border-radius: 8px !important;
+            margin: 0 0 10px 0 !important; /* Add spacing below the title */
+            outline: 2px solid yellow !important; /* Temporary outline for debugging */
         }
         
-        #spin-trend-radar summary {
+        .traits-overview > h4 {
             color: #00ffcc !important; /* Neon cyan to match the section's border */
             text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important; /* Glowing effect */
             font-size: 18px !important;
             font-weight: bold !important;
-            padding: 10px !important;
-            background: rgba(0, 255, 204, 0.1) !important; /* Subtle background to enhance readability */
-            border-radius: 8px !important;
+            margin: 0 0 10px 0 !important; /* Add spacing below the title */
+            outline: 2px solid yellow !important; /* Temporary outline for debugging */
         }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
