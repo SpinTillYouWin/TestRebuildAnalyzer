@@ -7463,68 +7463,111 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             display: block !important;
         }
 
-        /* TITLE: Traits Container (Updated in Change 1) */
+        /* TITLE: Traits Container - Revamped for SpinTrend Radar */
         .traits-container {
-            padding: 10px !important;
-            background-color: #f5f5dc !important; /* Light beige, matching hit-percentage-container */
-            border-radius: 5px !important;
-            border: 1px solid #d3d3d3 !important;
+            padding: 15px !important;
+            background: linear-gradient(135deg, #1a2a44 0%, #2e3b55 100%) !important; /* Dark gradient for radar screen effect */
+            border-radius: 10px !important;
+            border: 2px solid #00ffcc !important; /* Neon cyan border */
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3) !important; /* Subtle glow */
             width: 100% !important;
-            max-width: 2000px !important; /* Increased to match hit-percentage-container */
-            margin-top: 10px !important; /* Space between slider and accordion */
-            box-sizing: border-box !important; /* Ensure padding/border are included in width */
+            max-width: 2000px !important;
+            margin-top: 10px !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            overflow: hidden !important;
+            animation: radarPulse 4s ease-in-out infinite !important; /* Subtle pulsing effect */
         }
-
-        /* TITLE: Traits Badges Layout (UPDATED FOR CHANGE 4) */
+        
+        /* Radar pulsing effect */
+        @keyframes radarPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 204, 0.5); }
+        }
+        
+        /* Add a radar-like overlay (optional subtle grid effect) */
+        .traits-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 255, 204, 0.1) 0%, transparent 70%) !important;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        /* TITLE: Traits Badges Layout */
         .traits-wrapper {
             width: 100% !important;
-            max-width: 1600px !important; /* Match percentage-wrapper */
-            box-sizing: border-box !important; /* Ensure consistent width calculation */
+            max-width: 1600px !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 15px !important;
         }
         .badge-group {
             margin: 5px 0 !important;
             flex: 1 !important;
-            min-width: 150px !important; /* Ensure groups don’t collapse */
+            min-width: 150px !important;
         }
-        .badge-group:nth-child(1) h4 { color: #b71c1c !important; } /* Even Money Bets - Burgundy */
-        .badge-group:nth-child(2) h4 { color: #1565c0 !important; } /* Columns - Blue */
-        .badge-group:nth-child(3) h4 { color: #388e3c !important; } /* Dozens - Green */
-        .badge-group:nth-child(4) h4 { color: #7b1fa2 !important; } /* Repeat Numbers - Purple */
+        .badge-group:nth-child(1) h4 { color: #ff4d4d !important; } /* Even Money Bets - Neon Red */
+        .badge-group:nth-child(2) h4 { color: #4d79ff !important; } /* Columns - Neon Blue */
+        .badge-group:nth-child(3) h4 { color: #4dff4d !important; } /* Dozens - Neon Green */
+        .badge-group:nth-child(4) h4 { color: #cc33ff !important; } /* Repeat Numbers - Neon Purple */
         .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important; /* Prevent wrapping, match percentage-badges */
-            gap: 5px !important;
+            flex-wrap: wrap !important; /* Allow wrapping for better responsiveness */
+            gap: 8px !important;
             align-items: center !important;
-            white-space: nowrap !important; /* Ensure content stays in one line */
         }
-
-        /* TITLE: Trait Badge Styles */
+        
+        /* TITLE: Trait Badge Styles - Revamped for Radar Effect */
         .trait-badge {
-            background-color: #444 !important;
+            background: transparent !important;
             color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 12px !important;
+            padding: 5px 12px !important;
+            border-radius: 15px !important;
             font-size: 12px !important;
             margin: 3px !important;
-            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s !important;
+            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
             cursor: pointer !important;
+            border: 1px solid transparent !important;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+            font-weight: bold !important;
         }
         .trait-badge:hover {
             transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            filter: brightness(1.2) !important; /* Slight brightness increase */
+            filter: brightness(1.3) !important;
         }
-        .trait-badge.even-money { background-color: #b71c1c !important; } /* Red for even money */
-        .trait-badge.column { background-color: #1565c0 !important; } /* Blue for columns */
-        .trait-badge.dozen { background-color: #388e3c !important; } /* Green for dozens */
-        .trait-badge.repeat { background-color: #7b1fa2 !important; } /* Purple for repeats */
+        .trait-badge.even-money {
+            background: rgba(255, 77, 77, 0.2) !important; /* Semi-transparent red */
+            border-color: #ff4d4d !important;
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+        }
+        .trait-badge.column {
+            background: rgba(77, 121, 255, 0.2) !important; /* Semi-transparent blue */
+            border-color: #4d79ff !important;
+            box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
+        }
+        .trait-badge.dozen {
+            background: rgba(77, 255, 77, 0.2) !important; /* Semi-transparent green */
+            border-color: #4dff4d !important;
+            box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
+        }
+        .trait-badge.repeat {
+            background: rgba(204, 51, 255, 0.2) !important; /* Semi-transparent purple */
+            border-color: #cc33ff !important;
+            box-shadow: 0 0 10px rgba(204, 51, 255, 0.5) !important;
+        }
         .trait-badge.winner {
             font-weight: bold !important;
-            color: #333 !important; /* Dark gray text for better contrast */
+            color: #fff !important;
             border: 2px solid #ffd700 !important; /* Gold border */
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
-            background-color: rgba(255, 215, 0, 0.2) !important; /* Slightly more transparent gold background */
-            transform: scale(1.1) !important; /* Make winners slightly larger */
+            box-shadow: 0 0 12px #ffd700 !important; /* Gold glow */
+            background: rgba(255, 215, 0, 0.3) !important;
+            transform: scale(1.1) !important;
         }
         
         /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
