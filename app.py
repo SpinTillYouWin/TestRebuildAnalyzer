@@ -7198,8 +7198,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         .large-table {
             max-height: 800px !important; /* Increased height */
-            max-width: 100% !important; /* Fit within the container */
-            width: 100% !important; /* Ensure it stretches to fit the container */
+            max-width: 1000px !important; /* Match the container's max-width */
+            margin: 0 auto !important; /* Center the table within the container */
+            display: block !important; /* Ensure margin: auto works */
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important; /* Subtle gradient background */
             border: 2px solid #ff4500 !important; /* Orange-red glowing border to match highlights */
             border-radius: 10px !important;
@@ -7211,7 +7212,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             width: 100% !important;
             max-width: 1000px !important; /* Increased to make the table wider */
             margin: 0 auto !important; /* Center the container horizontally */
-            outline: 2px solid red !important; /* Temporary outline for debugging */
         }
         
         /* Last Spins Container */
