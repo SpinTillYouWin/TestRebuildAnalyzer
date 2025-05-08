@@ -7359,90 +7359,140 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
-        /* Hit Percentage Overview */
+        /* Hit Percentage Overview - Revamped for High-Tech Look */
         .hit-percentage-container {
-            padding: 10px !important;
-            background-color: #f5f5dc !important; /* Light beige */
-            border-radius: 5px !important;
-            border: 1px solid #d3d3d3 !important;
+            padding: 20px !important; /* Increased padding for space */
+            background: linear-gradient(135deg, #2a1a44 0%, #3b2e55 100%) !important; /* Deep purple-blue gradient */
+            border-radius: 10px !important;
+            border: 2px solid #cc33ff !important; /* Neon purple border */
+            box-shadow: 0 0 15px rgba(204, 51, 255, 0.3) !important; /* Subtle purple glow */
             width: 100% !important;
-            max-width: 2000px !important; /* Kept to fit all percentages */
-            margin-top: 10px !important; /* Space between slider and accordion */
-            box-sizing: border-box !important; /* Ensure padding/border are included in width */
+            max-width: 2000px !important;
+            margin-top: 10px !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            overflow: visible !important; /* Prevent clipping */
+            animation: dataPulse 4s ease-in-out infinite !important; /* Subtle pulsing effect */
         }
+        
+        /* Data scanning pulse effect */
+        @keyframes dataPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(204, 51, 255, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(204, 51, 255, 0.5); }
+        }
+        
+        /* Add a subtle grid overlay for high-tech effect */
+        .hit-percentage-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(204, 51, 255, 0.1) 0%, transparent 70%) !important;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
         .hit-percentage-overview {
             display: flex !important;
             flex-wrap: wrap !important;
-            gap: 10px !important;
+            gap: 15px !important; /* Increased gap for better spacing */
         }
+        
         .percentage-wrapper {
             width: 100% !important;
-            max-width: 1600px !important; /* Kept to fit all percentages */
-            box-sizing: border-box !important; /* Ensure consistent width calculation */
+            max-width: 1600px !important;
+            box-sizing: border-box !important;
+            padding-top: 10px !important; /* Added padding to prevent top cutoff */
         }
+        
         .percentage-group {
-            margin: 5px 0 !important;
+            margin: 10px 0 !important; /* Increased margin for spacing */
+            padding-top: 10px !important; /* Added padding to prevent top badges from being cut off */
             flex: 1 !important;
             min-width: 150px !important;
-            overflow-x: auto !important; /* Enable horizontal scrolling for the group */
+            overflow: visible !important; /* Prevent clipping */
         }
+        
         .percentage-group h4 {
             margin: 5px 0 !important;
+            color: #fff !important; /* White for better contrast on dark background */
         }
+        
         .percentage-badges, .percentage-badges {
             display: flex !important;
-            flex-wrap: nowrap !important;
-            gap: 5px !important;
+            flex-wrap: wrap !important; /* Allow wrapping for better responsiveness */
+            gap: 8px !important;
             align-items: center !important;
-            white-space: nowrap !important;
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
+            padding: 5px 0 !important; /* Added padding for spacing */
         }
         
         /* Responsive adjustments for mobile */
         @media (max-width: 600px) {
             .percentage-badges, .percentage-badges {
-                flex-wrap: wrap !important; /* Allow wrapping on small screens */
+                flex-wrap: wrap !important;
                 overflow-x: visible !important;
             }
             .percentage-item, .trait-badge {
-                font-size: 10px !important; /* Smaller font for mobile */
+                font-size: 10px !important;
                 padding: 4px 8px !important;
             }
         }
         
-        /* TITLE: Percentage Item Styles */
+        /* TITLE: Percentage Item Styles - Revamped for High-Tech Effect */
         .percentage-item {
-            background-color: #444 !important;
+            background: transparent !important;
             color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 12px !important;
+            padding: 5px 12px !important;
+            border-radius: 15px !important;
             font-size: 12px !important;
-            margin: 3px !important;
-            transition: transform 0.2s, box-shadow 0.2s !important;
+            margin: 5px 3px !important; /* Increased margin to prevent overlap */
+            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
             cursor: pointer !important;
+            border: 1px solid transparent !important;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+            font-weight: bold !important;
             display: inline-block !important;
         }
+        
         .percentage-item:hover {
             transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important; /* Gold glow */
+            filter: brightness(1.3) !important;
         }
-        .percentage-item.even-money { background-color: #b71c1c !important; }
-        .percentage-item.column { background-color: #1565c0 !important; }
-        .percentage-item.dozen { background-color: #388e3c !important; }
+        
+        .percentage-item.even-money {
+            background: rgba(255, 77, 77, 0.2) !important; /* Semi-transparent red */
+            border-color: #ff4d4d !important;
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+        }
+        
+        .percentage-item.column {
+            background: rgba(77, 121, 255, 0.2) !important; /* Semi-transparent blue */
+            border-color: #4d79ff !important;
+            box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
+        }
+        
+        .percentage-item.dozen {
+            background: rgba(77, 255, 77, 0.2) !important; /* Semi-transparent green */
+            border-color: #4dff4d !important;
+            box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
+        }
+        
         .percentage-item.winner {
             font-weight: bold !important;
-            color: #333 !important;
-            border: 2px solid #ffd700 !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-            background-color: rgba(255, 215, 0, 0.2) !important;
+            color: #fff !important;
+            border: 2px solid #ffd700 !important; /* Gold border */
+            box-shadow: 0 0 12px #ffd700 !important; /* Gold glow */
+            background: rgba(255, 215, 0, 0.3) !important;
             transform: scale(1.1) !important;
         }
+        
         .percentage-with-bar {
             display: inline-block !important;
             text-align: center !important;
             margin: 0 3px !important;
-            margin-bottom: 6px !important; /* Add vertical spacing below each badge + bar */
+            margin-bottom: 6px !important;
         }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
