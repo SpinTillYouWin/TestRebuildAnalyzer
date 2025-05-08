@@ -6452,12 +6452,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Column(scale=3):
+    with gr.Column(scale=3, elem_classes="dynamic-table-container"):
         gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
         dynamic_table_output = gr.HTML(
             label="Dynamic Table",
             value=create_dynamic_table(strategy_name="Best Even Money Bets"),
-            elem_classes=["scrollable-table", "large-table", "centered-table"]
+            elem_classes=["scrollable-table", "large-table"]
         )
         gr.Markdown("### Strategy Recommendations")
         strategy_output = gr.HTML(
@@ -6595,8 +6595,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
-
     
+
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -7198,15 +7198,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         .large-table {
-            max-height: 600px !important; /* Increased height */
-            max-width: 100% !important; /* Ensure it takes full width */
-            min-width: 1000px !important; /* Increased minimum width */
+            max-height: 700px !important; /* Further increased height */
+            max-width: 100% !important; /* Fit within the container */
             width: 100% !important; /* Ensure it stretches to fit the container */
         }
         
-        .centered-table {
-            max-width: 1000px !important; /* Increased to match min-width and allow centering */
-            margin: 0 auto !important; /* Center the table horizontally */
+        .dynamic-table-container {
+            width: 100% !important;
+            max-width: 900px !important; /* Match the European Roulette Table's max-width (slightly larger) */
+            margin: 0 auto !important; /* Center the container horizontally */
         }
         
         /* Last Spins Container */
@@ -7218,6 +7218,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-top: 10px !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
+
 
         /* Fade-in animation for Last Spins */
         .fade-in {
