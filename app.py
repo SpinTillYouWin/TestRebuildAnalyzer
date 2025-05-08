@@ -7199,34 +7199,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         .large-table {
-            max-height: 800px !important; /* Increased height */
-            max-width: 1000px !important; /* Match the container's max-width */
-            margin: 0 auto !important; /* Center the table within the container */
-            display: block !important; /* Ensure margin: auto works */
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important; /* Subtle gradient background */
-            border: 2px solid #ff4500 !important; /* Orange-red glowing border to match highlights */
+            max-height: 800px !important;
+            max-width: 1000px !important;
+            margin: 0 auto !important;
+            display: block !important;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+            border: 2px solid #ff4500 !important;
             border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(255, 69, 0, 0.5) !important; /* Glowing shadow */
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.5) !important;
             padding: 10px !important;
         }
         
         .dynamic-table-container {
             width: 100% !important;
-            max-width: 1000px !important; /* Increased to make the table wider */
-            margin: 0 auto !important; /* Center the container horizontally */
+            max-width: 1000px !important;
+            margin: 0 auto !important;
         }
         
         .strategy-box {
-            max-height: 300px !important; /* Limit the height */
-            overflow-y: auto !important; /* Enable vertical scrolling */
-            max-width: 1000px !important; /* Match the container's max-width */
-            margin: 0 auto !important; /* Center within the container */
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important; /* Blue gradient */
-            border: 2px solid #3b82f6 !important; /* Neon blue border */
+            max-height: 300px !important;
+            overflow-y: auto !important;
+            max-width: 1000px !important;
+            margin: 0 auto !important;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
+            border: 2px solid #3b82f6 !important;
             border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important; /* Glowing shadow */
-            padding: 15px !important; /* Internal padding */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+            padding: 15px !important;
+        }
+        
+        .strategy-box, .strategy-box p, .strategy-box span, .strategy-box ul, .strategy-box li {
             color: #ffffff !important; /* White text for contrast */
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 12px rgba(59, 130, 246, 0.5) !important; /* Neon blue glow */
         }
         
         /* Last Spins Container */
