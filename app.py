@@ -6457,7 +6457,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         dynamic_table_output = gr.HTML(
             label="Dynamic Table",
             value=create_dynamic_table(strategy_name="Best Even Money Bets"),
-            elem_classes=["scrollable-table", "large-table"]
+            elem_classes=["scrollable-table", "large-table", "centered-table"]
         )
         gr.Markdown("### Strategy Recommendations")
         strategy_output = gr.HTML(
@@ -6595,6 +6595,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     )
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
+
     
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
@@ -7197,14 +7198,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         .large-table {
-            max-height: 500px !important; /* Increase height */
+            max-height: 600px !important; /* Increased height */
             max-width: 100% !important; /* Ensure it takes full width */
-            min-width: 800px !important; /* Increase minimum width */
+            min-width: 1000px !important; /* Increased minimum width */
             width: 100% !important; /* Ensure it stretches to fit the container */
         }
-
-    
-
+        
+        .centered-table {
+            max-width: 1000px !important; /* Increased to match min-width and allow centering */
+            margin: 0 auto !important; /* Center the table horizontally */
+        }
+        
         /* Last Spins Container */
         .last-spins-container {
             background-color: #f5f5f5 !important;
@@ -7214,7 +7218,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-top: 10px !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-        
+
         /* Fade-in animation for Last Spins */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
