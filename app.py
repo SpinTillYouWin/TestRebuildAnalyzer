@@ -7516,6 +7516,43 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outline: 2px solid yellow !important; /* Temporary outline for debugging */
         }
         
+        /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
+        div[id="spin-trend-radar"].gr-accordion {
+            background: #1a2a44 !important; /* Dark blue to match SpinTrend Radar gradient */
+            border: 2px solid #00ffcc !important; /* Neon cyan border */
+            border-radius: 10px !important;
+            padding: 10px !important;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3) !important; /* Subtle glow */
+        }
+        
+        div[id="spin-trend-radar"].gr-accordion summary {
+            background: rgba(0, 255, 204, 0.1) !important; /* Subtle cyan background */
+            color: #00ffcc !important; /* Neon cyan text */
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important; /* Glowing effect */
+            font-size: 18px !important;
+            font-weight: bold !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+        }
+        
+        div[id="hit-percentage-overview"].gr-accordion {
+            background: #3a1a5a !important; /* Dark purple to match Hit Percentage Overview gradient */
+            border: 2px solid #ff66cc !important; /* Neon pink border */
+            border-radius: 10px !important;
+            padding: 10px !important;
+            box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important; /* Subtle glow */
+        }
+        
+        div[id="hit-percentage-overview"].gr-accordion summary {
+            background: rgba(255, 102, 204, 0.1) !important; /* Subtle pink background */
+            color: #ff66cc !important; /* Neon pink text */
+            text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important; /* Glowing effect */
+            font-size: 18px !important;
+            font-weight: bold !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+        }
+        
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
         .progress-bar {
             width: 100% !important;
