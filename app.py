@@ -7359,7 +7359,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
 
-            /* Hit Percentage Overview */
+        /* Hit Percentage Overview */
         .hit-percentage-container {
             padding: 10px !important;
             background-color: #f5f5dc !important; /* Light beige */
@@ -7410,7 +7410,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 4px 8px !important;
             }
         }
-
+        
         /* TITLE: Percentage Item Styles */
         .percentage-item {
             background-color: #444 !important;
