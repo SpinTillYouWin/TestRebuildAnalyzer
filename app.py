@@ -6495,25 +6495,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             elem_classes=["scrollable-table", "large-table"]
         )
         gr.Markdown("### Strategy Recommendations")
-        strategy_output = gr.HTML(
-            label="Strategy Recommendations",
-            value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
-            elem_classes=["strategy-box"]
-        )
-    with gr.Column(scale=1, min_width=200):
-        category_dropdown = gr.Dropdown(
-            label="Select Category",
-            choices=category_choices,
-            value="Even Money Strategies",
-            allow_custom_value=False,
-            elem_id="select-category"
-        )
-        strategy_dropdown = gr.Dropdown(
-            label="Select Strategy",
-            choices=strategy_categories["Even Money Strategies"],
-            value="Best Even Money Bets",
-            allow_custom_value=False
-        )
+        with gr.Row():
+            category_dropdown = gr.Dropdown(
+                label="Select Category",
+                choices=category_choices,
+                value="Even Money Strategies",
+                allow_custom_value=False,
+                elem_id="select-category"
+            )
+            strategy_dropdown = gr.Dropdown(
+                label="Select Strategy",
+                choices=strategy_categories["Even Money Strategies"],
+                value="Best Even Money Bets",
+                allow_custom_value=False
+            )
         reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
         neighbours_count_slider = gr.Slider(
             label="Number of Neighbors (Left + Right)",
@@ -6534,6 +6529,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             interactive=True,
             visible=False,
             elem_classes="long-slider"
+        )
+        strategy_output = gr.HTML(
+            label="Strategy Recommendations",
+            value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
+            elem_classes=["strategy-box"]
         )
     
     # 7.1. Row 7.1: Dozen Tracker
@@ -6632,7 +6632,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
     
-
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -7250,7 +7249,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             max-width: 1000px !important;
             margin: 0 auto !important;
         }
-        
+
         .strategy-box {
             max-height: 300px !important;
             overflow-y: auto !important;
@@ -7268,35 +7267,60 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             text-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 12px rgba(59, 130, 246, 0.5) !important;
         }
         
+        .strategy-box .gr-dropdown, .strategy-box .gr-button, .strategy-box .gr-slider {
+            background: rgba(59, 130, 246, 0.1) !important; /* Slightly transparent neon blue background */
+            border: 1px solid #3b82f6 !important; /* Neon blue border */
+            border-radius: 5px !important;
+            color: #ffffff !important; /* White text */
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important; /* Subtle neon glow */
+        }
+        
+        .strategy-box .gr-dropdown select {
+            background: transparent !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        
+        .strategy-box .gr-button {
+            background: #3b82f6 !important; /* Solid neon blue for buttons */
+            color: #ffffff !important;
+            border: 1px solid #3b82f6 !important;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+        }
+        
+        .strategy-box .gr-button:hover {
+            background: #1e90ff !important; /* Lighter blue on hover */
+        }
+        
         .strongest-numbers-table {
             width: 100% !important;
-            max-width: 100% !important; /* Fit within the strategy-box */
-            background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Slightly darker blue gradient */
+            max-width: 100% !important;
+            background: linear-gradient(135deg, #2a2a72, #4682b4) !important;
             border-collapse: collapse !important;
-            border: 1px solid #3b82f6 !important; /* Neon blue border */
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important; /* Glowing shadow */
-            margin: 10px 0 !important; /* Spacing around the table */
+            border: 1px solid #3b82f6 !important;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
+            margin: 10px 0 !important;
         }
         
         .strongest-numbers-table th, .strongest-numbers-table td {
-            padding: 8px 12px !important; /* Increased padding for readability */
-            border: 1px solid #3b82f6 !important; /* Neon blue borders for cells */
+            padding: 8px 12px !important;
+            border: 1px solid #3b82f6 !important;
             text-align: center !important;
-            color: #ffffff !important; /* White text */
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7) !important; /* Subtle neon glow */
+            color: #ffffff !important;
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7) !important;
         }
         
         .strongest-numbers-table th {
-            background: rgba(59, 130, 246, 0.2) !important; /* Slightly transparent neon blue for headers */
+            background: rgba(59, 130, 246, 0.2) !important;
             font-weight: bold !important;
         }
         
         .strongest-numbers-table td:nth-child(3), 
         .strongest-numbers-table td:nth-child(6), 
         .strongest-numbers-table td:nth-child(9) {
-            white-space: normal !important; /* Allow wrapping for Neighbors columns */
-            word-wrap: break-word !important; /* Ensure long neighbor lists wrap */
-            max-width: 150px !important; /* Limit the width of Neighbors columns */
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            max-width: 150px !important;
         }
         
         /* Last Spins Container */
