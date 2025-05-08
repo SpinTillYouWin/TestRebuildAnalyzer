@@ -8477,6 +8477,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            # Fast workaround: Re-run show_strategy_recommendations to repopulate strategy_output
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            fn=lambda: print(f"After analyze_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
         )
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
