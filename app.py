@@ -6452,56 +6452,53 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Row():
-        with gr.Column(scale=3):
-            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-            dynamic_table_output = gr.HTML(
-                label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets")
-            )
-        with gr.Column(scale=1):
-            gr.Markdown("### Strategy Recommendations")
-            strategy_output = gr.HTML(
-                label="Strategy Recommendations",
-                value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
-            )
-            # Removed Casino Data Insights accordion from this column
-        with gr.Column(scale=1, min_width=200):
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-            reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-            neighbours_count_slider = gr.Slider(
-                label="Number of Neighbors (Left + Right)",
-                minimum=1,
-                maximum=5,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
-            strong_numbers_count_slider = gr.Slider(
-                label="Strong Numbers to Highlight (Neighbours Strategy)",
-                minimum=1,
-                maximum=18,
-                step=1,
-                value=1,
-                interactive=True,
-                visible=False,
-                elem_classes="long-slider"
-            )
+    with gr.Column(scale=3):
+        gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+        dynamic_table_output = gr.HTML(
+            label="Dynamic Table",
+            value=create_dynamic_table(strategy_name="Best Even Money Bets"),
+            elem_classes=["scrollable-table", "large-table"]
+        )
+        gr.Markdown("### Strategy Recommendations")
+        strategy_output = gr.HTML(
+            label="Strategy Recommendations",
+            value=show_strategy_recommendations("Best Even Money Bets", 2, 1)
+        )
+    with gr.Column(scale=1, min_width=200):
+        category_dropdown = gr.Dropdown(
+            label="Select Category",
+            choices=category_choices,
+            value="Even Money Strategies",
+            allow_custom_value=False,
+            elem_id="select-category"
+        )
+        strategy_dropdown = gr.Dropdown(
+            label="Select Strategy",
+            choices=strategy_categories["Even Money Strategies"],
+            value="Best Even Money Bets",
+            allow_custom_value=False
+        )
+        reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+        neighbours_count_slider = gr.Slider(
+            label="Number of Neighbors (Left + Right)",
+            minimum=1,
+            maximum=5,
+            step=1,
+            value=1,
+            interactive=True,
+            visible=False,
+            elem_classes="long-slider"
+        )
+        strong_numbers_count_slider = gr.Slider(
+            label="Strong Numbers to Highlight (Neighbours Strategy)",
+            minimum=1,
+            maximum=18,
+            step=1,
+            value=1,
+            interactive=True,
+            visible=False,
+            elem_classes="long-slider"
+        )
     
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -7190,8 +7187,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 3px;
         }
         
+
         /* Scrollable Tables */
-        .scrollable-table { max-height: 300px; overflow-y: auto; display: block; width: 100%; }
+        .scrollable-table {
+            max-height: 300px;
+            overflow-y: auto;
+            display: block;
+            width: 100%;
+        }
+        
+        .large-table {
+            max-height: 500px !important; /* Increase height */
+            max-width: 100% !important; /* Ensure it takes full width */
+            min-width: 800px !important; /* Increase minimum width */
+            width: 100% !important; /* Ensure it stretches to fit the container */
+        }
+
     
 
         /* Last Spins Container */
@@ -7230,6 +7241,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* Quick Trends Section for SpinTrend Radar */
+
         .quick-trends {
             background-color: #fff3e0 !important;
             padding: 10px !important;
