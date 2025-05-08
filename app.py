@@ -6452,7 +6452,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Column(scale=3, elem_classes="dynamic-table-container"):
+    with gr.Column(scale=3, min_width=1000, elem_classes="dynamic-table-container"):
         gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
         dynamic_table_output = gr.HTML(
             label="Dynamic Table",
@@ -6596,7 +6596,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=2):
             pass  # Empty column to maintain layout balance
     
-
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
@@ -7198,15 +7197,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         .large-table {
-            max-height: 700px !important; /* Further increased height */
+            max-height: 800px !important; /* Increased height */
             max-width: 100% !important; /* Fit within the container */
             width: 100% !important; /* Ensure it stretches to fit the container */
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important; /* Subtle gradient background */
+            border: 2px solid #ff4500 !important; /* Orange-red glowing border to match highlights */
+            border-radius: 10px !important;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.5) !important; /* Glowing shadow */
+            padding: 10px !important;
         }
         
         .dynamic-table-container {
             width: 100% !important;
-            max-width: 900px !important; /* Match the European Roulette Table's max-width (slightly larger) */
+            max-width: 1000px !important; /* Increased to make the table wider */
             margin: 0 auto !important; /* Center the container horizontally */
+            outline: 2px solid red !important; /* Temporary outline for debugging */
         }
         
         /* Last Spins Container */
@@ -7218,7 +7223,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-top: 10px !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-
 
         /* Fade-in animation for Last Spins */
         .fade-in {
