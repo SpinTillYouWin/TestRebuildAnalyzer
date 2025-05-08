@@ -7465,7 +7465,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
         /* TITLE: Traits Container - Revamped for SpinTrend Radar */
         .traits-container {
-            padding: 15px !important;
+            padding: 20px !important; /* Increased padding to give more space */
             background: linear-gradient(135deg, #1a2a44 0%, #2e3b55 100%) !important; /* Dark gradient for radar screen effect */
             border-radius: 10px !important;
             border: 2px solid #00ffcc !important; /* Neon cyan border */
@@ -7475,7 +7475,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin-top: 10px !important;
             box-sizing: border-box !important;
             position: relative !important;
-            overflow: hidden !important;
+            overflow: visible !important; /* Changed to visible to prevent clipping */
             animation: radarPulse 4s ease-in-out infinite !important; /* Subtle pulsing effect */
         }
         
@@ -7506,11 +7506,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             display: flex !important;
             flex-wrap: wrap !important;
             gap: 15px !important;
+            padding-top: 10px !important; /* Added padding to ensure space at the top */
         }
         .badge-group {
-            margin: 5px 0 !important;
+            margin: 10px 0 !important; /* Increased margin to add more space */
+            padding-top: 10px !important; /* Added padding to prevent top badges from being cut off */
             flex: 1 !important;
             min-width: 150px !important;
+            overflow: visible !important; /* Ensure badges aren't clipped */
         }
         .badge-group:nth-child(1) h4 { color: #ff4d4d !important; } /* Even Money Bets - Neon Red */
         .badge-group:nth-child(2) h4 { color: #4d79ff !important; } /* Columns - Neon Blue */
@@ -7521,6 +7524,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             flex-wrap: wrap !important; /* Allow wrapping for better responsiveness */
             gap: 8px !important;
             align-items: center !important;
+            padding: 5px 0 !important; /* Added padding to ensure space around badges */
         }
         
         /* TITLE: Trait Badge Styles - Revamped for Radar Effect */
@@ -7530,12 +7534,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 5px 12px !important;
             border-radius: 15px !important;
             font-size: 12px !important;
-            margin: 3px !important;
+            margin: 5px 3px !important; /* Increased top/bottom margin to prevent overlap */
             transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
             cursor: pointer !important;
             border: 1px solid transparent !important;
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
             font-weight: bold !important;
+            display: inline-block !important; /* Ensure badges respect their own space */
         }
         .trait-badge:hover {
             transform: scale(1.1) !important;
