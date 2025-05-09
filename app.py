@@ -7497,6 +7497,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .large-table {
             border: 2px dashed green !important; /* Temporary for debugging */
         }
+ 
 
         .strategy-box {
             max-height: 300px !important;
