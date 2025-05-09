@@ -2155,7 +2155,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     # Initialize highlights for outside bets using suggestions (for Neighbours of Strong Number strategy)
     suggestion_highlights = {}
     if suggestions:
-        # Parse suggestions to extract recommendations
         best_even_money = None
         best_bet = None
         play_two_first = None
@@ -2212,18 +2211,18 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             else:
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
-                # Use a consistent black border for all cells
-                border_style = "1px solid black"  # Simplified to match table border
+                border_style = "1px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                # Add additional classes for hot/cold numbers
                 cell_class = "has-tooltip"
+                # Add classes for hot/cold numbers
+                num_span_class = ""
                 if num in hot_numbers:
-                    cell_class += " hot-number"
+                    num_span_class += " hot-number-text"
                 if state.use_casino_winners:
                     if num in casino_winners["hot_numbers"]:
-                        cell_class += " hot-number-casino"
+                        num_span_class += " hot-number-casino-text"
                     elif num in casino_winners["cold_numbers"]:
-                        cell_class += " cold-number-casino"
+                        num_span_class += " cold-number-casino-text"
                 hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
 
@@ -2245,7 +2244,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 if pick_tooltip:
                     tooltip = f"{pick_tooltip} - {tooltip}" if tooltip else pick_tooltip
 
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}<span class="{marker_class}">{marker}</span></td>'
+                # Wrap the number in a span to apply the glow effect
+                num_html = f'<span class="{num_span_class}">{num}</span>'
+                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num_html}<span class="{marker_class}">{marker}</span></td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -8474,6 +8475,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             .dynamic-roulette-table .cold-number-casino {
                 box-shadow: 0 0 8px 2px #C0C0C0 !important; /* Silver glow */
                 z-index: 2 !important;
+            }
+            /* Text Glow for Hot Numbers */
+            .hot-number-text {
+                text-shadow: 0 0 6px #FFD700, 0 0 12px #FFD700 !important; /* Gold glow */
+            }
+            
+            /* Text Glow for Casino Hot Numbers */
+            .hot-number-casino-text {
+                text-shadow: 0 0 6px #FFD700, 0 0 12px #FFD700 !important; /* Gold glow */
+            }
+            
+            /* Text Glow for Casino Cold Numbers */
+            .cold-number-casino-text {
+                text-shadow: 0 0 6px #C0C0C0, 0 0 12px #C0C0C0 !important; /* Silver glow */
+            }
+            
+            /* Ensure Table Borders Are Consistent */
+            .dynamic-roulette-table {
+                border-collapse: collapse !important;
+                border: 1px solid black !important;
+            }
+            
+            /* Ensure All Cells Have a Consistent Black Border */
+            .dynamic-roulette-table td {
+                border: 1px solid black !important;
+                position: relative !important;
+                white-space: nowrap !important;
             }
             
             /* Tooltip Styling */
