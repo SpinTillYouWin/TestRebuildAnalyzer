@@ -7410,8 +7410,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Progress Bar Styles for Bet Strength */
         .dynamic-roulette-table .progress-bar {
             width: 100% !important;
-            height: 5px !important;
+            height: 6px !important; /* Increased height for visibility */
             background: #d3d3d3 !important;
+            border: 1px solid #666 !important; /* Subtle border for contrast */
             border-radius: 3px !important;
             margin-top: 3px !important;
             position: relative !important;
@@ -7420,7 +7421,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         .dynamic-roulette-table .progress-fill.top-tier {
             height: 100% !important;
-            background: #ffd700 !important; /* Yellow for top-tier */
+            background: #d4a017 !important; /* Darker yellow for contrast against #ffd700 background */
             border-radius: 3px !important;
             position: absolute !important;
             top: 0 !important;
@@ -7429,7 +7430,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         .dynamic-roulette-table .progress-fill.middle-tier {
             height: 100% !important;
-            background: #00ffff !important; /* Cyan for middle-tier */
+            background: #00b7eb !important; /* Darker cyan for contrast against #00ffff background */
             border-radius: 3px !important;
             position: absolute !important;
             top: 0 !important;
@@ -7438,7 +7439,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         .dynamic-roulette-table .progress-fill.lower-tier {
             height: 100% !important;
-            background: #00ff00 !important; /* Green for lower-tier */
+            background: #00cc00 !important; /* Darker green for contrast against #00ff00 background */
             border-radius: 3px !important;
             position: absolute !important;
             top: 0 !important;
