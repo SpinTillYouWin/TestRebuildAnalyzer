@@ -7225,7 +7225,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
 
         /* Scrollable Tables */
-        .scrollable-table {
+       .scrollable-table {
             max-height: 300px;
             overflow-y: auto;
             display: block;
@@ -7285,7 +7285,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             color: #ffffff !important; /* White text for numbers */
             text-shadow: none !important; /* No neon glow for numbers */
             white-space: nowrap !important; /* Prevent wrapping for numbers */
-            word-wrap: normal !important; /* Disable wrapping */
+            overflow-wrap: normal !important; /* Disable wrapping */
+            min-width: 40px !important; /* Reduced width to fit smaller font */
+            font-size: 12px !important; /* Smaller font size for numbers */
         }
         
         .large-table td:not(:nth-child(1)) {
