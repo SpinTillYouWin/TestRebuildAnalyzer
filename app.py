@@ -6545,14 +6545,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Column(scale=3, min_width=1000, elem_classes="dynamic-table-container"):
-        gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-        dynamic_table_output = gr.HTML(
-            label="Dynamic Table",
-            value=create_dynamic_table(strategy_name="Best Even Money Bets"),
-            elem_classes=["scrollable-table", "large-table"]
-        )
-        gr.Markdown("### Strategy Recommendations")
+    with gr.Row(elem_classes="dynamic-table-row"):
+        with gr.Column(scale=1, min_width=0, elem_classes="dynamic-table-container"):
+            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+            dynamic_table_output = gr.HTML(
+                label="Dynamic Table",
+                value=create_dynamic_table(strategy_name="Best Even Money Bets"),
+                elem_classes=["scrollable-table", "large-table"]
+            )
+            gr.Markdown("### Strategy Recommendations")
         with gr.Row():
             category_dropdown = gr.Dropdown(
                 label="Select Category",
