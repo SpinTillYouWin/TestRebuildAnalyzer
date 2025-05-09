@@ -6487,7 +6487,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Column(scale=3, min_width=1000, elem_classes="dynamic-table-container"):
+    with gr.Column(scale=3, min_width=1000, elem_classes="dynamic-table-container"):with gr.Column(min_width=1400, elem_classes="dynamic-table-container"):
         gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
         dynamic_table_output = gr.HTML(
             label="Dynamic Table",
@@ -7253,11 +7253,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 8px !important;
         }
         
-        .dynamic-table-container {
+        .dynamic-table-container {.dynamic-table-container {
             width: 100% !important;
-            max-width: 1300px !important;  /* Increased from 1200px to 1300px */
+            max-width: 1300px !important;
             margin: 0 auto !important;
-            padding: 20px 0 !important;
+            padding: 20px 20px !important;
+            background: rgba(0, 255, 0, 0.1) !important;
+            display: flex !important;  /* Add flexbox for vertical centering */
+            flex-direction: column !important;
+            align-items: center !important;  /* Center horizontally */
+            justify-content: center !important;  /* Center vertically */
+            min-height: 400px !important;  /* Ensure enough height for vertical centering */
         }
         
         .strategy-box {
