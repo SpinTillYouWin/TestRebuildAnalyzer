@@ -2130,7 +2130,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
 # Line 1: Start of render_dynamic_table_html function (updated)
-def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None):
+def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, cold_numbers=None):
     """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
@@ -2216,7 +2216,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;">{num}</td>'
+                # Add hot-number or cold-number class
+                cell_class = "hot-number" if hot_numbers and str(num) in hot_numbers else "cold-number" if cold_numbers and str(num) in cold_numbers else ""
+                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}">{num}</td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -2415,10 +2417,18 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             middle_color = middle_color if middle_color else "rgba(0, 255, 255, 0.5)"
             lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
             suggestions = None
+            hot_numbers = []  # No hot numbers without spins
+            cold_numbers = []  # No cold numbers without spins
         else:
             print("create_dynamic_table: Applying strategy highlights")
             trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
             print(f"create_dynamic_table: Strategy highlights applied - trending_even_money={trending_even_money}, second_even_money={second_even_money}, third_even_money={third_even_money}, trending_dozen={trending_dozen}, second_dozen={second_dozen}, trending_column={trending_column}, second_column={second_column}, number_highlights={number_highlights}")
+            
+            # Determine hot and cold numbers (top 5 and bottom 5 with hits)
+            sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+            hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
+            cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score > 0]
+            print(f"create_dynamic_table: Hot numbers={hot_numbers}, Cold numbers={cold_numbers}")
         
         # If still no highlights and no sorted_sections, provide a default message
         if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -2426,7 +2436,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             return "<p>No spins yet. Select a strategy to see default highlights.</p>"
         
         print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
+        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, cold_numbers)
         print("create_dynamic_table: Table generated successfully")
         return html
     
@@ -7244,56 +7254,73 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
         }
         
-        /* Style section headers (Even Money Bets, Columns, Dozens) */
+        /* Dynamic Table Container */
         .dynamic-table-container {
             width: 100% !important;
-            max-width: 1200px !important; /* Slightly reduced for better fit */
-            margin: 0 auto !important; /* Center horizontally */
-            padding: 20px 10px !important; /* Add horizontal padding for balance */
-            display: flex !important; /* Use flexbox for centering */
-            justify-content: center !important; /* Center contents */
-            align-items: center !important; /* Vertical centering if needed */
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 20px 10px !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
         }
         
+        /* Large Table */
         .large-table {
             max-height: 800px !important;
-            max-width: 900px !important; /* Slightly reduced for better centering */
-            width: 100% !important; /* Responsive within max-width */
-            margin: 0 auto !important; /* Reinforce centering */
+            max-width: 900px !important;
+            width: 100% !important;
+            margin: 0 auto !important;
             display: block !important;
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
             border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important; /* Slightly larger for polish */
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important; /* Enhanced shadow */
-            padding: 15px !important; /* More internal spacing */
+            border-radius: 12px !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
+            padding: 15px !important;
             box-sizing: border-box !important;
         }
         
-        /* Ensure table content is centered */
         .large-table table {
             width: 100% !important;
             margin: 0 auto !important;
-            text-align: center !important; /* Center text in cells */
+            text-align: center !important;
         }
         
-        /* Style section headers for balance */
         .large-table th {
             font-weight: bold !important;
             color: #000000 !important;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
             background: rgba(59, 130, 246, 0.1) !important;
-            padding: 10px !important; /* Increased for better spacing */
+            padding: 10px !important;
+        }
+        
+        .large-table td {
+            padding: 8px !important;
+            text-align: center !important;
+        }
+        
+        /* Glowing Hover Effects for Hot and Cold Numbers */
+        .hot-number:hover {
+            box-shadow: 0 0 10px #ffd700 !important; /* Yellow glow for hot numbers */
+            transform: scale(1.1) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .cold-number:hover {
+            box-shadow: 0 0 10px #00b7eb !important; /* Blue glow for cold numbers */
+            transform: scale(1.1) !important;
+            transition: all 0.3s ease !important;
         }
         
         /* Responsive adjustments */
         @media (max-width: 1200px) {
             .dynamic-table-container {
-                max-width: 90vw !important; /* Use viewport width for smaller screens */
+                max-width: 90vw !important;
                 padding: 15px 5px !important;
             }
         
             .large-table {
-                max-width: 95% !important; /* Slightly more responsive */
+                max-width: 95% !important;
                 padding: 12px !important;
             }
         }
