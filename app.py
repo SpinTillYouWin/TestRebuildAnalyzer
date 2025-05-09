@@ -7232,22 +7232,34 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             width: 100%;
         }
         
+        /* Update container borders and box shadow */
         .large-table {
             max-height: 800px !important;
             max-width: 1000px !important;
             margin: 0 auto !important;
             display: block !important;
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #ff4500 !important;
+            border: 2px solid #3b82f6 !important;  /* Changed to neon blue */
             border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(255, 69, 0, 0.5) !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;  /* Neon blue glow */
             padding: 10px !important;
         }
         
+        /* Style section headers (Even Money Bets, Columns, Dozens) */
+        .large-table th {
+            font-weight: bold !important;
+            color: #000000 !important;  /* Black text */
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;  /* Subtle black shadow for "cool" effect */
+            background: rgba(59, 130, 246, 0.1) !important;  /* Light neon blue background */
+            padding: 8px !important;  /* Add padding for better spacing */
+        }
+        
+        /* Adjust container to add more space for centering */
         .dynamic-table-container {
             width: 100% !important;
-            max-width: 1000px !important;
+            max-width: 1200px !important;  /* Increased to add more space on the sides */
             margin: 0 auto !important;
+            padding: 20px 0 !important;  /* Add vertical padding for better spacing */
         }
 
         .strategy-box {
