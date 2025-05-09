@@ -7501,7 +7501,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Hit Percentage Overview - Revamped for High-Tech Look with Increased Specificity */
         #hit-percentage-overview .hit-percentage-container {
             padding: 20px !important;
-            background: linear-gradient(135deg, #3a1a5a 0%, #5a2e7a 100%) !important;
+            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
             border-radius: 12px !important;
             border: 3px solid #ff66cc !important;
             box-shadow: 0 0 20px rgba(255, 102, 204, 0.5) !important;
@@ -7657,7 +7657,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
         #spin-trend-radar.gr-accordion, #spin-trend-radar.gr-accordion > details {
-            background: #1a2a44 !important;
+            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
             border: 2px solid #00ffcc !important;
             border-radius: 10px !important;
             padding: 10px !important;
@@ -7666,7 +7666,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         #spin-trend-radar.gr-accordion summary {
-            background: rgba(0, 255, 204, 0.1) !important;
+            background: rgba(0, 255, 204, 0.15) !important;
             color: #00ffcc !important;
             text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
             font-size: 18px !important;
@@ -7674,7 +7674,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 8px !important;
         }
-        
+
         #hit-percentage-overview.gr-accordion, #hit-percentage-overview.gr-accordion > details {
             background: #3a1a5a !important;
             border: 2px solid #ff66cc !important;
@@ -7715,7 +7715,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* TITLE: Traits Container - Revamped for Radar Effect */
         .traits-container {
             padding: 20px !important;
-            background: linear-gradient(135deg, #1a2a44 0%, #2e3b55 100%) !important;
+            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important; /* Same as Hit Percentage Overview */
             border-radius: 10px !important;
             border: 2px solid #00ffcc !important;
             box-shadow: 0 0 15px rgba(0, 255, 204, 0.3) !important;
