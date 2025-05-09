@@ -6545,17 +6545,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Column(scale=3, min_width=1000, elem_classes="dynamic-table-container"):
+with gr.Row(elem_classes="table-strategy-row"):
+    # Column for Dynamic Roulette Table
+    with gr.Column(scale=1, elem_classes="dynamic-table-container"):
         gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
         dynamic_table_output = gr.HTML(
             label="Dynamic Table",
             value=create_dynamic_table(strategy_name="Best Even Money Bets"),
             elem_classes=["scrollable-table", "large-table"]
         )
+    # Column for Strategy Recommendations
+    with gr.Column(scale=1, elem_classes="strategy-container"):
         gr.Markdown("### Strategy Recommendations")
-        # Wrap the entire section in a div with class "strategy-card"
         with gr.Row(elem_classes="strategy-card"):
-            with gr.Column(scale=1):  # Use a single column to stack elements vertically
+            with gr.Column(scale=1):
                 with gr.Row():
                     category_dropdown = gr.Dropdown(
                         label="Select Category",
@@ -7325,14 +7328,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
             padding: 10px !important;
         }
+
+        /* Row containing both Dynamic Roulette Table and Strategy Recommendations */
+        .table-strategy-row {
+            display: flex !important;
+            flex-wrap: nowrap !important; /* Prevent wrapping unless screen is too small */
+            justify-content: center !important;
+            align-items: stretch !important; /* Ensure both columns stretch to the same height */
+            gap: 20px !important; /* Add space between the two sections */
+            width: 100% !important;
+            max-width: 1200px !important; /* Constrain the total width */
+            margin: 0 auto !important;
+        }
+        
         /* Dynamic Table Container */
         .dynamic-table-container {
             width: 100% !important;
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            padding: 20px 10px !important;
+            max-width: 600px !important; /* Reduced to fit side by side */
+            padding: 10px !important;
             display: flex !important;
-            flex-direction: column !important; /* Ensure children stack vertically */
+            flex-direction: column !important;
             justify-content: center !important;
             align-items: center !important;
             box-sizing: border-box !important;
@@ -7341,26 +7356,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Ensure all children of the container are centered */
         .dynamic-table-container > * {
             width: 100% !important;
-            max-width: 900px !important; /* Match the large-table max-width */
+            max-width: 600px !important; /* Match the new max-width */
             margin: 0 auto !important;
         }
         
         /* Large Table */
         .large-table {
             max-height: 800px !important;
-            max-width: 900px !important;
+            max-width: 600px !important; /* Reduced to fit side by side */
             width: 100% !important;
             margin: 0 auto !important;
             display: block !important;
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important;
+            border: 2px solid transparent !important; /* For gradient border */
             border-radius: 12px !important;
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
             padding: 15px !important;
             box-sizing: border-box !important;
             overflow: visible !important;
-            text-align: center !important; /* Center table content */
-            animation: tableFadeIn 0.5s ease-in-out !important; /* Add load animation */
+            text-align: center !important;
+            animation: tableFadeIn 0.5s ease-in-out !important;
             /* Add gradient border */
             background-clip: padding-box !important;
             border-image: linear-gradient(45deg, #3b82f6, #1e90ff) 1 !important;
@@ -7496,52 +7511,32 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             left: 0 !important;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-            .dynamic-table-container {
-                max-width: 90vw !important;
-                padding: 15px 5px !important;
-            }
-        
-            .dynamic-table-container > * {
-                max-width: 95% !important;
-            }
-        
-            .large-table {
-                max-width: 95% !important;
-                padding: 12px !important;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .dynamic-table-container {
-                max-width: 100vw !important;
-                padding: 10px 5px !important;
-            }
-        
-            .dynamic-table-container > * {
-                max-width: 100% !important;
-            }
-        
-            .large-table {
-                max-width: 100% !important;
-                padding: 10px !important;
-            }
+        /* Strategy Container */
+        .strategy-container {
+            width: 100% !important;
+            max-width: 600px !important; /* Reduced to fit side by side */
+            padding: 10px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
         }
         
         /* Strategy Card Container */
         .strategy-card {
-            max-width: 1000px !important;
+            max-width: 600px !important; /* Reduced to match the container */
+            width: 100% !important;
             margin: 0 auto !important;
             padding: 20px !important;
-            background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Match the aesthetic of other sections */
+            background: linear-gradient(135deg, #2a2a72, #4682b4) !important;
             border: 2px solid #3b82f6 !important;
             border-radius: 12px !important;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
             display: flex !important;
             flex-direction: column !important;
             gap: 10px !important;
-            animation: cardFadeIn 0.5s ease-in-out !important; /* Add load animation */
+            animation: cardFadeIn 0.5s ease-in-out !important;
         }
         
         /* Load animation for the strategy card */
@@ -7608,10 +7603,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             max-height: 300px !important;
             overflow-y: auto !important;
             padding: 10px !important;
-            background: rgba(255, 255, 255, 0.05) !important; /* Slightly lighter background for contrast */
+            background: rgba(255, 255, 255, 0.05) !important;
             border-radius: 8px !important;
             box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            animation: outputFadeIn 0.5s ease-in-out !important; /* Add load animation for the output */
+            animation: outputFadeIn 0.5s ease-in-out !important;
         }
         
         .strategy-card .strategy-box p, .strategy-card .strategy-box span, .strategy-card .strategy-box ul, .strategy-card .strategy-box li {
@@ -7640,9 +7635,62 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             justify-content: center !important;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
+        /* Responsive adjustments for both sections */
+        @media (max-width: 1200px) {
+            .table-strategy-row {
+                flex-wrap: wrap !important;
+                max-width: 90vw !important;
+            }
+        
+            .dynamic-table-container {
+                max-width: 100% !important;
+            }
+        
+            .dynamic-table-container > * {
+                max-width: 100% !important;
+            }
+        
+            .large-table {
+                max-width: 100% !important;
+                padding: 12px !important;
+            }
+        
+            .strategy-container {
+                max-width: 100% !important;
+            }
+        
             .strategy-card {
+                max-width: 100% !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .table-strategy-row {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+        
+            .dynamic-table-container {
+                max-width: 100% !important;
+                padding: 10px 5px !important;
+            }
+        
+            .dynamic-table-container > * {
+                max-width: 100% !important;
+            }
+        
+            .large-table {
+                max-width: 100% !important;
+                padding: 10px !important;
+            }
+        
+            .strategy-container {
+                max-width: 100% !important;
+                padding: 10px 5px !important;
+            }
+        
+            .strategy-card {
+                max-width: 100% !important;
                 padding: 15px !important;
             }
         
@@ -7662,6 +7710,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
         }
         
+        /* Strongest Numbers Table */
         .strongest-numbers-table {
             width: 100% !important;
             max-width: 100% !important;
@@ -7691,6 +7740,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             white-space: normal !important;
             word-wrap: break-word !important;
             max-width: 150px !important;
+        }
+        .table-strategy-row::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, #3b82f6, transparent) !important;
+            opacity: 0.5;
+        }
+        
+        /* Hide the divider on smaller screens */
+        @media (max-width: 1200px) {
+            .table-strategy-row::before {
+                display: none !important;
+            }
         }
         
         /* Last Spins Container */
