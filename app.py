@@ -2193,9 +2193,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
     ]
 
-    # Wrap the table in a scrollable container
-    html = '<div class="table-scroll-wrapper">'
-    html += '<table class="large-table dynamic-roulette-table" border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
+    html = '<table class="large-table dynamic-roulette-table" border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
     html += '<colgroup>'
     html += '<col style="width: 40px;">'
     for _ in range(12):
@@ -2231,7 +2229,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
-            tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+            tier_class = "top-tier column-section" if bg_color == top_color else "middle-tier column-section" if bg_color == middle_color else "lower-tier column-section" if bg_color == lower_color else "column-section"
             col_score = state.column_scores.get("3rd Column", 0)
             max_col_score = max(state.column_scores.values(), default=1) or 1
             fill_percentage = (col_score / max_col_score) * 100
@@ -2239,7 +2237,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         elif row_idx == 1:
             bg_color = suggestion_highlights.get("2nd Column", top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white"))
             border_style = "3px dashed #FFD700" if "2nd Column" in casino_winners["columns"] else "1px solid black"
-            tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+            tier_class = "top-tier column-section" if bg_color == top_color else "middle-tier column-section" if bg_color == middle_color else "lower-tier column-section" if bg_color == lower_color else "column-section"
             col_score = state.column_scores.get("2nd Column", 0)
             max_col_score = max(state.column_scores.values(), default=1) or 1
             fill_percentage = (col_score / max_col_score) * 100
@@ -2247,7 +2245,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         elif row_idx == 2:
             bg_color = suggestion_highlights.get("1st Column", top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white"))
             border_style = "3px dashed #FFD700" if "1st Column" in casino_winners["columns"] else "1px solid black"
-            tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+            tier_class = "top-tier column-section" if bg_color == top_color else "middle-tier column-section" if bg_color == middle_color else "lower-tier column-section" if bg_color == lower_color else "column-section"
             col_score = state.column_scores.get("1st Column", 0)
             max_col_score = max(state.column_scores.values(), default=1) or 1
             fill_percentage = (col_score / max_col_score) * 100
@@ -2258,17 +2256,17 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("Low", top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white")))
     border_style = "3px dashed #FFD700" if "Low" in casino_winners["even_money"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier even-money-section" if bg_color == top_color else "middle-tier even-money-section" if bg_color == middle_color else "lower-tier even-money-section" if bg_color == lower_color else "even-money-section"
     low_score = state.even_money_scores.get("Low", 0)
     max_even_money_score = max(state.even_money_scores.values(), default=1) or 1
     fill_percentage = (low_score / max_even_money_score) * 100
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>Low (1 to 18)</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td colspan="6" style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>Low (1 to 18)</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("High", top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white")))
     border_style = "3px dashed #FFD700" if "High" in casino_winners["even_money"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier even-money-section" if bg_color == top_color else "middle-tier even-money-section" if bg_color == middle_color else "lower-tier even-money-section" if bg_color == lower_color else "even-money-section"
     high_score = state.even_money_scores.get("High", 0)
     fill_percentage = (high_score / max_even_money_score) * 100
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>High (19 to 36)</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td colspan="6" style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>High (19 to 36)</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -2276,23 +2274,23 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("1st Dozen", top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "1st Dozen" in casino_winners["dozens"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier dozen-section" if bg_color == top_color else "middle-tier dozen-section" if bg_color == middle_color else "lower-tier dozen-section" if bg_color == lower_color else "dozen-section"
     dozen_score = state.dozen_scores.get("1st Dozen", 0)
     max_dozen_score = max(state.dozen_scores.values(), default=1) or 1
     fill_percentage = (dozen_score / max_dozen_score) * 100
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>1st Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td colspan="4" style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>1st Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("2nd Dozen", top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "2nd Dozen" in casino_winners["dozens"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier dozen-section" if bg_color == top_color else "middle-tier dozen-section" if bg_color == middle_color else "lower-tier dozen-section" if bg_color == lower_color else "dozen-section"
     dozen_score = state.dozen_scores.get("2nd Dozen", 0)
     fill_percentage = (dozen_score / max_dozen_score) * 100
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>2nd Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td colspan="4" style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>2nd Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("3rd Dozen", top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "3rd Dozen" in casino_winners["dozens"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier dozen-section" if bg_color == top_color else "middle-tier dozen-section" if bg_color == middle_color else "lower-tier dozen-section" if bg_color == lower_color else "dozen-section"
     dozen_score = state.dozen_scores.get("3rd Dozen", 0)
     fill_percentage = (dozen_score / max_dozen_score) * 100
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>3rd Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td colspan="4" style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>3rd Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -2301,35 +2299,34 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("Odd", top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white")))
     border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier even-money-section" if bg_color == top_color else "middle-tier even-money-section" if bg_color == middle_color else "lower-tier even-money-section" if bg_color == lower_color else "even-money-section"
     odd_score = state.even_money_scores.get("Odd", 0)
     max_even_money_score = max(state.even_money_scores.values(), default=1) or 1
     fill_percentage = (odd_score / max_even_money_score) * 100
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>ODD</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>ODD</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("Red", top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white")))
     border_style = "3px dashed #FFD700" if "Red" in casino_winners["even_money"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier even-money-section" if bg_color == top_color else "middle-tier even-money-section" if bg_color == middle_color else "lower-tier even-money-section" if bg_color == lower_color else "even-money-section"
     red_score = state.even_money_scores.get("Red", 0)
     fill_percentage = (red_score / max_even_money_score) * 100
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>RED</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>RED</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("Black", top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white")))
     border_style = "3px dashed #FFD700" if "Black" in casino_winners["even_money"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier even-money-section" if bg_color == top_color else "middle-tier even-money-section" if bg_color == middle_color else "lower-tier even-money-section" if bg_color == lower_color else "even-money-section"
     black_score = state.even_money_scores.get("Black", 0)
     fill_percentage = (black_score / max_even_money_score) * 100
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>BLACK</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>BLACK</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("Even", top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white")))
     border_style = "3px dashed #FFD700" if "Even" in casino_winners["even_money"] else "1px solid black"
-    tier_class = "top-tier sticky-header" if bg_color == top_color else "middle-tier sticky-header" if bg_color == middle_color else "lower-tier sticky-header" if bg_color == lower_color else "sticky-header"
+    tier_class = "top-tier even-money-section" if bg_color == top_color else "middle-tier even-money-section" if bg_color == middle_color else "lower-tier even-money-section" if bg_color == lower_color else "even-money-section"
     even_score = state.even_money_scores.get("Even", 0)
     fill_percentage = (even_score / max_even_money_score) * 100
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>EVEN</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
+    html += f'<td style="border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>EVEN</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "</table>"
-    html += "</div>"  # Close the scrollable wrapper
     return html
 
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
@@ -7303,6 +7300,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
             padding: 10px !important;
         }
+
         /* Dynamic Table Container */
         .dynamic-table-container {
             width: 100% !important;
@@ -7338,8 +7336,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Scrollable Table Wrapper */
         .table-scroll-wrapper {
-            max-height: 400px !important; /* Fixed height for scrolling */
-            overflow-y: auto !important; /* Enable vertical scrolling */
+            max-height: 400px !important;
+            overflow-y: auto !important;
             position: relative !important;
             width: 100% !important;
             border-radius: 8px !important;
@@ -7462,9 +7460,31 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             position: sticky !important;
             top: 0 !important;
             z-index: 5 !important;
-            background: rgba(255, 255, 255, 0.9) !important; /* Semi-transparent white background */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Subtle shadow for depth */
-            border-bottom: 1px solid #666 !important; /* Separator line */
+            background: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            border-bottom: 1px solid #666 !important;
+        }
+        
+        /* Highlighted Bet Categories */
+        .dynamic-roulette-table td.even-money-section {
+            background: linear-gradient(135deg, #6b4e8c, #8c6bb1) !important; /* Purple gradient */
+            color: #fff !important;
+            font-weight: 700 !important;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        .dynamic-roulette-table td.dozen-section {
+            background: linear-gradient(135deg, #4a5e7a, #6b7a8c) !important; /* Blue gradient */
+            color: #fff !important;
+            font-weight: 700 !important;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        .dynamic-roulette-table td.column-section {
+            background: linear-gradient(135deg, #3a6b6b, #5a8c8c) !important; /* Teal gradient */
+            color: #fff !important;
+            font-weight: 700 !important;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
         }
         
         /* Responsive adjustments */
@@ -7479,7 +7499,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 12px !important;
             }
         }
-        
+
         .strategy-box {
             max-height: 300px !important;
             overflow-y: auto !important;
