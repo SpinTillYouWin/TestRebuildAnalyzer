@@ -8286,12 +8286,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Row containing Dynamic Table and Strategy Recommendations */
         .dynamic-table-strategy-row {
             display: flex !important;
-            gap: 30px !important;
+            gap: 25px !important; /* Slightly reduced gap for better fit */
             flex-wrap: wrap !important;
             justify-content: center !important;
             align-items: flex-start !important;
             width: 100% !important;
-            max-width: 1300px !important; /* Reduced slightly to prevent wrapping */
+            max-width: 1250px !important; /* Reduced to ensure side-by-side fit */
             margin: 0 auto !important;
             padding: 20px 10px !important;
         }
@@ -8303,7 +8303,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             justify-content: flex-start !important;
             align-items: center !important;
             width: 100% !important;
-            max-width: 500px !important; /* Reduced slightly to fit better */
+            max-width: 450px !important; /* Reduced to match new min_width */
             margin: 0 auto !important;
             padding: 15px !important;
         }
@@ -8322,7 +8322,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Fix Dropdown Arrow Overlap */
         .strategy-recommendations-container .gr-dropdown {
             width: 100% !important;
-            min-width: 250px !important;
+            min-width: 220px !important; /* Reduced slightly to fit narrower container */
             position: relative !important;
         }
         
@@ -8382,7 +8382,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Dynamic Table Container (Right Side) */
         .dynamic-table-strategy-row .dynamic-table-container {
-            max-width: 750px !important; /* Reduced slightly to fit better */
+            max-width: 750px !important;
             width: 100% !important;
             padding: 15px !important;
         }
@@ -8400,7 +8400,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* Responsive Adjustments */
-        @media (max-width: 1400px) { /* Increased breakpoint */
+        @media (max-width: 1300px) { /* Adjusted breakpoint */
             .dynamic-table-strategy-row {
                 flex-direction: column !important;
                 align-items: center !important;
