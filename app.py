@@ -8285,47 +8285,125 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Row containing Dynamic Table and Strategy Recommendations */
         .dynamic-table-strategy-row {
             display: flex !important;
-            gap: 20px !important;
+            gap: 30px !important;
             flex-wrap: wrap !important;
             justify-content: center !important;
             align-items: flex-start !important;
             width: 100% !important;
-            max-width: 1200px !important;
+            max-width: 1300px !important; /* Reduced slightly to prevent wrapping */
             margin: 0 auto !important;
+            padding: 20px 10px !important;
         }
         
-        /* Strategy Recommendations Container */
+        /* Strategy Recommendations Container (Left Side) */
         .strategy-recommendations-container {
             display: flex !important;
             flex-direction: column !important;
             justify-content: flex-start !important;
             align-items: center !important;
             width: 100% !important;
-            max-width: 400px !important;
+            max-width: 500px !important; /* Reduced slightly to fit better */
             margin: 0 auto !important;
-            padding: 10px !important;
+            padding: 15px !important;
         }
         
-        /* Adjust Strategy Card for Side-by-Side Layout */
+        /* Strategy Card Styling */
         .strategy-recommendations-container .strategy-card {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
+            padding: 20px !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+        }
+        
+        /* Fix Dropdown Arrow Overlap */
+        .strategy-recommendations-container .gr-dropdown {
+            width: 100% !important;
+            min-width: 250px !important;
+            position: relative !important;
+        }
+        
+        .strategy-recommendations-container .gr-dropdown select {
+            width: 100% !important;
+            padding-right: 30px !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            background: transparent !important;
+            color: #ffffff !important;
+            border: 1px solid #3b82f6 !important;
+            border-radius: 5px !important;
+            font-size: 14px !important;
+            padding: 8px 12px !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Custom Arrow for Dropdowns */
+        .strategy-recommendations-container .gr-dropdown::after {
+            content: '▼';
+            position: absolute !important;
+            right: 10px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            color: #ffffff !important;
+            font-size: 12px !important;
+            pointer-events: none !important;
+        }
+        
+        /* Ensure Dropdown Options Are Readable */
+        .strategy-recommendations-container .gr-dropdown select option {
+            background: #2a2a72 !important;
+            color: #ffffff !important;
+            font-size: 14px !important;
+        }
+        
+        /* Style for Dropdown Labels */
+        .strategy-recommendations-container .gr-dropdown label {
+            background: transparent !important;
+            color: #ffffff !important;
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+            padding: 5px !important;
+            font-size: 14px !important;
+        }
+        
+        /* Ensure Strategy Output Box Fits Well */
+        .strategy-recommendations-container .strategy-box {
+            max-height: 300px !important;
+            overflow-y: auto !important;
+            padding: 15px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 8px !important;
+            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
+            width: 100% !important;
+        }
+        
+        /* Dynamic Table Container (Right Side) */
+        .dynamic-table-strategy-row .dynamic-table-container {
+            max-width: 750px !important; /* Reduced slightly to fit better */
+            width: 100% !important;
             padding: 15px !important;
         }
         
-        /* Ensure the Dynamic Table Container Behaves Properly */
-        .dynamic-table-strategy-row .dynamic-table-container {
-            max-width: 600px !important;
+        /* Dynamic Table Styling */
+        .dynamic-table-strategy-row .large-table {
+            max-width: 100% !important;
             width: 100% !important;
-            padding: 10px !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+            overflow-x: auto !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
         }
         
         /* Responsive Adjustments */
-        @media (max-width: 1000px) {
+        @media (max-width: 1400px) { /* Increased breakpoint */
             .dynamic-table-strategy-row {
                 flex-direction: column !important;
                 align-items: center !important;
+                gap: 20px !important;
             }
         
             .dynamic-table-strategy-row .dynamic-table-container,
@@ -8334,8 +8412,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100% !important;
             }
         
+            .dynamic-table-strategy-row .large-table {
+                max-width: 100% !important;
+            }
+        
             .strategy-recommendations-container .strategy-card {
                 max-width: 100% !important;
+            }
+        
+            .strategy-recommendations-container .gr-dropdown {
+                min-width: 100% !important;
             }
         }
     </style>
