@@ -2130,7 +2130,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
 # Line 1: Start of render_dynamic_table_html function (updated)
-def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None):
+def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None, top_pick=None, other_top_9=None):
     """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
@@ -2163,29 +2163,24 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
         for key, value in suggestions.items():
             if key == "best_even_money" and "(Tied with" not in value:
-                # Extract the even money bet (e.g., "Even: 5" -> "Even")
                 best_even_money = value.split(":")[0].strip()
             elif key == "best_bet" and "(Tied with" not in value:
-                # Extract the best bet (e.g., "2nd Column: 6" -> "2nd Column")
                 best_bet = value.split(":")[0].strip()
             elif key == "play_two" and "(Tied with" not in value:
-                # Extract the two options (e.g., "Play Two Columns: 2nd Column (6) and 1st Column (2)")
                 parts = value.split(":", 1)[1].split(" and ")
-                play_two_first = parts[0].split("(")[0].strip()  # e.g., "2nd Column"
-                play_two_second = parts[1].split("(")[0].strip()  # e.g., "1st Column"
+                play_two_first = parts[0].split("(")[0].strip()
+                play_two_second = parts[1].split("(")[0].strip()
 
-        # Apply highlights based on suggestions (yellow for top tier, green for second in Play Two)
         if best_even_money:
-            suggestion_highlights[best_even_money] = top_color  # Yellow for Best Even Money Bet
+            suggestion_highlights[best_even_money] = top_color
         if best_bet:
-            suggestion_highlights[best_bet] = top_color  # Yellow for Best Bet
+            suggestion_highlights[best_bet] = top_color
         if play_two_first and play_two_second:
-            # Ensure the first option in Play Two matches the Best Bet (if present) and gets yellow
             if best_bet and play_two_first == best_bet:
-                suggestion_highlights[play_two_first] = top_color  # Already set to yellow
+                suggestion_highlights[play_two_first] = top_color
             else:
-                suggestion_highlights[play_two_first] = top_color  # Yellow if not already set
-            suggestion_highlights[play_two_second] = lower_color  # Green for second option
+                suggestion_highlights[play_two_first] = top_color
+            suggestion_highlights[play_two_second] = lower_color
 
     table_layout = [
         ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
@@ -2203,9 +2198,11 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     # Ensure hot_numbers is a set for consistent comparison
     hot_numbers = set(hot_numbers) if hot_numbers else set()
+    # Ensure other_top_9 is a set for consistent comparison
+    other_top_9 = set(other_top_9) if other_top_9 else set()
     # Debug scores to verify hit counts
     scores = scores if scores is not None else {}
-    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Scores={dict(scores)}")
+    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Scores={dict(scores)}, Top Pick={top_pick}, Other Top 9={other_top_9}")
 
     for row_idx, row in enumerate(table_layout):
         html += "<tr>"
@@ -2215,24 +2212,46 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             else:
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
-                if num in casino_winners["hot_numbers"]:
-                    border_style = "3px solid #FFD700"  # Gold, solid for consistent glow
-                elif num in casino_winners["cold_numbers"]:
-                    border_style = "3px solid #C0C0C0"  # Silver, solid for consistent glow
-                else:
-                    border_style = "3px solid black"
+                # Use a consistent black border for all cells
+                border_style = "1px solid black"  # Simplified to match table border
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
+                # Add additional classes for hot/cold numbers
+                cell_class = "has-tooltip"
+                if num in hot_numbers:
+                    cell_class += " hot-number"
+                if state.use_casino_winners:
+                    if num in casino_winners["hot_numbers"]:
+                        cell_class += " hot-number-casino"
+                    elif num in casino_winners["cold_numbers"]:
+                        cell_class += " cold-number-casino"
                 hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
+
+                # Add top pick markers
+                num_int = int(num)
+                marker = ""
+                marker_class = ""
+                pick_tooltip = ""
+                if top_pick is not None and num_int == top_pick:
+                    marker = "★"
+                    marker_class = "top-pick-marker"
+                    pick_tooltip = "Top Pick"
+                elif num_int in other_top_9:
+                    marker = "•"
+                    marker_class = "top-9-marker"
+                    pick_tooltip = "Top 10 Pick"
+
+                # Combine tooltips
+                if pick_tooltip:
+                    tooltip = f"{pick_tooltip} - {tooltip}" if tooltip else pick_tooltip
+
+                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}<span class="{marker_class}">{marker}</span></td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
             tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-            # Compute column score and progress bar
             col_score = state.column_scores.get("3rd Column", 0)
-            max_col_score = max(state.column_scores.values(), default=1) or 1  # Avoid division by zero
+            max_col_score = max(state.column_scores.values(), default=1) or 1
             fill_percentage = (col_score / max_col_score) * 100
             html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>3rd Column</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
         elif row_idx == 1:
