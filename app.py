@@ -2230,17 +2230,27 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
             tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">3rd Column</td>'
+            # Compute column score and progress bar
+            col_score = state.column_scores.get("3rd Column", 0)
+            max_col_score = max(state.column_scores.values(), default=1) or 1  # Avoid division by zero
+            fill_percentage = (col_score / max_col_score) * 100
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>3rd Column</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
         elif row_idx == 1:
             bg_color = suggestion_highlights.get("2nd Column", top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white"))
             border_style = "3px dashed #FFD700" if "2nd Column" in casino_winners["columns"] else "1px solid black"
             tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">2nd Column</td>'
+            col_score = state.column_scores.get("2nd Column", 0)
+            max_col_score = max(state.column_scores.values(), default=1) or 1
+            fill_percentage = (col_score / max_col_score) * 100
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>2nd Column</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
         elif row_idx == 2:
             bg_color = suggestion_highlights.get("1st Column", top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white"))
             border_style = "3px dashed #FFD700" if "1st Column" in casino_winners["columns"] else "1px solid black"
             tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">1st Column</td>'
+            col_score = state.column_scores.get("1st Column", 0)
+            max_col_score = max(state.column_scores.values(), default=1) or 1
+            fill_percentage = (col_score / max_col_score) * 100
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>1st Column</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
         html += "</tr>"
 
     html += "<tr>"
@@ -2248,11 +2258,16 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     bg_color = suggestion_highlights.get("Low", top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white")))
     border_style = "3px dashed #FFD700" if "Low" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">Low (1 to 18)</td>'
+    low_score = state.even_money_scores.get("Low", 0)
+    max_even_money_score = max(state.even_money_scores.values(), default=1) or 1
+    fill_percentage = (low_score / max_even_money_score) * 100
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>Low (1 to 18)</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("High", top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white")))
     border_style = "3px dashed #FFD700" if "High" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">High (19 to 36)</td>'
+    high_score = state.even_money_scores.get("High", 0)
+    fill_percentage = (high_score / max_even_money_score) * 100
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>High (19 to 36)</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -2261,15 +2276,22 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     bg_color = suggestion_highlights.get("1st Dozen", top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "1st Dozen" in casino_winners["dozens"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">1st Dozen</td>'
+    dozen_score = state.dozen_scores.get("1st Dozen", 0)
+    max_dozen_score = max(state.dozen_scores.values(), default=1) or 1
+    fill_percentage = (dozen_score / max_dozen_score) * 100
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>1st Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("2nd Dozen", top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "2nd Dozen" in casino_winners["dozens"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">2nd Dozen</td>'
+    dozen_score = state.dozen_scores.get("2nd Dozen", 0)
+    fill_percentage = (dozen_score / max_dozen_score) * 100
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>2nd Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("3rd Dozen", top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "3rd Dozen" in casino_winners["dozens"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">3rd Dozen</td>'
+    dozen_score = state.dozen_scores.get("3rd Dozen", 0)
+    fill_percentage = (dozen_score / max_dozen_score) * 100
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>3rd Dozen</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -2279,19 +2301,28 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     bg_color = suggestion_highlights.get("Odd", top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white")))
     border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">ODD</td>'
+    odd_score = state.even_money_scores.get("Odd", 0)
+    max_even_money_score = max(state.even_money_scores.values(), default=1) or 1
+    fill_percentage = (odd_score / max_even_money_score) * 100
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>ODD</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("Red", top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white")))
     border_style = "3px dashed #FFD700" if "Red" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">RED</td>'
+    red_score = state.even_money_scores.get("Red", 0)
+    fill_percentage = (red_score / max_even_money_score) * 100
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>RED</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("Black", top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white")))
     border_style = "3px dashed #FFD700" if "Black" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">BLACK</td>'
+    black_score = state.even_money_scores.get("Black", 0)
+    fill_percentage = (black_score / max_even_money_score) * 100
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>BLACK</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     bg_color = suggestion_highlights.get("Even", top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white")))
     border_style = "3px dashed #FFD700" if "Even" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">EVEN</td>'
+    even_score = state.even_money_scores.get("Even", 0)
+    fill_percentage = (even_score / max_even_money_score) * 100
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>EVEN</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
@@ -7374,6 +7405,44 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
+        }
+        
+        /* Progress Bar Styles for Bet Strength */
+        .dynamic-roulette-table .progress-bar {
+            width: 100% !important;
+            height: 5px !important;
+            background: #d3d3d3 !important;
+            border-radius: 3px !important;
+            margin-top: 3px !important;
+            position: relative !important;
+            display: block !important;
+        }
+        
+        .dynamic-roulette-table .progress-fill.top-tier {
+            height: 100% !important;
+            background: #ffd700 !important; /* Yellow for top-tier */
+            border-radius: 3px !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+        
+        .dynamic-roulette-table .progress-fill.middle-tier {
+            height: 100% !important;
+            background: #00ffff !important; /* Cyan for middle-tier */
+            border-radius: 3px !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+        
+        .dynamic-roulette-table .progress-fill.lower-tier {
+            height: 100% !important;
+            background: #00ff00 !important; /* Green for lower-tier */
+            border-radius: 3px !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
         }
         
         /* Responsive adjustments */
