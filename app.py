@@ -2426,7 +2426,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             return "<p>No spins yet. Select a strategy to see default highlights.</p>"
         
         print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions)
+        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, use_inline_color=False)
         print("create_dynamic_table: Table generated successfully")
         return html
     
@@ -7281,15 +7281,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             word-wrap: break-word !important;
         }
         
-        .large-table td:nth-child(1) {
-            color: #ffffff !important; /* White text for numbers */
+        .large-table td:nth-child(1)[style*="color"] {
+            color: #ffffff !important; /* White text for numbers, overriding inline styles */
             text-shadow: none !important; /* No neon glow for numbers */
             white-space: nowrap !important; /* Prevent wrapping for numbers */
             overflow-wrap: normal !important; /* Disable wrapping */
             min-width: 40px !important; /* Reduced width to fit smaller font */
             font-size: 12px !important; /* Smaller font size for numbers */
         }
-        
+
         .large-table td:not(:nth-child(1)) {
             color: #333333 !important;
             text-shadow: 0 0 5px rgba(59, 130, 246, 0.7), 0 0 8px rgba(59, 130, 246, 0.5) !important;
