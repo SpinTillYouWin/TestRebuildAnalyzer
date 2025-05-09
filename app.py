@@ -2429,10 +2429,12 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
             print(f"create_dynamic_table: Strategy highlights applied - trending_even_money={trending_even_money}, second_even_money={second_even_money}, third_even_money={third_even_money}, trending_dozen={trending_dozen}, second_dozen={second_dozen}, trending_column={trending_column}, second_column={second_column}, number_highlights={number_highlights}")
             
-            # Determine hot and cold numbers (top 5 and bottom 5 with hits)
+            # Determine hot and cold numbers (top 5 and bottom 5 scores)
             sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+            # Hot numbers: top 5 with hits (score > 0)
             hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
-            cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score > 0]
+            # Cold numbers: bottom 5 (include zeros if necessary)
+            cold_numbers = [str(num) for num, score in sorted_scores[-5:]]  # Removed score > 0 condition
             print(f"create_dynamic_table: Hot numbers={hot_numbers}, Cold numbers={cold_numbers}")
         
         # If still no highlights and no sorted_sections, provide a default message
