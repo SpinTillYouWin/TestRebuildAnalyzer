@@ -6545,58 +6545,64 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
-    with gr.Column(scale=3, min_width=1000, elem_classes="dynamic-table-container"):
-        gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-        dynamic_table_output = gr.HTML(
-            label="Dynamic Table",
-            value=create_dynamic_table(strategy_name="Best Even Money Bets"),
-            elem_classes=["scrollable-table", "large-table"]
-        )
-        gr.Markdown("### Strategy Recommendations")
-        # Wrap the entire section in a div with class "strategy-card"
-        with gr.Row(elem_classes="strategy-card"):
-            with gr.Column(scale=1):  # Use a single column to stack elements vertically
-                with gr.Row():
-                    category_dropdown = gr.Dropdown(
-                        label="Select Category",
-                        choices=category_choices,
-                        value="Even Money Strategies",
-                        allow_custom_value=False,
-                        elem_id="select-category"
+    with gr.Row(elem_classes="dynamic-table-strategy-row"):
+        # Column for Dynamic Roulette Table
+        with gr.Column(scale=3, min_width=600, elem_classes="dynamic-table-container"):
+            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+            dynamic_table_output = gr.HTML(
+                label="Dynamic Table",
+                value=create_dynamic_table(strategy_name="Best Even Money Bets"),
+                elem_classes=["scrollable-table", "large-table"]
+            )
+    
+        # Column for Strategy Recommendations
+        with gr.Column(scale=2, min_width=400, elem_classes="strategy-recommendations-container"):
+            gr.Markdown("### Strategy Recommendations")
+            # Wrap the entire section in a div with class "strategy-card"
+            with gr.Row(elem_classes="strategy-card"):
+                with gr.Column(scale=1):  # Use a single column to stack elements vertically
+                    with gr.Row():
+                        category_dropdown = gr.Dropdown(
+                            label="Select Category",
+                            choices=category_choices,
+                            value="Even Money Strategies",
+                            allow_custom_value=False,
+                            elem_id="select-category"
+                        )
+                        strategy_dropdown = gr.Dropdown(
+                            label="Select Strategy",
+                            choices=strategy_categories["Even Money Strategies"],
+                            value="Best Even Money Bets",
+                            allow_custom_value=False,
+                            elem_id="strategy-dropdown"
+                        )
+                    reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+                    neighbours_count_slider = gr.Slider(
+                        label="Number of Neighbors (Left + Right)",
+                        minimum=1,
+                        maximum=5,
+                        step=1,
+                        value=1,
+                        interactive=True,
+                        visible=False,
+                        elem_classes="long-slider"
                     )
-                    strategy_dropdown = gr.Dropdown(
-                        label="Select Strategy",
-                        choices=strategy_categories["Even Money Strategies"],
-                        value="Best Even Money Bets",
-                        allow_custom_value=False,
-                        elem_id="strategy-dropdown"
+                    strong_numbers_count_slider = gr.Slider(
+                        label="Strong Numbers to Highlight (Neighbours Strategy)",
+                        minimum=1,
+                        maximum=18,
+                        step=1,
+                        value=1,
+                        interactive=True,
+                        visible=False,
+                        elem_classes="long-slider"
                     )
-                reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-                neighbours_count_slider = gr.Slider(
-                    label="Number of Neighbors (Left + Right)",
-                    minimum=1,
-                    maximum=5,
-                    step=1,
-                    value=1,
-                    interactive=True,
-                    visible=False,
-                    elem_classes="long-slider"
-                )
-                strong_numbers_count_slider = gr.Slider(
-                    label="Strong Numbers to Highlight (Neighbours Strategy)",
-                    minimum=1,
-                    maximum=18,
-                    step=1,
-                    value=1,
-                    interactive=True,
-                    visible=False,
-                    elem_classes="long-slider"
-                )
-                strategy_output = gr.HTML(
-                    label="Strategy Recommendations",
-                    value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
-                    elem_classes=["strategy-box"]
-                )
+                    strategy_output = gr.HTML(
+                        label="Strategy Recommendations",
+                        value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
+                        elem_classes=["strategy-box"]
+                    )
+
 
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -8276,6 +8282,62 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* TITLE: Fade-In Animation */
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
+        }
+        /* Row containing Dynamic Table and Strategy Recommendations */
+        .dynamic-table-strategy-row {
+            display: flex !important;
+            gap: 20px !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            width: 100% !important;
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+        }
+        
+        /* Strategy Recommendations Container */
+        .strategy-recommendations-container {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: 100% !important;
+            max-width: 400px !important;
+            margin: 0 auto !important;
+            padding: 10px !important;
+        }
+        
+        /* Adjust Strategy Card for Side-by-Side Layout */
+        .strategy-recommendations-container .strategy-card {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 15px !important;
+        }
+        
+        /* Ensure the Dynamic Table Container Behaves Properly */
+        .dynamic-table-strategy-row .dynamic-table-container {
+            max-width: 600px !important;
+            width: 100% !important;
+            padding: 10px !important;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1000px) {
+            .dynamic-table-strategy-row {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+        
+            .dynamic-table-strategy-row .dynamic-table-container,
+            .dynamic-table-strategy-row .strategy-recommendations-container {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+        
+            .strategy-recommendations-container .strategy-card {
+                max-width: 100% !important;
+            }
         }
     </style>
     """)
