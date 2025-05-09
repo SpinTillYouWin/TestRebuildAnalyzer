@@ -2130,7 +2130,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
 # Line 1: Start of render_dynamic_table_html function (updated)
-def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None):
+def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None, top_pick=None, other_top_9=None):
     """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
@@ -2203,9 +2203,11 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     # Ensure hot_numbers is a set for consistent comparison
     hot_numbers = set(hot_numbers) if hot_numbers else set()
+    # Ensure other_top_9 is a set for consistent comparison
+    other_top_9 = set(other_top_9) if other_top_9 else set()
     # Debug scores to verify hit counts
     scores = scores if scores is not None else {}
-    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Scores={dict(scores)}")
+    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Scores={dict(scores)}, Top Pick={top_pick}, Other Top 9={other_top_9}")
 
     for row_idx, row in enumerate(table_layout):
         html += "<tr>"
@@ -2225,7 +2227,26 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
                 hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
+
+                # Add top pick markers
+                num_int = int(num)
+                marker = ""
+                marker_class = ""
+                pick_tooltip = ""
+                if top_pick is not None and num_int == top_pick:
+                    marker = "★"
+                    marker_class = "top-pick-marker"
+                    pick_tooltip = "Top Pick"
+                elif num_int in other_top_9:
+                    marker = "•"
+                    marker_class = "top-9-marker"
+                    pick_tooltip = "Top 10 Pick"
+
+                # Combine tooltips
+                if pick_tooltip:
+                    tooltip = f"{pick_tooltip} - {tooltip}" if tooltip else pick_tooltip
+
+                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}<span class="{marker_class}">{marker}</span></td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -2329,7 +2350,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     html += "</table>"
     return html
-
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
     try:
@@ -2443,6 +2463,7 @@ def reset_casino_data():
     )
 
 # Line 1: Start of create_dynamic_table function (updated)
+# Line 1: Start of create_dynamic_table function (updated)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     try:
         print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
@@ -2468,6 +2489,8 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
             suggestions = None
             hot_numbers = []  # No hot numbers without spins
+            top_pick = None  # No top picks without spins
+            other_top_9 = []
         else:
             print("create_dynamic_table: Applying strategy highlights")
             trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
@@ -2477,14 +2500,216 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
             hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
             print(f"create_dynamic_table: Hot numbers={hot_numbers}, Scores={dict(state.scores)}")
-        
+
+            # Calculate top 10 picks (similar to select_next_spin_top_pick)
+            last_spins = state.last_spins[-dozen_tracker_spins:] if state.last_spins else []
+            if last_spins:
+                numbers = set(range(37))
+                hit_counts = {n: 0 for n in range(37)}
+                last_positions = {n: -1 for n in range(37)}
+                for i, spin in enumerate(last_spins):
+                    try:
+                        num = int(spin)
+                        hit_counts[num] += 1
+                        last_positions[num] = i
+                    except ValueError:
+                        continue
+                even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
+                column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
+                dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+                for spin in last_spins:
+                    try:
+                        num = int(spin)
+                        for name, nums in EVEN_MONEY.items():
+                            if num in nums:
+                                even_money_counts[name] += 1
+                        for name, nums in COLUMNS.items():
+                            if num in nums:
+                                column_counts[name] += 1
+                        for name, nums in DOZENS.items():
+                            if num in nums:
+                                dozen_counts[name] += 1
+                    except ValueError:
+                        continue
+                # Calculate percentages for all traits
+                total_spins = len(last_spins)
+                trait_percentages = {}
+                for trait, count in even_money_counts.items():
+                    trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+                for trait, count in dozen_counts.items():
+                    trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+                for trait, count in column_counts.items():
+                    trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+                sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
+                hottest_traits = []
+                seen_categories = set()
+                for trait, percentage in sorted_traits:
+                    if trait in ["Red", "Black"]:
+                        if "Red-Black" in seen_categories:
+                            continue
+                        hottest_traits.append(trait)
+                        seen_categories.add("Red-Black")
+                    elif trait in ["Even", "Odd"]:
+                        if "Even-Odd" in seen_categories:
+                            continue
+                        hottest_traits.append(trait)
+                        seen_categories.add("Even-Odd")
+                    elif trait in ["Low", "High"]:
+                        if "Low-High" in seen_categories:
+                            continue
+                        hottest_traits.append(trait)
+                        seen_categories.add("Low-High")
+                    elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+                        if "Dozens" in seen_categories:
+                            continue
+                        hottest_traits.append(trait)
+                        seen_categories.add("Dozens")
+                    elif trait in ["1st Column", "2nd Column", "3rd Column"]:
+                        if "Columns" in seen_categories:
+                            continue
+                        hottest_traits.append(trait)
+                        seen_categories.add("Columns")
+                second_best_traits = []
+                seen_categories = set()
+                for trait, percentage in sorted_traits:
+                    if trait in hottest_traits:
+                        continue
+                    if trait in ["Red", "Black"]:
+                        if "Red-Black" in seen_categories:
+                            continue
+                        second_best_traits.append(trait)
+                        seen_categories.add("Red-Black")
+                    elif trait in ["Even", "Odd"]:
+                        if "Even-Odd" in seen_categories:
+                            continue
+                        second_best_traits.append(trait)
+                        seen_categories.add("Even-Odd")
+                    elif trait in ["Low", "High"]:
+                        if "Low-High" in seen_categories:
+                            continue
+                        second_best_traits.append(trait)
+                        seen_categories.add("Low-High")
+                    elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+                        if "Dozens" in seen_categories:
+                            continue
+                        second_best_traits.append(trait)
+                        seen_categories.add("Dozens")
+                    elif trait in ["1st Column", "2nd Column", "3rd Column"]:
+                        if "Columns" in seen_categories:
+                            continue
+                        second_best_traits.append(trait)
+                        seen_categories.add("Columns")
+                left_side = set(LEFT_OF_ZERO_EUROPEAN)
+                right_side = set(RIGHT_OF_ZERO_EUROPEAN)
+                left_hits = sum(hit_counts[num] for num in left_side)
+                right_hits = sum(hit_counts[num] for num in right_side)
+                most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
+                betting_sections = {
+                    "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
+                    "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
+                    "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
+                }
+                section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
+                section_last_pos = {name: -1 for name in betting_sections}
+                for name, nums in betting_sections.items():
+                    for num in nums:
+                        if last_positions[num] > section_last_pos[name]:
+                            section_last_pos[name] = last_positions[num]
+                sorted_sections_top = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
+                top_section = sorted_sections_top[0][0] if sorted_sections_top else None
+                neighbor_boost = {num: 0 for num in range(37)}
+                last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+                last_five_set = set(last_five)
+                for num in range(37):
+                    if num in NEIGHBORS_EUROPEAN:
+                        left, right = NEIGHBORS_EUROPEAN[num]
+                        if left is not None and str(left) in last_five_set:
+                            neighbor_boost[num] += 2
+                        if right is not None and str(right) in last_five_set:
+                            neighbor_boost[num] += 2
+                scores = []
+                for num in range(37):
+                    if num not in hit_counts or hit_counts[num] == 0:
+                        continue
+                    matching_traits = 0
+                    for trait in hottest_traits:
+                        if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
+                            matching_traits += 1
+                        elif trait in DOZENS and num in DOZENS[trait]:
+                            matching_traits += 1
+                        elif trait in COLUMNS and num in COLUMNS[trait]:
+                            matching_traits += 1
+                    secondary_matches = 0
+                    for trait in second_best_traits:
+                        if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
+                            secondary_matches += 1
+                        elif trait in DOZENS and num in DOZENS[trait]:
+                            secondary_matches += 1
+                        elif trait in COLUMNS and num in COLUMNS[trait]:
+                            secondary_matches += 1
+                    wheel_side_score = 0
+                    if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
+                        wheel_side_score = 5
+                    section_score = 10 if top_section and num in betting_sections[top_section] else 0
+                    recency_score = (dozen_tracker_spins - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
+                    if last_positions[num] == dozen_tracker_spins - 1:
+                        recency_score = max(recency_score, 10)
+                    hit_bonus = 5 if hit_counts[num] > 0 else 0
+                    neighbor_score = neighbor_boost[num]
+                    tiebreaker_score = 0
+                    if num == 0:
+                        pass
+                    else:
+                        if num in EVEN_MONEY["Red"]:
+                            tiebreaker_score += even_money_counts["Red"]
+                        elif num in EVEN_MONEY["Black"]:
+                            tiebreaker_score += even_money_counts["Black"]
+                        if num in EVEN_MONEY["Even"]:
+                            tiebreaker_score += even_money_counts["Even"]
+                        elif num in EVEN_MONEY["Odd"]:
+                            tiebreaker_score += even_money_counts["Odd"]
+                        if num in EVEN_MONEY["Low"]:
+                            tiebreaker_score += even_money_counts["Low"]
+                        elif num in EVEN_MONEY["High"]:
+                            tiebreaker_score += even_money_counts["High"]
+                    for name, nums in DOZENS.items():
+                        if num in nums:
+                            tiebreaker_score += dozen_counts[name]
+                            break
+                    for name, nums in COLUMNS.items():
+                        if num in nums:
+                            tiebreaker_score += column_counts[name]
+                            break
+                    total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
+                    scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+                scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
+                if len(scores) > 10:
+                    min_traits = sorted([x[2] for x in scores[:10]], reverse=True)[9]
+                    top_picks = [x for x in scores if x[2] >= min_traits][:10]
+                else:
+                    top_picks = scores[:10]
+                # Store top pick and top 10 picks in state
+                state.current_top_pick = top_picks[0][0] if top_picks else None
+                state.top_picks = [pick[0] for pick in top_picks] if top_picks else []
+                top_pick = state.current_top_pick
+                other_top_9 = [num for num in state.top_picks if num != top_pick] if top_pick is not None else []
+            else:
+                top_pick = None
+                other_top_9 = []
+
         # If still no highlights and no sorted_sections, provide a default message
         if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
             print("create_dynamic_table: No spins and no highlights, returning default message")
             return "<p>No spins yet. Select a strategy to see default highlights.</p>"
         
         print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, scores=state.scores)
+        html = render_dynamic_table_html(
+            trending_even_money, second_even_money, third_even_money,
+            trending_dozen, second_dozen, trending_column, second_column,
+            number_highlights, top_color, middle_color, lower_color,
+            suggestions, hot_numbers, scores=state.scores,
+            top_pick=top_pick, other_top_9=other_top_9  # Pass top pick and other top 9
+        )
         print("create_dynamic_table: Table generated successfully")
         return html
     
@@ -5472,7 +5697,9 @@ def select_next_spin_top_pick(last_spin_count):
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
+        # Store the top pick and top 10 picks in state
         state.current_top_pick = top_picks[0][0]
+        state.top_picks = [pick[0] for pick in top_picks]  # Store the list of top 10 numbers
         top_pick = top_picks[0][0]
         # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
@@ -8423,6 +8650,45 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
             .strategy-recommendations-container .gr-dropdown {
                 min-width: 100% !important;
+            }
+            /* Top Pick Marker (Gold Star) */
+            .top-pick-marker {
+                font-size: 10px !important;
+                color: #FFD700 !important; /* Gold */
+                margin-left: 4px !important;
+                vertical-align: middle !important;
+            }
+            
+            /* Top 9 Marker (Silver Dot) */
+            .top-9-marker {
+                font-size: 8px !important;
+                color: #C0C0C0 !important; /* Silver */
+                margin-left: 4px !important;
+                vertical-align: middle !important;
+            }
+            
+            /* Ensure Markers Don’t Affect Table Layout */
+            .dynamic-roulette-table td {
+                position: relative !important;
+                white-space: nowrap !important;
+            }
+            
+            /* Tooltip Styling for Top Picks and Highlights */
+            .dynamic-roulette-table td.has-tooltip:hover::after {
+                content: attr(data-tooltip) !important;
+                position: absolute !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 5px 10px !important;
+                border-radius: 4px !important;
+                border: 1px solid #8c6bb1 !important;
+                bottom: 100% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                white-space: nowrap !important;
+                z-index: 10 !important;
+                font-size: 12px !important;
+                font-family: Arial, sans-serif !important;
             }
         }
     </style>
