@@ -7312,6 +7312,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             justify-content: center !important;
             align-items: center !important;
             box-sizing: border-box !important;
+            text-align: center !important; /* Fallback centering */
         }
         
         /* Ensure all children of the container are centered */
@@ -7319,6 +7320,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             width: 100% !important;
             max-width: 900px !important; /* Match the large-table max-width */
             margin: 0 auto !important;
+            display: inline-block !important; /* Fallback for centering */
         }
         
         /* Large Table */
@@ -7327,7 +7329,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             max-width: 900px !important;
             width: 100% !important;
             margin: 0 auto !important;
-            display: block !important;
+            display: inline-block !important; /* Use inline-block for better centering */
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
             border: 2px solid #3b82f6 !important;
             border-radius: 12px !important;
@@ -7488,6 +7490,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 10px !important;
             }
         }
+    
         
         /* Debugging Borders (Temporary) */
         .dynamic-table-container {
