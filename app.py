@@ -7245,19 +7245,69 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* Style section headers (Even Money Bets, Columns, Dozens) */
+        .dynamic-table-container {
+            width: 100% !important;
+            max-width: 1200px !important; /* Slightly reduced for better fit */
+            margin: 0 auto !important; /* Center horizontally */
+            padding: 20px 10px !important; /* Add horizontal padding for balance */
+            display: flex !important; /* Use flexbox for centering */
+            justify-content: center !important; /* Center contents */
+            align-items: center !important; /* Vertical centering if needed */
+        }
+        
+        .large-table {
+            max-height: 800px !important;
+            max-width: 900px !important; /* Slightly reduced for better centering */
+            width: 100% !important; /* Responsive within max-width */
+            margin: 0 auto !important; /* Reinforce centering */
+            display: block !important;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 12px !important; /* Slightly larger for polish */
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important; /* Enhanced shadow */
+            padding: 15px !important; /* More internal spacing */
+            box-sizing: border-box !important;
+        }
+        
+        /* Ensure table content is centered */
+        .large-table table {
+            width: 100% !important;
+            margin: 0 auto !important;
+            text-align: center !important; /* Center text in cells */
+        }
+        
+        /* Style section headers for balance */
         .large-table th {
             font-weight: bold !important;
             color: #000000 !important;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
             background: rgba(59, 130, 246, 0.1) !important;
-            padding: 8px !important;
+            padding: 10px !important; /* Increased for better spacing */
         }
         
-        .dynamic-table-container {
-            width: 100% !important;
-            max-width: 1300px !important;  /* Increased from 1200px to 1300px */
-            margin: 0 auto !important;
-            padding: 20px 0 !important;
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .dynamic-table-container {
+                max-width: 90vw !important; /* Use viewport width for smaller screens */
+                padding: 15px 5px !important;
+            }
+        
+            .large-table {
+                max-width: 95% !important; /* Slightly more responsive */
+                padding: 12px !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dynamic-table-container {
+                max-width: 100vw !important;
+                padding: 10px 5px !important;
+            }
+        
+            .large-table {
+                max-width: 100% !important;
+                padding: 10px !important;
+            }
         }
         
         .strategy-box {
