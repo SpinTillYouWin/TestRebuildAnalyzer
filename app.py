@@ -7308,8 +7308,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 0 auto !important;
             padding: 20px 10px !important;
             display: flex !important;
+            flex-direction: column !important; /* Ensure children stack vertically */
             justify-content: center !important;
             align-items: center !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Ensure all children of the container are centered */
+        .dynamic-table-container > * {
+            width: 100% !important;
+            max-width: 900px !important; /* Match the large-table max-width */
+            margin: 0 auto !important;
         }
         
         /* Large Table */
@@ -7326,10 +7335,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 15px !important;
             box-sizing: border-box !important;
             overflow: visible !important;
+            text-align: center !important; /* Center table content */
         }
         
         .large-table table {
             width: 100% !important;
+            max-width: 100% !important;
             margin: 0 auto !important;
             text-align: center !important;
         }
@@ -7452,6 +7463,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 15px 5px !important;
             }
         
+            .dynamic-table-container > * {
+                max-width: 95% !important;
+            }
+        
             .large-table {
                 max-width: 95% !important;
                 padding: 12px !important;
@@ -7464,12 +7479,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 10px 5px !important;
             }
         
+            .dynamic-table-container > * {
+                max-width: 100% !important;
+            }
+        
             .large-table {
                 max-width: 100% !important;
                 padding: 10px !important;
             }
         }
-        
+
         .strategy-box {
             max-height: 300px !important;
             overflow-y: auto !important;
