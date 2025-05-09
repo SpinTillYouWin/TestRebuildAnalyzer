@@ -6553,47 +6553,51 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             elem_classes=["scrollable-table", "large-table"]
         )
         gr.Markdown("### Strategy Recommendations")
-        with gr.Row():
-            category_dropdown = gr.Dropdown(
-                label="Select Category",
-                choices=category_choices,
-                value="Even Money Strategies",
-                allow_custom_value=False,
-                elem_id="select-category"
-            )
-            strategy_dropdown = gr.Dropdown(
-                label="Select Strategy",
-                choices=strategy_categories["Even Money Strategies"],
-                value="Best Even Money Bets",
-                allow_custom_value=False
-            )
-        reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-        neighbours_count_slider = gr.Slider(
-            label="Number of Neighbors (Left + Right)",
-            minimum=1,
-            maximum=5,
-            step=1,
-            value=1,
-            interactive=True,
-            visible=False,
-            elem_classes="long-slider"
-        )
-        strong_numbers_count_slider = gr.Slider(
-            label="Strong Numbers to Highlight (Neighbours Strategy)",
-            minimum=1,
-            maximum=18,
-            step=1,
-            value=1,
-            interactive=True,
-            visible=False,
-            elem_classes="long-slider"
-        )
-        strategy_output = gr.HTML(
-            label="Strategy Recommendations",
-            value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
-            elem_classes=["strategy-box"]
-        )
-    
+        # Wrap the entire section in a div with class "strategy-card"
+        with gr.Row(elem_classes="strategy-card"):
+            with gr.Column(scale=1):  # Use a single column to stack elements vertically
+                with gr.Row():
+                    category_dropdown = gr.Dropdown(
+                        label="Select Category",
+                        choices=category_choices,
+                        value="Even Money Strategies",
+                        allow_custom_value=False,
+                        elem_id="select-category"
+                    )
+                    strategy_dropdown = gr.Dropdown(
+                        label="Select Strategy",
+                        choices=strategy_categories["Even Money Strategies"],
+                        value="Best Even Money Bets",
+                        allow_custom_value=False,
+                        elem_id="strategy-dropdown"
+                    )
+                reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
+                neighbours_count_slider = gr.Slider(
+                    label="Number of Neighbors (Left + Right)",
+                    minimum=1,
+                    maximum=5,
+                    step=1,
+                    value=1,
+                    interactive=True,
+                    visible=False,
+                    elem_classes="long-slider"
+                )
+                strong_numbers_count_slider = gr.Slider(
+                    label="Strong Numbers to Highlight (Neighbours Strategy)",
+                    minimum=1,
+                    maximum=18,
+                    step=1,
+                    value=1,
+                    interactive=True,
+                    visible=False,
+                    elem_classes="long-slider"
+                )
+                strategy_output = gr.HTML(
+                    label="Strategy Recommendations",
+                    value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
+                    elem_classes=["strategy-box"]
+                )
+
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
