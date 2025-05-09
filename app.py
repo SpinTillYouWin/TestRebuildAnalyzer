@@ -7337,6 +7337,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             overflow: visible !important;
             text-align: center !important; /* Center table content */
             animation: tableFadeIn 0.5s ease-in-out !important; /* Add load animation */
+            /* Add gradient border */
+            background-clip: padding-box !important;
+            border-image: linear-gradient(45deg, #3b82f6, #1e90ff) 1 !important;
         }
         
         /* Define the load animation */
