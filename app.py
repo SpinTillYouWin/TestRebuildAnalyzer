@@ -2193,7 +2193,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
     ]
 
-    # Add dynamic-roulette-table class to isolate styles
     html = '<table class="large-table dynamic-roulette-table" border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
     html += '<colgroup>'
     html += '<col style="width: 40px;">'
@@ -2223,34 +2222,37 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                # Add hot-number class
                 cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
-                # Add tooltip with hit count from scores (num is a string, scores keys may be strings or ints)
                 hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
-            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Column</td>'
+            tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">3rd Column</td>'
         elif row_idx == 1:
             bg_color = suggestion_highlights.get("2nd Column", top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white"))
             border_style = "3px dashed #FFD700" if "2nd Column" in casino_winners["columns"] else "1px solid black"
-            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Column</td>'
+            tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">2nd Column</td>'
         elif row_idx == 2:
             bg_color = suggestion_highlights.get("1st Column", top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white"))
             border_style = "3px dashed #FFD700" if "1st Column" in casino_winners["columns"] else "1px solid black"
-            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Column</td>'
+            tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+            html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">1st Column</td>'
         html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("Low", top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white")))
     border_style = "3px dashed #FFD700" if "Low" in casino_winners["even_money"] else "1px solid black"
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">Low (1 to 18)</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">Low (1 to 18)</td>'
     bg_color = suggestion_highlights.get("High", top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white")))
     border_style = "3px dashed #FFD700" if "High" in casino_winners["even_money"] else "1px solid black"
-    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">High (19 to 36)</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">High (19 to 36)</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
@@ -2258,31 +2260,38 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("1st Dozen", top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "1st Dozen" in casino_winners["dozens"] else "1px solid black"
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">1st Dozen</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">1st Dozen</td>'
     bg_color = suggestion_highlights.get("2nd Dozen", top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "2nd Dozen" in casino_winners["dozens"] else "1px solid black"
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">2nd Dozen</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">2nd Dozen</td>'
     bg_color = suggestion_highlights.get("3rd Dozen", top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white"))
     border_style = "3px dashed #FFD700" if "3rd Dozen" in casino_winners["dozens"] else "1px solid black"
-    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">3rd Dozen</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">3rd Dozen</td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
+    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("Odd", top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white")))
     border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
-    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">ODD</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">ODD</td>'
     bg_color = suggestion_highlights.get("Red", top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white")))
     border_style = "3px dashed #FFD700" if "Red" in casino_winners["even_money"] else "1px solid black"
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">RED</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">RED</td>'
     bg_color = suggestion_highlights.get("Black", top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white")))
     border_style = "3px dashed #FFD700" if "Black" in casino_winners["even_money"] else "1px solid black"
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">BLACK</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">BLACK</td>'
     bg_color = suggestion_highlights.get("Even", top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white")))
     border_style = "3px dashed #FFD700" if "Even" in casino_winners["even_money"] else "1px solid black"
-    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;">EVEN</td>'
+    tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
+    html += f'<td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">EVEN</td>'
     html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     html += '<td style="border-color: black; box-sizing: border-box;"></td>'
     html += "</tr>"
@@ -7311,7 +7320,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Glowing Hover Effects for Hot Numbers (specific to Dynamic Roulette Table) */
         .dynamic-roulette-table td.hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important; /* Yellow glow, high specificity */
+            box-shadow: 0 0 12px 4px #ffd700 !important;
             transform: scale(1.1) !important;
             transition: all 0.3s ease !important;
         }
@@ -7338,6 +7347,33 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes fadeIn {
             0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
             100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        /* Bet Tier Icons with Bounce Animation */
+        .dynamic-roulette-table td.top-tier::before {
+            content: "🔥" !important;
+            margin-right: 5px !important;
+            display: inline-block !important;
+            animation: bounce 0.5s ease-in-out !important;
+        }
+        
+        .dynamic-roulette-table td.middle-tier::before {
+            content: "⭐" !important;
+            margin-right: 5px !important;
+            display: inline-block !important;
+            animation: bounce 0.5s ease-in-out !important;
+        }
+        
+        .dynamic-roulette-table td.lower-tier::before {
+            content: "🌟" !important;
+            margin-right: 5px !important;
+            display: inline-block !important;
+            animation: bounce 0.5s ease-in-out !important;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
         
         /* Responsive adjustments */
