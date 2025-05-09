@@ -8443,6 +8443,62 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             .strategy-recommendations-container .gr-dropdown {
                 min-width: 100% !important;
             }
+            /* Ensure Table Borders Are Consistent */
+            .dynamic-roulette-table {
+                border-collapse: collapse !important;
+                border: 1px solid black !important;
+            }
+            
+            /* Ensure All Cells Have a Consistent Black Border */
+            .dynamic-roulette-table td {
+                border: 1px solid black !important;
+                position: relative !important;
+                white-space: nowrap !important;
+                z-index: 1 !important; /* Base z-index for cells */
+            }
+            
+            /* Glowing Effect for Hot Numbers */
+            .dynamic-roulette-table .hot-number {
+                box-shadow: 0 0 8px 2px #FFD700 !important; /* Gold glow */
+                z-index: 2 !important; /* Ensure glow is above other cells */
+                position: relative !important;
+            }
+            
+            /* Glowing Effect for Casino Hot Numbers */
+            .dynamic-roulette-table .hot-number-casino {
+                box-shadow: 0 0 8px 2px #FFD700 !important; /* Gold glow */
+                z-index: 2 !important;
+            }
+            
+            /* Glowing Effect for Casino Cold Numbers */
+            .dynamic-roulette-table .cold-number-casino {
+                box-shadow: 0 0 8px 2px #C0C0C0 !important; /* Silver glow */
+                z-index: 2 !important;
+            }
+            
+            /* Tooltip Styling */
+            .dynamic-roulette-table td.has-tooltip:hover::after {
+                content: attr(data-tooltip) !important;
+                position: absolute !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 5px 10px !important;
+                border-radius: 4px !important;
+                border: 1px solid #8c6bb1 !important;
+                bottom: 100% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                white-space: nowrap !important;
+                z-index: 10 !important;
+                font-size: 12px !important;
+                font-family: Arial, sans-serif !important;
+            }
+            
+            /* Ensure Progress Bars and Other Elements Are Unaffected */
+            .progress-bar {
+                position: relative !important;
+                z-index: 1 !important;
+            }
         }
     </style>
     """)
