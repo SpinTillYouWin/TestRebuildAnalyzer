@@ -7238,57 +7238,59 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 0 auto !important;
             display: block !important;
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important; /* Changed to neon blue */
+            border: 2px solid #3b82f6 !important;
             border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important; /* Neon blue glow */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
             padding: 10px !important;
         }
         
         .large-table table {
             width: 100% !important;
             border-collapse: collapse !important;
-            border: 2px solid #3b82f6 !important; /* Neon blue border */
+            border: 2px solid #3b82f6 !important;
             box-shadow: 
-                inset -2px -2px 5px rgba(0, 0, 0, 0.3), /* Dark shadow for top-left (3D effect) */
-                inset 2px 2px 5px rgba(255, 255, 255, 0.2), /* Light shadow for bottom-right (3D effect) */
-                0 0 5px rgba(59, 130, 246, 0.5) !important; /* Outer glow */
+                inset -2px -2px 5px rgba(0, 0, 0, 0.3),
+                inset 2px 2px 5px rgba(255, 255, 255, 0.2),
+                0 0 5px rgba(59, 130, 246, 0.5) !important;
         }
         
         .large-table th, .large-table td {
-            border: 1px solid #3b82f6 !important; /* Neon blue border */
+            border: 1px solid #3b82f6 !important;
             padding: 8px 12px !important;
             text-align: center !important;
             box-shadow: 
-                inset -1px -1px 3px rgba(0, 0, 0, 0.2), /* Dark shadow for top-left (3D effect) */
-                inset 1px 1px 3px rgba(255, 255, 255, 0.1) !important; /* Light shadow for bottom-right (3D effect) */
+                inset -1px -1px 3px rgba(0, 0, 0, 0.2),
+                inset 1px 1px 3px rgba(255, 255, 255, 0.1) !important;
         }
         
         .large-table th {
             font-family: 'Arial', sans-serif !important;
             font-weight: bold !important;
             font-size: 16px !important;
-            color: #333333 !important; /* Dark gray for better contrast */
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7), 0 0 8px rgba(59, 130, 246, 0.5) !important; /* Neon blue glow */
-            background: rgba(59, 130, 246, 0.2) !important; /* Slightly transparent neon blue background */
+            color: #333333 !important;
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7), 0 0 8px rgba(59, 130, 246, 0.5) !important;
+            background: rgba(59, 130, 246, 0.2) !important;
         }
         
         .large-table td {
             font-family: 'Arial', sans-serif !important;
             font-size: 14px !important;
-            color: #333333 !important; /* Dark gray for better contrast */
-            min-width: 60px !important; /* Minimum width to accommodate labels */
-            white-space: normal !important; /* Allow text wrapping */
-            word-wrap: break-word !important; /* Ensure text wraps within the cell */
+            color: #333333 !important;
+            min-width: 60px !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
         }
         
         .large-table td:nth-child(1) {
-            color: #333333 !important; /* Numbers retain their default or inline color */
+            color: #ffffff !important; /* White text for numbers */
             text-shadow: none !important; /* No neon glow for numbers */
+            white-space: nowrap !important; /* Prevent wrapping for numbers */
+            word-wrap: normal !important; /* Disable wrapping */
         }
         
         .large-table td:not(:nth-child(1)) {
-            color: #333333 !important; /* Dark gray for non-number cells */
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7), 0 0 8px rgba(59, 130, 246, 0.5) !important; /* Neon blue glow */
+            color: #333333 !important;
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7), 0 0 8px rgba(59, 130, 246, 0.5) !important;
         }
         
         .large-table tr:nth-child(even) {
