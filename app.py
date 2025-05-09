@@ -7259,23 +7259,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .gr-accordion .gr-row { background-color: #ffffff !important; }
         
         /* Section Labels */
-        #selected-spins label { background-color: #87CEEB; color: black; padding: 5px; border-radius: 3px; }
-        #spin-analysis label { background-color: #90EE90 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #strongest-numbers-table label { background-color: #E6E6FA !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #number-of-random-spins label { background-color: #FFDAB9 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #aggregated-scores label { background-color: #FFB6C1 !important; color: black !important; padding: 5px; border-radius: 3px; }
-        #select-category label { background-color: #FFFFE0 !important; color: black !important; padding: 5px; border-radius: 3px; }
+        #selected-spins label {
+            background-color: #87CEEB;
+            color: black;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        #spin-analysis label {
+            background-color: #90EE90 !important;
+            color: black !important;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        #strongest-numbers-table label {
+            background-color: #E6E6FA !important;
+            color: black !important;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        #number-of-random-spins label {
+            background-color: #FFDAB9 !important;
+            color: black !important;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        #aggregated-scores label {
+            background-color: #FFB6C1 !important;
+            color: black !important;
+            padding: 5px;
+            border-radius: 3px;
+        }
         
         /* Compact dropdown styling for Select Category and Select Strategy */
         #select-category select, #strategy-dropdown select {
             max-height: 150px !important;
             overflow-y: auto !important;
             scrollbar-width: thin !important;
-            font-size: 14px;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 3px;
         }
         #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
             width: 6px;
@@ -7284,6 +7303,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: #888;
             border-radius: 3px;
         }
+    
         
         /* Scrollable Tables */
         .scrollable-table {
@@ -7509,25 +7529,73 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
         }
         
-
-        .strategy-box {
-            max-height: 300px !important;
-            overflow-y: auto !important;
+        /* Strategy Card Container */
+        .strategy-card {
             max-width: 1000px !important;
             margin: 0 auto !important;
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
+            padding: 20px !important;
+            background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Match the aesthetic of other sections */
             border: 2px solid #3b82f6 !important;
-            border-radius: 10px !important;
+            border-radius: 12px !important;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-            padding: 15px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            animation: cardFadeIn 0.5s ease-in-out !important; /* Add load animation */
         }
         
-        .strategy-box, .strategy-box p, .strategy-box span, .strategy-box ul, .strategy-box li {
+        /* Load animation for the strategy card */
+        @keyframes cardFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Style for dropdowns within the strategy card */
+        .strategy-card .gr-dropdown {
+            background: rgba(59, 130, 246, 0.1) !important;
+            border: 1px solid #3b82f6 !important;
+            border-radius: 5px !important;
+            margin: 5px 0 !important;
+        }
+        
+        .strategy-card .gr-dropdown select {
+            background: transparent !important;
             color: #ffffff !important;
-            text-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 12px rgba(59, 130, 246, 0.5) !important;
+            border: none !important;
+            font-size: 14px !important;
+            padding: 5px !important;
         }
         
-        .strategy-box .gr-dropdown, .strategy-box .gr-button, .strategy-box .gr-slider {
+        .strategy-card .gr-dropdown label {
+            background: transparent !important;
+            color: #ffffff !important;
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+            padding: 5px !important;
+        }
+        
+        /* Style for the reset button */
+        .strategy-card .gr-button {
+            background: #3b82f6 !important;
+            color: #ffffff !important;
+            border: 1px solid #3b82f6 !important;
+            border-radius: 5px !important;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+            transition: background 0.3s ease, transform 0.2s ease !important;
+        }
+        
+        .strategy-card .gr-button:hover {
+            background: #1e90ff !important;
+            transform: scale(1.05) !important;
+        }
+        
+        /* Style for sliders */
+        .strategy-card .gr-slider {
             background: rgba(59, 130, 246, 0.1) !important;
             border: 1px solid #3b82f6 !important;
             border-radius: 5px !important;
@@ -7535,21 +7603,63 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
         }
         
-        .strategy-box .gr-dropdown select {
-            background: transparent !important;
-            color: #ffffff !important;
-            border: none !important;
+        /* Style for the strategy recommendations output */
+        .strategy-card .strategy-box {
+            max-height: 300px !important;
+            overflow-y: auto !important;
+            padding: 10px !important;
+            background: rgba(255, 255, 255, 0.05) !important; /* Slightly lighter background for contrast */
+            border-radius: 8px !important;
+            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
+            animation: outputFadeIn 0.5s ease-in-out !important; /* Add load animation for the output */
         }
         
-        .strategy-box .gr-button {
-            background: #3b82f6 !important;
+        .strategy-card .strategy-box p, .strategy-card .strategy-box span, .strategy-card .strategy-box ul, .strategy-card .strategy-box li {
             color: #ffffff !important;
-            border: 1px solid #3b82f6 !important;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.3) !important;
+            font-size: 14px !important;
         }
         
-        .strategy-box .gr-button:hover {
-            background: #1e90ff !important;
+        /* Load animation for the strategy output */
+        @keyframes outputFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Ensure the row inside the card layouts dropdowns properly */
+        .strategy-card .gr-row {
+            display: flex !important;
+            gap: 10px !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .strategy-card {
+                padding: 15px !important;
+            }
+        
+            .strategy-card .gr-row {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+        
+            .strategy-card .gr-dropdown {
+                width: 100% !important;
+                max-width: 300px !important;
+            }
+        
+            .strategy-card .gr-button {
+                width: 100% !important;
+                max-width: 300px !important;
+            }
         }
         
         .strongest-numbers-table {
