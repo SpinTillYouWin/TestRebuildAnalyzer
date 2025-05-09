@@ -2130,7 +2130,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
 # Line 1: Start of render_dynamic_table_html function (updated)
-def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, cold_numbers=None):
+def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None):
     """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
@@ -2193,7 +2193,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         ["", "1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"]
     ]
 
-    html = '<table border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
+    # Add dynamic-roulette-table class to isolate styles
+    html = '<table class="large-table dynamic-roulette-table" border="1" style="border-collapse: collapse; text-align: center; font-size: 14px; font-family: Arial, sans-serif; border-color: black; table-layout: fixed; width: 100%; max-width: 600px;">'
     html += '<colgroup>'
     html += '<col style="width: 40px;">'
     for _ in range(12):
@@ -2203,7 +2204,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     # Ensure hot_numbers is a set for consistent comparison
     hot_numbers = set(hot_numbers) if hot_numbers else set()
-    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}")
+    # Debug scores to verify hit counts
+    scores = scores if scores is not None else {}
+    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Scores={dict(scores)}")
 
     for row_idx, row in enumerate(table_layout):
         html += "<tr>"
@@ -2220,10 +2223,10 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                # Add hot-number class (skipping cold-number as requested)
+                # Add hot-number class
                 cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
-                # Add tooltip with hit count from state.scores
-                hit_count = state.scores.get(num, 0)
+                # Add tooltip with hit count from scores (num is a string, scores keys may be strings or ints)
+                hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
         if row_idx == 0:
@@ -2425,19 +2428,15 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             lower_color = lower_color if lower_color else "rgba(0, 255, 0, 0.5)"
             suggestions = None
             hot_numbers = []  # No hot numbers without spins
-            cold_numbers = []  # No cold numbers without spins
         else:
             print("create_dynamic_table: Applying strategy highlights")
             trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions = apply_strategy_highlights(strategy_name, int(dozen_tracker_spins) if strategy_name == "None" else neighbours_count, strong_numbers_count, sorted_sections, top_color, middle_color, lower_color)
             print(f"create_dynamic_table: Strategy highlights applied - trending_even_money={trending_even_money}, second_even_money={second_even_money}, third_even_money={third_even_money}, trending_dozen={trending_dozen}, second_dozen={second_dozen}, trending_column={trending_column}, second_column={second_column}, number_highlights={number_highlights}")
             
-            # Determine hot and cold numbers (top 5 and bottom 5 scores)
+            # Determine hot numbers (top 5 with hits)
             sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
-            # Hot numbers: top 5 with hits (score > 0)
             hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
-            # Cold numbers: bottom 5 (include zeros if necessary)
-            cold_numbers = [str(num) for num, score in sorted_scores[-5:]]  # Removed score > 0 condition
-            print(f"create_dynamic_table: Hot numbers={hot_numbers}, Cold numbers={cold_numbers}")
+            print(f"create_dynamic_table: Hot numbers={hot_numbers}, Scores={dict(state.scores)}")
         
         # If still no highlights and no sorted_sections, provide a default message
         if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -2445,7 +2444,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             return "<p>No spins yet. Select a strategy to see default highlights.</p>"
         
         print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, cold_numbers)
+        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, scores=state.scores)
         print("create_dynamic_table: Table generated successfully")
         return html
     
@@ -7310,28 +7309,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             overflow: visible !important;
         }
         
-        /* Glowing Hover Effects for Hot and Cold Numbers */
-        .large-table td.hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important; /* Yellow glow, increased specificity */
-            transform: scale(1.1) !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .large-table td.cold-number:hover {
-            box-shadow: 0 0 12px 4px #00b7eb !important;
+        /* Glowing Hover Effects for Hot Numbers (specific to Dynamic Roulette Table) */
+        .dynamic-roulette-table td.hot-number:hover {
+            box-shadow: 0 0 12px 4px #ffd700 !important; /* Yellow glow, high specificity */
             transform: scale(1.1) !important;
             transition: all 0.3s ease !important;
         }
         
         /* Tooltip Styles for Number Cells */
-        .large-table td.has-tooltip:hover::after {
+        .dynamic-roulette-table td.has-tooltip:hover::after {
             content: attr(data-tooltip) !important;
             position: absolute !important;
             background: #333 !important;
             color: #fff !important;
             padding: 5px 10px !important;
             border-radius: 4px !important;
-            border: 1px solid #8c6bb1 !important; /* Purple border to match theme */
+            border: 1px solid #8c6bb1 !important;
             bottom: 100% !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
