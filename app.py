@@ -7336,6 +7336,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-sizing: border-box !important;
             overflow: visible !important;
             text-align: center !important; /* Center table content */
+            animation: tableFadeIn 0.5s ease-in-out !important; /* Add load animation */
+        }
+        
+        /* Define the load animation */
+        @keyframes tableFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
         
         .large-table table {
@@ -7488,6 +7501,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 10px !important;
             }
         }
+        
 
         .strategy-box {
             max-height: 300px !important;
