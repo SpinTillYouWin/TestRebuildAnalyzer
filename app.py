@@ -7370,19 +7370,32 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Quick Trends Section for SpinTrend Radar */
         .quick-trends {
-            background-color: #fff3e0 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-bottom: 10px !important;
-            border: 1px solid #ff9800 !important;
+            background: linear-gradient(135deg, #d8bfd8 0%, #e6e6fa 100%) !important; /* Light lavender gradient */
+            padding: 12px !important;
+            border-radius: 6px !important;
+            margin-bottom: 12px !important;
+            border: 1px solid #8c6bb1 !important; /* Purple border matching Hit Percentage Overview */
+            box-shadow: 0 0 8px rgba(140, 107, 177, 0.3) !important; /* Subtle purple shadow */
         }
+        
         .quick-trends h4 {
-            margin: 0 0 5px 0 !important;
-            font-size: 14px !important;
+            margin: 0 0 8px 0 !important;
+            font-size: 16px !important; /* Slightly larger for emphasis */
+            color: #ff66cc !important; /* Pink to match Hit Percentage Overview border */
+            text-shadow: 0 0 4px rgba(255, 102, 204, 0.5) !important; /* Subtle glow */
+            font-weight: bold !important;
         }
+        
         .quick-trends ul {
             margin: 0 !important;
-            padding: 0 !important;
+            padding-left: 15px !important; /* Slight indent for list items */
+        }
+        
+        .quick-trends ul li {
+            color: #3e2723 !important; /* Dark brown for readability */
+            font-size: 14px !important;
+            margin: 4px 0 !important;
+            font-weight: 500 !important; /* Medium weight for clarity */
         }
         
         /* Spin animation for roulette table buttons */
