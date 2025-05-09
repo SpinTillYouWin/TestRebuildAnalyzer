@@ -2201,10 +2201,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += '<col style="width: 80px;">'
     html += '</colgroup>'
 
-    # Ensure hot_numbers and cold_numbers are sets for consistent comparison
+    # Ensure hot_numbers is a set for consistent comparison
     hot_numbers = set(hot_numbers) if hot_numbers else set()
-    cold_numbers = set(cold_numbers) if cold_numbers else set()
-    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Cold numbers={cold_numbers}")
+    print(f"render_dynamic_table_html: Hot numbers={hot_numbers}")
 
     for row_idx, row in enumerate(table_layout):
         html += "<tr>"
@@ -2221,9 +2220,12 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                # Add hot-number or cold-number class
-                cell_class = "hot-number" if num in hot_numbers else "cold-number" if num in cold_numbers else ""
-                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}">{num}</td>'
+                # Add hot-number class (skipping cold-number as requested)
+                cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
+                # Add tooltip with hit count from state.scores
+                hit_count = state.scores.get(num, 0)
+                tooltip = f"Hit {hit_count} times"
+                html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -7260,7 +7262,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
             padding: 10px !important;
         }
-        
         /* Dynamic Table Container */
         .dynamic-table-container {
             width: 100% !important;
@@ -7285,7 +7286,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
             padding: 15px !important;
             box-sizing: border-box !important;
-            overflow: visible !important; /* Ensure glow isn’t clipped */
+            overflow: visible !important;
         }
         
         .large-table table {
@@ -7305,21 +7306,45 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .large-table td {
             padding: 8px !important;
             text-align: center !important;
-            position: relative !important; /* Ensure glow positioning */
-            overflow: visible !important; /* Prevent glow clipping */
+            position: relative !important;
+            overflow: visible !important;
         }
         
         /* Glowing Hover Effects for Hot and Cold Numbers */
-        .large-table .hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important; /* Yellow glow, increased spread for full square */
+        .large-table td.hot-number:hover {
+            box-shadow: 0 0 12px 4px #ffd700 !important; /* Yellow glow, increased specificity */
             transform: scale(1.1) !important;
             transition: all 0.3s ease !important;
         }
         
-        .large-table .cold-number:hover {
-            box-shadow: 0 0 12px 4px #00b7eb !important; /* Blue glow, increased spread for full square */
+        .large-table td.cold-number:hover {
+            box-shadow: 0 0 12px 4px #00b7eb !important;
             transform: scale(1.1) !important;
             transition: all 0.3s ease !important;
+        }
+        
+        /* Tooltip Styles for Number Cells */
+        .large-table td.has-tooltip:hover::after {
+            content: attr(data-tooltip) !important;
+            position: absolute !important;
+            background: #333 !important;
+            color: #fff !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            border: 1px solid #8c6bb1 !important; /* Purple border to match theme */
+            bottom: 100% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            white-space: nowrap !important;
+            z-index: 10 !important;
+            font-size: 12px !important;
+            font-family: Arial, sans-serif !important;
+            animation: fadeIn 0.3s ease !important;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         
         /* Responsive adjustments */
