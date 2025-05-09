@@ -6546,8 +6546,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
     with gr.Row(elem_classes="dynamic-table-strategy-row"):
-        # Column for Strategy Recommendations (Moved to Left)
-        with gr.Column(scale=3, min_width=500, elem_classes="strategy-recommendations-container"):
+        # Column for Strategy Recommendations (Left Side)
+        with gr.Column(scale=2, min_width=450, elem_classes="strategy-recommendations-container"):
             gr.Markdown("### Strategy Recommendations")
             # Wrap the entire section in a div with class "strategy-card"
             with gr.Row(elem_classes="strategy-card"):
@@ -6594,7 +6594,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         elem_classes=["strategy-box"]
                     )
     
-        # Column for Dynamic Roulette Table (Moved to Right)
+        # Column for Dynamic Roulette Table (Right Side)
         with gr.Column(scale=4, min_width=700, elem_classes="dynamic-table-container"):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
@@ -6602,6 +6602,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value=create_dynamic_table(strategy_name="Best Even Money Bets"),
                 elem_classes=["scrollable-table", "large-table"]
             )
+            
                 
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
