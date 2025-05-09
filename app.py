@@ -7467,24 +7467,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Highlighted Bet Categories */
         .dynamic-roulette-table td.even-money-section {
-            background: linear-gradient(135deg, #6b4e8c, #8c6bb1) !important; /* Purple gradient */
+            background: linear-gradient(135deg, #d8bfd8, #e6e6fa) !important; /* Lighter lavender gradient */
             color: #fff !important;
             font-weight: 700 !important;
-            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.7) !important; /* Slightly darker shadow for contrast */
         }
         
         .dynamic-roulette-table td.dozen-section {
-            background: linear-gradient(135deg, #4a5e7a, #6b7a8c) !important; /* Blue gradient */
+            background: linear-gradient(135deg, #b0c4de, #d3e0f0) !important; /* Lighter blue-gray gradient */
             color: #fff !important;
             font-weight: 700 !important;
-            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.7) !important;
         }
         
         .dynamic-roulette-table td.column-section {
-            background: linear-gradient(135deg, #3a6b6b, #5a8c8c) !important; /* Teal gradient */
+            background: linear-gradient(135deg, #a3d9d9, #c2ebeb) !important; /* Lighter teal gradient */
             color: #fff !important;
             font-weight: 700 !important;
-            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.7) !important;
         }
         
         /* Responsive adjustments */
