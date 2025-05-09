@@ -7238,26 +7238,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 0 auto !important;
             display: block !important;
             background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important;  /* Changed to neon blue */
+            border: 2px solid #3b82f6 !important;
             border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;  /* Neon blue glow */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
             padding: 10px !important;
         }
         
         /* Style section headers (Even Money Bets, Columns, Dozens) */
         .large-table th {
             font-weight: bold !important;
-            color: #000000 !important;  /* Black text */
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;  /* Subtle black shadow for "cool" effect */
-            background: rgba(59, 130, 246, 0.1) !important;  /* Light neon blue background */
-            padding: 8px !important;  /* Add padding for better spacing */
+            color: #000000 !important;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
+            background: rgba(59, 130, 246, 0.1) !important;
+            padding: 8px !important;
         }
         
         .dynamic-table-container {
             width: 100% !important;
-            max-width: 1200px !important;  /* Increased to add more space on the sides */
+            max-width: 1300px !important;  /* Increased from 1200px to 1300px */
             margin: 0 auto !important;
-            padding: 20px 0 !important;  /* Add vertical padding for better spacing */
+            padding: 20px 0 !important;
         }
         
         .strategy-box {
