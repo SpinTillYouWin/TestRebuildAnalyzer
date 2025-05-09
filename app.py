@@ -7244,6 +7244,48 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
         }
         
+        .large-table table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            border: 2px solid #ff4500 !important; /* Neon orange border matching the outer border */
+            box-shadow: 0 0 5px rgba(255, 69, 0, 0.3) !important; /* Subtle glow for the table */
+        }
+        
+        .large-table th, .large-table td {
+            border: 1px solid #ff4500 !important; /* Neon orange borders for cells */
+            padding: 8px 12px !important; /* Increased padding for readability */
+            text-align: center !important;
+        }
+        
+        .large-table th {
+            font-family: 'Arial', sans-serif !important; /* Modern font */
+            font-weight: bold !important;
+            font-size: 16px !important; /* Slightly larger font for headers */
+            color: #ffffff !important; /* White text for contrast */
+            text-shadow: 0 0 5px rgba(255, 69, 0, 0.7), 0 0 8px rgba(255, 69, 0, 0.5) !important; /* Neon orange glow */
+            background: rgba(255, 69, 0, 0.2) !important; /* Slightly transparent neon orange background */
+        }
+        
+        .large-table td {
+            font-family: 'Arial', sans-serif !important; /* Modern font */
+            font-size: 14px !important;
+            color: #333333 !important; /* Dark gray text for cells (default) */
+        }
+        
+        .large-table td:nth-child(1) {
+            color: #333333 !important; /* Ensure numbers retain their default color (or inline styles) */
+            text-shadow: none !important; /* No neon glow for numbers */
+        }
+        
+        .large-table td:not(:nth-child(1)) {
+            color: #ffffff !important; /* White text for non-number cells (e.g., Type column) */
+            text-shadow: 0 0 5px rgba(255, 69, 0, 0.7), 0 0 8px rgba(255, 69, 0, 0.5) !important; /* Neon orange glow */
+        }
+        
+        .large-table tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.1) !important; /* Subtle white overlay for alternating rows */
+        }
+        
         .dynamic-table-container {
             width: 100% !important;
             max-width: 1000px !important;
