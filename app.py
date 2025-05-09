@@ -6556,7 +6556,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             )
     
         # Column for Strategy Recommendations
-        with gr.Column(scale=2, min_width=400, elem_classes="strategy-recommendations-container"):
+        with gr.Column(scale=3, min_width=500, elem_classes="strategy-recommendations-container"):
             gr.Markdown("### Strategy Recommendations")
             # Wrap the entire section in a div with class "strategy-card"
             with gr.Row(elem_classes="strategy-card"):
@@ -6602,6 +6602,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
                         elem_classes=["strategy-box"]
                     )
+                    
                 
 
     # 7.1. Row 7.1: Dozen Tracker
