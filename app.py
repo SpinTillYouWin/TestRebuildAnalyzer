@@ -7488,6 +7488,73 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transition: all 0.3s ease !important;
         }
         
+        /* NEW: Enhanced Hot Number Corner Flash Effect */
+        .dynamic-roulette-table td.hot-number {
+            position: relative !important;
+            overflow: visible !important;
+        }
+        
+        /* Top-left corner highlight */
+        .dynamic-roulette-table td.hot-number::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -3px !important;
+            left: -3px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #ffd700 !important; /* Yellow to match existing glow */
+            border: 1px solid #ffffff !important; /* White border for contrast */
+            animation: flashCorner 1.5s ease-in-out infinite !important;
+            z-index: 5 !important;
+        }
+        
+        /* Bottom-right corner highlight */
+        .dynamic-roulette-table td.hot-number::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -3px !important;
+            right: -3px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #ffd700 !important;
+            border: 1px solid #ffffff !important;
+            animation: flashCorner 1.5s ease-in-out infinite !important;
+            z-index: 5 !important;
+        }
+        
+        /* Flashing animation for corners */
+        @keyframes flashCorner {
+            0%, 100% {
+                opacity: 1 !important;
+                transform: scale(1) !important;
+            }
+            50% {
+                opacity: 0.5 !important;
+                transform: scale(1.2) !important;
+            }
+        }
+        
+        /* Ensure hover effect remains intact and complements corner flash */
+        .dynamic-roulette-table td.hot-number:hover {
+            box-shadow: 0 0 12px 4px #ffd700 !important;
+            transform: scale(1.1) !important;
+            transition: all 0.3s ease !important;
+            z-index: 10 !important; /* Ensure hover effect is above corners */
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .dynamic-roulette-table td.hot-number::before,
+            .dynamic-roulette-table td.hot-number::after {
+                width: 8px !important;
+                height: 8px !important;
+                top: -2px !important;
+                left: -2px !important;
+                bottom: -2px !important;
+                right: -2px !important;
+            }
+        }
+        
         /* Tooltip Styles for Number Cells */
         .dynamic-roulette-table td.has-tooltip:hover::after {
             content: attr(data-tooltip) !important;
