@@ -5255,38 +5255,6 @@ def summarize_spin_traits(last_spin_count):
             except ValueError:
                 switch_dots.append("unknown")
         switch_class = " high-switches" if switch_count >= 4 else ""
-        # Enhanced Red/Black Chopping Alert
-        html = '<div class="traits-overview debug-highlight">'
-        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
-        html += '<div class="traits-wrapper">'
-        html += '<div class="quick-trends">'
-        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
-        if trends or suggestions:
-            html += '<ul style="list-style-type: none; padding-left: 0;">'
-            for trend_type, trend in trends:
-                icon = '<span class="trend-icon hot">🔥</span>' if trend_type == "hot" else \
-                       '<span class="trend-icon cold">❄️</span>' if trend_type == "cold" else \
-                       '<span class="trend-icon streak">⚡️</span>'
-                html += f'<li style="color: #333; margin: 5px 0;">{icon}{trend}</li>'
-            for suggestion in suggestions[:2]:
-                html += f'<li class="bet-suggestion" style="color: #ff4500; font-style: italic; margin: 5px 0;">{suggestion}</li>'
-            html += '</ul>'
-        else:
-            html += '<p>No significant trends detected yet.</p>'
-        html += '</div>'
-        # Add Red/Black Switch Alert (Enhanced)
-        html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
-        if switch_dots and any(color != "unknown" for color in switch_dots):
-            html += '<div class="switch-dots-container">'
-            for color in switch_dots:
-                if color != "unknown":
-                    html += f'<span class="switch-dot {color}"></span>'
-            html += '</div>'
-            if switch_count >= 4:
-                html += '<span class="chopping-alert">⚠️ Red/Black Chopping Alert: High switch rate!</span>'
-        else:
-            html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
-        html += '</div>'
         if DEBUG:
             print(f"summarize_spin_traits: Red/Black Switches: {switch_count}, Dots: {switch_dots}")
 
@@ -5321,6 +5289,42 @@ def summarize_spin_traits(last_spin_count):
         if DEBUG:
             print(f"summarize_spin_traits: Dozen Shifts - Previous: {dozen_counts_prev}, Current: {dozen_counts_current}, Shifts: {dozen_shifts}, Dominant: {dominant_dozen}")
 
+        # Build HTML
+        if DEBUG:
+            print(f"summarize_spin_traits: Building HTML")
+        html = '<div class="traits-overview debug-highlight">'
+        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
+        html += '<div class="traits-wrapper">'
+        html += '<div class="quick-trends">'
+        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
+        if trends or suggestions or switch_dots:
+            html += '<ul style="list-style-type: none; padding-left: 0;">'
+            # Add trends
+            for trend_type, trend in trends:
+                icon = '<span class="trend-icon hot">🔥</span>' if trend_type == "hot" else \
+                       '<span class="trend-icon cold">❄️</span>' if trend_type == "cold" else \
+                       '<span class="trend-icon streak">⚡️</span>'
+                html += f'<li style="color: #333; margin: 5px 0;">{icon}{trend}</li>'
+            # Add suggestions
+            for suggestion in suggestions[:2]:  # Limit to 2 suggestions to avoid clutter
+                html += f'<li class="bet-suggestion" style="color: #ff4500; font-style: italic; margin: 5px 0;">{suggestion}</li>'
+            # Add Red/Black Switch Alert as a trend item
+            html += f'<li class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!" style="margin: 5px 0; padding: 8px; display: flex; flex-direction: column; align-items: flex-start;">'
+            if switch_dots and any(color != "unknown" for color in switch_dots):
+                html += '<div class="switch-dots-container">'
+                for color in switch_dots:
+                    if color != "unknown":
+                        html += f'<span class="switch-dot {color}"></span>'
+                html += '</div>'
+                if switch_count >= 4:
+                    html += '<span class="chopping-alert">⚠️ Red/Black Chopping Alert: High switch rate!</span>'
+            else:
+                html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
+            html += '</li>'
+            html += '</ul>'
+        else:
+            html += '<p>No significant trends detected yet.</p>'
+        html += '</div>'
         # Add Dozen Shift Indicator (Suggestion 10)
         if dominant_dozen and max_shift > 0:
             html += f'<div class="dozen-shift-indicator" data-tooltip="Dozen Shift: {dominant_dozen}">'
