@@ -5210,13 +5210,17 @@ def summarize_spin_traits(last_spin_count):
             dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
             if dominant[1] > 0:
                 percentage = (dominant[1] / total_spins * 100)
-                trends.append(f"{dominant[0]} dominates with {percentage:.1f}% hits")
+                trends.append(("hot", f"{dominant[0]} dominates with {percentage:.1f}% hits"))
             all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
             longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
             if longest_streak > 1:
                 streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
                 streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
-                trends.append(f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})")
+                trends.append(("streak", f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})"))
+            # Add cold trend for least hit trait
+            least_hit = min(all_counts.items(), key=lambda x: x[1], default=("None", 0))
+            if least_hit[1] == 0 and least_hit[0] != "None":
+                trends.append(("cold", f"{least_hit[0]} has no hits"))
         if DEBUG:
             print(f"summarize_spin_traits: Quick Trends calculated: {trends}")
 
@@ -5230,8 +5234,11 @@ def summarize_spin_traits(last_spin_count):
         html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
         if trends:
             html += '<ul style="list-style-type: none; padding-left: 0;">'
-            for trend in trends:
-                html += f'<li style="color: #333; margin: 5px 0;">{trend}</li>'
+            for trend_type, trend in trends:
+                icon = '<span class="trend-icon hot">🔥</span>' if trend_type == "hot" else \
+                       '<span class="trend-icon cold">❄️</span>' if trend_type == "cold" else \
+                       '<span class="trend-icon streak">⚡️</span>'
+                html += f'<li style="color: #333; margin: 5px 0;">{icon}{trend}</li>'
             html += '</ul>'
         else:
             html += '<p>No significant trends detected yet.</p>'
@@ -8565,6 +8572,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
             .strategy-recommendations-container .gr-dropdown {
                 min-width: 100% !important;
+            }
+            /* Pattern Alert Icons for Quick Trends */
+            .trend-icon {
+                display: inline-block;
+                font-size: 16px;
+                margin-right: 5px;
+                animation: subtle-rotate 2s linear infinite;
+            }
+            .trend-icon.hot { color: #ff4500; } /* Flame for hot trends */
+            .trend-icon.cold { color: #00b7eb; } /* Snowflake for cold trends */
+            .trend-icon.streak { color: #ffd700; } /* Lightning for streaks */
+            @keyframes subtle-rotate {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .quick-trends li {
+                display: flex;
+                align-items: center;
+                padding: 5px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 5px;
+                margin-bottom: 5px;
             }
         }
     </style>
