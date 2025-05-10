@@ -5255,17 +5255,46 @@ def summarize_spin_traits(last_spin_count):
             except ValueError:
                 switch_dots.append("unknown")
         switch_class = " high-switches" if switch_count >= 4 else ""
+        # Enhanced Red/Black Chopping Alert
+        html = '<div class="traits-overview debug-highlight">'
+        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
+        html += '<div class="traits-wrapper">'
+        html += '<div class="quick-trends">'
+        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
+        if trends or suggestions:
+            html += '<ul style="list-style-type: none; padding-left: 0;">'
+            for trend_type, trend in trends:
+                icon = '<span class="trend-icon hot">🔥</span>' if trend_type == "hot" else \
+                       '<span class="trend-icon cold">❄️</span>' if trend_type == "cold" else \
+                       '<span class="trend-icon streak">⚡️</span>'
+                html += f'<li style="color: #333; margin: 5px 0;">{icon}{trend}</li>'
+            for suggestion in suggestions[:2]:
+                html += f'<li class="bet-suggestion" style="color: #ff4500; font-style: italic; margin: 5px 0;">{suggestion}</li>'
+            html += '</ul>'
+        else:
+            html += '<p>No significant trends detected yet.</p>'
+        html += '</div>'
+        # Add Red/Black Switch Alert (Enhanced)
+        html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
+        if switch_dots and any(color != "unknown" for color in switch_dots):
+            html += '<div class="switch-dots-container">'
+            for color in switch_dots:
+                if color != "unknown":
+                    html += f'<span class="switch-dot {color}"></span>'
+            html += '</div>'
+            if switch_count >= 4:
+                html += '<span class="chopping-alert">⚠️ Red/Black Chopping Alert: High switch rate!</span>'
+        else:
+            html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
+        html += '</div>'
         if DEBUG:
             print(f"summarize_spin_traits: Red/Black Switches: {switch_count}, Dots: {switch_dots}")
 
         # Calculate Dozen Shifts (Suggestion 10)
         dozen_counts_prev = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         dozen_counts_current = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
-        # Previous 5 spins (spins 10 to 6 ago, if available)
         prev_spins = last_spins[-10:-5] if len(last_spins) >= 10 else last_spins[:5] if len(last_spins) >= 5 else []
-        # Current 5 spins (last 5 spins)
         current_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        # Count dozens in previous window
         for spin in prev_spins:
             try:
                 num = int(spin)
@@ -5274,7 +5303,6 @@ def summarize_spin_traits(last_spin_count):
                         dozen_counts_prev[name] += 1
             except ValueError:
                 continue
-        # Count dozens in current window
         for spin in current_spins:
             try:
                 num = int(spin)
@@ -5283,9 +5311,7 @@ def summarize_spin_traits(last_spin_count):
                         dozen_counts_current[name] += 1
             except ValueError:
                 continue
-        # Calculate shifts (difference in hits between windows)
         dozen_shifts = {name: dozen_counts_current[name] - dozen_counts_prev[name] for name in dozen_counts}
-        # Find the dozen with the largest positive shift
         max_shift = max(dozen_shifts.values(), default=0)
         dominant_dozen = None
         dozen_class = ""
@@ -5295,38 +5321,6 @@ def summarize_spin_traits(last_spin_count):
         if DEBUG:
             print(f"summarize_spin_traits: Dozen Shifts - Previous: {dozen_counts_prev}, Current: {dozen_counts_current}, Shifts: {dozen_shifts}, Dominant: {dominant_dozen}")
 
-        # Build HTML
-        if DEBUG:
-            print(f"summarize_spin_traits: Building HTML")
-        html = '<div class="traits-overview debug-highlight">'
-        html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
-        html += '<div class="traits-wrapper">'
-        html += '<div class="quick-trends">'
-        html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
-        if trends or suggestions:
-            html += '<ul style="list-style-type: none; padding-left: 0;">'
-            # Add trends
-            for trend_type, trend in trends:
-                icon = '<span class="trend-icon hot">🔥</span>' if trend_type == "hot" else \
-                       '<span class="trend-icon cold">❄️</span>' if trend_type == "cold" else \
-                       '<span class="trend-icon streak">⚡️</span>'
-                html += f'<li style="color: #333; margin: 5px 0;">{icon}{trend}</li>'
-            # Add suggestions
-            for suggestion in suggestions[:2]:  # Limit to 2 suggestions to avoid clutter
-                html += f'<li class="bet-suggestion" style="color: #ff4500; font-style: italic; margin: 5px 0;">{suggestion}</li>'
-            html += '</ul>'
-        else:
-            html += '<p>No significant trends detected yet.</p>'
-        html += '</div>'
-        # Add Red/Black Switch Alert (Suggestion 9)
-        html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
-        if switch_dots and any(color != "unknown" for color in switch_dots):
-            for color in switch_dots:
-                if color != "unknown":
-                    html += f'<span class="switch-dot {color}"></span>'
-        else:
-            html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
-        html += '</div>'
         # Add Dozen Shift Indicator (Suggestion 10)
         if dominant_dozen and max_shift > 0:
             html += f'<div class="dozen-shift-indicator" data-tooltip="Dozen Shift: {dominant_dozen}">'
@@ -8796,7 +8790,98 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-size: 12px;
                 z-index: 101;
             }
-        }
+        /* Enhanced Red/Black Chopping Alert */
+            .switch-alert {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 8px !important;
+                padding: 12px !important;
+                background: rgba(255, 255, 255, 0.6) !important;
+                border: 2px solid #666 !important;
+                border-radius: 8px !important;
+                margin-top: 20px !important;
+                justify-content: center !important;
+                min-height: 60px !important;
+                position: relative !important;
+                z-index: 100 !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            .switch-dots-container {
+                display: flex !important;
+                gap: 6px !important;
+            }
+            
+            .switch-dot {
+                width: 16px !important;
+                height: 16px !important;
+                border-radius: 50% !important;
+                border: 1px solid #fff !important;
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.3) !important;
+            }
+            
+            .switch-dot.red { background: #ff4444 !important; }
+            .switch-dot.black { background: #000000 !important; }
+            .switch-dot.green { background: #388e3c !important; }
+            
+            .switch-alert.high-switches {
+                border: 3px solid #ffd700 !important;
+                background: rgba(255, 215, 0, 0.2) !important;
+                animation: chopping-glow 1.5s ease-in-out infinite !important;
+            }
+            
+            .chopping-alert {
+                color: #ff4500 !important;
+                font-weight: bold !important;
+                font-size: 14px !important;
+                text-align: center !important;
+                text-shadow: 0 0 4px rgba(255, 69, 0, 0.5) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 5px !important;
+            }
+            
+            @keyframes chopping-glow {
+                0%, 100% {
+                    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5) !important;
+                    border-color: #ffd700 !important;
+                }
+                50% {
+                    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8) !important;
+                    border-color: #ffa500 !important;
+                }
+            }
+            
+            .switch-alert:hover::after {
+                content: attr(data-tooltip) !important;
+                position: absolute !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 6px 12px !important;
+                border-radius: 4px !important;
+                top: -40px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                font-size: 12px !important;
+                z-index: 101 !important;
+                white-space: nowrap !important;
+            }
+            
+            /* Ensure the alert is responsive */
+            @media (max-width: 600px) {
+                .switch-alert {
+                    padding: 10px !important;
+                    min-height: 50px !important;
+                }
+                .switch-dot {
+                    width: 12px !important;
+                    height: 12px !important;
+                }
+                .chopping-alert {
+                    font-size: 12px !important;
+                }
+            }
     </style>
     """)
     print("CSS Updated")
