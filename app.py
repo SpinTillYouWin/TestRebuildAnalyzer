@@ -4987,9 +4987,12 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
-def calculate_hit_percentages(last_spin_count, analysis_cache):
+def calculate_hit_percentages(last_spin_count, analysis_cache=None):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens with caching."""
     try:
+        # Use empty dict if analysis_cache is None
+        analysis_cache = analysis_cache if analysis_cache is not None else {}
+        
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))
         spins_list = state.last_spins if hasattr(state, 'last_spins') else []
@@ -5090,7 +5093,6 @@ def calculate_hit_percentages(last_spin_count, analysis_cache):
     except Exception as e:
         print(f"calculate_hit_percentages: Error: {str(e)}")
         return "<p>Error calculating hit percentages.</p>", analysis_cache
-
 
 # Updated function with debug log
 DEBUG = False  # Disable debug logging in production
