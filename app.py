@@ -5231,6 +5231,25 @@ def summarize_spin_traits(last_spin_count):
         if DEBUG:
             print(f"summarize_spin_traits: Quick Trends calculated: {trends}, Suggestions: {suggestions}")
 
+        # Calculate Red/Black Switches
+        switch_count = 0
+        switch_dots = []
+        recent_spins = last_spins[-6:] if len(last_spins) >= 6 else last_spins
+        for i, spin in enumerate(recent_spins):
+            try:
+                num = int(spin)
+                color = "green" if num == 0 else \
+                        "red" if num in EVEN_MONEY["Red"] else \
+                        "black" if num in EVEN_MONEY["Black"] else "unknown"
+                switch_dots.append(color)
+                if i > 0 and color != "green" and switch_dots[i-1] != "green" and color != switch_dots[i-1]:
+                    switch_count += 1
+            except ValueError:
+                switch_dots.append("unknown")
+        switch_class = " high-switches" if switch_count >= 4 else ""
+        if DEBUG:
+            print(f"summarize_spin_traits: Red/Black Switches: {switch_count}, Dots: {switch_dots}")
+
         # Build HTML
         if DEBUG:
             print(f"summarize_spin_traits: Building HTML")
@@ -5254,8 +5273,15 @@ def summarize_spin_traits(last_spin_count):
         else:
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
+        # Add Red/Black Switch Alert
+        if switch_dots:
+            html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
+            for color in switch_dots:
+                if color != "unknown":
+                    html += f'<span class="switch-dot {color}"></span>'
+            html += '</div>'
         if DEBUG:
-            print(f"summarize_spin_traits: Quick Trends HTML generated")
+            print(f"summarize_spin_traits: Quick Trends and Switch Alert HTML generated")
 
         # Even Money Bets
         html += '<div class="badge-group">'
@@ -8617,7 +8643,46 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 align-items: center;
                 font-weight: bold;
                 box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
-            }    
+            }
+            /* Red/Black Switch Alert */
+            .switch-alert {
+                display: flex;
+                gap: 4px;
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                margin-top: 10px;
+                justify-content: center;
+            }
+            .switch-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+            }
+            .switch-dot.red { background: #ff4444; }
+            .switch-dot.black { background: #000000; }
+            .switch-dot.green { background: #388e3c; }
+            .switch-alert.high-switches {
+                border: 2px solid #ffd700;
+                animation: flash-border 1s infinite ease-in-out;
+            }
+            @keyframes flash-border {
+                0%, 100% { border-color: #ffd700; }
+                50% { border-color: #ffa500; }
+            }
+            .switch-alert:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                background: #333;
+                color: #fff;
+                padding: 5px;
+                border-radius: 3px;
+                top: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 12px;
+                z-index: 10;
+            }
         }
     </style>
     """)
