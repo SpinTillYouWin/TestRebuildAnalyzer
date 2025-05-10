@@ -4892,6 +4892,12 @@ def play_specific_numbers(numbers_input, number_type, spins_display, last_spin_c
         tuple: Updated spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display.
     """
     try:
+        # Debug: Track how many times this function is called
+        if not hasattr(state, 'play_specific_numbers_counter'):
+            state.play_specific_numbers_counter = 0
+        state.play_specific_numbers_counter += 1
+        print(f"play_specific_numbers called (count: {state.play_specific_numbers_counter}) for {number_type} numbers")
+
         # Parse the input numbers
         if not numbers_input or not numbers_input.strip():
             return (
@@ -4972,6 +4978,7 @@ def play_specific_numbers(numbers_input, number_type, spins_display, last_spin_c
             update_spin_counter(),
             render_sides_of_zero_display()
         )
+
 
 def clear_hot_cold_picks(type_label, current_spins_display):
     """Clear hot or cold numbers input."""
@@ -10152,7 +10159,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         # Return the synchronized spins_display
         return ", ".join(state.last_spins) if state.last_spins else ""
     
-    # Updated event handler for play_hot_button with analyze_spins
+
+    # Event handler for play_hot_button
     try:
         play_hot_button.click(
             fn=play_specific_numbers,
@@ -10167,7 +10175,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
-            fn=analyze_spins,  # Add this to update state.scores and other metrics
+            fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
@@ -10199,7 +10207,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
     
-    # Updated event handler for play_cold_button with analyze_spins
+    # Event handler for play_cold_button
     try:
         play_cold_button.click(
             fn=play_specific_numbers,
@@ -10214,7 +10222,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
-            fn=analyze_spins,  # Add this to update state.scores and other metrics
+            fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
@@ -10335,55 +10343,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
     
-    try:
-        play_hot_button.click(
-            fn=play_specific_numbers,
-            inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=suggest_hot_cold_numbers,
-            inputs=[],
-            outputs=[hot_suggestions, cold_suggestions]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in play_hot_button.click handler: {str(e)}")
-    
-    try:
-        play_cold_button.click(
-            fn=play_specific_numbers,
-            inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=suggest_hot_cold_numbers,
-            inputs=[],
-            outputs=[hot_suggestions, cold_suggestions]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in play_cold_button.click handler: {str(e)}")
 
     def toggle_labouchere(progression):
         """Show/hide Labouchere sequence input based on selected progression."""
