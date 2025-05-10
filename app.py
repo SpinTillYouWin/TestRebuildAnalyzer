@@ -9167,7 +9167,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # Event Handlers
     try:
-            try:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
