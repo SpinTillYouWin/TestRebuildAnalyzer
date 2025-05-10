@@ -5177,7 +5177,7 @@ def summarize_spin_traits(last_spin_count):
                     if num in numbers:
                         dozen_counts[name] += 1
                         dozen_streaks[name]["last_hit"] = True
-                        dozen_streaks[name]["current"] += 1
+                        dozen_streaks[name]["current"] = 1
                         dozen_streaks[name]["spins"].append(str(num))
                         if len(dozen_streaks[name]["spins"]) > dozen_streaks[name]["current"]:
                             dozen_streaks[name]["spins"] = dozen_streaks[name]["spins"][-dozen_streaks[name]["current"]:]
@@ -5261,7 +5261,7 @@ def summarize_spin_traits(last_spin_count):
         # Build HTML
         if DEBUG:
             print(f"summarize_spin_traits: Building HTML")
-        html = '<div class="traits-overview">'
+        html = '<div class="traits-overview debug-highlight">'
         html += f'<h4>SpinTrend Radar (Last {len(last_spins)} Spins):</h4>'
         html += '<div class="traits-wrapper">'
         html += '<div class="quick-trends">'
@@ -5350,9 +5350,6 @@ def summarize_spin_traits(last_spin_count):
             html += '<span class="trait-badge repeat">No repeats</span>'
         html += '</div></div>'
         html += '</div></div>'  # Close traits-wrapper and traits-overview
-        if DEBUG:
-            print(f"summarize_spin_traits: Repeat Numbers HTML generated")
-
         if DEBUG:
             print(f"summarize_spin_traits: Returning HTML successfully")
         return html
@@ -8654,22 +8651,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-weight: bold;
                 box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
             }
+            /* Debug Highlight for SpinTrend Radar */
+            .traits-overview.debug-highlight {
+                background: rgba(200, 200, 200, 0.2); /* Light gray background to confirm rendering */
+                padding: 10px;
+                border: 1px solid #999;
+            }
+            
+            /* Ensure Traits Wrapper is Visible */
+            .traits-wrapper {
+                position: relative;
+                overflow: visible; /* Prevent clipping of child elements */
+                padding-bottom: 20px; /* Add space for switch-alert */
+            }
+            
             /* Red/Black Switch Alert */
             .switch-alert {
                 display: flex;
                 gap: 4px;
-                padding: 8px;
-                background: rgba(255, 255, 255, 0.3); /* Increased opacity for visibility */
-                border: 1px solid #666; /* Added border for better definition */
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.5); /* More prominent background */
+                border: 2px solid #666; /* Thicker border for visibility */
                 border-radius: 6px;
-                margin-top: 10px;
+                margin-top: 15px;
                 justify-content: center;
-                min-height: 30px; /* Ensure the bar has visible height even if empty */
+                min-height: 40px; /* Increased height for better visibility */
                 align-items: center;
+                position: relative;
+                z-index: 100; /* Ensure it’s above other elements */
             }
             .switch-dot {
-                width: 12px;
-                height: 12px;
+                width: 14px; /* Slightly larger dots */
+                height: 14px;
                 border-radius: 50%;
             }
             .switch-dot.red { background: #ff4444; }
@@ -8690,11 +8703,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 color: #fff;
                 padding: 5px;
                 border-radius: 3px;
-                top: -30px;
+                top: -35px; /* Adjusted for larger bar */
                 left: 50%;
                 transform: translateX(-50%);
                 font-size: 12px;
-                z-index: 10;
+                z-index: 101;
             }
         }
     </style>
@@ -8704,54 +8717,69 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # Shepherd.js Tour Script
     gr.HTML("""
     <script>
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
-          buttons: [
-            { text: 'Back', action: function() { return this.back(); } },
-            { text: 'Next', action: function() { return this.next(); } },
-            { text: 'Skip', action: function() { return this.cancel(); } }
-          ]
-        },
-        useModalOverlay: true
-      });
+        const tour = new Shepherd.Tour({
+            defaultStepOptions: {
+                cancelIcon: { enabled: true },
+                scrollTo: { behavior: 'smooth', block: 'center' },
+                classes: 'shepherd-theme-arrows',
+                buttons: [
+                    { text: 'Back', action: function() { return this.back(); } },
+                    { text: 'Next', action: function() { return this.next(); } },
+                    { text: 'Skip', action: function() { return this.cancel(); } }
+                ]
+            },
+            useModalOverlay: true
+        });
     
-      // Debug function to log step transitions
-      function logStep(stepId, nextStepId) {
-        return () => {
-          console.log(`Moving from ${stepId} to ${nextStepId}`);
-          tour.next();
-        };
-      }
+        // Debug function to log step transitions
+        function logStep(stepId, nextStepId) {
+            return () => {
+                console.log(`Moving from ${stepId} to ${nextStepId}`);
+                tour.next();
+            };
+        }
     
-      // Force accordion open with direct DOM manipulation and Promise
-      function forceAccordionOpen(accordionId) {
-        console.log(`Checking accordion: ${accordionId}`);
-        return new Promise(resolve => {
-          const accordion = document.querySelector(accordionId);
-          if (!accordion) {
-            console.warn(`Accordion ${accordionId} not found`);
-            resolve();
-            return;
-          }
-          const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-          if (content && window.getComputedStyle(content).display === 'none') {
-            console.log(`Forcing ${accordionId} open`);
-            content.style.display = 'block';
-            accordion.setAttribute('open', '');
-            setTimeout(() => {
-              if (window.getComputedStyle(content).display === 'none') {
-                console.warn(`Fallback: Forcing visibility for ${accordionId}`);
-                content.style.display = 'block';
-              }
-              resolve();
-            }, 500);
-          } else {
-            console.log(`${accordionId} already open or no content found`);
-            resolve();
-          }
+        // Force accordion open with direct DOM manipulation and Promise
+        function forceAccordionOpen(accordionId) {
+            console.log(`Checking accordion: ${accordionId}`);
+            return new Promise(resolve => {
+                const accordion = document.querySelector(accordionId);
+                if (!accordion) {
+                    console.warn(`Accordion ${accordionId} not found`);
+                    resolve();
+                    return;
+                }
+                const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
+                if (content && window.getComputedStyle(content).display === 'none') {
+                    console.log(`Forcing ${accordionId} open`);
+                    content.style.display = 'block';
+                    accordion.setAttribute('open', '');
+                    setTimeout(() => {
+                        if (window.getComputedStyle(content).display === 'none') {
+                            console.warn(`Fallback: Forcing visibility for ${accordionId}`);
+                            content.style.display = 'block';
+                        }
+                        resolve();
+                    }, 500);
+                } else {
+                    console.log(`${accordionId} already open or no content found`);
+                    resolve();
+                }
+            });
+        }
+    
+        // Force Gradio refresh for spin_traits_display
+        document.addEventListener('DOMContentLoaded', function() {
+            const spinTraitsDisplay = document.querySelector('#spin_traits_display');
+            if (spinTraitsDisplay) {
+                // Force re-render by triggering a DOM update
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(() => {
+                        spinTraitsDisplay.style.display = 'block'; // Ensure visibility
+                    });
+                });
+                observer.observe(spinTraitsDisplay, { childList: true, subtree: true });
+            }
         });
       }
     
