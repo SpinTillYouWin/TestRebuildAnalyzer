@@ -5297,7 +5297,7 @@ def summarize_spin_traits(last_spin_count):
         html += '<div class="traits-wrapper">'
         html += '<div class="quick-trends">'
         html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
-        if trends or suggestions or switch_dots:
+        if trends or suggestions or switch_dots or (dominant_dozen and max_shift > 0):
             html += '<ul style="list-style-type: none; padding-left: 0;">'
             # Add trends
             for trend_type, trend in trends:
@@ -5321,16 +5321,16 @@ def summarize_spin_traits(last_spin_count):
             else:
                 html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
             html += '</li>'
+            # Add Dozen Shift Indicator as a trend item
+            if dominant_dozen and max_shift > 0:
+                html += f'<li class="dozen-shift-indicator" data-tooltip="Dozen Shift: {dominant_dozen}" style="margin: 5px 0; padding: 8px; display: flex; align-items: center;">'
+                html += f'<span class="dozen-badge {dozen_class}">▲</span>'
+                html += f'<span style="color: #333; font-size: 12px; margin-left: 5px;">{dominant_dozen} (+{max_shift} hits)</span>'
+                html += '</li>'
             html += '</ul>'
         else:
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
-        # Add Dozen Shift Indicator (Suggestion 10)
-        if dominant_dozen and max_shift > 0:
-            html += f'<div class="dozen-shift-indicator" data-tooltip="Dozen Shift: {dominant_dozen}">'
-            html += f'<span class="dozen-badge {dozen_class}">▲</span>'
-            html += f'<span style="color: #333; font-size: 12px; margin-left: 5px;">{dominant_dozen} (+{max_shift} hits)</span>'
-            html += '</div>'
         if DEBUG:
             print(f"summarize_spin_traits: Quick Trends, Switch Alert, and Dozen Shift Indicator HTML generated")
 
@@ -8872,9 +8872,60 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             white-space: nowrap !important;
         }
         
+        /* Dozen Shift Indicator within Quick Trends */
+        .quick-trends .dozen-shift-indicator {
+            display: flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            padding: 8px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid #999 !important;
+            border-radius: 5px !important;
+            margin: 5px 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            z-index: 10 !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .quick-trends .dozen-badge {
+            display: inline-block !important;
+            font-size: 12px !important;
+            color: #fff !important;
+            border-radius: 3px !important;
+            padding: 2px 4px !important;
+            animation: bounce 1s infinite ease-in-out !important;
+        }
+        
+        .quick-trends .dozen-badge.d1 { background: #388e3c !important; } /* 1st Dozen */
+        .quick-trends .dozen-badge.d2 { background: #ff9800 !important; } /* 2nd Dozen */
+        .quick-trends .dozen-badge.d3 { background: #8e24aa !important; } /* 3rd Dozen */
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) !important; }
+            50% { transform: translateY(-3px) !important; }
+        }
+        
+        .quick-trends .dozen-shift-indicator:hover::after {
+            content: attr(data-tooltip) !important;
+            position: absolute !important;
+            background: #333 !important;
+            color: #fff !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            top: -35px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            font-size: 11px !important;
+            z-index: 11 !important;
+            white-space: nowrap !important;
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 600px) {
-            .quick-trends .switch-alert {
+            .quick-trends .switch-alert,
+            .quick-trends .dozen-shift-indicator {
                 padding: 6px !important;
             }
             .quick-trends .switch-dot {
@@ -8883,6 +8934,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
             .quick-trends .chopping-alert {
                 font-size: 12px !important;
+            }
+            .quick-trends .dozen-badge {
+                font-size: 11px !important;
+                padding: 1px 3px !important;
+            }
+            .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
+                font-size: 11px !important;
             }
         }
     </style>
