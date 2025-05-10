@@ -2487,13 +2487,17 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             
             # Add top 10 picks to number_highlights
             top_picks_html = select_next_spin_top_pick(dozen_tracker_spins)
-            if "<p>Error" not in top_picks_html:
+            print(f"create_dynamic_table: Top picks HTML snippet: {top_picks_html[:200]}")  # Log first 200 chars
+            if "<p>Error" not in top_picks_html and top_picks_html.strip():
                 import re
                 numbers = re.findall(r'data-number="(\d+)"', top_picks_html)
-                top_picks = [int(num) for num in numbers][:10]  # Limit to 10 picks
-                print(f"create_dynamic_table: Top picks={top_picks}")
+                top_picks = [int(num) for num in numbers if num.isdigit()][:10]  # Limit to 10 valid picks
+                print(f"create_dynamic_table: Top picks extracted={top_picks}")
+                if not top_picks and state.current_top_pick is not None:
+                    print(f"create_dynamic_table: Regex failed, using state.current_top_pick={state.current_top_pick}")
+                    top_picks = [int(state.current_top_pick)]  # Fallback to primary pick
                 for num in top_picks:
-                    number_highlights[num] = number_highlights.get(num, "top-pick")  # Use 'top-pick' tier
+                    number_highlights[num] = "top-pick"  # Mark as top-pick, overwrite for visibility
             else:
                 print("create_dynamic_table: No top picks available due to error or no spins")
         
