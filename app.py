@@ -4878,36 +4878,100 @@ def validate_hot_cold_numbers(numbers_input, type_label):
         return None, f"Invalid {type_label} numbers. Use comma-separated integers (e.g., 1, 3, 5, 7, 9)."
 
 # Note: play_specific_numbers and clear_hot_cold_picks remain unchanged, e.g.:
-def play_specific_numbers(numbers_input, type_label, current_spins_display, last_spin_count):
-    """Add the specified hot or cold numbers as spins."""
-    import gradio as gr
+def play_specific_numbers(numbers_input, number_type, spins_display, last_spin_count):
+    """
+    Add hot or cold numbers to the spins list and update the UI.
+    
+    Args:
+        numbers_input (str): Comma-separated string of numbers (e.g., "1, 3, 5").
+        number_type (str): "Hot" or "Cold" to indicate the type of numbers.
+        spins_display (str): Current spins display string.
+        last_spin_count (int): Number of spins to consider for display.
+    
+    Returns:
+        tuple: Updated spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display.
+    """
     try:
-        numbers, error = validate_hot_cold_numbers(numbers_input, type_label)
-        if error:
-            gr.Warning(error)
-            return current_spins_display, current_spins_display, error, update_spin_counter(), render_sides_of_zero_display()
+        # Parse the input numbers
+        if not numbers_input or not numbers_input.strip():
+            return (
+                spins_display,
+                spins_display,
+                f"<p>No {number_type.lower()} numbers provided to play.</p>",
+                update_spin_counter(),
+                render_sides_of_zero_display()
+            )
 
-        # Check spin limit
-        if len(state.last_spins) + len(numbers) > 1000:
-            error_msg = "Cannot add spins: Maximum 1000 spins exceeded."
-            gr.Warning(error_msg)
-            return current_spins_display, current_spins_display, error_msg, update_spin_counter(), render_sides_of_zero_display()
+        # Split and clean the input
+        numbers = [num.strip() for num in numbers_input.split(",") if num.strip()]
+        if not numbers:
+            return (
+                spins_display,
+                spins_display,
+                f"<p>No valid {number_type.lower()} numbers provided.</p>",
+                update_spin_counter(),
+                render_sides_of_zero_display()
+            )
 
-        new_spins = [str(n) for n in numbers]
-        for spin in new_spins:
-            add_spin(spin, current_spins_display, last_spin_count)  # Reuse add_spin for consistency
+        # Validate numbers (must be integers between 0 and 36)
+        valid_numbers = []
+        for num in numbers:
+            try:
+                n = int(num)
+                if 0 <= n <= 36:
+                    valid_numbers.append(str(n))
+                else:
+                    print(f"Invalid {number_type.lower()} number: {num}. Must be between 0 and 36.")
+            except ValueError:
+                print(f"Invalid {number_type.lower()} number: {num}. Must be an integer.")
+                continue
 
-        # Update casino data
-        state.casino_data[f"{type_label.lower()}_numbers"] = numbers
-        spins_text = ", ".join(state.last_spins)
-        success_msg = f"Played {type_label} numbers: {', '.join(new_spins)}"
-        print(f"play_specific_numbers: {success_msg}")
-        return spins_text, spins_text, success_msg, update_spin_counter(), render_sides_of_zero_display()
+        if not valid_numbers:
+            return (
+                spins_display,
+                spins_display,
+                f"<p>No valid {number_type.lower()} numbers to play. Numbers must be between 0 and 36.</p>",
+                update_spin_counter(),
+                render_sides_of_zero_display()
+            )
+
+        # Update state.last_spins
+        if not hasattr(state, 'last_spins'):
+            state.last_spins = []
+        
+        # Append the valid numbers to state.last_spins
+        state.last_spins.extend(valid_numbers)
+        
+        # Update spins_display to match state.last_spins
+        new_spins_display = ", ".join(state.last_spins) if state.last_spins else ""
+        
+        # Update casino_data_output with a confirmation message
+        casino_message = f"<p>Played {number_type.lower()} numbers: {', '.join(valid_numbers)}</p>"
+        
+        # Update spin_counter and sides_of_zero_display
+        new_spin_counter = update_spin_counter()
+        new_sides_of_zero = render_sides_of_zero_display()
+
+        print(f"Played {number_type.lower()} numbers: {valid_numbers}")
+        print(f"Updated state.last_spins: {state.last_spins}")
+
+        return (
+            new_spins_display,  # spins_display
+            new_spins_display,  # spins_textbox
+            casino_message,     # casino_data_output
+            new_spin_counter,   # spin_counter
+            new_sides_of_zero   # sides_of_zero_display
+        )
+
     except Exception as e:
-        error_msg = f"Error playing {type_label} numbers: {str(e)}"
-        print(f"play_specific_numbers: {error_msg}")
-        gr.Warning(error_msg)
-        return current_spins_display, current_spins_display, error_msg, update_spin_counter(), render_sides_of_zero_display()
+        print(f"Error in play_specific_numbers: {str(e)}")
+        return (
+            spins_display,
+            spins_display,
+            f"<p>Error playing {number_type.lower()} numbers: {str(e)}</p>",
+            update_spin_counter(),
+            render_sides_of_zero_display()
+        )
 
 def clear_hot_cold_picks(type_label, current_spins_display):
     """Clear hot or cold numbers input."""
@@ -6021,7 +6085,11 @@ def suggest_hot_cold_numbers():
         if not cold_numbers:
             cold_numbers = ["No cold numbers"]
 
-        return ", ".join(hot_numbers), ", ".join(cold_numbers)
+        # Update state with suggestions
+        state.hot_suggestions = ", ".join(hot_numbers)
+        state.cold_suggestions = ", ".join(cold_numbers)
+
+        return state.hot_suggestions, state.cold_suggestions
     except Exception as e:
         print(f"suggest_hot_cold_numbers: Error: {str(e)}")
         return "", "<p>Error generating suggestions.</p>"
@@ -10065,15 +10133,56 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in reset_casino_data_button.click handler: {str(e)}")
 
+    # Helper function to synchronize spins_display and state.last_spins
+    def sync_spins_display(spins_display):
+        """
+        Ensure state.last_spins matches spins_display.
+        
+        Args:
+            spins_display (str): The current spins_display value.
+        
+        Returns:
+            str: The synchronized spins_display value.
+        """
+        # Parse spins_display into state.last_spins
+        if spins_display and spins_display.strip():
+            state.last_spins = [num.strip() for num in spins_display.split(",") if num.strip()]
+        else:
+            state.last_spins = []
+        # Return the synchronized spins_display
+        return ", ".join(state.last_spins) if state.last_spins else ""
+    
+    # Updated event handler for play_hot_button with analyze_spins
     try:
         play_hot_button.click(
             fn=play_specific_numbers,
             inputs=[hot_numbers_input, gr.State(value="Hot"), spins_display, last_spin_count],
             outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
         ).then(
+            fn=sync_spins_display,
+            inputs=[spins_display],
+            outputs=[spins_display]
+        ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=analyze_spins,  # Add this to update state.scores and other metrics
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=suggest_hot_cold_numbers,
             inputs=[],
@@ -10090,15 +10199,37 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in play_hot_button.click handler: {str(e)}")
     
+    # Updated event handler for play_cold_button with analyze_spins
     try:
         play_cold_button.click(
             fn=play_specific_numbers,
             inputs=[cold_numbers_input, gr.State(value="Cold"), spins_display, last_spin_count],
             outputs=[spins_display, spins_textbox, casino_data_output, spin_counter, sides_of_zero_display]
         ).then(
+            fn=sync_spins_display,
+            inputs=[spins_display],
+            outputs=[spins_display]
+        ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
+        ).then(
+            fn=analyze_spins,  # Add this to update state.scores and other metrics
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=suggest_hot_cold_numbers,
             inputs=[],
