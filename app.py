@@ -4987,7 +4987,7 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     print(f"clear_hot_cold_picks: {success_msg}")
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
-def calculate_hit_percentages(last_spin_count):
+def calculate_hit_percentages(last_spin_count, analysis_cache):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens with caching."""
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
@@ -4996,22 +4996,22 @@ def calculate_hit_percentages(last_spin_count):
         
         # Create cache key based on spins and spin count
         cache_key = f"hit_percentages_{last_spin_count}_{hash(tuple(spins_list))}"
-        if cache_key in state.analysis_cache:
+        if cache_key in analysis_cache:
             if DEBUG:
                 print(f"calculate_hit_percentages: Cache hit for key {cache_key}")
-            return state.analysis_cache[cache_key]
+            return analysis_cache[cache_key], analysis_cache
         
         # Limit cache size
         MAX_CACHE_SIZE = 100
-        if len(state.analysis_cache) >= MAX_CACHE_SIZE:
-            oldest_key = next(iter(state.analysis_cache))
-            del state.analysis_cache[oldest_key]
+        if len(analysis_cache) >= MAX_CACHE_SIZE:
+            oldest_key = next(iter(analysis_cache))
+            del analysis_cache[oldest_key]
             if DEBUG:
                 print(f"calculate_hit_percentages: Removed oldest cache entry {oldest_key}")
         
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
-            return "<p>No spins available for analysis.</p>"
+            return "<p>No spins available for analysis.</p>", analysis_cache
 
         total_spins = len(last_spins)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
@@ -5082,14 +5082,15 @@ def calculate_hit_percentages(last_spin_count):
         html += '</div></div>'  # Close percentage-wrapper and hit-percentage-overview
 
         # Cache the result
-        state.analysis_cache[cache_key] = html
+        analysis_cache[cache_key] = html
         if DEBUG:
             print(f"calculate_hit_percentages: Cached result for key {cache_key}")
 
-        return html
+        return html, analysis_cache
     except Exception as e:
         print(f"calculate_hit_percentages: Error: {str(e)}")
-        return "<p>Error calculating hit percentages.</p>"
+        return "<p>Error calculating hit percentages.</p>", analysis_cache
+
 
 # Updated function with debug log
 DEBUG = False  # Disable debug logging in production
@@ -8991,16 +8992,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       });
     </script>
     """)
-    
-    # Event Handlers
+
+
+import time
+
+def debounced_validate_spins_input(spins_textbox, last_input_time):
+    current_time = time.time()
+    if current_time - last_input_time < 0.5:  # 500ms delay
+        return None, last_input_time, spins_textbox
+    validated_display, last_spin_display = validate_spins_input(spins_textbox)
+    return validated_display, current_time, last_spin_display
+
     try:
         spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display],
-            _js="debounce((value) => value, 500)"
+            fn=debounced_validate_spins_input,
+            inputs=[spins_textbox, last_input_time],
+            outputs=[spins_display, last_input_time, last_spin_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends) if spins_display is not None else None,
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
@@ -9032,8 +9041,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
-            outputs=[hit_percentage_display]
+            inputs=[last_spin_count, analysis_cache],
+            outputs=[hit_percentage_display, analysis_cache]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
@@ -9049,8 +9058,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-
-
     
     try:
         spins_display.change(
@@ -9210,16 +9217,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         last_spin_count.change(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display],
-            _js="debounce((value) => value, 500)"  # Debounce by 500ms
+            outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
             fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
-            outputs=[hit_percentage_display]
+            inputs=[last_spin_count, analysis_cache],
+            outputs=[hit_percentage_display, analysis_cache]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
@@ -10553,5 +10559,5 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
 # Launch the interface
 print("Starting Gradio launch...")
-demo.launch(queue=True)  # Enable queueing
+demo.launch()  # Remove queue=True
 print("Gradio launch completed.")
