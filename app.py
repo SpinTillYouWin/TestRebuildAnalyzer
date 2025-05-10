@@ -2131,7 +2131,7 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
 
 # Line 1: Start of render_dynamic_table_html function (updated)
 def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None):
-    """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
+    """Generate HTML for the dynamic roulette table with improved visual clarity, including Hot Trend and Top 10 Picks."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
         return "<p>Please analyze some spins first to see highlights on the dynamic table.</p>"
 
@@ -2163,16 +2163,13 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
         for key, value in suggestions.items():
             if key == "best_even_money" and "(Tied with" not in value:
-                # Extract the even money bet (e.g., "Even: 5" -> "Even")
                 best_even_money = value.split(":")[0].strip()
             elif key == "best_bet" and "(Tied with" not in value:
-                # Extract the best bet (e.g., "2nd Column: 6" -> "2nd Column")
                 best_bet = value.split(":")[0].strip()
             elif key == "play_two" and "(Tied with" not in value:
-                # Extract the two options (e.g., "Play Two Columns: 2nd Column (6) and 1st Column (2)")
                 parts = value.split(":", 1)[1].split(" and ")
-                play_two_first = parts[0].split("(")[0].strip()  # e.g., "2nd Column"
-                play_two_second = parts[1].split("(")[0].strip()  # e.g., "1st Column"
+                play_two_first = parts[0].split("(")[0].strip()
+                play_two_second = parts[1].split("(")[0].strip()
 
         # Apply highlights based on suggestions (yellow for top tier, green for second in Play Two)
         if best_even_money:
@@ -2180,11 +2177,10 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         if best_bet:
             suggestion_highlights[best_bet] = top_color  # Yellow for Best Bet
         if play_two_first and play_two_second:
-            # Ensure the first option in Play Two matches the Best Bet (if present) and gets yellow
             if best_bet and play_two_first == best_bet:
-                suggestion_highlights[play_two_first] = top_color  # Already set to yellow
+                suggestion_highlights[play_two_first] = top_color
             else:
-                suggestion_highlights[play_two_first] = top_color  # Yellow if not already set
+                suggestion_highlights[play_two_first] = top_color
             suggestion_highlights[play_two_second] = lower_color  # Green for second option
 
     table_layout = [
@@ -2203,7 +2199,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     # Ensure hot_numbers is a set for consistent comparison
     hot_numbers = set(hot_numbers) if hot_numbers else set()
-    # Debug scores to verify hit counts
     scores = scores if scores is not None else {}
     print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Scores={dict(scores)}")
 
@@ -2216,9 +2211,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 base_color = colors.get(num, "black")
                 highlight_color = number_highlights.get(num, base_color)
                 if num in casino_winners["hot_numbers"]:
-                    border_style = "3px solid #FFD700"  # Gold, solid for consistent glow
+                    border_style = "3px solid #FFD700"
                 elif num in casino_winners["cold_numbers"]:
-                    border_style = "3px solid #C0C0C0"  # Silver, solid for consistent glow
+                    border_style = "3px solid #C0C0C0"
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
@@ -2230,9 +2225,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
             border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
             tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-            # Compute column score and progress bar
             col_score = state.column_scores.get("3rd Column", 0)
-            max_col_score = max(state.column_scores.values(), default=1) or 1  # Avoid division by zero
+            max_col_score = max(state.column_scores.values(), default=1) or 1
             fill_percentage = (col_score / max_col_score) * 100
             html += f'<td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}"><span>3rd Column</span><div class="progress-bar"><div class="progress-fill {tier_class}" style="width: {fill_percentage}%;"></div></div></td>'
         elif row_idx == 1:
@@ -2328,6 +2322,161 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
     html += "</tr>"
 
     html += "</table>"
+
+    # Add Hot Trend section as a new table below the grid
+    total_spins = sum(scores.values())
+    hot_trend_html = '<table class="dynamic-roulette-table scrollable-table large-table" style="width: 100%; max-width: 600px; border-collapse: collapse; margin-top: 20px; background: linear-gradient(135deg, #ff4040, #ff8c00); border: 2px solid #00f7ff; box-shadow: 0 0 15px rgba(0, 247, 255, 0.5); font-family: Arial, sans-serif;">'
+    hot_trend_html += '<thead><tr><th colspan="2" class="section-header">Hot Trend</th></tr></thead><tbody>'
+    
+    # Trending Even Money Bets
+    if trending_even_money:
+        percentage = (state.even_money_scores.get(trending_even_money, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{trending_even_money}</td><td>{state.even_money_scores.get(trending_even_money, 0)} ({percentage:.1f}%)</td></tr>"
+    if second_even_money:
+        percentage = (state.even_money_scores.get(second_even_money, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{second_even_money}</td><td>{state.even_money_scores.get(second_even_money, 0)} ({percentage:.1f}%)</td></tr>"
+    if third_even_money:
+        percentage = (state.even_money_scores.get(third_even_money, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{third_even_money}</td><td>{state.even_money_scores.get(third_even_money, 0)} ({percentage:.1f}%)</td></tr>"
+
+    # Trending Dozens
+    if trending_dozen:
+        percentage = (state.dozen_scores.get(trending_dozen, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{trending_dozen}</td><td>{state.dozen_scores.get(trending_dozen, 0)} ({percentage:.1f}%)</td></tr>"
+    if second_dozen:
+        percentage = (state.dozen_scores.get(second_dozen, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{second_dozen}</td><td>{state.dozen_scores.get(second_dozen, 0)} ({percentage:.1f}%)</td></tr>"
+
+    # Trending Columns
+    if trending_column:
+        percentage = (state.column_scores.get(trending_column, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{trending_column}</td><td>{state.column_scores.get(trending_column, 0)} ({percentage:.1f}%)</td></tr>"
+    if second_column:
+        percentage = (state.column_scores.get(second_column, 0) / total_spins * 100) if total_spins > 0 else 0
+        hot_trend_html += f"<tr><td>{second_column}</td><td>{state.column_scores.get(second_column, 0)} ({percentage:.1f}%)</td></tr>"
+
+    # Add Top 10 Picks
+    if hasattr(state, 'top_10_picks') and state.top_10_picks:
+        hot_trend_html += "<tr><td colspan='2' class='section-header'>Top 10 Picks 🎯</td></tr>"
+        for i, num in enumerate(state.top_10_picks):
+            color = colors.get(num, "black")
+            icon = ""
+            if i == 0:  # Top 1
+                icon = '<span class="top-pick-icon crown">👑</span>'
+            elif i == 8:  # Top 9 (9th index in 0-based list)
+                icon = '<span class="top-pick-icon star">⭐</span>'
+            hot_trend_html += f"<tr><td>{icon}{num}</td><td class='{color}'>{color.capitalize()}</td></tr>"
+    else:
+        hot_trend_html += "<tr><td colspan='2'>No top 10 picks available.</td></tr>"
+
+    hot_trend_html += "</tbody></table>"
+
+    # Combine the grid and Hot Trend sections
+    html += hot_trend_html
+
+    # Add CSS styles
+    html += """
+    <style>
+        .dynamic-roulette-table-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .dynamic-roulette-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .dynamic-roulette-table th, .dynamic-roulette-table td {
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #ffffff;
+            border: 1px solid #000000;
+        }
+        .section-header {
+            background: linear-gradient(135deg, """ + top_color + """, """ + middle_color + """);
+            color: #000000;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .dynamic-roulette-table .red {
+            background-color: red;
+            color: #ffffff;
+        }
+        .dynamic-roulette-table .black {
+            background-color: black;
+            color: #ffffff;
+        }
+        .dynamic-roulette-table .green {
+            background-color: green;
+            color: #ffffff;
+        }
+        .dynamic-roulette-table td.hot-number:hover {
+            box-shadow: 0 0 12px 4px #ffd700 !important;
+            transform: scale(1.1) !important;
+            transition: all 0.3s ease !important;
+        }
+        .progress-bar {
+            background-color: #ddd;
+            border-radius: 5px;
+            height: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 1s ease;
+        }
+        .progress-fill.top-tier {
+            background-color: """ + top_color + """;
+        }
+        .progress-fill.middle-tier {
+            background-color: """ + middle_color + """;
+        }
+        .progress-fill.lower-tier {
+            background-color: """ + lower_color + """;
+        }
+        .has-tooltip {
+            position: relative;
+        }
+        .has-tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .top-pick-icon {
+            margin-right: 5px;
+            font-size: 16px;
+        }
+        .top-pick-icon.crown {
+            color: #FFD700; /* Gold for Top 1 */
+        }
+        .top-pick-icon.star {
+            color: #00FF00; /* Green for Top 9 */
+        }
+        @media (max-width: 600px) {
+            .dynamic-roulette-table th, .dynamic-roulette-table td {
+                padding: 8px;
+                font-size: 12px;
+            }
+            .section-header {
+                font-size: 14px;
+            }
+        }
+    </style>
+    """
     return html
 
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
@@ -5344,7 +5493,6 @@ def select_next_spin_top_pick(last_spin_count):
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
-        # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
         numbers = set(range(37))
         hit_counts = {n: 0 for n in range(37)}
@@ -5373,25 +5521,18 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 continue
-        # Calculate percentages for all traits
         total_spins = len(last_spins)
         trait_percentages = {}
-        # Even Money
         for trait, count in even_money_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Dozens
         for trait, count in dozen_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Columns
         for trait, count in column_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Sort traits by percentage (highest to lowest)
         sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
-        # Determine hottest traits (top non-conflicting traits)
         hottest_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
-            # Skip if this trait conflicts with a higher-percentage trait in the same category
             if trait in ["Red", "Black"]:
                 if "Red-Black" in seen_categories:
                     continue
@@ -5417,7 +5558,6 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Columns")
-        # Second best traits for tiebreakers
         second_best_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
@@ -5476,12 +5616,10 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
-        # Score numbers based on the number of matching traits in order
         scores = []
         for num in range(37):
             if num not in hit_counts or hit_counts[num] == 0:
-                continue  # Only consider numbers that appear in the spins
-            # Count matching traits in order
+                continue
             matching_traits = 0
             for trait in hottest_traits:
                 if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
@@ -5490,7 +5628,6 @@ def select_next_spin_top_pick(last_spin_count):
                     matching_traits += 1
                 elif trait in COLUMNS and num in COLUMNS[trait]:
                     matching_traits += 1
-            # Secondary score for second best traits
             secondary_matches = 0
             for trait in second_best_traits:
                 if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
@@ -5499,7 +5636,6 @@ def select_next_spin_top_pick(last_spin_count):
                     secondary_matches += 1
                 elif trait in COLUMNS and num in COLUMNS[trait]:
                     secondary_matches += 1
-            # Additional scoring factors
             wheel_side_score = 0
             if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
                 wheel_side_score = 5
@@ -5535,17 +5671,20 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
-        # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
-        # Ensure top 10 picks have at least as many matches as the 10th pick
         if len(scores) > 10:
             min_traits = sorted([x[2] for x in scores[:10]], reverse=True)[9]
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
+        
+        # Save top 10 picks to state.top_10_picks as a list of strings
+        top_10_numbers = [str(pick[0]) for pick in top_picks]
+        state.top_10_picks = top_10_numbers
+        print(f"Top 10 picks saved to state.top_10_picks: {state.top_10_picks}")
+
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
-        # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
         confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
@@ -5584,7 +5723,7 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
