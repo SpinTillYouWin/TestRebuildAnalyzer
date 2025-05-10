@@ -5177,7 +5177,7 @@ def summarize_spin_traits(last_spin_count):
                     if num in numbers:
                         dozen_counts[name] += 1
                         dozen_streaks[name]["last_hit"] = True
-                        dozen_streaks[name]["current"] = 1
+                        dozen_streaks[name]["current"] += 1
                         dozen_streaks[name]["spins"].append(str(num))
                         if len(dozen_streaks[name]["spins"]) > dozen_streaks[name]["current"]:
                             dozen_streaks[name]["spins"] = dozen_streaks[name]["spins"][-dozen_streaks[name]["current"]:]
@@ -5237,7 +5237,7 @@ def summarize_spin_traits(last_spin_count):
         if DEBUG:
             print(f"summarize_spin_traits: Quick Trends calculated: {trends}, Suggestions: {suggestions}")
 
-        # Calculate Red/Black Switches
+        # Calculate Red/Black Switches (Suggestion 9)
         switch_count = 0
         switch_dots = []
         recent_spins = last_spins[-6:] if len(last_spins) >= 6 else last_spins
@@ -5257,6 +5257,43 @@ def summarize_spin_traits(last_spin_count):
         switch_class = " high-switches" if switch_count >= 4 else ""
         if DEBUG:
             print(f"summarize_spin_traits: Red/Black Switches: {switch_count}, Dots: {switch_dots}")
+
+        # Calculate Dozen Shifts (Suggestion 10)
+        dozen_counts_prev = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        dozen_counts_current = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+        # Previous 5 spins (spins 10 to 6 ago, if available)
+        prev_spins = last_spins[-10:-5] if len(last_spins) >= 10 else last_spins[:5] if len(last_spins) >= 5 else []
+        # Current 5 spins (last 5 spins)
+        current_spins = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+        # Count dozens in previous window
+        for spin in prev_spins:
+            try:
+                num = int(spin)
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts_prev[name] += 1
+            except ValueError:
+                continue
+        # Count dozens in current window
+        for spin in current_spins:
+            try:
+                num = int(spin)
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        dozen_counts_current[name] += 1
+            except ValueError:
+                continue
+        # Calculate shifts (difference in hits between windows)
+        dozen_shifts = {name: dozen_counts_current[name] - dozen_counts_prev[name] for name in dozen_counts}
+        # Find the dozen with the largest positive shift
+        max_shift = max(dozen_shifts.values(), default=0)
+        dominant_dozen = None
+        dozen_class = ""
+        if max_shift > 0:
+            dominant_dozen = next(name for name, shift in dozen_shifts.items() if shift == max_shift)
+            dozen_class = "d1" if dominant_dozen == "1st Dozen" else "d2" if dominant_dozen == "2nd Dozen" else "d3"
+        if DEBUG:
+            print(f"summarize_spin_traits: Dozen Shifts - Previous: {dozen_counts_prev}, Current: {dozen_counts_current}, Shifts: {dozen_shifts}, Dominant: {dominant_dozen}")
 
         # Build HTML
         if DEBUG:
@@ -5281,7 +5318,7 @@ def summarize_spin_traits(last_spin_count):
         else:
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
-        # Add Red/Black Switch Alert
+        # Add Red/Black Switch Alert (Suggestion 9)
         html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
         if switch_dots and any(color != "unknown" for color in switch_dots):
             for color in switch_dots:
@@ -5290,8 +5327,14 @@ def summarize_spin_traits(last_spin_count):
         else:
             html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
         html += '</div>'
+        # Add Dozen Shift Indicator (Suggestion 10)
+        if dominant_dozen and max_shift > 0:
+            html += f'<div class="dozen-shift-indicator" data-tooltip="Dozen Shift: {dominant_dozen}">'
+            html += f'<span class="dozen-badge {dozen_class}">▲</span>'
+            html += f'<span style="color: #333; font-size: 12px; margin-left: 5px;">{dominant_dozen} (+{max_shift} hits)</span>'
+            html += '</div>'
         if DEBUG:
-            print(f"summarize_spin_traits: Quick Trends and Switch Alert HTML generated")
+            print(f"summarize_spin_traits: Quick Trends, Switch Alert, and Dozen Shift Indicator HTML generated")
 
         # Even Money Bets
         html += '<div class="badge-group">'
@@ -5350,6 +5393,9 @@ def summarize_spin_traits(last_spin_count):
             html += '<span class="trait-badge repeat">No repeats</span>'
         html += '</div></div>'
         html += '</div></div>'  # Close traits-wrapper and traits-overview
+        if DEBUG:
+            print(f"summarize_spin_traits: Repeat Numbers HTML generated")
+
         if DEBUG:
             print(f"summarize_spin_traits: Returning HTML successfully")
         return html
@@ -8709,11 +8755,52 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-size: 12px;
                 z-index: 101;
             }
+            /* Dozen Shift Indicator */
+            .dozen-shift-indicator {
+                display: flex;
+                align-items: center;
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 6px;
+                margin-top: 10px;
+                justify-content: center;
+                position: relative;
+                z-index: 100;
+            }
+            .dozen-badge {
+                display: inline-block;
+                font-size: 12px;
+                color: #fff;
+                background: #388e3c; /* 1st Dozen */
+                border-radius: 3px;
+                padding: 2px 4px;
+                animation: bounce 1s infinite ease-in-out;
+            }
+            .dozen-badge.d1 { background: #388e3c; } /* 1st Dozen */
+            .dozen-badge.d2 { background: #ff9800; } /* 2nd Dozen */
+            .dozen-badge.d3 { background: #8e24aa; } /* 3rd Dozen */
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-3px); }
+            }
+            .dozen-shift-indicator:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                background: #333;
+                color: #fff;
+                padding: 5px;
+                border-radius: 3px;
+                top: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 12px;
+                z-index: 101;
+            }
         }
     </style>
     """)
     print("CSS Updated")
-    
+   
     # Shepherd.js Tour Script
     gr.HTML("""
     <script>
