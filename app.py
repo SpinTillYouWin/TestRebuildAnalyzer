@@ -4988,10 +4988,27 @@ def clear_hot_cold_picks(type_label, current_spins_display):
     return "", success_msg, update_spin_counter(), render_sides_of_zero_display(), current_spins_display
 
 def calculate_hit_percentages(last_spin_count):
-    """Calculate hit percentages for Even Money Bets, Columns, and Dozens."""
+    """Calculate hit percentages for Even Money Bets, Columns, and Dozens with caching."""
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))
+        spins_list = state.last_spins if hasattr(state, 'last_spins') else []
+        
+        # Create cache key based on spins and spin count
+        cache_key = f"hit_percentages_{last_spin_count}_{hash(tuple(spins_list))}"
+        if cache_key in state.analysis_cache:
+            if DEBUG:
+                print(f"calculate_hit_percentages: Cache hit for key {cache_key}")
+            return state.analysis_cache[cache_key]
+        
+        # Limit cache size
+        MAX_CACHE_SIZE = 100
+        if len(state.analysis_cache) >= MAX_CACHE_SIZE:
+            oldest_key = next(iter(state.analysis_cache))
+            del state.analysis_cache[oldest_key]
+            if DEBUG:
+                print(f"calculate_hit_percentages: Removed oldest cache entry {oldest_key}")
+        
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
@@ -5063,13 +5080,19 @@ def calculate_hit_percentages(last_spin_count):
         html += "".join(dozen_items)
         html += '</div></div>'
         html += '</div></div>'  # Close percentage-wrapper and hit-percentage-overview
+
+        # Cache the result
+        state.analysis_cache[cache_key] = html
+        if DEBUG:
+            print(f"calculate_hit_percentages: Cached result for key {cache_key}")
+
         return html
     except Exception as e:
         print(f"calculate_hit_percentages: Error: {str(e)}")
         return "<p>Error calculating hit percentages.</p>"
 
 # Updated function with debug log
-DEBUG = True  # Keep debugging enabled
+DEBUG = False  # Disable debug logging in production
 
 def summarize_spin_traits(last_spin_count):
     """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
@@ -6334,7 +6357,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-
+    
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -6343,8 +6366,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
-
-    # Line 1: Updated Next Spin Top Pick accordion
+    
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
         with gr.Row():
             with gr.Column(scale=1):
@@ -8975,53 +8997,51 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
+            outputs=[spins_display, last_spin_display],
+            _js="debounce((value) => value, 500)"
         ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            fn=orchestrate_analysis,
+            inputs=[
+                spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
+                even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown, even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox, even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown,
+                top_color_picker, middle_color_picker, lower_color_picker
+            ],
             outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                spin_analysis_output, even_money_output, dozens_output, columns_output, streets_output,
+                corners_output, six_lines_output, splits_output, sides_output, straight_up_html,
+                top_18_html, strongest_numbers_output, dynamic_table_output, strategy_output,
+                sides_of_zero_display, gr.State(), dozen_tracker_output, dozen_tracker_sequence_output,
+                gr.State(), even_money_tracker_output, color_code_output, analysis_cache
             ]
         ).then(
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        ).then(
-            fn=summarize_spin_traits,  # Use summarize_spin_traits directly for now
+            fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
         ).then(
             fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9029,7 +9049,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-        gr.Warning(f"Error during spin analysis: {str(e)}")
+
+
     
     try:
         spins_display.change(
@@ -9189,7 +9210,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         last_spin_count.change(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
+            outputs=[last_spin_display],
+            _js="debounce((value) => value, 500)"  # Debounce by 500ms
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -10531,5 +10553,5 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
 # Launch the interface
 print("Starting Gradio launch...")
-demo.launch()
+demo.launch(queue=True)  # Enable queueing
 print("Gradio launch completed.")
