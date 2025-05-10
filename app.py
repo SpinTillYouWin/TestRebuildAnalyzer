@@ -5102,6 +5102,12 @@ def summarize_spin_traits(last_spin_count):
                 print(f"summarize_spin_traits: Missing bet mappings: {missing}")
             return "<p>Error: Bet mappings not defined.</p>"
 
+        # Validate EVEN_MONEY mappings for Red and Black
+        if "Red" not in EVEN_MONEY or "Black" not in EVEN_MONEY:
+            if DEBUG:
+                print(f"summarize_spin_traits: EVEN_MONEY missing Red or Black mappings")
+            return "<p>Error: EVEN_MONEY mappings incomplete.</p>"
+
         # Initialize counters and streaks
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
@@ -5235,6 +5241,8 @@ def summarize_spin_traits(last_spin_count):
         switch_count = 0
         switch_dots = []
         recent_spins = last_spins[-6:] if len(last_spins) >= 6 else last_spins
+        if DEBUG:
+            print(f"summarize_spin_traits: Recent spins for switch alert: {recent_spins}")
         for i, spin in enumerate(recent_spins):
             try:
                 num = int(spin)
@@ -5274,12 +5282,14 @@ def summarize_spin_traits(last_spin_count):
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
         # Add Red/Black Switch Alert
-        if switch_dots:
-            html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
+        html += f'<div class="switch-alert{switch_class}" data-tooltip="{switch_count} color switches detected!">'
+        if switch_dots and any(color != "unknown" for color in switch_dots):
             for color in switch_dots:
                 if color != "unknown":
                     html += f'<span class="switch-dot {color}"></span>'
-            html += '</div>'
+        else:
+            html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
+        html += '</div>'
         if DEBUG:
             print(f"summarize_spin_traits: Quick Trends and Switch Alert HTML generated")
 
@@ -8649,10 +8659,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 display: flex;
                 gap: 4px;
                 padding: 8px;
-                background: rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.3); /* Increased opacity for visibility */
+                border: 1px solid #666; /* Added border for better definition */
                 border-radius: 6px;
                 margin-top: 10px;
                 justify-content: center;
+                min-height: 30px; /* Ensure the bar has visible height even if empty */
+                align-items: center;
             }
             .switch-dot {
                 width: 12px;
