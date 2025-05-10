@@ -1,4 +1,4 @@
-import gradio as gr
+NEW: Top 10 Picks Styling */import gradio as gr
 import math
 import pandas as pd
 import json
@@ -7302,7 +7302,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
-      function loadShepherdFallback() {
+      function loadShepherdFallback() { ... }
         console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
