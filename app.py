@@ -6173,7 +6173,155 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
+# ... (previous functions like select_next_spin_top_pick, summarize_spin_traits, etc.)
 
+def last_spin_display(last_spins_state, show_trends_state):
+    """Display the last spins as colored HTML spans with pattern badges if enabled."""
+    try:
+        if DEBUG:
+            print(f"last_spin_display: show_trends_state = {show_trends_state}")
+        
+        # Validate state
+        if not hasattr(state, 'last_spins') or not isinstance(state.last_spins, list):
+            if DEBUG:
+                print(f"last_spin_display: Invalid state.last_spins")
+            return "<p>Error: Spin data not initialized.</p>"
+        
+        last_spins = state.last_spins[-last_spins_state:] if state.last_spins else []
+        if DEBUG:
+            print(f"last_spin_display: last_spins = {last_spins}")
+        if not last_spins:
+            return "<p>No spins recorded yet.</p>"
+
+        # Validate bet mappings
+        if not all(x in globals() for x in ['EVEN_MONEY', 'DOZENS', 'COLUMNS']):
+            missing = [x for x in ['EVEN_MONEY', 'DOZENS', 'COLUMNS'] if x not in globals()]
+            if DEBUG:
+                print(f"last_spin_display: Missing bet mappings: {missing}")
+            return "<p>Error: Bet mappings not defined.</p>"
+
+        # Calculate current streaks for the most recent spin
+        even_money_streaks = {key: {"current": 0, "last_hit": False} for key in EVEN_MONEY}
+        dozen_streaks = {key: {"current": 0, "last_hit": False} for key in DOZENS}
+        column_streaks = {key: {"current": 0, "last_hit": False} for key in COLUMNS}
+        streak_types = []  # To store active streaks for the latest spin
+        for spin in reversed(last_spins):  # Process spins in reverse to find current streaks
+            try:
+                num = int(spin)
+                # Even Money Bets
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        if even_money_streaks[name]["last_hit"]:
+                            even_money_streaks[name]["current"] += 1
+                        else:
+                            even_money_streaks[name]["current"] = 1
+                        even_money_streaks[name]["last_hit"] = True
+                    else:
+                        even_money_streaks[name]["last_hit"] = False
+                        even_money_streaks[name]["current"] = 0
+                # Dozens
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        if dozen_streaks[name]["last_hit"]:
+                            dozen_streaks[name]["current"] += 1
+                        else:
+                            dozen_streaks[name]["current"] = 1
+                        dozen_streaks[name]["last_hit"] = True
+                    else:
+                        dozen_streaks[name]["last_hit"] = False
+                        dozen_streaks[name]["current"] = 0
+                # Columns
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        if column_streaks[name]["last_hit"]:
+                            column_streaks[name]["current"] += 1
+                        else:
+                            column_streaks[name]["current"] = 1
+                        column_streaks[name]["last_hit"] = True
+                    else:
+                        column_streaks[name]["last_hit"] = False
+                        column_streaks[name]["current"] = 0
+            except ValueError:
+                continue
+        # Identify active streaks (3+ hits) for the latest spin
+        for name, streak in even_money_streaks.items():
+            if streak["last_hit"] and streak["current"] >= 3:
+                streak_types.append(("even-money", name, streak["current"]))
+        for name, streak in dozen_streaks.items():
+            if streak["last_hit"] and streak["current"] >= 3:
+                streak_types.append(("dozen", name, streak["current"]))
+        for name, streak in column_streaks.items():
+            if streak["last_hit"] and streak["current"] >= 3:
+                streak_types.append(("column", name, streak["current"]))
+        if DEBUG:
+            print(f"last_spin_display: Active streaks for latest spin: {streak_types}")
+
+        # Prepare data for color timeline (last 10 spins)
+        timeline_spins = last_spins[-10:] if len(last_spins) >= 10 else last_spins
+        timeline_blocks = []
+        for idx, spin in enumerate(timeline_spins):
+            try:
+                num = int(spin)
+                color = "green" if num == 0 else "red" if num in EVEN_MONEY["Red"] else "black" if num in EVEN_MONEY["Black"] else "unknown"
+                # Determine traits for tooltip
+                traits = []
+                for name, numbers in EVEN_MONEY.items():
+                    if num in numbers:
+                        traits.append(name)
+                for name, numbers in DOZENS.items():
+                    if num in numbers:
+                        traits.append(name)
+                for name, numbers in COLUMNS.items():
+                    if num in numbers:
+                        traits.append(name)
+                tooltip = f"Spin {num}: {', '.join(traits)}" if traits else f"Spin {num}"
+                is_latest = " latest" if idx == len(timeline_spins) - 1 else ""
+                timeline_blocks.append((color, tooltip, is_latest))
+            except ValueError:
+                continue
+        if DEBUG:
+            print(f"last_spin_display: Timeline blocks: {timeline_blocks}")
+
+        # Generate HTML with streaks for the latest spin and color timeline
+        html = '<div class="last-spins-container">'
+        html += '<h4 style="color: #ff9800;">Last Spins:</h4>'
+        html += '<div class="last-spins-wrapper">'
+        for idx, spin in enumerate(last_spins):
+            try:
+                num = int(spin)
+                # Determine color class
+                color_class = "zero"
+                if num in EVEN_MONEY["Red"]:
+                    color_class = "red"
+                elif num in EVEN_MONEY["Black"]:
+                    color_class = "black"
+                # Add pattern badges if enabled
+                badges = ""
+                if show_trends_state and idx == len(last_spins) - 1 and streak_types:  # Only for the latest spin
+                    for streak_type, name, count in streak_types:
+                        badges += f'<span class="streak-badge {streak_type}">{name} x{count}</span>'
+                html += f'<span class="spin-{color_class}">{num}{badges}</span>'
+            except ValueError as ve:
+                if DEBUG:
+                    print(f"last_spin_display: ValueError processing spin {spin}: {str(ve)}")
+                html += f'<span class="spin-error">{spin}</span>'
+        html += '</div>'
+        # Add Color Trend Timeline
+        html += '<div class="color-timeline">'
+        for color, tooltip, is_latest in timeline_blocks:
+            if color != "unknown":
+                html += f'<div class="color-block {color}{is_latest}" data-tooltip="{tooltip}"></div>'
+        html += '</div>'
+        html += '</div>'
+        if DEBUG:
+            print(f"last_spin_display: Generated HTML successfully")
+        return html
+
+    except Exception as e:
+        if DEBUG:
+            print(f"last_spin_display: Caught exception: {str(e)}")
+        return "<p>Error displaying last spins.</p>"
+        
 def suggest_hot_cold_numbers():
     """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
     try:
@@ -6371,6 +6519,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
         gr.HTML(
             '''
+            gr.HTML(
+            '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
                 <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
                 <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
@@ -6379,6 +6529,87 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
                     transform: scale(1.05);
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+        
+                /* Streak Badges for Last Spins Display */
+                .streak-badge {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #ff4444, #ff9999);
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    margin: 2px;
+                    animation: pulse 1.5s infinite ease-in-out;
+                    box-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+                }
+                .streak-badge.dozen { background: linear-gradient(135deg, #388e3c, #66bb6a); }
+                .streak-badge.column { background: linear-gradient(135deg, #1565c0, #42a5f5); }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+                .last-spins-container span[class*="spin-"] {
+                    position: relative;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                }
+        
+                /* Color Trend Timeline for Last Spins Display */
+                .color-timeline {
+                    display: flex;
+                    gap: 4px;
+                    margin-top: 10px;
+                    justify-content: center;
+                }
+                .color-block {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 4px;
+                    transition: transform 0.2s ease;
+                    position: relative;
+                }
+                .color-block.red { background-color: #ff4444; }
+                .color-block.black { background-color: #000000; }
+                .color-block.green { background-color: #388e3c; }
+                .color-block.latest { box-shadow: 0 0 8px rgba(255, 255, 255, 0.8); transform: scale(1.2); }
+                .color-block:hover { transform: scale(1.3); }
+                .color-block:hover::after {
+                    content: attr(data-tooltip);
+                    position: absolute;
+                    background: #333;
+                    color: #fff;
+                    padding: 5px;
+                    border-radius: 3px;
+                    top: -30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 12px;
+                    white-space: nowrap;
+                    z-index: 10;
+                }
+        
+                /* Additional styles for spin colors */
+                .last-spins-container .spin-red {
+                    background-color: #ff4444;
+                    color: white;
+                }
+                .last-spins-container .spin-black {
+                    background-color: #000000;
+                    color: white;
+                }
+                .last-spins-container .spin-zero {
+                    background-color: #388e3c;
+                    color: white;
+                }
+                .last-spins-container .spin-error {
+                    background-color: #ccc;
+                    color: #333;
+                }
+                .last-spins-wrapper {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 5px;
                 }
             </style>
             '''
@@ -9289,8 +9520,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=analyze_spins,
@@ -9349,8 +9580,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[spin_counter]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
@@ -9373,13 +9604,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in spins_display.change handler: {str(e)}")
     
     try:
-        clear_spins_button.click(
+       clear_spins_button.click(
             fn=clear_spins,
             inputs=[],
             outputs=[spins_display, spins_textbox, spin_analysis_output, last_spin_display, spin_counter, sides_of_zero_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
@@ -9424,6 +9655,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_counter,
                 sides_of_zero_display
             ]
+        ).then(
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
         ).then(
             fn=clear_outputs,
             inputs=[],
@@ -9477,8 +9712,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[gr.State(value="5"), spins_display, last_spin_count],
             outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
@@ -9499,8 +9734,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 # Line 1: Slider change handler (updated)
     try:
         last_spin_count.change(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=summarize_spin_traits,
@@ -9732,13 +9967,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
-                strategy if strategy != "None" else None,
-                neighbours_count,
-                strong_numbers_count,
-                dozen_tracker_spins,
-                top_color,
-                middle_color,
-                lower_color
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
             ),
             inputs=[
                 strategy_dropdown,
@@ -9751,8 +9980,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[dynamic_table_output]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=create_color_code_table,
@@ -9807,8 +10036,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 sides_of_zero_display
             ]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=last_spin_display,
+            inputs=[last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
