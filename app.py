@@ -5665,6 +5665,22 @@ def select_next_spin_top_pick(last_spin_count):
               </div>
             </div>
             '''
+        # New: Generate top 10 picks HTML for display near Dynamic Table
+        top_10_html = '<div class="top-10-picks">'
+        top_10_html += '<h4>Top 10 Picks</h4>'
+        top_10_html += '<div class="top-10-container">'
+        # Top 1 pick
+        top_10_html += f'''
+        <div class="top-1-pick">
+          <span class="top-1-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+        </div>
+        '''
+        # Top 9 picks
+        top_10_html += '<div class="top-9-picks">'
+        for i, (num, _, _, _, _, _, _, _, _, _) in enumerate(top_picks[1:10], 1):
+            num_color = colors.get(str(num), "black")
+            top_10_html += f'<span class="top-9-badge {num_color}" data-number="{num}" onclick="copyToClipboard(\'{num}\')">{num}</span>'
+        top_10_html += '</div></div></div>'
         html = f'''
         <div class="first-spins">
           <h5>Last 5 Spins</h5>
@@ -6015,10 +6031,10 @@ def select_next_spin_top_pick(last_spin_count):
           }}
         </script>
         '''
-        return html
+        return html, top_10_html
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
-        return "<p>Error selecting top pick.</p>"
+        return "<p>Error selecting top pick.</p>", "<p>Error generating top 10 picks.</p>"
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -6433,7 +6449,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             ).then(
                                 fn=select_next_spin_top_pick,
                                 inputs=[top_pick_spin_count],
-                                outputs=[top_pick_display]
+                                outputs=[top_pick_display, top_10_picks_output]
                             ).then(
                                 fn=lambda: print(f"After add_spin: state.last_spins = {state.last_spins}"),
                                 inputs=[],
@@ -6672,13 +6688,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         # Column for Dynamic Roulette Table (Right Side)
         with gr.Column(scale=4, min_width=700, elem_classes="dynamic-table-container"):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+            top_10_picks_output = gr.HTML(
+                label="Top 10 Picks",
+                value=select_next_spin_top_pick(18)[1],  # Use second element of tuple
+                elem_classes=["top-10-picks-container"]
+            )
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets"),
                 elem_classes=["scrollable-table", "large-table"]
             )
-            
-                
+     
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
@@ -7384,7 +7404,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: #888;
             border-radius: 3px;
         }
-    
         
         /* Scrollable Tables */
         .scrollable-table {
@@ -7930,10 +7949,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0%, 100% { background-color: red; }
             50% { background-color: #ff3333; }
         }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
-        }
         @keyframes flashGreen {
             0%, 100% { background-color: green; }
             50% { background-color: #33cc33; }
@@ -8033,7 +8048,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             position: relative !important;
             overflow: visible !important;
             animation: dataPulse 3s ease-in-out infinite !important;
-            outline: 2px solid yellow !important;
         }
         
         /* Data scanning pulse effect */
@@ -8164,7 +8178,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             font-size: 18px !important;
             font-weight: bold !important;
             margin: 0 0 10px 0 !important;
-            outline: 2px solid yellow !important;
         }
         
         .traits-overview > h4 {
@@ -8173,7 +8186,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             font-size: 18px !important;
             font-weight: bold !important;
             margin: 0 0 10px 0 !important;
-            outline: 2px solid yellow !important;
         }
         
         /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
@@ -8183,7 +8195,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 10px !important;
             padding: 10px !important;
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.3) !important;
-            outline: 2px solid red !important;
         }
         
         #spin-trend-radar.gr-accordion summary {
@@ -8202,7 +8213,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 10px !important;
             padding: 10px !important;
             box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-            outline: 2px solid red !important;
         }
         
         #hit-percentage-overview.gr-accordion summary {
@@ -8565,6 +8575,124 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
             .strategy-recommendations-container .gr-dropdown {
                 min-width: 100% !important;
+            }
+        }
+        
+        /* NEW: Top 10 Picks Styling */
+        .top-10-picks-container {
+            background: linear-gradient(135deg, #2a2a72, #4682b4) !important;
+            border: 2px solid #ffd700 !important;
+            border-radius: 10px !important;
+            padding: 15px !important;
+            margin-bottom: 15px !important;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+            text-align: center !important;
+            animation: fadeIn 0.5s ease-in-out !important;
+        }
+        
+        .top-10-picks {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .top-10-picks h4 {
+            color: #ffd700 !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            margin: 0 0 10px 0 !important;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7) !important;
+        }
+        
+        .top-10-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .top-1-pick {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .top-1-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff !important;
+            border: 3px solid #ffffff;
+            box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700 !important;
+            animation: pulse 2s ease-in-out infinite !important;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+        
+        .top-1-badge:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 30px #ffd700, 0 0 40px #ffd700 !important;
+        }
+        
+        .top-1-badge.red { background-color: red !important; }
+        .top-1-badge.black { background-color: black !important; }
+        .top-1-badge.green { background-color: green !important; }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px #ffd700; }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px #ffd700; }
+        }
+        
+        .top-9-picks {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .top-9-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff !important;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+        
+        .top-9-badge:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 15px #3b82f6 !important;
+        }
+        
+        .top-9-badge.red { background-color: red !important; }
+        .top-9-badge.black { background-color: black !important; }
+        .top-9-badge.green { background-color: green !important; }
+        
+        @media (max-width: 600px) {
+            .top-1-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            .top-9-badge {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .top-10-picks h4 {
+                font-size: 16px;
             }
         }
     </style>
@@ -9039,6 +9167,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # Event Handlers
     try:
+            try:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
@@ -9082,13 +9211,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
-            fn=summarize_spin_traits,  # Use summarize_spin_traits directly for now
+            fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9096,7 +9229,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-        gr.Warning(f"Error during spin analysis: {str(e)}")
     
     try:
         spins_display.change(
@@ -9118,7 +9250,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After spins_display change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9147,7 +9279,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After clear_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9217,7 +9349,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After clear_all_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9242,7 +9374,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After generate_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9268,7 +9400,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After last_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9435,7 +9567,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             # Fast workaround: Re-run show_strategy_recommendations to repopulate strategy_output
             fn=show_strategy_recommendations,
@@ -9527,7 +9659,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After load_input change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9603,7 +9735,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After undo_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9663,7 +9795,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After clear_last_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9691,7 +9823,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After toggle_trends_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10265,7 +10397,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10312,7 +10444,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10329,7 +10461,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After clear_hot_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10346,7 +10478,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After clear_cold_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10401,7 +10533,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10587,7 +10719,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         top_pick_spin_count.change(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_10_picks_output]
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
