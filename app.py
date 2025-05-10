@@ -2219,7 +2219,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 if highlight == "top-pick":
                     cell_class = f"{cell_class} top-pick-number" if cell_class else "top-pick-number has-tooltip"
                     highlight_color = base_color  # Keep original color, use class for corner markings
-                    tooltip = "Top Pick for Next Spin"
+                    tooltip = "Top 10 Pick for Next Spin"
                 else:
                     highlight_color = highlight
                     hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
@@ -2303,7 +2303,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
     html += "<tr>"
     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
-    html += f'<td colspan="4" style="border-color: black; box-sizing: border-box;"></td>'
     bg_color = suggestion_highlights.get("Odd", top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white")))
     border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
     tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
