@@ -2214,7 +2214,16 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
             else:
                 base_color = colors.get(num, "black")
-                highlight_color = number_highlights.get(num, base_color)
+                highlight = number_highlights.get(num, base_color)
+                cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
+                if highlight == "top-pick":
+                    cell_class = f"{cell_class} top-pick-number" if cell_class else "top-pick-number has-tooltip"
+                    highlight_color = base_color  # Keep original color, use class for corner markings
+                    tooltip = "Top Pick for Next Spin"
+                else:
+                    highlight_color = highlight
+                    hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
+                    tooltip = f"Hit {hit_count} times"
                 if num in casino_winners["hot_numbers"]:
                     border_style = "3px solid #FFD700"  # Gold, solid for consistent glow
                 elif num in casino_winners["cold_numbers"]:
@@ -2222,9 +2231,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
-                hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
-                tooltip = f"Hit {hit_count} times"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
         if row_idx == 0:
             bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
@@ -2443,6 +2449,7 @@ def reset_casino_data():
     )
 
 # Line 1: Start of create_dynamic_table function (updated)
+# Line 1: Start of create_dynamic_table function (updated)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     try:
         print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
@@ -2477,6 +2484,18 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
             hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
             print(f"create_dynamic_table: Hot numbers={hot_numbers}, Scores={dict(state.scores)}")
+            
+            # Add top 10 picks to number_highlights
+            top_picks_html = select_next_spin_top_pick(dozen_tracker_spins)
+            if "<p>Error" not in top_picks_html:
+                import re
+                numbers = re.findall(r'data-number="(\d+)"', top_picks_html)
+                top_picks = [int(num) for num in numbers][:10]  # Limit to 10 picks
+                print(f"create_dynamic_table: Top picks={top_picks}")
+                for num in top_picks:
+                    number_highlights[num] = number_highlights.get(num, "top-pick")  # Use 'top-pick' tier
+            else:
+                print("create_dynamic_table: No top picks available due to error or no spins")
         
         # If still no highlights and no sorted_sections, provide a default message
         if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
@@ -7521,7 +7540,48 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             animation: flashCorner 1.5s ease-in-out infinite !important;
             z-index: 5 !important;
         }
+
+        /* Top Pick Number Corner Flash Effect */
+        .dynamic-roulette-table td.top-pick-number {
+            position: relative !important;
+            overflow: visible !important;
+        }
         
+        /* Top-left corner highlight for top picks */
+        .dynamic-roulette-table td.top-pick-number::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -3px !important;
+            left: -3px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #3b82f6 !important; /* Neon blue to match table border */
+            border: 1px solid #ffffff !important; /* White border for contrast */
+            animation: flashCorner 1.5s ease-in-out infinite !important;
+            z-index: 5 !important;
+        }
+        
+        /* Bottom-right corner highlight for top picks */
+        .dynamic-roulette-table td.top-pick-number::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -3px !important;
+            right: -3px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #3b82f6 !important; /* Neon blue */
+            border: 1px solid #ffffff !important;
+            animation: flashCorner 1.5s ease-in-out infinite !important;
+            z-index: 5 !important;
+        }
+        
+        /* Glowing Hover Effects for Top Pick Numbers */
+        .dynamic-roulette-table td.top-pick-number:hover {
+            box-shadow: 0 0 12px 4px #3b82f6 !important;
+            transform: scale(1.1) !important;
+            transition: all 0.3s ease !important;
+        }
+
         /* Flashing animation for corners */
         @keyframes flashCorner {
             0%, 100% {
@@ -10588,6 +10648,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, top_pick_spin_count, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, top_pick_spin_count, top_color, middle_color, lower_color),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, top_pick_spin_count, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
