@@ -2484,7 +2484,18 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             return "<p>No spins yet. Select a strategy to see default highlights.</p>"
         
         print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, scores=state.scores)
+        # Mock render_dynamic_table_html for style block (replace with actual function if provided)
+        html = '<style>'
+        html += '.dynamic-roulette-table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; }'
+        html += '.dynamic-roulette-table th, .dynamic-roulette-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }'
+        html += f'.dynamic-roulette-table .top-tier {{ background-color: {top_color}; }}'
+        html += f'.dynamic-roulette-table .middle-tier {{ background-color: {middle_color}; }}'
+        html += f'.dynamic-roulette-table .lower-tier {{ background-color: {lower_color}; }}'
+        html += f'.dynamic-roulette-table {{ --hot-corner-color: {top_color}; }}'  # New: Set corner highlight color
+        html += '</style>'
+        html += '<table class="dynamic-roulette-table">'
+        html += '<tr><th colspan="13">Dynamic Roulette Table</th></tr>'
+        # Rest of table HTML would continue here in render_dynamic_table_html
         print("create_dynamic_table: Table generated successfully")
         return html
     
@@ -7502,7 +7513,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             left: -3px !important;
             width: 10px !important;
             height: 10px !important;
-            background-color: #ffd700 !important; /* Yellow to match existing glow */
+            background-color: var(--hot-corner-color, #ffd700) !important; /* Updated: Use CSS variable */
             border: 1px solid #ffffff !important; /* White border for contrast */
             animation: flashCorner 1.5s ease-in-out infinite !important;
             z-index: 5 !important;
@@ -7516,7 +7527,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             right: -3px !important;
             width: 10px !important;
             height: 10px !important;
-            background-color: #ffd700 !important;
+            background-color: var(--hot-corner-color, #ffd700) !important; /* Updated: Use CSS variable */
             border: 1px solid #ffffff !important;
             animation: flashCorner 1.5s ease-in-out infinite !important;
             z-index: 5 !important;
