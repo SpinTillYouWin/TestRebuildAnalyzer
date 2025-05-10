@@ -2445,6 +2445,156 @@ def reset_casino_data():
 # Line 1: Start of create_dynamic_table function (updated)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     try:
+        # Get top 10 picks HTML
+        top_10_html = select_next_spin_top_pick(18)
+        html = top_10_html  # Start with top 10 picks
+        table = "<table class='dynamic-roulette-table'>"
+        table += "<tr><th>Number</th><th>Traits</th><th>Bet Strength</th></tr>"
+        numbers = []
+        if strategy_name and strategy_name != "None":
+            if strategy_name == "Best Even Money Bets":
+                percentages = {}
+                for trait, count in state.even_money_counts.items():
+                    total = sum(state.even_money_counts.values())
+                    percentages[trait] = (count / total * 100) if total > 0 else 0
+                sorted_traits = sorted(percentages.items(), key=lambda x: x[1], reverse=True)
+                top_traits = sorted_traits[:3]
+                for num in range(37):
+                    score = 0
+                    traits = []
+                    for trait, _ in top_traits:
+                        if num in EVEN_MONEY[trait]:
+                            score += 1
+                            traits.append(trait)
+                    if score > 0:
+                        numbers.append((num, score, traits))
+            elif strategy_name == "Hot Numbers":
+                hit_counts = {n: state.last_spins.count(str(n)) for n in range(37)}
+                sorted_numbers = sorted(hit_counts.items(), key=lambda x: x[1], reverse=True)
+                top_numbers = sorted_numbers[:strong_numbers_count]
+                for num, count in top_numbers:
+                    if count > 0:
+                        traits = []
+                        if num == 0:
+                            traits.append("Green")
+                        else:
+                            if num in EVEN_MONEY["Red"]:
+                                traits.append("Red")
+                            elif num in EVEN_MONEY["Black"]:
+                                traits.append("Black")
+                            if num in EVEN_MONEY["Even"]:
+                                traits.append("Even")
+                            elif num in EVEN_MONEY["Odd"]:
+                                traits.append("Odd")
+                            if num in EVEN_MONEY["Low"]:
+                                traits.append("Low")
+                            elif num in EVEN_MONEY["High"]:
+                                traits.append("High")
+                            for name, nums in DOZENS.items():
+                                if num in nums:
+                                    traits.append(name)
+                                    break
+                            for name, nums in COLUMNS.items():
+                                if num in nums:
+                                    traits.append(name)
+                                    break
+                        numbers.append((num, count, traits))
+            elif strategy_name == "Neighbors of Hot Numbers":
+                hit_counts = {n: state.last_spins.count(str(n)) for n in range(37)}
+                sorted_numbers = sorted(hit_counts.items(), key=lambda x: x[1], reverse=True)
+                top_numbers = sorted_numbers[:strong_numbers_count]
+                neighbor_numbers = set()
+                for num, _ in top_numbers:
+                    if num in NEIGHBORS_EUROPEAN:
+                        left, right = NEIGHBORS_EUROPEAN[num]
+                        if left is not None:
+                            neighbor_numbers.add(left)
+                        if right is not None:
+                            neighbor_numbers.add(right)
+                for num in neighbor_numbers:
+                    traits = []
+                    if num == 0:
+                        traits.append("Green")
+                    else:
+                        if num in EVEN_MONEY["Red"]:
+                            traits.append("Red")
+                        elif num in EVEN_MONEY["Black"]:
+                            traits.append("Black")
+                        if num in EVEN_MONEY["Even"]:
+                            traits.append("Even")
+                        elif num in EVEN_MONEY["Odd"]:
+                            traits.append("Odd")
+                        if num in EVEN_MONEY["Low"]:
+                            traits.append("Low")
+                        elif num in EVEN_MONEY["High"]:
+                            traits.append("High")
+                        for name, nums in DOZENS.items():
+                            if num in nums:
+                                traits.append(name)
+                                break
+                        for name, nums in COLUMNS.items():
+                            if num in nums:
+                                traits.append(name)
+                                break
+                    numbers.append((num, 1, traits))
+            elif strategy_name == "Dozen Tracker":
+                last_spins = state.last_spins[-dozen_tracker_spins:] if state.last_spins else []
+                dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
+                for spin in last_spins:
+                    try:
+                        num = int(spin)
+                        for name, nums in DOZENS.items():
+                            if num in nums:
+                                dozen_counts[name] += 1
+                    except ValueError:
+                        continue
+                top_dozen = max(dozen_counts.items(), key=lambda x: x[1])[0] if any(dozen_counts.values()) else None
+                if top_dozen:
+                    for num in DOZENS[top_dozen]:
+                        traits = [top_dozen]
+                        if num == 0:
+                            traits.append("Green")
+                        else:
+                            if num in EVEN_MONEY["Red"]:
+                                traits.append("Red")
+                            elif num in EVEN_MONEY["Black"]:
+                                traits.append("Black")
+                            if num in EVEN_MONEY["Even"]:
+                                traits.append("Even")
+                            elif num in EVEN_MONEY["Odd"]:
+                                traits.append("Odd")
+                            if num in EVEN_MONEY["Low"]:
+                                traits.append("Low")
+                            elif num in EVEN_MONEY["High"]:
+                                traits.append("High")
+                            for name, nums in COLUMNS.items():
+                                if num in nums:
+                                    traits.append(name)
+                                    break
+                        numbers.append((num, dozen_counts[top_dozen], traits))
+        numbers.sort(key=lambda x: x[1], reverse=True)
+        for num, score, traits in numbers[:strong_numbers_count]:
+            color_class = "green" if num == 0 else "red" if num in EVEN_MONEY["Red"] else "black"
+            tier = "top-tier" if score >= 3 else "middle-tier" if score == 2 else "lower-tier"
+            tier_color = top_color if tier == "top-tier" else middle_color if tier == "middle-tier" else lower_color
+            traits_str = ", ".join(traits)
+            tooltip = f"Number {num}: {traits_str}, Score: {score}"
+            progress_width = min(score * 20, 100)
+            table += f'''
+            <tr>
+              <td class="{color_class} hot-number {tier}" data-tooltip="{tooltip}">{num}</td>
+              <td>{traits_str}</td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill {tier}" style="width: {progress_width}%; background: {tier_color};"></div>
+                </div>
+              </td>
+            </tr>
+            '''
+        table += "</table>"
+        html += table
+        return html
+    try:
         print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
         print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
         
@@ -5665,6 +5815,22 @@ def select_next_spin_top_pick(last_spin_count):
               </div>
             </div>
             '''
+        # New: Generate top 10 picks HTML for Dynamic Table
+        top_10_html = '<div class="top-10-picks">'
+        top_10_html += '<h4>Top 10 Picks</h4>'
+        top_10_html += '<div class="top-10-container">'
+        # Top 1 pick
+        top_10_html += f'''
+        <div class="top-1-pick">
+          <span class="top-1-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+        </div>
+        '''
+        # Top 9 picks
+        top_10_html += '<div class="top-9-picks">'
+        for i, (num, _, _, _, _, _, _, _, _, _) in enumerate(top_picks[1:10], 1):
+            num_color = colors.get(str(num), "black")
+            top_10_html += f'<span class="top-9-badge {num_color}" data-number="{num}" onclick="copyToClipboard(\'{num}\')">{num}</span>'
+        top_10_html += '</div></div></div>'
         html = f'''
         <div class="first-spins">
           <h5>Last 5 Spins</h5>
@@ -5703,31 +5869,31 @@ def select_next_spin_top_pick(last_spin_count):
         </div>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-          @keyframes fadeIn {{
-            from {{ opacity: 0; }}
-            to {{ opacity: 1; }}
-          }}
-          @keyframes confetti {{
-            0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
-            100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
-          }}
-          .first-spins {{
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+          }
+          .first-spins {
             margin-bottom: 10px;
             text-align: center;
-          }}
-          .first-spins h5 {{
+          }
+          .first-spins h5 {
             margin: 0 0 5px 0;
             color: #FFD700;
             font-family: 'Montserrat', sans-serif;
             font-size: 16px;
             text-transform: uppercase;
-          }}
-          .first-spins-container {{
+          }
+          .first-spins-container {
             display: flex;
             justify-content: center;
             gap: 5px;
-          }}
-          .first-spin {{
+          }
+          .first-spin {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -5739,21 +5905,21 @@ def select_next_spin_top_pick(last_spin_count):
             color: #ffffff !important;
             border: 1px solid #ffffff;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-          }}
-          .first-spin.red {{ background-color: red; }}
-          .first-spin.black {{ background-color: black; }}
-          .first-spin.green {{ background-color: green; }}
-          .accordion {{
+          }
+          .first-spin.red { background-color: red; }
+          .first-spin.black { background-color: black; }
+          .first-spin.green { background-color: green; }
+          .accordion {
             margin: 10px 0;
             border: 1px solid #FFD700;
             border-radius: 8px;
             background: linear-gradient(135deg, #2E8B57, #FFD700);
             transition: all 0.3s ease;
-          }}
-          .accordion-toggle {{
+          }
+          .accordion-toggle {
             display: none;
-          }}
-          .accordion-header {{
+          }
+          .accordion-header {
             padding: 12px;
             font-weight: bold;
             font-size: 18px;
@@ -5768,21 +5934,21 @@ def select_next_spin_top_pick(last_spin_count):
             top: 0;
             z-index: 10;
             background: inherit;
-          }}
-          .chip-icon {{
+          }
+          .chip-icon {
             font-size: 20px;
-          }}
-          .accordion-header:hover {{
+          }
+          .accordion-header:hover {
             background-color: rgba(255, 255, 255, 0.2);
-          }}
-          .accordion-content {{
+          }
+          .accordion-content {
             display: none !important;
             animation: fadeIn 0.5s ease-in-out;
-          }}
-          .accordion-toggle:checked + .accordion-header + .accordion-content {{
+          }
+          .accordion-toggle:checked + .accordion-header + .accordion-content {
             display: block !important;
-          }}
-          .top-pick-container {{
+          }
+          .top-pick-container {
             background: linear-gradient(135deg, #2E8B57, #FFD700);
             border: 3px solid #FFD700;
             padding: 20px;
@@ -5790,27 +5956,27 @@ def select_next_spin_top_pick(last_spin_count):
             text-align: center;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
             margin: 10px 0;
-          }}
-          .top-pick-container h4 {{
+          }
+          .top-pick-container h4 {
             margin: 0 0 15px 0;
             color: #FFD700;
             font-size: 24px;
             font-weight: bold;
             text-transform: uppercase;
             font-family: 'Montserrat', sans-serif;
-          }}
-          .top-pick-wrapper {{
+          }
+          .top-pick-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-          }}
-          .badge-wrapper {{
+          }
+          .badge-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
-          }}
-          .top-pick-badge {{
+          }
+          .top-pick-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -5826,21 +5992,21 @@ def select_next_spin_top_pick(last_spin_count):
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
             position: relative;
-          }}
-          .top-pick-badge:hover {{
+          }
+          .top-pick-badge:hover {
             transform: rotate(360deg) scale(1.2);
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-          }}
-          .top-pick-badge.red {{ background-color: red; }}
-          .top-pick-badge.black {{ background-color: black; }}
-          .top-pick-badge.green {{ background-color: green; }}
-          .top-pick-characteristics {{
+          }
+          .top-pick-badge.red { background-color: red; }
+          .top-pick-badge.black { background-color: black; }
+          .top-pick-badge.green { background-color: green; }
+          .top-pick-characteristics {
             display: flex;
             gap: 5px;
             flex-wrap: wrap;
             justify-content: center;
-          }}
-          .char-badge {{
+          }
+          .char-badge {
             background-color: rgba(255, 213, 0, 0.9);
             color: #FFD700;
             font-weight: bold;
@@ -5848,27 +6014,27 @@ def select_next_spin_top_pick(last_spin_count):
             padding: 3px 8px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-          }}
-          .char-badge.red {{ background-color: #FF0000; color: #ffffff; }}
-          .char-badge.black {{ background-color: #000000; color: #ffffff; }}
-          .char-badge.even {{ background-color: #4682B4; color: #ffffff; }}
-          .char-badge.odd {{ background-color: #4682B4; color: #ffffff; }}
-          .char-badge.low {{ background-color: #32CD32; color: #ffffff; }}
-          .char-badge.high {{ background-color: #32CD32; color: #ffffff; }}
-          .confidence-bar {{
+          }
+          .char-badge.red { background-color: #FF0000; color: #ffffff; }
+          .char-badge.black { background-color: #000000; color: #ffffff; }
+          .char-badge.even { background-color: #4682B4; color: #ffffff; }
+          .char-badge.odd { background-color: #4682B4; color: #ffffff; }
+          .char-badge.low { background-color: #32CD32; color: #ffffff; }
+          .char-badge.high { background-color: #32CD32; color: #ffffff; }
+          .confidence-bar {
             margin-top: 10px;
             background-color: #2E8B57;
             border-radius: 5px;
             height: 20px;
             position: relative;
             overflow: hidden;
-          }}
-          .confidence-fill {{
+          }
+          .confidence-fill {
             height: 100%;
             background-color: #FFD700;
             transition: width 1s ease;
-          }}
-          .confidence-bar span {{
+          }
+          .confidence-bar span {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -5876,50 +6042,50 @@ def select_next_spin_top_pick(last_spin_count):
             color: #2E8B57;
             font-size: 12px;
             font-weight: bold;
-          }}
-          .top-pick-description {{
+          }
+          .top-pick-description {
             margin-top: 15px;
             font-style: italic;
             color: #3e2723;
             font-size: 14px;
-          }}
-          .top-pick-reasons {{
+          }
+          .top-pick-reasons {
             padding: 10px;
             color: #3e2723;
             font-size: 14px;
-          }}
-          .top-pick-reasons ul {{
+          }
+          .top-pick-reasons ul {
             list-style-type: disc;
             padding-left: 20px;
             margin: 0;
-          }}
-          .top-pick-reasons li {{
+          }
+          .top-pick-reasons li {
             margin-bottom: 5px;
-          }}
-          .secondary-picks {{
+          }
+          .secondary-picks {
             margin-top: 20px;
             text-align: center;
-          }}
-          .secondary-picks h5 {{
+          }
+          .secondary-picks h5 {
             margin: 0 0 10px 0;
             color: #FFD700;
             font-family: 'Montserrat', sans-serif;
             font-size: 16px;
             text-transform: uppercase;
-          }}
-          .secondary-picks-container {{
+          }
+          .secondary-picks-container {
             display: flex;
             justify-content: center;
             gap: 15px;
             flex-wrap: wrap;
-          }}
-          .secondary-pick {{
+          }
+          .secondary-pick {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 5px;
-          }}
-          .secondary-badge {{
+          }
+          .secondary-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -5933,28 +6099,28 @@ def select_next_spin_top_pick(last_spin_count):
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
             position: relative;
             transition: transform 0.3s ease;
-          }}
-          .secondary-badge:hover {{
+          }
+          .secondary-badge:hover {
             transform: rotate(360deg) scale(1.2);
-          }}
-          .secondary-badge.red {{ background-color: red; }}
-          .secondary-badge.black {{ background-color: black; }}
-          .secondary-badge.green {{ background-color: green; }}
-          .secondary-info {{
+          }
+          .secondary-badge.red { background-color: red; }
+          .secondary-badge.black { background-color: black; }
+          .secondary-badge.green { background-color: green; }
+          .secondary-info {
             text-align: center;
-          }}
-          .secondary-characteristics {{
+          }
+          .secondary-characteristics {
             display: flex;
             gap: 5px;
             flex-wrap: wrap;
             justify-content: center;
-          }}
-          .secondary-reasons {{
+          }
+          .secondary-reasons {
             font-size: 10px;
             color: #3e2723;
             font-style: italic;
-          }}
-          .celebration {{
+          }
+          .celebration {
             position: fixed;
             top: 0;
             left: 0;
@@ -5962,60 +6128,60 @@ def select_next_spin_top_pick(last_spin_count):
             height: 100%;
             pointer-events: none;
             z-index: 1000;
-          }}
-          .confetti {{
+          }
+          .confetti {
             position: absolute;
             width: 10px;
             height: 10px;
             background-color: #FFD700;
             animation: confetti 2s ease infinite;
-          }}
-          @media (max-width: 600px) {{
-            .top-pick-badge {{
+          }
+          @media (max-width: 600px) {
+            .top-pick-badge {
               width: 50px;
               height: 50px;
               font-size: 24px;
-            }}
-            .first-spin {{
+            }
+            .first-spin {
               width: 25px;
               height: 25px;
               font-size: 14px;
-            }}
-            .secondary-badge {{
+            }
+            .secondary-badge {
               width: 40px;
               height: 40px;
               font-size: 20px;
-            }}
-            .top-pick-container h4 {{
+            }
+            .top-pick-container h4 {
               font-size: 20px;
-            }}
-            .accordion-header {{
+            }
+            .accordion-header {
               font-size: 16px;
-            }}
-          }}
+            }
+          }
         </style>
         <script>
-          function triggerConfetti() {{
+          function triggerConfetti() {
             const celebration = document.querySelector('.celebration');
-            for (let i = 0; i < 50; i++) {{
+            for (let i = 0; i < 50; i++) {
               const confetti = document.createElement('div');
               confetti.className = 'confetti';
               confetti.style.left = Math.random() * 100 + 'vw';
               confetti.style.backgroundColor = ['#FFD700', '#FF0000', '#2E8B57'][Math.floor(Math.random() * 3)];
               confetti.style.animationDelay = Math.random() * 2 + 's';
               celebration.appendChild(confetti);
-            }}
-          }}
-          function copyToClipboard(text) {{
-            navigator.clipboard.writeText(text).then(() => {{
+            }
+          }
+          function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
               alert('Number ' + text + ' copied to clipboard!');
-            }}).catch(err => {{
+            }).catch(err => {
               console.error('Failed to copy: ', err);
-            }});
-          }}
+            });
+          }
         </script>
         '''
-        return html
+        return html + top_10_html
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
         return "<p>Error selecting top pick.</p>"
@@ -8539,6 +8705,111 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border: 2px solid #3b82f6 !important;
             border-radius: 12px !important;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+        }
+        /* NEW: Top 10 Picks Styling */
+        .top-10-picks {
+            background: linear-gradient(135deg, #2a2a72, #4682b4);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .top-10-picks h4 {
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+        }
+        
+        .top-10-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .top-1-pick {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .top-1-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff !important;
+            border: 3px solid #ffffff;
+            box-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700;
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .top-1-badge:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #ffd700, 0 0 40px #ffd700;
+        }
+        
+        .top-1-badge.red { background-color: red; }
+        .top-1-badge.black { background-color: black; }
+        .top-1-badge.green { background-color: green; }
+        
+        .top-9-picks {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .top-9-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff !important;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .top-9-badge:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #3b82f6;
+        }
+        
+        .top-9-badge.red { background-color: red; }
+        .top-9-badge.black { background-color: black; }
+        .top-9-badge.green { background-color: green; }
+        
+        @media (max-width: 600px) {
+            .top-1-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            .top-9-badge {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .top-10-picks h4 {
+                font-size: 16px;
+            }
         }
         
         /* Responsive Adjustments */
