@@ -8794,98 +8794,97 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-size: 12px;
                 z-index: 101;
             }
-        /* Enhanced Red/Black Chopping Alert */
-            .switch-alert {
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 8px !important;
-                padding: 12px !important;
-                background: rgba(255, 255, 255, 0.6) !important;
-                border: 2px solid #666 !important;
-                border-radius: 8px !important;
-                margin-top: 20px !important;
-                justify-content: center !important;
-                min-height: 60px !important;
-                position: relative !important;
-                z-index: 100 !important;
-                transition: all 0.3s ease !important;
+        /* Enhanced Red/Black Chopping Alert within Quick Trends */
+        .quick-trends .switch-alert {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 6px !important;
+            padding: 8px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid #999 !important;
+            border-radius: 5px !important;
+            margin: 5px 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            z-index: 10 !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .quick-trends .switch-dots-container {
+            display: flex !important;
+            gap: 5px !important;
+        }
+        
+        .quick-trends .switch-dot {
+            width: 14px !important;
+            height: 14px !important;
+            border-radius: 50% !important;
+            border: 1px solid #fff !important;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .quick-trends .switch-dot.red { background: #ff4444 !important; }
+        .quick-trends .switch-dot.black { background: #000000 !important; }
+        .quick-trends .switch-dot.green { background: #388e3c !important; }
+        
+        .quick-trends .switch-alert.high-switches {
+            border: 2px solid #ffd700 !important;
+            background: rgba(255, 215, 0, 0.15) !important;
+            animation: chopping-glow 1.5s ease-in-out infinite !important;
+        }
+        
+        .quick-trends .chopping-alert {
+            color: #ff4500 !important;
+            font-weight: bold !important;
+            font-size: 13px !important;
+            text-align: left !important;
+            text-shadow: 0 0 3px rgba(255, 69, 0, 0.4) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+        }
+        
+        @keyframes chopping-glow {
+            0%, 100% {
+                box-shadow: 0 0 8px rgba(255, 215, 0, 0.4) !important;
+                border-color: #ffd700 !important;
             }
-            
-            .switch-dots-container {
-                display: flex !important;
-                gap: 6px !important;
+            50% {
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
+                border-color: #ffa500 !important;
             }
-            
-            .switch-dot {
-                width: 16px !important;
-                height: 16px !important;
-                border-radius: 50% !important;
-                border: 1px solid #fff !important;
-                box-shadow: 0 0 4px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .quick-trends .switch-alert:hover::after {
+            content: attr(data-tooltip) !important;
+            position: absolute !important;
+            background: #333 !important;
+            color: #fff !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            top: -35px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            font-size: 11px !important;
+            z-index: 11 !important;
+            white-space: nowrap !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .quick-trends .switch-alert {
+                padding: 6px !important;
             }
-            
-            .switch-dot.red { background: #ff4444 !important; }
-            .switch-dot.black { background: #000000 !important; }
-            .switch-dot.green { background: #388e3c !important; }
-            
-            .switch-alert.high-switches {
-                border: 3px solid #ffd700 !important;
-                background: rgba(255, 215, 0, 0.2) !important;
-                animation: chopping-glow 1.5s ease-in-out infinite !important;
+            .quick-trends .switch-dot {
+                width: 12px !important;
+                height: 12px !important;
             }
-            
-            .chopping-alert {
-                color: #ff4500 !important;
-                font-weight: bold !important;
-                font-size: 14px !important;
-                text-align: center !important;
-                text-shadow: 0 0 4px rgba(255, 69, 0, 0.5) !important;
-                display: flex !important;
-                align-items: center !important;
-                gap: 5px !important;
-            }
-            
-            @keyframes chopping-glow {
-                0%, 100% {
-                    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5) !important;
-                    border-color: #ffd700 !important;
-                }
-                50% {
-                    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8) !important;
-                    border-color: #ffa500 !important;
-                }
-            }
-            
-            .switch-alert:hover::after {
-                content: attr(data-tooltip) !important;
-                position: absolute !important;
-                background: #333 !important;
-                color: #fff !important;
-                padding: 6px 12px !important;
-                border-radius: 4px !important;
-                top: -40px !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
+            .quick-trends .chopping-alert {
                 font-size: 12px !important;
-                z-index: 101 !important;
-                white-space: nowrap !important;
             }
-            
-            /* Ensure the alert is responsive */
-            @media (max-width: 600px) {
-                .switch-alert {
-                    padding: 10px !important;
-                    min-height: 50px !important;
-                }
-                .switch-dot {
-                    width: 12px !important;
-                    height: 12px !important;
-                }
-                .chopping-alert {
-                    font-size: 12px !important;
-                }
-            }
+        }
     </style>
     """)
     print("CSS Updated")
