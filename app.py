@@ -5488,9 +5488,12 @@ def cache_analysis(spins, last_spin_count):
 
 def select_next_spin_top_pick(last_spin_count):
     try:
+        print(f"select_next_spin_top_pick: Starting with last_spin_count={last_spin_count}")
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
+        print(f"select_next_spin_top_pick: Adjusted last_spin_count={last_spin_count}")
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        print(f"select_next_spin_top_pick: last_spins={last_spins}")
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
@@ -5503,7 +5506,10 @@ def select_next_spin_top_pick(last_spin_count):
                 hit_counts[num] += 1
                 last_positions[num] = i
             except ValueError:
+                print(f"select_next_spin_top_pick: Invalid spin value '{spin}' at index {i}, skipping")
                 continue
+        print(f"select_next_spin_top_pick: hit_counts={hit_counts}")
+        print(f"select_next_spin_top_pick: last_positions={last_positions}")
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
@@ -5520,7 +5526,11 @@ def select_next_spin_top_pick(last_spin_count):
                     if num in nums:
                         dozen_counts[name] += 1
             except ValueError:
+                print(f"select_next_spin_top_pick: Invalid spin value '{spin}' in even_money_counts loop, skipping")
                 continue
+        print(f"select_next_spin_top_pick: even_money_counts={even_money_counts}")
+        print(f"select_next_spin_top_pick: column_counts={column_counts}")
+        print(f"select_next_spin_top_pick: dozen_counts={dozen_counts}")
         total_spins = len(last_spins)
         trait_percentages = {}
         for trait, count in even_money_counts.items():
@@ -5530,6 +5540,7 @@ def select_next_spin_top_pick(last_spin_count):
         for trait, count in column_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
         sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
+        print(f"select_next_spin_top_pick: sorted_traits={sorted_traits}")
         hottest_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
@@ -5558,6 +5569,7 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Columns")
+        print(f"select_next_spin_top_pick: hottest_traits={hottest_traits}")
         second_best_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
@@ -5588,11 +5600,13 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 second_best_traits.append(trait)
                 seen_categories.add("Columns")
+        print(f"select_next_spin_top_pick: second_best_traits={second_best_traits}")
         left_side = set(LEFT_OF_ZERO_EUROPEAN)
         right_side = set(RIGHT_OF_ZERO_EUROPEAN)
         left_hits = sum(hit_counts[num] for num in left_side)
         right_hits = sum(hit_counts[num] for num in right_side)
         most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
+        print(f"select_next_spin_top_pick: most_hit_side={most_hit_side}")
         betting_sections = {
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
@@ -5606,9 +5620,11 @@ def select_next_spin_top_pick(last_spin_count):
                     section_last_pos[name] = last_positions[num]
         sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
         top_section = sorted_sections[0][0] if sorted_sections else None
+        print(f"select_next_spin_top_pick: top_section={top_section}")
         neighbor_boost = {num: 0 for num in range(37)}
         last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
         last_five_set = set(last_five)
+        print(f"select_next_spin_top_pick: last_five_set={last_five_set}")
         for num in range(37):
             if num in NEIGHBORS_EUROPEAN:
                 left, right = NEIGHBORS_EUROPEAN[num]
@@ -5616,6 +5632,7 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
+        print(f"select_next_spin_top_pick: neighbor_boost={neighbor_boost}")
         scores = []
         for num in range(37):
             if num not in hit_counts or hit_counts[num] == 0:
@@ -5671,13 +5688,16 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+        print(f"select_next_spin_top_pick: scores={scores}")
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
+        print(f"select_next_spin_top_pick: Sorted scores={scores}")
         if len(scores) > 10:
             min_traits = sorted([x[2] for x in scores[:10]], reverse=True)[9]
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
-        
+        print(f"select_next_spin_top_pick: top_picks={top_picks}")
+
         # Save top 10 picks to state.top_10_picks as a list of strings
         top_10_numbers = [str(pick[0]) for pick in top_picks]
         state.top_10_picks = top_10_numbers
