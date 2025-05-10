@@ -5200,29 +5200,36 @@ def summarize_spin_traits(last_spin_count):
         if DEBUG:
             print(f"summarize_spin_traits: Max counts - Even Money: {max_even_money}, Columns: {max_columns}, Dozens: {max_dozens}")
 
-        # Quick Trends
+        # Quick Trends and Betting Suggestions
         if DEBUG:
             print(f"summarize_spin_traits: Calculating Quick Trends")
         total_spins = len(last_spins)
         trends = []
+        suggestions = []
         if total_spins > 0:
             all_counts = {**even_money_counts, **column_counts, **dozen_counts}
             dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
             if dominant[1] > 0:
                 percentage = (dominant[1] / total_spins * 100)
                 trends.append(("hot", f"{dominant[0]} dominates with {percentage:.1f}% hits"))
+                # Add suggestion for dominant trait
+                if percentage >= 40:  # Suggest only if hit rate is significant
+                    suggestions.append(f"Bet on {dominant[0]} - {percentage:.1f}% hit rate in last {total_spins} spins!")
             all_streaks = {**even_money_streaks, **column_streaks, **dozen_streaks}
             longest_streak = max((v["current"] for v in all_streaks.values() if v["current"] > 1), default=0)
             if longest_streak > 1:
                 streak_name = next(k for k, v in all_streaks.items() if v["current"] == longest_streak)
                 streak_spins = ", ".join(all_streaks[streak_name]["spins"][-longest_streak:])
                 trends.append(("streak", f"{streak_name} on a {longest_streak}-spin streak (Spins: {streak_spins})"))
+                # Add suggestion for streak
+                if longest_streak >= 3:  # Suggest for significant streaks
+                    suggestions.append(f"{streak_name} is hot - {longest_streak}/{total_spins} hits!")
             # Add cold trend for least hit trait
             least_hit = min(all_counts.items(), key=lambda x: x[1], default=("None", 0))
             if least_hit[1] == 0 and least_hit[0] != "None":
                 trends.append(("cold", f"{least_hit[0]} has no hits"))
         if DEBUG:
-            print(f"summarize_spin_traits: Quick Trends calculated: {trends}")
+            print(f"summarize_spin_traits: Quick Trends calculated: {trends}, Suggestions: {suggestions}")
 
         # Build HTML
         if DEBUG:
@@ -5232,13 +5239,17 @@ def summarize_spin_traits(last_spin_count):
         html += '<div class="traits-wrapper">'
         html += '<div class="quick-trends">'
         html += '<h4 style="color: #ff9800;">Quick Trends</h4>'
-        if trends:
+        if trends or suggestions:
             html += '<ul style="list-style-type: none; padding-left: 0;">'
+            # Add trends
             for trend_type, trend in trends:
                 icon = '<span class="trend-icon hot">🔥</span>' if trend_type == "hot" else \
                        '<span class="trend-icon cold">❄️</span>' if trend_type == "cold" else \
                        '<span class="trend-icon streak">⚡️</span>'
                 html += f'<li style="color: #333; margin: 5px 0;">{icon}{trend}</li>'
+            # Add suggestions
+            for suggestion in suggestions[:2]:  # Limit to 2 suggestions to avoid clutter
+                html += f'<li class="bet-suggestion" style="color: #ff4500; font-style: italic; margin: 5px 0;">{suggestion}</li>'
             html += '</ul>'
         else:
             html += '<p>No significant trends detected yet.</p>'
@@ -8595,6 +8606,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 border-radius: 5px;
                 margin-bottom: 5px;
             }
+            /* Quick Bet Suggestions for Quick Trends */
+            .bet-suggestion {
+                color: #ff4500;
+                font-style: italic;
+                background: rgba(255, 69, 0, 0.1);
+                padding: 5px;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                font-weight: bold;
+                box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
+            }    
         }
     </style>
     """)
