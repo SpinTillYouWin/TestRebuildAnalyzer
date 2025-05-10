@@ -7557,10 +7557,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             left: -3px !important;
             width: 10px !important;
             height: 10px !important;
-            background-color: #3b82f6 !important; /* Neon blue to match table border */
+            background-color: #3b82f6 !important; /* Neon blue with higher priority */
             border: 1px solid #ffffff !important; /* White border for contrast */
             animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
+            z-index: 6 !important; /* Higher z-index for visibility */
         }
         
         /* Bottom-right corner highlight for top picks */
@@ -7571,51 +7571,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             right: -3px !important;
             width: 10px !important;
             height: 10px !important;
-            background-color: #3b82f6 !important; /* Neon blue */
-            border: 1px solid #ffffff !important;
-            animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
-        }
-        
-        /* Glowing Hover Effects for Top Pick Numbers */
-        .dynamic-roulette-table td.top-pick-number:hover {
-            box-shadow: 0 0 12px 4px #3b82f6 !important;
-            transform: scale(1.1) !important;
-            transition: all 0.3s ease !important;
-        }
-
-        /* Top Pick Number Corner Flash Effect */
-        .dynamic-roulette-table td.top-pick-number {
-            position: relative !important;
-            overflow: visible !important;
-        }
-        
-        /* Top-left corner highlight for top picks */
-        .dynamic-roulette-table td.top-pick-number::before {
-            content: '' !important;
-            position: absolute !important;
-            top: -3px !important;
-            left: -3px !important;
-            width: 10px !important;
-            height: 10px !important;
-            background-color: #3b82f6 !important; /* Neon blue to match table border */
+            background-color: #3b82f6 !important; /* Neon blue with higher priority */
             border: 1px solid #ffffff !important; /* White border for contrast */
             animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
-        }
-        
-        /* Bottom-right corner highlight for top picks */
-        .dynamic-roulette-table td.top-pick-number::after {
-            content: '' !important;
-            position: absolute !important;
-            bottom: -3px !important;
-            right: -3px !important;
-            width: 10px !important;
-            height: 10px !important;
-            background-color: #3b82f6 !important; /* Neon blue */
-            border: 1px solid #ffffff !important;
-            animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
+            z-index: 6 !important;
         }
         
         /* Glowing Hover Effects for Top Pick Numbers */
