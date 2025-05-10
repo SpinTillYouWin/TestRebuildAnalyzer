@@ -5438,8 +5438,7 @@ def select_next_spin_top_pick(last_spin_count):
         last_spin_count = max(1, min(last_spin_count, 36))
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
-            return "<p>No spins available for analysis.</p>"
-        # Log the spins being analyzed
+            return "<p>No spins available for analysis.</p>", "<p>No spins analyzed yet. Add spins to see top picks.</p>"
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
         numbers = set(range(37))
         hit_counts = {n: 0 for n in range(37)}
@@ -5468,25 +5467,17 @@ def select_next_spin_top_pick(last_spin_count):
                         dozen_counts[name] += 1
             except ValueError:
                 continue
-        # Calculate percentages for all traits
-        total_spins = len(last_spins)
         trait_percentages = {}
-        # Even Money
         for trait, count in even_money_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Dozens
         for trait, count in dozen_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Columns
         for trait, count in column_counts.items():
             trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Sort traits by percentage (highest to lowest)
         sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
-        # Determine hottest traits (top non-conflicting traits)
         hottest_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
-            # Skip if this trait conflicts with a higher-percentage trait in the same category
             if trait in ["Red", "Black"]:
                 if "Red-Black" in seen_categories:
                     continue
@@ -5512,7 +5503,6 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 hottest_traits.append(trait)
                 seen_categories.add("Columns")
-        # Second best traits for tiebreakers
         second_best_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
@@ -5571,12 +5561,10 @@ def select_next_spin_top_pick(last_spin_count):
                     neighbor_boost[num] += 2
                 if right is not None and str(right) in last_five_set:
                     neighbor_boost[num] += 2
-        # Score numbers based on the number of matching traits in order
         scores = []
         for num in range(37):
             if num not in hit_counts or hit_counts[num] == 0:
-                continue  # Only consider numbers that appear in the spins
-            # Count matching traits in order
+                continue
             matching_traits = 0
             for trait in hottest_traits:
                 if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
@@ -5585,7 +5573,6 @@ def select_next_spin_top_pick(last_spin_count):
                     matching_traits += 1
                 elif trait in COLUMNS and num in COLUMNS[trait]:
                     matching_traits += 1
-            # Secondary score for second best traits
             secondary_matches = 0
             for trait in second_best_traits:
                 if trait in EVEN_MONEY and num in EVEN_MONEY[trait]:
@@ -5594,7 +5581,6 @@ def select_next_spin_top_pick(last_spin_count):
                     secondary_matches += 1
                 elif trait in COLUMNS and num in COLUMNS[trait]:
                     secondary_matches += 1
-            # Additional scoring factors
             wheel_side_score = 0
             if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
                 wheel_side_score = 5
@@ -5630,63 +5616,60 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
-        # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
-        # Ensure top 10 picks have at least as many matches as the 10th pick
         if len(scores) > 10:
             min_traits = sorted([x[2] for x in scores[:10]], reverse=True)[9]
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
-        state.current_top_pick = top_picks[0][0]
-        top_pick = top_picks[0][0]
-        # Calculate confidence based on matching traits
+        state.current_top_pick = top_picks[0][0] if top_picks else None
+        top_pick = top_picks[0][0] if top_picks else None
         max_possible_traits = len(hottest_traits)
-        top_traits_matched = top_picks[0][2]
-        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
+        top_traits_matched = top_picks[0][2] if top_picks else 0
+        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100))) if max_possible_traits > 0 else 0
         characteristics = []
-        top_pick_int = int(top_pick)
+        top_pick_int = int(top_pick) if top_pick is not None else None
         if top_pick_int == 0:
             characteristics.append("Green")
-        elif "Red" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Red"]:
+        elif top_pick_int and "Red" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Red"]:
             characteristics.append("Red")
-        elif "Black" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Black"]:
+        elif top_pick_int and "Black" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Black"]:
             characteristics.append("Black")
         if top_pick_int != 0:
-            if "Even" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Even"]:
+            if top_pick_int and "Even" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Even"]:
                 characteristics.append("Even")
-            elif "Odd" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Odd"]:
+            elif top_pick_int and "Odd" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Odd"]:
                 characteristics.append("Odd")
-            if "Low" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Low"]:
+            if top_pick_int and "Low" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Low"]:
                 characteristics.append("Low")
-            elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+            elif top_pick_int and "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
                 characteristics.append("High")
         for name, nums in DOZENS.items():
-            if top_pick_int in nums:
+            if top_pick_int and top_pick_int in nums:
                 characteristics.append(name)
                 break
         for name, nums in COLUMNS.items():
-            if top_pick_int in nums:
+            if top_pick_int and top_pick_int in nums:
                 characteristics.append(name)
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
-        color = colors.get(str(top_pick), "black")
-        _, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score = top_picks[0]
+        color = colors.get(str(top_pick), "black") if top_pick is not None else "black"
+        _, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score = top_picks[0] if top_picks else (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         reasons = []
         matched_traits = []
         for trait in hottest_traits:
-            if trait in EVEN_MONEY and top_pick in EVEN_MONEY[trait]:
+            if top_pick and trait in EVEN_MONEY and top_pick in EVEN_MONEY[trait]:
                 matched_traits.append(trait)
-            elif trait in DOZENS and top_pick in DOZENS[trait]:
+            elif top_pick and trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif top_pick and trait in COLUMNS and top_pick in COLUMNS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
         if section_score > 0:
             reasons.append(f"Located in the hottest wheel section: {top_section}")
         if recency_score > 0:
-            last_pos = last_positions[top_pick]
+            last_pos = last_positions[top_pick] if top_pick is not None else -1
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
         if hit_bonus > 0:
             reasons.append(f"Has appeared in the spin history")
@@ -5704,7 +5687,7 @@ def select_next_spin_top_pick(last_spin_count):
             spin_color = colors.get(str(spin), "black")
             last_five_spins_html += f'<span class="first-spin {spin_color}">{spin}</span>'
         top_5_html = ""
-        for i, (num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score) in enumerate(top_picks[1:10], 1):
+        for i, (num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score) in enumerate(top_picks[1:5], 1):
             num_color = colors.get(str(num), "black")
             num_characteristics = []
             if num == 0:
@@ -5720,7 +5703,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_characteristics.append("Odd")
                 if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
                     num_characteristics.append("High")
             for name, nums in DOZENS.items():
                 if num in nums:
@@ -5760,7 +5743,23 @@ def select_next_spin_top_pick(last_spin_count):
               </div>
             </div>
             '''
-        html = f'''
+        # Create compact summary HTML
+        summary_html = '<div class="top-pick-summary">'
+        if top_pick is not None:
+            summary_html += f'<span class="top-pick-label">Top Pick:</span><span class="pick-badge {color}">{top_pick}</span>'
+        else:
+            summary_html += '<span class="top-pick-label">Top Pick: None</span>'
+        summary_html += '<span class="top-pick-label">Other Picks:</span>'
+        if len(top_picks) > 1:
+            other_picks = [str(pick[0]) for pick in top_picks[1:5]]
+            for pick in other_picks:
+                pick_color = colors.get(pick, "black")
+                summary_html += f'<span class="pick-badge {pick_color}">{pick}</span>'
+        else:
+            summary_html += '<span>No other picks</span>'
+        summary_html += '</div>'
+        # Detailed HTML (existing)
+        detailed_html = f'''
         <div class="first-spins">
           <h5>Last 5 Spins</h5>
           <div class="first-spins-container">{last_five_spins_html}</div>
@@ -6110,10 +6109,10 @@ def select_next_spin_top_pick(last_spin_count):
           }}
         </script>
         '''
-        return html
+        return detailed_html, summary_html
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
-        return "<p>Error selecting top pick.</p>"
+        return "<p>Error selecting top pick.</p>", "<p>Error analyzing top picks.</p>"
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -6443,6 +6442,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
         with gr.Row():
             with gr.Column(scale=1):
+                # Compact summary displayed beside/above the accordion content
+                top_pick_summary = gr.HTML(
+                    label="Top Pick Summary",
+                    value="<p>No spins analyzed yet. Add spins to see top picks.</p>",
+                    elem_classes=["top-pick-summary"]
+                )
                 gr.Markdown("### 🎯 Select Your Top Pick")
                 gr.Markdown("Adjust the slider to analyze the last X spins and find the top pick for your next spin. Add spins using the roulette table below or enter them manually.")
                 top_pick_spin_count = gr.Slider(
@@ -6456,33 +6461,67 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 top_pick_display = gr.HTML(
                     label="Top Pick",
-                    value=select_next_spin_top_pick(18),
+                    value=select_next_spin_top_pick(18)[0],  # Initial detailed HTML
                     elem_classes=["top-pick-container"]
                 )
-        gr.HTML("""
-        <style>
-            #next-spin-top-pick {
-                background-color: #e3f2fd !important;
-                border: 2px solid #2196f3 !important;
-                border-radius: 5px !important;
-                padding: 10px !important;
-            }
-            #next-spin-top-pick summary {
-                background-color: #2196f3 !important;
-                color: white !important;
-                padding: 10px !important;
-                border-radius: 5px !important;
-            }
-            .top-pick-container p {
-                font-style: italic;
-                color: #666;
-            }
-            .top-pick-container h4 {
-                margin: 10px 0;
-                color: #333;
-            }
-        </style>
-        """)
+    gr.HTML("""
+    <style>
+        #next-spin-top-pick {
+            background-color: #e3f2fd !important;
+            border: 2px solid #2196f3 !important;
+            border-radius: 5px !important;
+            padding: 10px !important;
+        }
+        #next-spin-top-pick summary {
+            background-color: #2196f3 !important;
+            color: white !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        .top-pick-summary {
+            margin: 5px 0 !important;
+            font-size: 14px !important;
+            padding: 5px !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 5px !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            justify-content: center !important;
+        }
+        .top-pick-summary .pick-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 15px !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: white !important;
+            border: 1px solid #fff !important;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
+        }
+        .top-pick-summary .pick-badge.red { background-color: red !important; }
+        .top-pick-summary .pick-badge.black { background-color: black !important; }
+        .top-pick-summary .pick-badge.green { background-color: green !important; }
+        .top-pick-summary .top-pick-label {
+            font-weight: bold !important;
+            color: #2196f3 !important;
+        }
+        .top-pick-container p {
+            font-style: italic !important;
+            color: #666 !important;
+        }
+        .top-pick-container h4 {
+            margin: 10px 0 !important;
+            color: #333 !important;
+        }
+    </style>
+    """)
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
@@ -6514,8 +6553,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             ).then(
-                                fn=format_spins_as_html,
-                                inputs=[spins_display, last_spin_count],
+                                fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+                                inputs=[spins_display, last_spin_count, show_trends_state],
                                 outputs=[last_spin_display]
                             ).then(
                                 fn=summarize_spin_traits,
@@ -6528,13 +6567,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             ).then(
                                 fn=select_next_spin_top_pick,
                                 inputs=[top_pick_spin_count],
-                                outputs=[top_pick_display]
+                                outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
                             ).then(
                                 fn=lambda: print(f"After add_spin: state.last_spins = {state.last_spins}"),
                                 inputs=[],
                                 outputs=[]
                             )
-
+                    
     # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
@@ -9509,7 +9548,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After spins_display change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9517,6 +9556,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
+
     
     try:
         clear_spins_button.click(
@@ -9538,7 +9578,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After clear_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9606,9 +9646,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After clear_all_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9631,9 +9675,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After generate_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9659,7 +9707,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After last_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9753,6 +9801,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
 
+
     try:
         analyze_button.click(
             fn=analyze_spins,
@@ -9773,7 +9822,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Clear outputs to reset error state
             fn=lambda: ("", ""),
             inputs=[],
             outputs=[dynamic_table_output, strategy_output]
@@ -9826,9 +9874,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
-            # Fast workaround: Re-run show_strategy_recommendations to repopulate strategy_output
             fn=show_strategy_recommendations,
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
@@ -9874,7 +9921,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -9916,9 +9963,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After load_input change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9992,9 +10047,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After undo_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10002,7 +10061,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in undo_button.click handler: {str(e)}")
-    
     try:
         neighbours_count_slider.change(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color),
@@ -10052,9 +10110,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After clear_last_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10080,9 +10146,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After toggle_trends_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10656,7 +10730,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10703,7 +10777,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10718,9 +10792,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[gr.State(value="Hot"), spins_display],
             outputs=[hot_numbers_input, casino_data_output, spin_counter, sides_of_zero_display, spins_display]
         ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After clear_hot_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10735,9 +10821,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[gr.State(value="Cold"), spins_display],
             outputs=[cold_numbers_input, casino_data_output, spin_counter, sides_of_zero_display, spins_display]
         ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After clear_cold_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10790,9 +10888,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10978,7 +11084,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         top_pick_spin_count.change(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display, top_pick_summary]  # Updated to include top_pick_summary
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
