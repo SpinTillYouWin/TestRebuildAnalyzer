@@ -2451,6 +2451,7 @@ def reset_casino_data():
 # Line 1: Start of create_dynamic_table function (updated)
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     try:
+        print(f"create_dynamic_table: state.current_top_pick = {state.current_top_pick}")  # Fix 4: Debugging log
         print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
         print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
         
@@ -2507,6 +2508,14 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         
         print("create_dynamic_table: Rendering dynamic table HTML")
         html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, scores=state.scores)
+        
+        # Fix 6: Add debug output to verify CSS application
+        html += "</table>"
+        if state.current_top_pick is not None:
+            html += f'<p>Debug: Top pick number {state.current_top_pick} should have the "top-pick-number" class applied.</p>'
+        else:
+            html += '<p>Debug: No top pick number set.</p>'
+        
         print("create_dynamic_table: Table generated successfully")
         return html
     
@@ -5365,6 +5374,8 @@ def select_next_spin_top_pick(last_spin_count):
         last_spin_count = max(1, min(last_spin_count, 36))
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
+            state.current_top_pick = None  # Fix 5: Explicitly set to None
+            print("select_next_spin_top_pick: No spins available, setting state.current_top_pick = None")  # Fix 4: Debugging log
             return "<p>No spins available for analysis.</p>"
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
@@ -5565,12 +5576,13 @@ def select_next_spin_top_pick(last_spin_count):
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
-        state.current_top_pick = top_picks[0][0]
-        top_pick = top_picks[0][0]
+        state.current_top_pick = top_picks[0][0] if top_picks else None  # Fix 5: Handle empty top_picks
+        print(f"select_next_spin_top_pick: Set state.current_top_pick = {state.current_top_pick}")  # Fix 4: Debugging log
+        top_pick = top_picks[0][0] if top_picks else 0
         # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
-        top_traits_matched = top_picks[0][2]
-        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
+        top_traits_matched = top_picks[0][2] if top_picks else 0
+        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100))) if max_possible_traits > 0 else 0
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
@@ -5598,7 +5610,7 @@ def select_next_spin_top_pick(last_spin_count):
                 break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
-        _, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score = top_picks[0]
+        _, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score = top_picks[0] if top_picks else (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         reasons = []
         matched_traits = []
         for trait in hottest_traits:
@@ -6039,7 +6051,8 @@ def select_next_spin_top_pick(last_spin_count):
         '''
         return html
     except Exception as e:
-        print(f"select_next_spin_top_pick: Error: {str(e)}")
+        state.current_top_pick = None  # Fix 5: Explicitly set to None on error
+        print(f"select_next_spin_top_pick: Error: {str(e)}")  # Fix 4: Debugging log
         return "<p>Error selecting top pick.</p>"
 
 # Lines after (context, unchanged from Part 2)
@@ -6442,7 +6455,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             ).then(
                                 fn=format_spins_as_html,
-                                inputs=[spins_display, last_spin_count],
+                                inputs=[spins_display, last_spin_count, show_trends_state],
                                 outputs=[last_spin_display]
                             ).then(
                                 fn=summarize_spin_traits,
@@ -6456,6 +6469,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 fn=select_next_spin_top_pick,
                                 inputs=[top_pick_spin_count],
                                 outputs=[top_pick_display]
+                            ).then(
+                                fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                                    strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+                                ),
+                                inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+                                outputs=[dynamic_table_output]
                             ).then(
                                 fn=lambda: print(f"After add_spin: state.last_spins = {state.last_spins}"),
                                 inputs=[],
@@ -9144,7 +9163,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
-            fn=summarize_spin_traits,  # Use summarize_spin_traits directly for now
+            fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
@@ -9152,10 +9171,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
             fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
         )
+        
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
         gr.Warning(f"Error during spin analysis: {str(e)}")
@@ -9210,6 +9236,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=lambda: print(f"After clear_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9281,6 +9313,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
             fn=lambda: print(f"After clear_all_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
@@ -9305,6 +9343,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=lambda: print(f"After generate_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9426,10 +9470,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     try:
         analyze_button.click(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
             fn=analyze_spins,
             inputs=[
-                spins_display, strategy_dropdown, neighbours_count_slider,
-                strong_numbers_count_slider,
+                spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider,
                 dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
                 even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
@@ -9444,11 +9491,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Clear outputs to reset error state
-            fn=lambda: ("", ""),
-            inputs=[],
-            outputs=[dynamic_table_output, strategy_output]
-        ).then(
             fn=update_casino_data,
             inputs=[
                 spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
@@ -9462,6 +9504,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ),
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
         ).then(
             fn=create_color_code_table,
             inputs=[],
@@ -9545,7 +9591,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 top_18_html,
                 strongest_numbers_output,
                 dynamic_table_output,
-                strategy_output  # Removed betting_sections_display
+                strategy_output
             ]
         ).then(
             fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
@@ -9590,6 +9636,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=lambda: print(f"After load_input change: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -9667,6 +9719,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
             fn=lambda: print(f"After undo_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
@@ -9727,6 +9785,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
             fn=lambda: print(f"After clear_last_spins_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
@@ -9754,6 +9818,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=lambda: print(f"After toggle_trends_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
@@ -10329,6 +10399,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
             fn=lambda: print(f"After play_hot_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
@@ -10375,6 +10451,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
         ).then(
             fn=lambda: print(f"After play_cold_button click: state.last_spins = {state.last_spins}"),
             inputs=[],
