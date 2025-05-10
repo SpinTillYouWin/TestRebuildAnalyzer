@@ -5206,12 +5206,19 @@ def summarize_spin_traits(last_spin_count):
         total_spins = len(last_spins)
         trends = []
         suggestions = []
+        dominant_trait = None
+        dominant_percentage = 0
+        dominant_tip = ""
         if total_spins > 0:
             all_counts = {**even_money_counts, **column_counts, **dozen_counts}
             dominant = max(all_counts.items(), key=lambda x: x[1], default=("None", 0))
             if dominant[1] > 0:
                 percentage = (dominant[1] / total_spins * 100)
                 trends.append(("hot", f"{dominant[0]} dominates with {percentage:.1f}% hits"))
+                # Set dominant trait for spotlight card
+                dominant_trait = dominant[0]
+                dominant_percentage = percentage
+                dominant_tip = f"Bet on {dominant[0]} for momentum!" if percentage >= 40 else f"Consider {dominant[0]} for steady hits."
                 # Add suggestion for dominant trait
                 if percentage >= 40:  # Suggest only if hit rate is significant
                     suggestions.append(f"Bet on {dominant[0]} - {percentage:.1f}% hit rate in last {total_spins} spins!")
@@ -5254,8 +5261,18 @@ def summarize_spin_traits(last_spin_count):
         else:
             html += '<p>No significant trends detected yet.</p>'
         html += '</div>'
+        # Add Dominant Trait Spotlight Card
+        if dominant_trait and dominant_percentage > 0:
+            trait_class = "even-money" if dominant_trait in even_money_counts else \
+                         "dozen" if dominant_trait in dozen_counts else \
+                         "column" if dominant_trait in column_counts else ""
+            html += f'<div class="dominant-trait-card {trait_class}">'
+            html += f'<h4>{dominant_trait}</h4>'
+            html += f'<p>{dominant_percentage:.1f}% Hit Rate</p>'
+            html += f'<p>{dominant_tip}</p>'
+            html += '</div>'
         if DEBUG:
-            print(f"summarize_spin_traits: Quick Trends HTML generated")
+            print(f"summarize_spin_traits: Quick Trends and Dominant Trait Card HTML generated")
 
         # Even Money Bets
         html += '<div class="badge-group">'
@@ -8617,7 +8634,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 align-items: center;
                 font-weight: bold;
                 box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
-            }    
+            }
+            /* Dominant Trait Spotlight Card */
+            .dominant-trait-card {
+                background: linear-gradient(135deg, #ff4444, #ff9999);
+                color: white;
+                padding: 10px;
+                border-radius: 8px;
+                text-align: center;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                animation: shake 0.5s ease-in-out infinite;
+                max-width: 200px;
+                margin: 10px auto;
+            }
+            .dominant-trait-card.dozen { background: linear-gradient(135deg, #388e3c, #66bb6a); }
+            .dominant-trait-card.column { background: linear-gradient(135deg, #1565c0, #42a5f5); }
+            .dominant-trait-card h4 { margin: 0; font-size: 16px; }
+            .dominant-trait-card p { margin: 5px 0; font-size: 12px; }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                50% { transform: translateX(-3px); }
+            }
         }
     </style>
     """)
