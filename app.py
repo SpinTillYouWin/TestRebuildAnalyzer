@@ -5630,6 +5630,7 @@ def select_next_spin_top_pick(last_spin_count):
                     break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
+
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
         # Ensure top 10 picks have at least as many matches as the 10th pick
@@ -5638,9 +5639,12 @@ def select_next_spin_top_pick(last_spin_count):
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
+        # Line 1: NEW - Save top picks to state
+        state.top_picks = [str(pick[0]) for pick in top_picks]  # Store as list of strings
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
         # Calculate confidence based on matching traits
+
         max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
         confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
@@ -6114,6 +6118,21 @@ def select_next_spin_top_pick(last_spin_count):
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
         return "<p>Error selecting top pick.</p>"
+
+# Line 1 to Line 9: NEW - Function to render top picks
+def render_top_picks():
+    """Generate HTML for top picks display."""
+    if not hasattr(state, 'top_picks') or not state.top_picks:
+        return "<p>No top picks available.</p>"
+    
+    html = '<div style="text-align: center; padding: 10px; background: #2E8B57; border: 2px solid #FFD700; border-radius: 8px; margin-bottom: 10px;">'
+    html += '<h4 style="color: #FFD700; margin: 0 0 8px 0;">Top Picks</h4>'
+    html += '<div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">'
+    for num in state.top_picks:
+        color = colors.get(num, "black")
+        html += f'<span style="width: 36px; height: 36px; border-radius: 18px; background: {color}; color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white;">{num}</span>'
+    html += '</div></div>'
+    return html
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -6730,49 +6749,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             allow_custom_value=False,
                             elem_id="select-category"
                         )
-                        strategy_dropdown = gr.Dropdown(
-                            label="Select Strategy",
-                            choices=strategy_categories["Even Money Strategies"],
-                            value="Best Even Money Bets",
-                            allow_custom_value=False,
-                            elem_id="strategy-dropdown"
-                        )
-                    reset_strategy_button = gr.Button("Reset Category & Strategy", elem_classes=["action-button"])
-                    neighbours_count_slider = gr.Slider(
-                        label="Number of Neighbors (Left + Right)",
-                        minimum=1,
-                        maximum=5,
-                        step=1,
-                        value=1,
-                        interactive=True,
-                        visible=False,
-                        elem_classes="long-slider"
-                    )
-                    strong_numbers_count_slider = gr.Slider(
-                        label="Strong Numbers to Highlight (Neighbours Strategy)",
-                        minimum=1,
-                        maximum=18,
-                        step=1,
-                        value=1,
-                        interactive=True,
-                        visible=False,
-                        elem_classes="long-slider"
-                    )
-                    strategy_output = gr.HTML(
-                        label="Strategy Recommendations",
-                        value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
-                        elem_classes=["strategy-box"]
-                    )
-    
         # Column for Dynamic Roulette Table (Right Side)
         with gr.Column(scale=4, min_width=700, elem_classes="dynamic-table-container"):
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+            # Line 1: NEW - Instruction for refreshing top picks
+            gr.Markdown("**Top Picks**: Click 'Analyze Spins' or adjust the 'Number of Spins to Analyze' slider in the 'Next Spin Top Pick' accordion to update the top picks below.")
+            # Line 2: Existing Top Picks Display (unchanged, from Suggestion 2)
+            top_picks_display = gr.HTML(
+                label="Top Picks",
+                value="<p>No top picks available.</p>",
+                elem_classes=["top-picks-container"]
+            )
+            # Line 3: Existing Dynamic Table Output (unchanged)
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets"),
                 elem_classes=["scrollable-table", "large-table"]
             )
-            
                 
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
@@ -6785,6 +6778,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value="5",
                         interactive=True
                     )
+               
+                    
                     dozen_tracker_consecutive_hits_dropdown = gr.Dropdown(
                         label="Alert on Consecutive Dozen Hits",
                         choices=["3", "4", "5"],
@@ -8532,6 +8527,43 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 0 auto !important;
             padding: 20px 10px !important;
         }
+        # Line 1 to Line 20: NEW - CSS for top picks display
+        .top-picks-container {
+            background: #2E8B57; /* Matches green theme */
+            border: 2px solid #FFD700; /* Gold border */
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .top-picks-container h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: #FFD700;
+            text-transform: uppercase;
+            margin: 0 0 8px 0;
+        }
+        .top-picks-container span {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            border: 2px solid white;
+        }
+        .top-picks-container .red { background-color: red; }
+        .top-picks-container .black { background-color: black; }
+        .top-picks-container .green { background-color: green; }
+        @media (max-width: 600px) {
+            .top-picks-container span {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
         
         /* Strategy Recommendations Container (Left Side) */
         .strategy-recommendations-container {
@@ -8544,7 +8576,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             margin: 0 auto !important;
             padding: 15px !important;
         }
-        
         /* Strategy Card Styling */
         .strategy-recommendations-container .strategy-card {
             max-width: 100% !important;
