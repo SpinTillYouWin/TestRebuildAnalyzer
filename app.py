@@ -6358,9 +6358,6 @@ def reset_colors():
     default_lower = "rgba(0, 255, 0, 0.5)"  # Green
     return default_top, default_middle, default_lower
 
-def clear_last_spins_display():
-    """Clear the Last Spins HTML display without affecting spins data."""
-    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
 
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
