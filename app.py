@@ -6546,8 +6546,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # 4. Row 4: Spin Controls
     with gr.Row():
-        with gr.Column(scale=2):
-            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
         with gr.Column(scale=1):
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
