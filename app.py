@@ -490,8 +490,11 @@ colors = {
 
 
 # Lines before (context)
-def format_spins_as_html(spins, num_to_show, show_trends=True):
+def format_spins_as_html(spins, num_to_show, show_trends=True, clear_display=False):
     """Format the spins as HTML with color-coded display, animations, and pattern badges."""
+    if clear_display:
+        return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>"
+    
     if not spins:
         return "<h4>Last Spins</h4><p>No spins yet.</p>"
     
@@ -595,7 +598,6 @@ def format_spins_as_html(spins, num_to_show, show_trends=True):
     '''
     
     return html_output
-
 
 def render_sides_of_zero_display():
     left_hits = state.side_scores["Left Side of Zero"]
@@ -6137,9 +6139,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
-    show_trends_state = gr.State(value=True)  # Default to showing trends
-    toggle_trends_label = gr.State(value="Hide Trends")  # Default label when trends are shown
-    analysis_cache = gr.State(value={})  # New: Cache for analysis results
+    show_trends_state = gr.State(value=True)
+    toggle_trends_label = gr.State(value="Hide Trends")
+    analysis_cache = gr.State(value={})
+    clear_display_state = gr.State(value=False)  # New state variable
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
         value="",
@@ -6360,7 +6363,7 @@ def reset_colors():
 
 def clear_last_spins_display():
     """Clear the Last Spins HTML display without affecting spins data."""
-    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter()
+    return "<h4>Last Spins</h4><p>Display cleared. Add spins to see them here.</p>", update_spin_counter(), True
 
 # Build the Gradio interface
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -6514,9 +6517,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
                                 outputs=[spins_display, spins_textbox, last_spin_display, spin_counter, sides_of_zero_display]
                             ).then(
-                                fn=format_spins_as_html,
-                                inputs=[spins_display, last_spin_count],
-                                outputs=[last_spin_display]
+                                fn=lambda spins_display, count, show_trends, clear_display_state: (format_spins_as_html(spins_display, count, show_trends, clear_display=clear_display_state), False),
+                                inputs=[spins_display, last_spin_count, show_trends_state, clear_display_state],
+                                outputs=[last_spin_display, clear_display_state]
                             ).then(
                                 fn=summarize_spin_traits,
                                 inputs=[last_spin_count],
@@ -6547,14 +6550,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
-            clear_last_spins_button = gr.Button("Clear Last Spins Display", elem_classes=["action-button"])
+            clear_last_spins_button = gr.Button(
+                "Clear Last Spins Display",
+                elem_classes=["action-button"],
+                info="Clears the visual display of last spins without affecting saved spin data."
+            )
         with gr.Column(scale=1):
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
             toggle_trends_button = gr.Button(
-                value="Hide Trends",  # Initial string value
+                value="Hide Trends",
                 elem_classes=["action-button"],
                 elem_id="toggle-trends-btn"
             )
@@ -6710,7 +6717,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
         with gr.Column(scale=1):
-            clear_spins_button = gr.Button("Clear Spins", elem_classes=["clear-spins-btn", "small-btn"])
+            clear_spins_button = gr.Button(
+                "Clear Spins",
+                elem_classes=["clear-spins-btn", "small-btn"],
+                info="Clears all spin data and resets the analysis."
+            )
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
@@ -9623,13 +9634,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[gr.State(value="5"), spins_display, last_spin_count],
             outputs=[spins_display, spins_textbox, spin_analysis_output, spin_counter, sides_of_zero_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
+            fn=lambda spins_display, count, show_trends, clear_display_state: (format_spins_as_html(spins_display, count, show_trends, clear_display=clear_display_state), False),
+            inputs=[spins_display, last_spin_count, show_trends_state, clear_display_state],
+            outputs=[last_spin_display, clear_display_state]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
@@ -10046,10 +10061,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         clear_last_spins_button.click(
             fn=clear_last_spins_display,
             inputs=[],
-            outputs=[last_spin_display, spin_counter]
+            outputs=[last_spin_display, spin_counter, clear_display_state]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
+            fn=lambda spins_display, count, show_trends, clear_display_state: format_spins_as_html(spins_display, count, show_trends, clear_display=clear_display_state),
+            inputs=[spins_display, last_spin_count, show_trends_state, clear_display_state],
             outputs=[last_spin_display]
         ).then(
             fn=select_next_spin_top_pick,
@@ -10752,9 +10767,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
+            fn=lambda spins_display, count, show_trends, clear_display_state: (format_spins_as_html(spins_display, count, show_trends, clear_display=clear_display_state), False),
+            inputs=[spins_display, last_spin_count, show_trends_state, clear_display_state],
+            outputs=[last_spin_display, clear_display_state]
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -10789,6 +10804,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
