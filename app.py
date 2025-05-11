@@ -6115,26 +6115,6 @@ def select_next_spin_top_pick(last_spin_count):
         print(f"select_next_spin_top_pick: Error: {str(e)}")
         return "<p>Error selecting top pick.</p>"
 
-# Lines after (context, unchanged from Part 2)
-with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # 1. Row 1: Header (Moved to the top)
-    with gr.Row(elem_id="header-row"):
-        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
-        gr.HTML(
-            '''
-            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
-            </div>
-            <style>
-                #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
-                    transform: scale(1.05);
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-            </style>
-            '''
-        )
-
     # Define state and components used across sections
     spins_display = gr.State(value="")
     show_trends_state = gr.State(value=True)  # Default to showing trends
@@ -6360,15 +6340,13 @@ def reset_colors():
 
 
 # Build the Gradio interface
-with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
         gr.HTML(
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+                <button id="start-tour-btn" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                <a href="https://drive.google.com/file/d/154GZFaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
             </div>
             <style>
                 #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
@@ -6379,7 +6357,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections
     # Define state and components used across sections
     spins_display = gr.State(value="")
     show_trends_state = gr.State(value=True)  # Default to showing trends
@@ -7220,24 +7197,135 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
+gr.HTML(
+    '''
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
-      function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
-        script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
-        };
-        document.head.appendChild(script);
-    
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        document.head.appendChild(link);
-      }
+        function loadShepherdFallback() {
+            console.warn('Shepherd.js primary CDN failed. Loading from fallback...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
+            script.onerror = () => {
+                console.error('Shepherd.js fallback failed. Tour unavailable.');
+                alert('Tour unavailable: Failed to load. Please try refreshing.');
+            };
+            document.head.appendChild(script);
+
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
+            document.head.appendChild(link);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const startTourBtn = document.getElementById('start-tour-btn');
+            if (startTourBtn) {
+                startTourBtn.addEventListener('click', startTour);
+            } else {
+                console.error('Start Tour button not found.');
+            }
+
+            function startTour() {
+                if (typeof Shepherd === 'undefined') {
+                    console.error('Shepherd.js not loaded.');
+                    alert('Tour unavailable: Please refresh the page.');
+                    return;
+                }
+                console.log('Starting tour...');
+                try {
+                    const tour = new Shepherd.Tour({
+                        defaultStepOptions: {
+                            cancelIcon: { enabled: true },
+                            scrollTo: { behavior: 'smooth', block: 'center' },
+                            classes: 'shepherd-theme-arrows',
+                            buttons: [
+                                { text: 'Back', action: function() { return this.back(); } },
+                                { text: 'Next', action: function() { return this.next(); } },
+                                { text: 'Skip', action: function() { return this.cancel(); } }
+                            ]
+                        },
+                        useModalOverlay: true
+                    });
+
+                    tour.addStep({
+                        id: 'part1',
+                        title: 'Your Roulette Adventure Begins!',
+                        text: 'Welcome to WheelPulse! This tour guides you through key features to master your game.',
+                        attachTo: { element: '#header-row', on: 'bottom' },
+                        buttons: [
+                            { text: 'Next', action: function() { return this.next(); } },
+                            { text: 'Skip', action: tour.cancel }
+                        ]
+                    });
+
+                    tour.addStep({
+                        id: 'part2',
+                        title: 'Spin the Wheel!',
+                        text: 'Click numbers on the European Roulette Table to record spins.',
+                        attachTo: { element: '.roulette-table', on: 'right' },
+                        buttons: [
+                            { text: 'Back', action: tour.back },
+                            { text: 'Next', action: function() { return this.next(); } },
+                            { text: 'Skip', action: tour.cancel }
+                        ]
+                    });
+
+                    tour.addStep({
+                        id: 'part3',
+                        title: 'Track Your Spins!',
+                        text: 'View recent spins here, color-coded for easy tracking.',
+                        attachTo: { element: '.last-spins-container', on: 'bottom' },
+                        buttons: [
+                            { text: 'Back', action: tour.back },
+                            { text: 'Next', action: function() { return this.next(); } },
+                            { text: 'Skip', action: tour.cancel }
+                        ]
+                    });
+
+                    tour.addStep({
+                        id: 'part4',
+                        title: 'Enter Spins Manually!',
+                        text: 'Use the Selected Spins textbox to input spins, like "5, 12, 0".',
+                        attachTo: { element: '#selected-spins', on: 'bottom' },
+                        buttons: [
+                            { text: 'Back', action: tour.back },
+                            { text: 'Next', action: function() { return this.next(); } },
+                            { text: 'Skip', action: tour.cancel }
+                        ]
+                    });
+
+                    tour.addStep({
+                        id: 'part5',
+                        title: 'Spot Trends!',
+                        text: 'Open SpinTrend Radar to see hot bets and quick trends.',
+                        attachTo: { element: '#spin-trend-radar', on: 'top' },
+                        buttons: [
+                            { text: 'Back', action: tour.back },
+                            { text: 'Next', action: function() { return this.next(); } },
+                            { text: 'Skip', action: tour.cancel }
+                        ]
+                    });
+
+                    tour.addStep({
+                        id: 'part6',
+                        title: 'Predict Your Next Spin!',
+                        text: 'Use Next Spin Top Pick to find the best number for your next bet.',
+                        attachTo: { element: '#next-spin-top-pick', on: 'top' },
+                        buttons: [
+                            { text: 'Back', action: tour.back },
+                            { text: 'Finish', action: tour.complete }
+                        ]
+                    });
+
+                    tour.start();
+                    console.log('Tour started.');
+                } catch (error) {
+                    console.error('Tour failed to start:', error);
+                    alert('Tour failed to start. Please refresh.');
+                }
+            }
+        });
     </script>
     <style>
         /* General Layout */
