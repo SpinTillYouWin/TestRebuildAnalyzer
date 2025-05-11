@@ -8941,26 +8941,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
     
         /* NEW: Styling for Remaining Accordions */
-        /* General Accordion Styling for Consistency */
         .gr-accordion {
+            background-color: transparent !important; /* Override existing white background */
             margin-bottom: 15px !important;
             border-radius: 8px !important;
             transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
-    
+        
         .gr-accordion:hover {
             transform: scale(1.01) !important;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
         }
-    
+
         /* Create Dozen/Even Bet Triggers */
-        #dozen-tracker.gr-accordion, #dozen-tracker.gr-accordion > details {
+        .gr-accordion#dozen-tracker,
+        .gr-accordion#dozen-tracker > details {
             background: linear-gradient(135deg, #4a90e2 0%, #87ceeb 100%) !important; /* Sky blue gradient */
             border: 2px solid #1e90ff !important;
             box-shadow: 0 0 10px rgba(30, 144, 255, 0.3) !important;
         }
-    
-        #dozen-tracker.gr-accordion summary {
+        
+        .gr-accordion#dozen-tracker summary {
             background: rgba(30, 144, 255, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(30, 144, 255, 0.5) !important;
@@ -8968,15 +8969,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 6px !important;
         }
-    
+
         /* Betting Progression Tracker */
-        .betting-progression.gr-accordion, .betting-progression.gr-accordion > details {
+        .gr-accordion.betting-progression,
+        .gr-accordion.betting-progression > details {
             background: linear-gradient(135deg, #388e3c 0%, #66bb6a 100%) !important; /* Green gradient */
             border: 2px solid #2e7d32 !important;
             box-shadow: 0 0 10px rgba(46, 125, 50, 0.3) !important;
         }
-    
-        .betting-progression.gr-accordion summary {
+        
+        .gr-accordion.betting-progression summary {
             background: rgba(46, 125, 50, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(46, 125, 50, 0.5) !important;
@@ -8984,15 +8986,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 6px !important;
         }
-    
+
+
         /* Casino Data Insights */
-        #casino-data-insights.gr-accordion, #casino-data-insights.gr-accordion > details {
+        .gr-accordion#casino-data-insights,
+        .gr-accordion#casino-data-insights > details {
             background: linear-gradient(135deg, #ab47bc 0%, #ce93d8 100%) !important; /* Purple gradient */
             border: 2px solid #9c27b0 !important;
             box-shadow: 0 0 10px rgba(156, 39, 176, 0.3) !important;
         }
-    
-        #casino-data-insights.gr-accordion summary {
+        
+        .gr-accordion#casino-data-insights summary {
             background: rgba(156, 39, 176, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(156, 39, 176, 0.5) !important;
@@ -9000,15 +9004,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 6px !important;
         }
+
     
         /* Color Code Key */
-        #color-code-key.gr-accordion, #color-code-key.gr-accordion > details {
+        .gr-accordion#color-code-key,
+        .gr-accordion#color-code-key > details {
             background: linear-gradient(135deg, #ffa726 0%, #ffd54f 100%) !important; /* Orange-yellow gradient */
             border: 2px solid #fb8c00 !important;
             box-shadow: 0 0 10px rgba(251, 140, 0, 0.3) !important;
         }
-    
-        #color-code-key.gr-accordion summary {
+        
+        .gr-accordion#color-code-key summary {
             background: rgba(251, 140, 0, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(251, 140, 0, 0.5) !important;
@@ -9016,15 +9022,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 6px !important;
         }
+
     
         /* Spin Logic Reactor */
-        #spin-analysis.gr-accordion, #spin-analysis.gr-accordion > details {
+        .gr-accordion#spin-analysis,
+        .gr-accordion#spin-analysis > details {
             background: linear-gradient(135deg, #0288d1 0%, #4fc3f7 100%) !important; /* Cyan-blue gradient */
             border: 2px solid #0277bd !important;
             box-shadow: 0 0 10px rgba(2, 119, 189, 0.3) !important;
         }
-    
-        #spin-analysis.gr-accordion summary {
+        
+        .gr-accordion#spin-analysis summary {
             background: rgba(2, 119, 189, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(2, 119, 189, 0.5) !important;
@@ -9032,15 +9040,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 6px !important;
         }
+        
     
         /* Strongest Numbers Tables */
-        #strongest-numbers-table.gr-accordion, #strongest-numbers-table.gr-accordion > details {
+        .gr-accordion#strongest-numbers-table,
+        .gr-accordion#strongest-numbers-table > details {
             background: linear-gradient(135deg, #d81b60 0%, #f06292 100%) !important; /* Pink gradient */
             border: 2px solid #c2185b !important;
             box-shadow: 0 0 10px rgba(194, 24, 91, 0.3) !important;
         }
-    
-        #strongest-numbers-table.gr-accordion summary {
+        
+        .gr-accordion#strongest-numbers-table summary {
             background: rgba(194, 24, 91, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(194, 24, 91, 0.5) !important;
@@ -9050,13 +9060,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
     
         /* Aggregated Scores */
-        #aggregated-scores.gr-accordion, #aggregated-scores.gr-accordion > details {
+        .gr-accordion#aggregated-scores,
+        .gr-accordion#aggregated-scores > details {
             background: linear-gradient(135deg, #7b1fa2 0%, #ba68c8 100%) !important; /* Deep purple gradient */
             border: 2px solid #6a1b9a !important;
             box-shadow: 0 0 10px rgba(106, 27, 154, 0.3) !important;
         }
-    
-        #aggregated-scores.gr-accordion summary {
+        
+        .gr-accordion#aggregated-scores summary {
             background: rgba(106, 27, 154, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(106, 27, 154, 0.5) !important;
@@ -9066,13 +9077,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
     
         /* Save/Load Session */
-        #save-load-session.gr-accordion, #save-load-session.gr-accordion > details {
+        .gr-accordion#save-load-session,
+        .gr-accordion#save-load-session > details {
             background: linear-gradient(135deg, #0288d1 0%, #4dd0e1 100%) !important; /* Teal-blue gradient */
             border: 2px solid #0277bd !important;
             box-shadow: 0 0 10px rgba(2, 119, 189, 0.3) !important;
         }
-    
-        #save-load-session.gr-accordion summary {
+        
+        .gr-accordion#save-load-session summary {
             background: rgba(2, 119, 189, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(2, 119, 189, 0.5) !important;
@@ -9081,14 +9093,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 6px !important;
         }
     
-        /* Top Strategies with WheelPulse */
-        #top-strategies.gr-accordion, #top-strategies.gr-accordion > details {
+        /* Top Strategie/* Top Strategies with WheelPulse */
+        .gr-accordion#top-strategies,
+        .gr-accordion#top-strategies > details {
             background: linear-gradient(135deg, #ef5350 0%, #ef9a9a 100%) !important; /* Red gradient */
             border: 2px solid #e53935 !important;
             box-shadow: 0 0 10px rgba(229, 57, 53, 0.3) !important;
         }
-    
-        #top-strategies.gr-accordion summary {
+        
+        .gr-accordion#top-strategies summary {
             background: rgba(229, 57, 53, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(229, 57, 53, 0.5) !important;
@@ -9097,14 +9110,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 6px !important;
         }
     
-        /* Feedback & Suggestions (Adjusted for Consistency) */
-        #feedback-section.gr-accordion, #feedback-section.gr-accordion > details {
-            background: linear-gradient(135deg, #f06292 0%, #f8bbd0 100%) !important; /* Pink gradient (adjusted) */
+        /* Feedback & Suggestions */
+        .gr-accordion#feedback-section,
+        .gr-accordion#feedback-section > details {
+            background: linear-gradient(135deg, #f06292 0%, #f8bbd0 100%) !important; /* Pink gradient */
             border: 2px solid #ec407a !important;
             box-shadow: 0 0 10px rgba(236, 64, 122, 0.3) !important;
         }
-    
-        #feedback-section.gr-accordion summary {
+        
+        .gr-accordion#feedback-section summary {
             background: rgba(236, 64, 122, 0.2) !important;
             color: #ffffff !important;
             text-shadow: 0 0 5px rgba(236, 64, 122, 0.5) !important;
@@ -9116,10 +9130,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Ensure content inside accordions inherits the background */
         .gr-accordion > .gr-box,
         .gr-accordion .gr-column,
-        .gr-accordion .gr-row {
-            background: transparent !important;
+        .gr-accordion .gr-row,
+        .gr-accordion * {
+            background: transparent !important; /* Override existing .gr-accordion * rule */
         }
-    
+        
         /* Responsive Adjustments for Accordions */
         @media (max-width: 600px) {
             .gr-accordion {
