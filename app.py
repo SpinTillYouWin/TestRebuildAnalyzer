@@ -6366,8 +6366,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
         gr.HTML(
             '''
-            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">       
                 <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
             </div>
             <style>
@@ -6379,7 +6378,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections
     # Define state and components used across sections
     spins_display = gr.State(value="")
     show_trends_state = gr.State(value=True)  # Default to showing trends
