@@ -6550,21 +6550,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 4. Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=2):
+            gr.Markdown("**Clear Last Spins Display**: Clears the visual display of last spins without affecting saved spin data.")
             clear_last_spins_button = gr.Button(
                 "Clear Last Spins Display",
-                elem_classes=["action-button"],
-                info="Clears the visual display of last spins without affecting saved spin data."
+                elem_classes=["action-button"]
             )
         with gr.Column(scale=1):
+            gr.Markdown("**Undo Spins**: Removes the most recent spins.")
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
         with gr.Column(scale=1):
+            gr.Markdown("**Generate Random Spins**: Adds random spins for testing.")
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
+            gr.Markdown("**Toggle Trends**: Shows or hides spin pattern trends.")
             toggle_trends_button = gr.Button(
                 value="Hide Trends",
                 elem_classes=["action-button"],
                 elem_id="toggle-trends-btn"
             )
+    
+    with gr.Row():
+        with gr.Column(scale=2):
+            gr.Markdown("**Analyze Spins**: Analyzes the current spins for trends and recommendations.")
+            analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
+        with gr.Column(scale=1):
+            gr.Markdown("**Clear Spins**: Clears all spin data and resets the analysis.")
+            clear_spins_button = gr.Button(
+                "Clear Spins",
+                elem_classes=["clear-spins-btn", "small-btn"]
+            )
+        with gr.Column(scale=1):
+            gr.Markdown("**Clear All**: Resets all data and UI components.")
+            clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
             
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
