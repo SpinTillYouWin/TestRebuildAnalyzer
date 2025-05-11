@@ -7141,28 +7141,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
             <style>
                 #save-load-session {
-                    background-color: #fff3e0 !important; /* Light orange background for accordion content */
-                    border: 2px solid #ff9800 !important; /* Orange border to match app theme */
+                    background-color: #fff3e0 !important;
+                    border: 2px solid #ff9800 !important;
                     border-radius: 5px !important;
                     padding: 10px !important;
                 }
                 #save-load-session summary {
-                    background-color: #ff9800 !important; /* Orange header for accordion */
-                    color: white !important; /* White text for contrast */
+                    background-color: #ff9800 !important;
+                    color: white !important;
                     padding: 10px !important;
                     border-radius: 5px !important;
                 }
                 .save-load-row {
-                    background-color: #f5f5f5 !important; /* Light gray background for row */
+                    background-color: #f5f5f5 !important;
                     padding: 8px !important;
                     border-radius: 3px !important;
                 }
                 .green-btn {
-                    background-color: #4caf50 !important; /* Keep existing green button style */
+                    background-color: #4caf50 !important;
                     color: white !important;
                 }
                 #save-load-session summary::after {
-                    filter: invert(100%) !important; /* White arrow for contrast */
+                    filter: invert(100%) !important;
                 }
             </style>
             '''
