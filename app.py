@@ -1599,24 +1599,32 @@ def clear_spins():
 # In Part 1, replace save_session and load_session with:
 
 def save_session():
-    session_data = {
-        "spins": state.last_spins,
-        "spin_history": state.spin_history,
-        "scores": state.scores,
-        "even_money_scores": state.even_money_scores,
-        "dozen_scores": state.dozen_scores,
-        "column_scores": state.column_scores,
-        "street_scores": state.street_scores,
-        "corner_scores": state.corner_scores,
-        "six_line_scores": state.six_line_scores,
-        "split_scores": state.split_scores,
-        "side_scores": state.side_scores,
-        "casino_data": state.casino_data,  # Includes hot_numbers and cold_numbers as lists
-        "use_casino_winners": state.use_casino_winners
-    }
-    with open("session.json", "w") as f:
-        json.dump(session_data, f)
-    return "session.json"
+    try:
+        session_data = {
+            "spins": state.last_spins,
+            "spin_history": state.spin_history,
+            "scores": state.scores,
+            "even_money_scores": state.even_money_scores,
+            "dozen_scores": state.dozen_scores,
+            "column_scores": state.column_scores,
+            "street_scores": state.street_scores,
+            "corner_scores": state.corner_scores,
+            "six_line_scores": state.six_line_scores,
+            "split_scores": state.split_scores,
+            "side_scores": state.side_scores,
+            "casino_data": state.casino_data,
+            "use_casino_winners": state.use_casino_winners
+        }
+        import json
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w") as tmp_file:
+            json.dump(session_data, tmp_file)
+            tmp_file_path = tmp_file.name
+        print(f"save_session: Generated file at {tmp_file_path}")
+        return tmp_file_path
+    except Exception as e:
+        print(f"save_session: Error: {str(e)}")
+        return None
 
 def load_session(file, strategy_name, neighbours_count, strong_numbers_count, *checkbox_args):
     try:
@@ -7134,10 +7142,56 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
-        with gr.Row():
+        with gr.Row(elem_classes=["save-load-row"]):
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
-            load_input = gr.File(label="Upload Session")
-        save_output = gr.File(label="Download Session")
+            load_input = gr.File(label="Upload Session", file_types=[".json"], elem_id="upload-session")
+            save_output = gr.File(label="Download Session", elem_id="download-session")
+        gr.HTML(
+            '''
+            <style>
+                #save-load-session {
+                    background-color: #fff3e0 !important;
+                    border: 2px solid #ff9800 !important;
+                    border-radius: 5px !important;
+                    padding: 10px !important;
+                }
+                #save-load-session summary {
+                    background-color: #ff9800 !important;
+                    color: white !important;
+                    padding: 10px !important;
+                    border-radius: 5px !important;
+                }
+                .save-load-row {
+                    background-color: #f5f5f5 !important;
+                    padding: 8px !important;
+                    border-radius: 3px !important;
+                    display: flex !important;
+                    flex-wrap: wrap !important;
+                    gap: 10px !important;
+                    align-items: center !important;
+                }
+                #save-session-btn {
+                    background-color: #4caf50 !important;
+                    color: white !important;
+                }
+                #save-load-session summary::after {
+                    filter: invert(100%) !important;
+                }
+                #download-session {
+                    display: block !important;
+                    visibility: visible !important;
+                    margin-top: 8px !important;
+                    width: auto !important;
+                }
+                #download-session .file-container {
+                    background-color: #ffffff !important;
+                    border: 1px solid #ccc !important;
+                    padding: 5px !important;
+                    border-radius: 3px !important;
+                }
+            </style>
+            '''
+        )
 
     # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
     with gr.Row():
@@ -9841,9 +9895,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         save_button.click(
             fn=save_session,
-            inputs=[],
-            outputs=[save_output]
+            inputs=None,
+            outputs=save_output
         )
+        
     except Exception as e:
         print(f"Error in save_button.click handler: {str(e)}")
     
