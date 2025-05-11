@@ -6565,7 +6565,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 elem_classes=["action-button"],
                 elem_id="toggle-trends-btn"
             )
-    
+            
     # 5. Row 5: Selected Spins Textbox and Spin Counter
     with gr.Row(elem_id="selected-spins-row"):
         with gr.Column(scale=4, min_width=600):
