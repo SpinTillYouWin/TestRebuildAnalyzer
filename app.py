@@ -6341,6 +6341,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     gr.HTML("""
     <style>
+        /* Style the label */
         #selected-spins label {
             background: linear-gradient(135deg, #ff6f61, #ffd700) !important;
             color: #fff !important;
@@ -6359,6 +6360,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 10px rgba(255, 111, 97, 0.5) !important;
         }
     
+        /* Style the textbox */
         #selected-spins input {
             background-color: #fff3e0 !important;
             border: 2px solid #ff6f61 !important;
@@ -6377,6 +6379,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outline: none !important;
         }
     
+        /* Add a subtle typing animation */
         #selected-spins input.typing {
             animation: pulse 1s infinite ease-in-out;
         }
@@ -6386,6 +6389,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             50% { box-shadow: 0 0 12px rgba(255, 111, 97, 0.8); }
         }
     
+        /* Style the container for displayed numbers */
         #selected-spins-display {
             margin-top: 10px !important;
             display: flex !important;
@@ -6393,6 +6397,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             flex-wrap: wrap !important;
         }
     
+        /* Style for individual number badges */
         .number-badge {
             display: inline-flex !important;
             align-items: center !important;
@@ -6425,40 +6430,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: #008000 !important;
         }
     
-        #selected-spins-validation {
-            margin-top: 5px !important;
-            font-size: 12px !important;
-            color: #666 !important;
-            display: none !important;
-        }
-    
-        #selected-spins-validation.valid {
-            color: #008000 !important;
-            display: block !important;
-        }
-    
-        #selected-spins-validation.invalid {
-            color: #ff0000 !important;
-            display: block !important;
-            animation: shake 0.3s ease-in-out;
-        }
-    
         @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-    
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
     </style>
     
     <div id="selected-spins-display"></div>
-    <div id="selected-spins-validation"></div>
     
     <script>
+    // Define roulette colors (aligned with your app's colors dict)
     const rouletteColors = {
         "0": "green",
         "1": "red", "2": "black", "3": "red", "4": "black", "5": "red", "6": "black",
@@ -6472,18 +6453,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     function updateSelectedSpinsDisplay() {
         const input = document.querySelector("#selected-spins input");
         const display = document.querySelector("#selected-spins-display");
-        const validation = document.querySelector("#selected-spins-validation");
         
+        // Clear previous display
         display.innerHTML = "";
         
+        // Parse input
         const numbers = input.value.split(",").map(num => num.trim()).filter(num => num !== "");
-        let isValid = true;
         
+        // Create badges for each number
         numbers.forEach(num => {
             const numInt = parseInt(num);
             if (isNaN(numInt) || numInt < 0 || numInt > 36) {
-                isValid = false;
-                return;
+                return; // Skip invalid numbers
             }
             const color = rouletteColors[num] || "black";
             const badge = document.createElement("span");
@@ -6491,27 +6472,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             badge.textContent = num;
             display.appendChild(badge);
         });
-        
-        if (numbers.length === 0) {
-            validation.style.display = "none";
-        } else if (isValid) {
-            validation.className = "valid";
-            validation.textContent = "✓ Valid spins!";
-            validation.style.display = "block";
-        } else {
-            validation.className = "invalid";
-            validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
-            validation.style.display = "block";
-        }
     }
     
+    // Ensure the script runs after the DOM is fully loaded
     document.addEventListener("DOMContentLoaded", () => {
         const input = document.querySelector("#selected-spins input");
         if (input) {
+            // Update display on input change
             input.addEventListener("input", () => {
                 input.classList.add("typing");
                 updateSelectedSpinsDisplay();
             });
+            // Initial update
             updateSelectedSpinsDisplay();
         } else {
             console.error("Selected Spins input not found in DOM");
