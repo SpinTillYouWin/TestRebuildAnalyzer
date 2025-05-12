@@ -6349,20 +6349,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
         )
-    last_spin_display = gr.HTML(
-        label="Last Spins",
-        value='<h4>Last Spins</h4><p>No spins yet.</p>',
-        elem_classes=["last-spins-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="",
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
 
     # Start of updated section
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
@@ -6844,29 +6830,41 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["top-pick-container"]
                 )
         gr.HTML("""
-        <style>
-            #next-spin-top-pick {
-                background-color: #e3f2fd !important;
-                border: 2px solid #2196f3 !important;
-                border-radius: 5px !important;
-                padding: 10px !important;
-            }
-            #next-spin-top-pick summary {
-                background-color: #2196f3 !important;
-                color: white !important;
-                padding: 10px !important;
-                border-radius: 5px !important;
-            }
-            .top-pick-container p {
-                font-style: italic;
-                color: #666;
-            }
-            .top-pick-container h4 {
-                margin: 10px 0;
-                color: #333;
-            }
-        </style>
-        """)
+            <style>
+                #next-spin-top-pick {
+                    background-color: #e3f2fd !important;
+                    border: 2px solid #2196f3 !important;
+                    border-radius: 5px !important;
+                    padding: 10px !important;
+                }
+                #next-spin-top-pick .top-pick-container p {
+                    font-style: italic;
+                    color: #666;
+                }
+                #next-spin-top-pick .top-pick-container h4 {
+                    margin: 10px 0;
+                    color: #333;
+                }
+            </style>
+            """)
+        
+        # Last Spins Display and Slider (fourth, right after Next Spin Top Pick)
+        with gr.Row():
+            with gr.Column():
+                last_spin_display = gr.HTML(
+                    label="Last Spins",
+                    value='<h4>Last Spins</h4><p>No spins yet.</p>',
+                    elem_classes=["last-spins-container"]
+                )
+                last_spin_count = gr.Slider(
+                    label="",
+                    minimum=1,
+                    maximum=36,
+                    step=1,
+                    value=36,
+                    interactive=True,
+                    elem_classes="long-slider"
+                )
 
     # 2. Row 2: European Roulette Table
     with gr.Group():
