@@ -6333,11 +6333,172 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     toggle_trends_label = gr.State(value="Show Trends")  # Default label when trends are hidden
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
     spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
+        label="🎰 Selected Spins (Enter numbers like 5, 12, 0)",
         value="",
         interactive=True,
         elem_id="selected-spins"
     )
+    
+    # Add custom styling and JavaScript for interactivity
+    gr.HTML("""
+    <style>
+        /* Style the label */
+        #selected-spins label {
+            background: linear-gradient(135deg, #ff6f61, #ffd700) !important; /* Gradient background */
+            color: #fff !important; /* White text for contrast */
+            padding: 8px 12px !important;
+            border-radius: 5px !important;
+            font-size: 16px !important;
+            font-weight: bold !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.2s ease, box-shadow 0.3s ease !important;
+            display: inline-block !important;
+            margin-bottom: 5px !important;
+        }
+    
+        #selected-spins label:hover {
+            transform: scale(1.02) !important;
+            box-shadow: 0 0 10px rgba(255, 111, 97, 0.5) !important;
+        }
+    
+        /* Style the textbox */
+        #selected-spins input {
+            background-color: #fff3e0 !important; /* Warm background */
+            border: 2px solid #ff6f61 !important; /* Coral border */
+            border-radius: 8px !important;
+            padding: 10px !important;
+            font-size: 16px !important;
+            color: #333 !important;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+    
+        #selected-spins input:focus {
+            border-color: #ffd700 !important; /* Yellow border on focus */
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important; /* Glow effect */
+            outline: none !important;
+        }
+    
+        /* Style the container for displayed numbers */
+        #selected-spins-display {
+            margin-top: 10px !important;
+            display: flex !important;
+            gap: 8px !important;
+            flex-wrap: wrap !important;
+        }
+    
+        /* Style for individual number badges */
+        .number-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 15px !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: #fff !important;
+            border: 1px solid #fff !important;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
+            transition: transform 0.2s ease !important;
+        }
+    
+        .number-badge:hover {
+            transform: scale(1.1) !important;
+        }
+    
+        .number-badge.red {
+            background-color: #ff0000 !important;
+        }
+    
+        .number-badge.black {
+            background-color: #000000 !important;
+        }
+    
+        .number-badge.green {
+            background-color: #008000 !important;
+        }
+    
+        /* Validation feedback */
+        #selected-spins-validation {
+            margin-top: 5px !important;
+            font-size: 12px !important;
+            color: #666 !important;
+            display: none !important;
+        }
+    
+        #selected-spins-validation.valid {
+            color: #008000 !important;
+            display: block !important;
+        }
+    
+        #selected-spins-validation.invalid {
+            color: #ff0000 !important;
+            display: block !important;
+        }
+    </style>
+    
+    <div id="selected-spins-display"></div>
+    <div id="selected-spins-validation"></div>
+    
+    <script>
+    // Define roulette colors (simplified for demonstration; align with your actual colors dict)
+    const rouletteColors = {
+        "0": "green",
+        "1": "red", "2": "black", "3": "red", "4": "black", "5": "red", "6": "black",
+        "7": "red", "8": "black", "9": "red", "10": "black", "11": "black", "12": "red",
+        "13": "black", "14": "red", "15": "black", "16": "red", "17": "black", "18": "red",
+        "19": "red", "20": "black", "21": "red", "22": "black", "23": "red", "24": "black",
+        "25": "red", "26": "black", "27": "red", "28": "black", "29": "black", "30": "red",
+        "31": "black", "32": "red", "33": "black", "34": "red", "35": "black", "36": "red"
+    };
+    
+    function updateSelectedSpinsDisplay() {
+        const input = document.querySelector("#selected-spins input").value;
+        const display = document.querySelector("#selected-spins-display");
+        const validation = document.querySelector("#selected-spins-validation");
+        
+        // Clear previous display
+        display.innerHTML = "";
+        
+        // Validate and parse input
+        const numbers = input.split(",").map(num => num.trim()).filter(num => num !== "");
+        let isValid = true;
+        
+        numbers.forEach(num => {
+            const numInt = parseInt(num);
+            if (isNaN(numInt) || numInt < 0 || numInt > 36) {
+                isValid = false;
+                return;
+            }
+            const color = rouletteColors[num] || "black"; // Default to black if not found
+            const badge = document.createElement("span");
+            badge.className = `number-badge ${color}`;
+            badge.textContent = num;
+            display.appendChild(badge);
+        });
+        
+        // Show validation feedback
+        if (numbers.length === 0) {
+            validation.style.display = "none";
+        } else if (isValid) {
+            validation.className = "valid";
+            validation.textContent = "✓ Valid spins!";
+            validation.style.display = "block";
+        } else {
+            validation.className = "invalid";
+            validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
+            validation.style.display = "block";
+        }
+    }
+    
+    // Update display on input change
+    document.querySelector("#selected-spins input").addEventListener("input", updateSelectedSpinsDisplay);
+    
+    // Initial update
+    updateSelectedSpinsDisplay();
+    </script>
+    """)
     spin_counter = gr.HTML(
         label="Total Spins",
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
