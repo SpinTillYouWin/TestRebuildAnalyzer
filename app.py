@@ -4998,11 +4998,14 @@ def clear_hot_cold_picks(type_label, current_spins_display):
 def calculate_hit_percentages(last_spin_count):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens."""
     try:
-        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
-        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        # Only keep valid spins (numbers 0-36)
+        last_spins = [spin for spin in state.last_spins[-last_spin_count:] if spin.isdigit() and 0 <= int(spin) <= 36] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+        # Log the spins being analyzed
+        print(f"Analyzing last {last_spin_count} spins: {last_spins}")
 
         total_spins = len(last_spins)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
@@ -5447,15 +5450,18 @@ def select_next_spin_top_pick(last_spin_count):
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
+
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
+        from collections import Counter
         numbers = set(range(37))
-        hit_counts = {n: 0 for n in range(37)}
+        # Count spins quickly
+        hit_counts = Counter(int(spin) for spin in last_spins if spin.isdigit())
+        hit_counts = {n: hit_counts.get(n, 0) for n in range(37)}  # Fill in zeros for missing numbers
         last_positions = {n: -1 for n in range(37)}
         for i, spin in enumerate(last_spins):
             try:
                 num = int(spin)
-                hit_counts[num] += 1
                 last_positions[num] = i
             except ValueError:
                 continue
@@ -5645,11 +5651,24 @@ def select_next_spin_top_pick(last_spin_count):
             min_traits = sorted([x[2] for x in scores[:10]], reverse=True)[9]
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
-            top_picks = scores[:10]
+        top_picks = scores[:10]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
-        # Calculate confidence based on matching traits
-        max_possible_traits = len(hottest_traits)
+        # Calculate confidence with realistic max traits (one per category)
+        trait_categories = set()
+        for trait in hottest_traits:
+            if trait in ["Red", "Black"]:
+                trait_categories.add("Red-Black")
+            elif trait in ["Even", "Odd"]:
+                trait_categories.add("Even-Odd")
+            elif trait in ["Low", "High"]:
+                trait_categories.add("Low-High")
+            elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
+                trait_categories.add("Dozens")
+            elif trait in ["1st Column", "2nd Column", "3rd Column"]:
+                trait_categories.add("Columns")
+        max_possible_traits = len(trait_categories)
+        max_possible_traits = max(1, max_possible_traits)  # Avoid division by zero
         top_traits_matched = top_picks[0][2]
         confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
         characteristics = []
