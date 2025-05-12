@@ -6678,9 +6678,218 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["hit-percentage-container"]
                 )
        
-
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-        with gr.Row():
+        gr.HTML("""
+        <style>
+            /* Styling for SpinTrend Radar accordion */
+            #spin-trend-radar {
+                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
+                border: 2px solid #ff66cc !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
+                animation: radarPulse 4s ease-in-out infinite !important;
+            }
+    
+            /* Radar pulsing effect */
+            @keyframes radarPulse {
+                0%, 100% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.3); }
+                50% { box-shadow: 0 0 25px rgba(255, 102, 204, 0.5); }
+            }
+    
+            /* Styling for the accordion summary */
+            #spin-trend-radar summary {
+                background: rgba(255, 102, 204, 0.1) !important;
+                color: #ff66cc !important;
+                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #spin-trend-radar summary:hover {
+                background: rgba(255, 102, 204, 0.2) !important;
+            }
+    
+            /* Ensure the summary arrow is styled */
+            #spin-trend-radar summary::after {
+                filter: invert(100%) !important;
+            }
+    
+            /* Styling for the row inside the accordion */
+            .spin-trend-row {
+                background-color: #ffffff !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+                width: 100% !important;
+                min-height: fit-content !important;
+                height: auto !important;
+                box-sizing: border-box !important;
+            }
+    
+            /* Styling for columns inside the row */
+            .spin-trend-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important;
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
+    
+            /* Updated styling for the traits container */
+            #spin-trend-radar .traits-container {
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                max-height: none !important;
+                overflow-y: visible !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                position: static !important;
+                box-shadow: none !important;
+                animation: none !important;
+            }
+    
+            /* Add a radar-like overlay */
+            #spin-trend-radar .traits-container::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle, rgba(255, 102, 204, 0.1) 0%, transparent 70%) !important;
+                opacity: 0.3;
+                pointer-events: none;
+            }
+    
+            /* Traits wrapper */
+            #spin-trend-radar .traits-container .traits-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                padding-top: 10px !important;
+            }
+    
+            #spin-trend-radar .traits-container .badge-group {
+                margin: 10px 0 !important;
+                padding-top: 10px !important;
+                flex: 1 1 200px !important;
+                min-width: 200px !important;
+                max-width: 100% !important;
+                overflow: visible !important;
+            }
+    
+            #spin-trend-radar .traits-container .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
+            #spin-trend-radar .traits-container .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
+            #spin-trend-radar .traits-container .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
+            #spin-trend-radar .traits-container .badge-group:nth-child(4) h4 { color: #cc33ff !important; }
+    
+            #spin-trend-radar .traits-container .percentage-badges {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                align-items: center !important;
+                padding: 5px 0 !important;
+                width: 100% !important;
+                overflow-x: hidden !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge {
+                background: transparent !important;
+                color: #fff !important;
+                padding: 5px 12px !important;
+                border-radius: 15px !important;
+                font-size: 12px !important;
+                margin: 5px 3px !important;
+                transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
+                cursor: pointer !important;
+                border: 1px solid transparent !important;
+                box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+                font-weight: bold !important;
+                display: inline-block !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge:hover {
+                transform: scale(1.1) !important;
+                filter: brightness(1.3) !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge.even-money {
+                background: rgba(255, 77, 77, 0.2) !important;
+                border-color: #ff4d4d !important;
+                box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge.column {
+                background: rgba(77, 121, 255, 0.2) !important;
+                border-color: #4d79ff !important;
+                box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge.dozen {
+                background: rgba(77, 255, 77, 0.2) !important;
+                border-color: #4dff4d !important;
+                box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge.repeat {
+                background: rgba(204, 51, 255, 0.2) !important;
+                border-color: #cc33ff !important;
+                box-shadow: 0 0 10px rgba(204, 51, 255, 0.5) !important;
+            }
+    
+            #spin-trend-radar .traits-container .trait-badge.winner {
+                font-weight: bold !important;
+                color: #fff !important;
+                border: 2px solid #ffd700 !important;
+                box-shadow: 0 0 12px #ffd700 !important;
+                background: rgba(255, 215, 0, 0.3) !important;
+                transform: scale(1.1) !important;
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .spin-trend-row {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                .spin-trend-row .gr-column {
+                    min-width: 100% !important;
+                }
+                #spin-trend-radar {
+                    padding: 8px !important;
+                }
+                #spin-trend-radar summary {
+                    font-size: 16px !important;
+                }
+                #spin-trend-radar .traits-container .badge-group {
+                    min-width: 100% !important;
+                    max-width: 100% !important;
+                }
+                #spin-trend-radar .traits-container .trait-badge {
+                    min-width: 80px !important;
+                    max-width: 120px !important;
+                    font-size: 10px !important;
+                    padding: 4px 8px !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row(elem_classes=["spin-trend-row"]):
             with gr.Column(scale=1):
                 traits_display = gr.HTML(
                     label="Spin Traits",
