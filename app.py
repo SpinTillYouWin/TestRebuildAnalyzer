@@ -7226,11 +7226,80 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 elem_classes=["scrollable-table", "large-table"]
             )
             
-                
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
             with gr.Accordion("Create Dozen/Even Bet Triggers", open=False, elem_id="dozen-tracker"):
+                gr.HTML("""
+                <style>
+                    #dozen-tracker {
+                        background-color: #fce4ec !important;
+                        border: 2px solid #f06292 !important;
+                        border-radius: 8px !important;
+                        padding: 12px !important;
+                        margin-bottom: 15px !important;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                        animation: fadeInAccordion 0.5s ease-in-out !important;
+                    }
+    
+                    @keyframes fadeInAccordion {
+                        0% { opacity: 0; transform: translateY(5px); }
+                        100% { opacity: 1; transform: translateY(0); }
+                    }
+    
+                    #dozen-tracker summary {
+                        background-color: #f06292 !important;
+                        color: white !important;
+                        padding: 12px !important;
+                        border-radius: 6px !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important;
+                        cursor: pointer !important;
+                        transition: background-color 0.3s ease !important;
+                    }
+    
+                    #dozen-tracker summary:hover {
+                        background-color: #d81b60 !important;
+                    }
+    
+                    #dozen-tracker summary::after {
+                        filter: invert(100%) !important;
+                    }
+    
+                    #dozen-tracker .gr-accordion {
+                        background-color: #fce4ec !important;
+                        border: 1px solid #f06292 !important;
+                        border-radius: 6px !important;
+                        margin: 5px 0 !important;
+                    }
+    
+                    #dozen-tracker .gr-accordion summary {
+                        background-color: #f48fb1 !important;
+                        color: white !important;
+                        padding: 10px !important;
+                        border-radius: 4px !important;
+                        font-size: 16px !important;
+                        cursor: pointer !important;
+                        transition: background-color 0.3s ease !important;
+                    }
+    
+                    #dozen-tracker .gr-accordion summary:hover {
+                        background-color: #f06292 !important;
+                    }
+    
+                    @media (max-width: 768px) {
+                        #dozen-tracker {
+                            padding: 8px !important;
+                        }
+                        #dozen-tracker summary {
+                            font-size: 16px !important;
+                        }
+                        #dozen-tracker .gr-accordion summary {
+                            font-size: 14px !important;
+                        }
+                    }
+                </style>
+                """)
                 with gr.Accordion("Dozen Triggers", open=False, elem_id="dozen-triggers"):
                     dozen_tracker_spins_dropdown = gr.Dropdown(
                         label="Number of Spins to Track",
@@ -7321,11 +7390,79 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value="<p>Select categories to track and analyze spins to see even money bet history.</p>"
                     )
         with gr.Column(scale=2):
-            pass  # Empty column to maintain layout balance
+            pass
     
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
         with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
+            gr.HTML("""
+            <style>
+                .betting-progression {
+                    background-color: #fffde7 !important;
+                    border: 2px solid #ffca28 !important;
+                    border-radius: 8px !important;
+                    padding: 12px !important;
+                    margin-bottom: 15px !important;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                    animation: fadeInAccordion 0.5s ease-in-out !important;
+                }
+    
+                @keyframes fadeInAccordion {
+                    0% { opacity: 0; transform: translateY(5px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+    
+                .betting-progression summary {
+                    background-color: #ffca28 !important;
+                    color: white !important;
+                    padding: 12px !important;
+                    border-radius: 6px !important;
+                    font-weight: bold !important;
+                    font-size: 18px !important;
+                    cursor: pointer !important;
+                    transition: background-color 0.3s ease !important;
+                }
+    
+                .betting-progression summary:hover {
+                    background-color: #ffb300 !important;
+                }
+    
+                .betting-progression summary::after {
+                    filter: invert(100%) !important;
+                }
+    
+                .betting-progression .gr-row {
+                    background-color: #fffde7 !important;
+                    padding: 5px !important;
+                    border-radius: 6px !important;
+                    margin: 5px 0 !important;
+                }
+    
+                .betting-progression .gr-textbox {
+                    background: transparent !important;
+                    border: 1px solid #ffca28 !important;
+                    border-radius: 6px !important;
+                    padding: 8px !important;
+                    color: #333 !important;
+                    font-size: 14px !important;
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                }
+    
+                @media (max-width: 768px) {
+                    .betting-progression {
+                        padding: 8px !important;
+                    }
+                    .betting-progression summary {
+                        font-size: 16px !important;
+                    }
+                    .betting-progression .gr-textbox {
+                        font-size: 12px !important;
+                        padding: 6px !important;
+                    }
+                }
+            </style>
+            """)
             with gr.Row():
                 bankroll_input = gr.Number(label="Bankroll", value=1000)
                 base_unit_input = gr.Number(label="Base Unit", value=10)
@@ -7358,11 +7495,103 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
             with gr.Row():
                 message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>') 
-         
+                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+    
     # 8.1. Row 8.1: Casino Data Insights
     with gr.Row():
         with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
+            gr.HTML("""
+            <style>
+                #casino-data-insights {
+                    background-color: #e3f2fd !important;
+                    border: 2px solid #42a5f5 !important;
+                    border-radius: 8px !important;
+                    padding: 12px !important;
+                    margin-bottom: 15px !important;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                    animation: fadeInAccordion 0.5s ease-in-out !important;
+                }
+    
+                @keyframes fadeInAccordion {
+                    0% { opacity: 0; transform: translateY(5px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+    
+                #casino-data-insights summary {
+                    background-color: #42a5f5 !important;
+                    color: white !important;
+                    padding: 12px !important;
+                    border-radius: 6px !important;
+                    font-weight: bold !important;
+                    font-size: 18px !important;
+                    cursor: pointer !important;
+                    transition: background-color 0.3s ease !important;
+                }
+    
+                #casino-data-insights summary:hover {
+                    background-color: #1e88e5 !important;
+                }
+    
+                #casino-data-insights summary::after {
+                    filter: invert(100%) !important;
+                }
+    
+                #casino-data-insights .gr-row {
+                    background-color: #e3f2fd !important;
+                    padding: 5px !important;
+                    border-radius: 6px !important;
+                    margin: 5px 0 !important;
+                }
+    
+                #casino-data-insights .gr-textbox {
+                    background: transparent !important;
+                    border: 1px solid #42a5f5 !important;
+                    border-radius: 6px !important;
+                    padding: 8px !important;
+                    color: #333 !important;
+                    font-size: 14px !important;
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                }
+    
+                #casino-data-insights .gr-accordion {
+                    background-color: #e3f2fd !important;
+                    border: 1px solid #42a5f5 !important;
+                    border-radius: 6px !important;
+                    margin: 5px 0 !important;
+                }
+    
+                #casino-data-insights .gr-accordion summary {
+                    background-color: #90caf9 !important;
+                    color: white !important;
+                    padding: 10px !important;
+                    border-radius: 4px !important;
+                    font-size: 16px !important;
+                    cursor: pointer !important;
+                    transition: background-color 0.3s ease !important;
+                }
+    
+                #casino-data-insights .gr-accordion summary:hover {
+                    background-color: #42a5f5 !important;
+                }
+    
+                @media (max-width: 768px) {
+                    #casino-data-insights {
+                        padding: 8px !important;
+                    }
+                    #casino-data-insights summary {
+                        font-size: 16px !important;
+                    }
+                    #casino-data-insights .gr-textbox {
+                        font-size: 12px !important;
+                        padding: 6px !important;
+                    }
+                    #casino-data-insights .gr-accordion summary {
+                        font-size: 14px !important;
+                    }
+                }
+            </style>
+            """)
             spins_count_dropdown = gr.Dropdown(
                 label="Past Spins Count",
                 choices=["30", "50", "100", "200", "300", "500"],
@@ -7460,7 +7689,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 value="<p>No casino data entered yet.</p>",
                 elem_classes=["fade-in"]
             )
-            # Hot and Cold Numbers Section
             with gr.Accordion("Hot and Cold Numbers", open=False, elem_id="hot-cold-numbers"):
                 with gr.Row():
                     gr.HTML('<span class="hot-icon">🔥</span>')
@@ -7509,6 +7737,59 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # 9. Row 9: Color Code Key (Collapsible, with Color Pickers Inside)
     with gr.Accordion("Color Code Key", open=False, elem_id="color-code-key"):
+        gr.HTML("""
+        <style>
+            #color-code-key {
+                background-color: #ede7f6 !important;
+                border: 2px solid #ab47bc !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
+            }
+    
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+    
+            #color-code-key summary {
+                background-color: #ab47bc !important;
+                color: white !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #color-code-key summary:hover {
+                background-color: #8e24aa !important;
+            }
+    
+            #color-code-key summary::after {
+                filter: invert(100%) !important;
+            }
+    
+            #color-code-key .gr-row {
+                background-color: #ede7f6 !important;
+                padding: 5px !important;
+                border-radius: 6px !important;
+                margin: 5px 0 !important;
+            }
+    
+            @media (max-width: 768px) {
+                #color-code-key {
+                    padding: 8px !important;
+                }
+                #color-code-key summary {
+                    font-size: 16px !important;
+                }
+            }
+        </style>
+        """)
         with gr.Row():
             top_color_picker = gr.ColorPicker(
                 label="Top Tier Color",
