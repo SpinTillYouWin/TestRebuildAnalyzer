@@ -8386,8 +8386,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
         document.head.appendChild(link);
       }
+      /* Apply loaded class to prevent app-wide jitter */
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          document.querySelectorAll('.gr-panel, #app').forEach(el => el.classList.add('loaded'));
+        }, 200);
+      });
     </script>
     <style>
+        /* Prevent jitter on page load */
+        .gr-panel, #app {
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+        .gr-panel.loaded, #app.loaded {
+            opacity: 1;
+        }
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
@@ -8407,6 +8421,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 5px !important;
         }
+
         
         /* Style for Feedback Section accordion */
         #feedback-section summary {
