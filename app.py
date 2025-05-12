@@ -5447,10 +5447,11 @@ def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
-        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
+        print("Current state.last_spins:", state.last_spins)  # Debug state
+        # Only keep valid spins (numbers 0-36)
+        last_spins = [spin for spin in state.last_spins[-last_spin_count:] if spin.isdigit() and 0 <= int(spin) <= 36] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
-
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
         from collections import Counter
@@ -5834,11 +5835,16 @@ def select_next_spin_top_pick(last_spin_count):
             0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
             100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
           }}
-          /* Ensure visibility and smooth load for top pick */
+          /* Ensure visibility and prevent jitter for top pick */
           .top-pick-container, .first-spins {{
             opacity: 1;
             visibility: visible;
-            transition: opacity 0.3s ease-in; /* Smooth fade-in without initial hide */
+            min-height: 200px; /* Prevent layout shifts */
+            overflow: hidden; /* Avoid content jumping */
+          }}
+          /* Disable fadeIn animation to reduce jitter */
+          .top-pick-container, .first-spins, .top-pick-badge, .confidence-bar, .secondary-picks {{
+            animation: none !important; /* Override fadeIn animation */
           }}
           .first-spins {{
             margin-bottom: 10px;
