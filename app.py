@@ -6131,11 +6131,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML(
             '''
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
                 <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
             </div>
             <style>
-                #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
+                a[href*="drive.google.com"]:hover {
                     transform: scale(1.05);
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 }
@@ -8508,6 +8507,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         document.head.appendChild(link);
       }
     </script>
+    """)
     <style>
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
