@@ -8386,20 +8386,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
         document.head.appendChild(link);
       }
-      /* Apply loaded class to prevent app-wide jitter */
-      document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-          document.querySelectorAll('.gr-panel, #app').forEach(el => el.classList.add('loaded'));
-        }, 200);
-      });
     </script>
     <style>
         /* Prevent jitter on page load */
         .gr-panel, #app {
             opacity: 0;
-            transition: opacity 0.4s ease-in;
+            transition: opacity 0.5s ease-in 0.2s;
         }
-        .gr-panel.loaded, #app.loaded {
+        .gr-panel, #app {
             opacity: 1;
         }
         /* General Layout */
