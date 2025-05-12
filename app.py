@@ -6677,11 +6677,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-       
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         gr.HTML("""
         <style>
-            /* Styling for SpinTrend Radar accordion */
             #spin-trend-radar {
                 background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
                 border: 2px solid #ff66cc !important;
@@ -6692,13 +6690,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 animation: radarPulse 4s ease-in-out infinite !important;
             }
     
-            /* Radar pulsing effect */
             @keyframes radarPulse {
                 0%, 100% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.3); }
                 50% { box-shadow: 0 0 25px rgba(255, 102, 204, 0.5); }
             }
     
-            /* Styling for the accordion summary */
             #spin-trend-radar summary {
                 background: rgba(255, 102, 204, 0.1) !important;
                 color: #ff66cc !important;
@@ -6715,14 +6711,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 background: rgba(255, 102, 204, 0.2) !important;
             }
     
-            /* Ensure the summary arrow is styled */
             #spin-trend-radar summary::after {
                 filter: invert(100%) !important;
             }
     
-            /* Styling for the row inside the accordion */
             .spin-trend-row {
-                background-color: #ffffff !important;
+                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
                 padding: 10px !important;
                 border-radius: 6px !important;
                 display: flex !important;
@@ -6737,7 +6731,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 box-sizing: border-box !important;
             }
     
-            /* Styling for columns inside the row */
             .spin-trend-row .gr-column {
                 flex: 1 !important;
                 min-width: 300px !important;
@@ -6745,7 +6738,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 10px !important;
             }
     
-            /* Updated styling for the traits container */
             #spin-trend-radar .traits-container {
                 background: transparent !important;
                 border: none !important;
@@ -6760,7 +6752,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 animation: none !important;
             }
     
-            /* Add a radar-like overlay */
             #spin-trend-radar .traits-container::before {
                 content: '';
                 position: absolute;
@@ -6773,7 +6764,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 pointer-events: none;
             }
     
-            /* Traits wrapper */
             #spin-trend-radar .traits-container .traits-wrapper {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -6782,6 +6772,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 flex-wrap: wrap !important;
                 gap: 15px !important;
                 padding-top: 10px !important;
+            }
+    
+            #spin-trend-radar .traits-container .traits-overview > h4 {
+                color: #ff66cc !important;
+                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                font-size: 18px !important;
+                font-weight: bold !important;
+                margin: 0 0 10px 0 !important;
             }
     
             #spin-trend-radar .traits-container .badge-group {
@@ -6861,7 +6859,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 transform: scale(1.1) !important;
             }
     
-            /* Responsive adjustments */
             @media (max-width: 768px) {
                 .spin-trend-row {
                     flex-direction: column !important;
@@ -6897,7 +6894,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["traits-container"]
                 )
                 
-
     # Line 1: Updated Next Spin Top Pick accordion
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
         with gr.Row():
