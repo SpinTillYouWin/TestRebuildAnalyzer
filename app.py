@@ -6896,6 +6896,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
+                
 
     # Line 1: Updated Next Spin Top Pick accordion
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
