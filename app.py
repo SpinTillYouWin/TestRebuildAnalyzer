@@ -8210,10 +8210,63 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # 11. Row 11: Top Strategies with Roulette Spin Analyzer (Moved to be Independent)
+    # 11. Row 11: Top Strategies with WheelPulse by S.T.Y.W (Moved to be Independent)
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Top Strategies with WheelPulse by S.T.Y.W 📈🎥", open=False, elem_id="top-strategies"):
+                gr.HTML("""
+                <style>
+                    #top-strategies {
+                        background-color: #e0f2e9 !important;
+                        border: 2px solid #26a69a !important;
+                        border-radius: 8px !important;
+                        padding: 12px !important;
+                        margin-bottom: 15px !important;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                        animation: fadeInAccordion 0.5s ease-in-out !important;
+                    }
+    
+                    @keyframes fadeInAccordion {
+                        0% { opacity: 0; transform: translateY(5px); }
+                        100% { opacity: 1; transform: translateY(0); }
+                    }
+    
+                    #top-strategies summary {
+                        background-color: #26a69a !important;
+                        color: white !important;
+                        padding: 12px !important;
+                        border-radius: 6px !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important;
+                        cursor: pointer !important;
+                        transition: background-color 0.3s ease !important;
+                    }
+    
+                    #top-strategies summary:hover {
+                        background-color: #00897b !important;
+                    }
+    
+                    #top-strategies summary::after {
+                        filter: invert(100%) !important;
+                    }
+    
+                    #top-strategies .gr-row {
+                        background-color: #e0f2e9 !important;
+                        padding: 5px !important;
+                        border-radius: 6px !important;
+                        margin: 5px 0 !important;
+                    }
+    
+                    @media (max-width: 768px) {
+                        #top-strategies {
+                            padding: 8px !important;
+                        }
+                        #top-strategies summary {
+                            font-size: 16px !important;
+                        }
+                    }
+                </style>
+                """)
                 gr.Markdown("### Explore Strategies Through Videos")
                 video_category_dropdown = gr.Dropdown(
                     label="Select Video Category",
@@ -8233,13 +8286,79 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     label="Video",
                     value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_categories["Dozen Strategies"][0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if video_categories["Dozen Strategies"] else "<p>Select a category and video to watch.</p>"
                 )
-
+    
     # 12. Row 12: Feedback Section
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
                 gr.HTML("""
-                <div style="background-color: #f5c6cb; border: 2px solid #d3d3d3; border-radius: 5px; padding: 15px;">
+                <style>
+                    #feedback-section {
+                        background-color: #ffecd2 !important;
+                        border: 2px solid #ff8a65 !important;
+                        border-radius: 8px !important;
+                        padding: 12px !important;
+                        margin-bottom: 15px !important;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                        animation: fadeInAccordion 0.5s ease-in-out !important;
+                    }
+    
+                    @keyframes fadeInAccordion {
+                        0% { opacity: 0; transform: translateY(5px); }
+                        100% { opacity: 1; transform: translateY(0); }
+                    }
+    
+                    #feedback-section summary {
+                        background-color: #ff8a65 !important;
+                        color: white !important;
+                        padding: 12px !important;
+                        border-radius: 6px !important;
+                        font-weight: bold !important;
+                        font-size: 18px !important;
+                        cursor: pointer !important;
+                        transition: background-color 0.3s ease !important;
+                    }
+    
+                    #feedback-section summary:hover {
+                        background-color: #f4511e !important;
+                    }
+    
+                    #feedback-section summary::after {
+                        filter: invert(100%) !important;
+                    }
+    
+                    #feedback-section div[style*="background-color: #f5c6cb"] {
+                        background-color: #ffecd2 !important;
+                        border: 1px solid #ff8a65 !important;
+                        border-radius: 5px !important;
+                        padding: 15px !important;
+                    }
+    
+                    #feedback-section button[type="submit"] {
+                        background-color: #ff8a65 !important;
+                        color: white !important;
+                        padding: 10px !important;
+                        border: none !important;
+                        border-radius: 5px !important;
+                        font-family: Arial, sans-serif !important;
+                        cursor: pointer !important;
+                        transition: background-color 0.3s ease !important;
+                    }
+    
+                    #feedback-section button[type="submit"]:hover {
+                        background-color: #f4511e !important;
+                    }
+    
+                    @media (max-width: 768px) {
+                        #feedback-section {
+                            padding: 8px !important;
+                        }
+                        #feedback-section summary {
+                            font-size: 16px !important;
+                        }
+                    }
+                </style>
+                <div>
                     <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif; color: #333;">
                         Share Your Feedback or Submit a Strategy
                     </h4>
@@ -8251,7 +8370,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <input type="email" name="_replyto" placeholder="Your Email (Required)" required style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
                         <textarea name="feedback" placeholder="Your Feedback or Suggestions" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
                         <textarea name="strategy" placeholder="Submit Your Strategy (Optional)" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
-                        <button type="submit" style="background-color: #dc3545; color: white; padding: 10px; border: none; border-radius: 5px; font-family: Arial, sans-serif; cursor: pointer; transition: background-color 0.3s ease;">
+                        <button type="submit">
                             Submit
                         </button>
                     </form>
