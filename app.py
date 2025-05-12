@@ -7534,24 +7534,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML("""
         <style>
             #spin-analysis {
-                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-                border: 2px solid #ff66cc !important;
+                background-color: #e0f7fa !important;
+                border: 2px solid #00bcd4 !important;
                 border-radius: 8px !important;
                 padding: 12px !important;
                 margin-bottom: 15px !important;
-                box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-                animation: dataPulse 3s ease-in-out infinite !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
             }
     
-            @keyframes dataPulse {
-                0%, 100% { box-shadow: 0 0 10px rgba(255, 102, 204, 0.3); }
-                50% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.5); }
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
             }
     
             #spin-analysis summary {
-                background: rgba(255, 102, 204, 0.1) !important;
-                color: #ff66cc !important;
-                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                background-color: #00bcd4 !important;
+                color: white !important;
                 padding: 12px !important;
                 border-radius: 6px !important;
                 font-weight: bold !important;
@@ -7561,7 +7560,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             #spin-analysis summary:hover {
-                background: rgba(255, 102, 204, 0.2) !important;
+                background-color: #0097a7 !important;
             }
     
             #spin-analysis summary::after {
@@ -7569,7 +7568,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             .spin-analysis-row {
-                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
+                background-color: #e0f7fa !important;
                 padding: 10px !important;
                 border-radius: 6px !important;
                 display: flex !important;
@@ -7586,10 +7585,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
             .spin-analysis-row .gr-textbox {
                 background: transparent !important;
-                border: 1px solid #ff66cc !important;
+                border: 1px solid #00bcd4 !important;
                 border-radius: 6px !important;
                 padding: 8px !important;
-                color: #fff !important;
+                color: #333 !important;
                 font-size: 14px !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
@@ -7621,7 +7620,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 lines=5
             )
 
-    
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         gr.HTML("""
         <style>
