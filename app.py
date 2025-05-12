@@ -6482,23 +6482,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
             /* Updated styling for the hit percentage display */
             .hit-percentage-row .hit-percentage-container {
-                background: linear-gradient(135deg, #f5f5f5, #e0e0e0) !important;
-                border: 1px solid #2196f3 !important; /* Match neon blue border */
-                border-radius: 6px !important;
-                padding: 12px !important;
+                background: transparent !important; /* Remove inner background */
+                border: none !important; /* Remove inner border */
+                border-radius: 0 !important; /* Remove inner border radius */
+                padding: 0 !important; /* Remove inner padding */
                 max-height: 300px !important; /* Slightly taller for more content */
                 overflow-y: auto !important;
                 width: 100% !important; /* Ensure it takes full width of parent */
                 box-sizing: border-box !important; /* Include padding/border in width */
             }
     
-            /* Override existing styles to fix layout issues */
+            /* Remove inner squares by neutralizing nested container styles */
             .hit-percentage-row .hit-percentage-container .hit-percentage-overview {
                 display: flex !important;
                 flex-wrap: wrap !important;
                 gap: 20px !important;
                 width: 100% !important;
                 justify-content: space-between !important;
+                background: none !important; /* Remove any background */
+                border: none !important; /* Remove any border */
+                padding: 0 !important; /* Remove padding */
             }
     
             .hit-percentage-row .hit-percentage-container .percentage-wrapper {
@@ -6506,7 +6509,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 max-width: 100% !important;
                 box-sizing: border-box !important;
                 padding-top: 15px !important;
-                overflow: hidden !important; /* Prevent content from spilling out */
+                background: none !important; /* Remove background */
+                border: none !important; /* Remove border */
+                padding: 0 !important; /* Remove padding */
             }
     
             .hit-percentage-row .hit-percentage-container .percentage-group {
@@ -6515,7 +6520,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 flex: 1 !important;
                 min-width: 200px !important; /* Smaller min-width for better wrapping */
                 max-width: 100% !important; /* Prevent overflow */
-                overflow: hidden !important; /* Contain content */
+                background: none !important; /* Remove inner square background */
+                border: none !important; /* Remove inner square border */
+                padding: 0 !important; /* Remove padding */
+                box-shadow: none !important; /* Remove any shadow */
             }
     
             .hit-percentage-row .hit-percentage-container .percentage-badges {
@@ -6525,7 +6533,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 align-items: center !important;
                 padding: 5px 0 !important;
                 width: 100% !important;
-                overflow-x: hidden !important; /* Prevent horizontal overflow */
+                background: none !important; /* Remove background */
+                border: none !important; /* Remove border */
             }
     
             .hit-percentage-row .hit-percentage-container .percentage-item {
@@ -6536,6 +6545,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 white-space: nowrap !important; /* Prevent text wrapping in badges */
                 overflow: hidden !important;
                 text-overflow: ellipsis !important; /* Truncate long text */
+                background: rgba(255, 255, 255, 0.9) !important; /* Light background for badges */
+                border: 1px solid #2196f3 !important; /* Match neon blue border */
+                border-radius: 15px !important;
+                padding: 6px 14px !important;
+                font-size: 12px !important;
+                margin: 5px 3px !important;
+                transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
+                cursor: pointer !important;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+                font-weight: bold !important;
+            }
+    
+            .hit-percentage-row .hit-percentage-container .percentage-item:hover {
+                transform: scale(1.15) !important;
+                filter: brightness(1.4) !important;
             }
     
             /* Animation for accordion opening */
@@ -6558,9 +6582,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
                 #hit-percentage-overview summary {
                     font-size: 16px !important;
-                }
-                .hit-percentage-row .hit-percentage-container {
-                    padding: 8px !important;
                 }
                 .hit-percentage-row .hit-percentage-container .percentage-group {
                     min-width: 100% !important; /* Full width on mobile */
