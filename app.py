@@ -6341,7 +6341,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     gr.HTML("""
     <style>
-        /* Style the label */
         #selected-spins label {
             background: linear-gradient(135deg, #ff6f61, #ffd700) !important;
             color: #fff !important;
@@ -6360,7 +6359,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 10px rgba(255, 111, 97, 0.5) !important;
         }
     
-        /* Style the textbox */
         #selected-spins input {
             background-color: #fff3e0 !important;
             border: 2px solid #ff6f61 !important;
@@ -6370,6 +6368,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             color: #333 !important;
             transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            position: relative !important;
         }
     
         #selected-spins input:focus {
@@ -6378,7 +6377,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             outline: none !important;
         }
     
-        /* Style the container for displayed numbers */
+        #selected-spins input.typing {
+            animation: pulse 1s infinite ease-in-out;
+        }
+    
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(255, 111, 97, 0.5); }
+            50% { box-shadow: 0 0 12px rgba(255, 111, 97, 0.8); }
+        }
+    
         #selected-spins-display {
             margin-top: 10px !important;
             display: flex !important;
@@ -6386,7 +6393,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             flex-wrap: wrap !important;
         }
     
-        /* Style for individual number badges */
         .number-badge {
             display: inline-flex !important;
             align-items: center !important;
@@ -6419,7 +6425,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             background-color: #008000 !important;
         }
     
-        /* Validation feedback */
         #selected-spins-validation {
             margin-top: 5px !important;
             font-size: 12px !important;
@@ -6435,41 +6440,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         #selected-spins-validation.invalid {
             color: #ff0000 !important;
             display: block !important;
-        }
-    
-        /* Style the Clear Spins button */
-        #selected-spins-clear {
-            background: #ff6f61 !important;
-            color: #fff !important;
-            border: none !important;
-            border-radius: 5px !important;
-            padding: 5px 10px !important;
-            font-size: 12px !important;
-            cursor: pointer !important;
-            margin-top: 5px !important;
-            transition: transform 0.2s ease !important;
-        }
-    
-        #selected-spins-clear:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 0 5px rgba(255, 111, 97, 0.5) !important;
+            animation: shake 0.3s ease-in-out;
         }
     
         @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        #selected-spins input:focus::after {
-            content: "✍️";
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-        }
-        #selected-spins input.invalid {
-            animation: shake 0.3s ease-in-out;
-        }
+    
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -6479,7 +6457,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     <div id="selected-spins-display"></div>
     <div id="selected-spins-validation"></div>
-    <button id="selected-spins-clear">Clear Spins</button>
     
     <script>
     const rouletteColors = {
@@ -6517,27 +6494,29 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         if (numbers.length === 0) {
             validation.style.display = "none";
-            input.classList.remove("invalid");
         } else if (isValid) {
             validation.className = "valid";
             validation.textContent = "✓ Valid spins!";
             validation.style.display = "block";
-            input.classList.remove("invalid");
         } else {
             validation.className = "invalid";
             validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
             validation.style.display = "block";
-            input.classList.add("invalid");
         }
     }
     
-    document.querySelector("#selected-spins input").addEventListener("input", updateSelectedSpinsDisplay);
-    document.querySelector("#selected-spins-clear").addEventListener("click", () => {
+    document.addEventListener("DOMContentLoaded", () => {
         const input = document.querySelector("#selected-spins input");
-        input.value = "";
-        updateSelectedSpinsDisplay();
+        if (input) {
+            input.addEventListener("input", () => {
+                input.classList.add("typing");
+                updateSelectedSpinsDisplay();
+            });
+            updateSelectedSpinsDisplay();
+        } else {
+            console.error("Selected Spins input not found in DOM");
+        }
     });
-    updateSelectedSpinsDisplay();
     </script>
     """)
     spin_counter = gr.HTML(
