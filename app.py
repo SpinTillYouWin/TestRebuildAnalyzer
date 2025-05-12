@@ -6481,7 +6481,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             /* Updated styling for the hit percentage display */
-            .hit-percentage-row .hit-percentage-container {
+            #hit-percentage-overview .hit-percentage-container {
                 background: transparent !important; /* Remove inner background */
                 border: none !important; /* Remove inner border */
                 border-radius: 0 !important; /* Remove inner border radius */
@@ -6490,10 +6490,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 overflow-y: auto !important;
                 width: 100% !important; /* Ensure it takes full width of parent */
                 box-sizing: border-box !important; /* Include padding/border in width */
+                position: static !important; /* Override position: relative */
+                box-shadow: none !important; /* Remove shadow */
+                animation: none !important; /* Remove animation */
             }
     
             /* Remove inner squares by neutralizing nested container styles */
-            .hit-percentage-row .hit-percentage-container .hit-percentage-overview {
+            #hit-percentage-overview .hit-percentage-container .hit-percentage-overview {
                 display: flex !important;
                 flex-wrap: wrap !important;
                 gap: 20px !important;
@@ -6504,7 +6507,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 0 !important; /* Remove padding */
             }
     
-            .hit-percentage-row .hit-percentage-container .percentage-wrapper {
+            #hit-percentage-overview .hit-percentage-container .percentage-wrapper {
                 width: 100% !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
@@ -6514,7 +6517,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 0 !important; /* Remove padding */
             }
     
-            .hit-percentage-row .hit-percentage-container .percentage-group {
+            #hit-percentage-overview .hit-percentage-container .percentage-group {
                 margin: 10px 0 !important;
                 padding-top: 15px !important;
                 flex: 1 !important;
@@ -6524,9 +6527,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 border: none !important; /* Remove inner square border */
                 padding: 0 !important; /* Remove padding */
                 box-shadow: none !important; /* Remove any shadow */
+                overflow: hidden !important; /* Contain content */
             }
     
-            .hit-percentage-row .hit-percentage-container .percentage-badges {
+            #hit-percentage-overview .hit-percentage-container .percentage-badges {
                 display: flex !important;
                 flex-wrap: wrap !important; /* Ensure badges wrap */
                 gap: 10px !important;
@@ -6535,9 +6539,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100% !important;
                 background: none !important; /* Remove background */
                 border: none !important; /* Remove border */
+                overflow-x: hidden !important; /* Prevent horizontal overflow */
             }
     
-            .hit-percentage-row .hit-percentage-container .percentage-item {
+            #hit-percentage-overview .hit-percentage-container .percentage-item {
                 flex: 0 1 auto !important; /* Allow items to shrink if needed */
                 min-width: 100px !important; /* Ensure badges don’t get too small */
                 max-width: 150px !important; /* Limit badge width to prevent overflow */
@@ -6557,7 +6562,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-weight: bold !important;
             }
     
-            .hit-percentage-row .hit-percentage-container .percentage-item:hover {
+            #hit-percentage-overview .hit-percentage-container .percentage-item:hover {
                 transform: scale(1.15) !important;
                 filter: brightness(1.4) !important;
             }
@@ -6583,11 +6588,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 #hit-percentage-overview summary {
                     font-size: 16px !important;
                 }
-                .hit-percentage-row .hit-percentage-container .percentage-group {
+                #hit-percentage-overview .hit-percentage-container .percentage-group {
                     min-width: 100% !important; /* Full width on mobile */
                     max-width: 100% !important;
                 }
-                .hit-percentage-row .hit-percentage-container .percentage-item {
+                #hit-percentage-overview .hit-percentage-container .percentage-item {
                     min-width: 80px !important; /* Smaller badges on mobile */
                     max-width: 120px !important;
                 }
@@ -6601,6 +6606,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
+    
+    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                traits_display = gr.HTML(
+                    label="Spin Traits",
+                    value=summarize_spin_traits(36),
+                    elem_classes=["traits-container"]
+                )
+         
 
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
