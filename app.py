@@ -7077,7 +7077,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             reset_colors_button = gr.Button("Reset Colors", elem_classes=["action-button"])
         color_code_output = gr.HTML(label="Color Code Key")
 
-
     # 10. Row 10: Analysis Outputs (Collapsible, Renumbered)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
         spin_analysis_output = gr.Textbox(
@@ -7086,9 +7085,98 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             interactive=False,
             lines=5
         )
-
+    
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
-        with gr.Row():
+        gr.HTML("""
+        <style>
+            /* Styling for Strongest Numbers Tables accordion */
+            #strongest-numbers-table {
+                background-color: #e8f5e9 !important; /* Light green background */
+                border: 2px solid #4caf50 !important; /* Green border */
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
+            }
+    
+            /* Styling for the accordion summary */
+            #strongest-numbers-table summary {
+                background-color: #4caf50 !important; /* Green background for header */
+                color: white !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #strongest-numbers-table summary:hover {
+                background-color: #388e3c !important; /* Darker green on hover */
+            }
+    
+            /* Ensure the summary arrow is styled */
+            #strongest-numbers-table summary::after {
+                filter: invert(100%) !important; /* White arrow for contrast */
+            }
+    
+            /* Styling for the row inside the accordion */
+            .strongest-numbers-row {
+                background-color: #ffffff !important; /* White background for clarity */
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+            }
+    
+            /* Styling for columns inside the row */
+            .strongest-numbers-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important; /* Ensure columns don't get too narrow */
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
+    
+            /* Styling for HTML outputs (straight_up_html and top_18_html) */
+            .strongest-numbers-row .scrollable-table {
+                max-height: 250px !important;
+                overflow-y: auto !important;
+                background: linear-gradient(135deg, #f5f5f5, #e0e0e0) !important;
+                border: 1px solid #4caf50 !important;
+                border-radius: 6px !important;
+                padding: 8px !important;
+            }
+    
+            /* Animation for accordion opening */
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .strongest-numbers-row {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                .strongest-numbers-row .gr-column {
+                    min-width: 100% !important;
+                }
+                #strongest-numbers-table {
+                    padding: 8px !important;
+                }
+                #strongest-numbers-table summary {
+                    font-size: 16px !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row(elem_classes=["strongest-numbers-row"]):
             with gr.Column():
                 straight_up_html = gr.HTML(label="Strongest Numbers", elem_classes="scrollable-table")
             with gr.Column():
@@ -7109,7 +7197,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 lines=2,
                 visible=False  # Hide the textbox
             )
-
+    
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
         with gr.Row():
             with gr.Column():
