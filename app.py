@@ -9003,6 +9003,68 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
                 font-size: 11px !important;
             }
+            /* TITLE: Style Accordion Container for Create Dozen/Even Bet Triggers */
+
+            #dozen-tracker.gr-accordion,
+            .gr-box #dozen-tracker,
+            #dozen-tracker.gr-accordion > details {
+                background: #e6e6fa !important; /* Light lavender for cohesive purple aesthetic */
+                border: 2px solid #2196f3 !important; /* Blue border to match app accents */
+                border-radius: 10px !important;
+                padding: 10px !important;
+                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3) !important; /* Blue glow */
+            }
+            
+            #dozen-tracker.gr-accordion summary {
+                background: #d8bfd8 !important; /* Thistle for contrast */
+                color: #2196f3 !important; /* Blue text to match app theme */
+                text-shadow: 0 0 8px rgba(33, 150, 243, 0.7) !important; /* Blue glow */
+                font-size: 18px !important;
+                font-weight: bold !important;
+                padding: 10px !important;
+                border-radius: 8px !important;
+            }
+            
+            /* Style nested accordions (Dozen Triggers, Even Money) */
+            #dozen-triggers.gr-accordion,
+            #even-money-tracker.gr-accordion,
+            #dozen-triggers.gr-accordion > details,
+            #even-money-tracker.gr-accordion > details {
+                background: #e6e6fa !important; /* Match parent accordion */
+                border: 1px solid #2196f3 !important; /* Thinner blue border for hierarchy */
+                border-radius: 8px !important;
+                padding: 8px !important;
+                box-shadow: 0 0 5px rgba(33, 150, 243, 0.2) !important;
+            }
+            
+            #dozen-triggers.gr-accordion summary,
+            #even-money-tracker.gr-accordion summary {
+                background: #e0e0ff !important; /* Slightly lighter purple-blue for distinction */
+                color: #2196f3 !important;
+                text-shadow: 0 0 5px rgba(33, 150, 243, 0.5) !important;
+                font-size: 16px !important; /* Slightly smaller for hierarchy */
+                font-weight: bold !important;
+                padding: 8px !important;
+                border-radius: 6px !important;
+            }
+            
+            /* Ensure internal rows/columns blend with the new background */
+            #dozen-tracker .gr-row,
+            #dozen-tracker .gr-column,
+            #dozen-triggers .gr-row,
+            #dozen-triggers .gr-column,
+            #even-money-tracker .gr-row,
+            #even-money-tracker .gr-column {
+                background: transparent !important; /* Allow accordion background to show */
+            }
+            
+            /* Ensure output HTML elements don’t override the background */
+            #dozen-tracker .gr-html,
+            #dozen-tracker .gr-textbox,
+            #dozen-triggers .gr-html,
+            #even-money-tracker .gr-html {
+                background: transparent !important;
+            }
         }
     </style>
     """)
