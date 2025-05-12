@@ -6339,13 +6339,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_id="selected-spins"
     )
     
-    # Add custom styling and JavaScript for interactivity
     gr.HTML("""
     <style>
         /* Style the label */
         #selected-spins label {
-            background: linear-gradient(135deg, #ff6f61, #ffd700) !important; /* Gradient background */
-            color: #fff !important; /* White text for contrast */
+            background: linear-gradient(135deg, #ff6f61, #ffd700) !important;
+            color: #fff !important;
             padding: 8px 12px !important;
             border-radius: 5px !important;
             font-size: 16px !important;
@@ -6363,8 +6362,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
         /* Style the textbox */
         #selected-spins input {
-            background-color: #fff3e0 !important; /* Warm background */
-            border: 2px solid #ff6f61 !important; /* Coral border */
+            background-color: #fff3e0 !important;
+            border: 2px solid #ff6f61 !important;
             border-radius: 8px !important;
             padding: 10px !important;
             font-size: 16px !important;
@@ -6374,8 +6373,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
     
         #selected-spins input:focus {
-            border-color: #ffd700 !important; /* Yellow border on focus */
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important; /* Glow effect */
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
             outline: none !important;
         }
     
@@ -6401,6 +6400,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border: 1px solid #fff !important;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
             transition: transform 0.2s ease !important;
+            animation: popIn 0.3s ease-in-out;
         }
     
         .number-badge:hover {
@@ -6436,13 +6436,52 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             color: #ff0000 !important;
             display: block !important;
         }
+    
+        /* Style the Clear Spins button */
+        #selected-spins-clear {
+            background: #ff6f61 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 5px !important;
+            padding: 5px 10px !important;
+            font-size: 12px !important;
+            cursor: pointer !important;
+            margin-top: 5px !important;
+            transition: transform 0.2s ease !important;
+        }
+    
+        #selected-spins-clear:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 0 5px rgba(255, 111, 97, 0.5) !important;
+        }
+    
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #selected-spins input:focus::after {
+            content: "✍️";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+        #selected-spins input.invalid {
+            animation: shake 0.3s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
     </style>
     
     <div id="selected-spins-display"></div>
     <div id="selected-spins-validation"></div>
+    <button id="selected-spins-clear">Clear Spins</button>
     
     <script>
-    // Define roulette colors (simplified for demonstration; align with your actual colors dict)
     const rouletteColors = {
         "0": "green",
         "1": "red", "2": "black", "3": "red", "4": "black", "5": "red", "6": "black",
@@ -6454,15 +6493,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     };
     
     function updateSelectedSpinsDisplay() {
-        const input = document.querySelector("#selected-spins input").value;
+        const input = document.querySelector("#selected-spins input");
         const display = document.querySelector("#selected-spins-display");
         const validation = document.querySelector("#selected-spins-validation");
         
-        // Clear previous display
         display.innerHTML = "";
         
-        // Validate and parse input
-        const numbers = input.split(",").map(num => num.trim()).filter(num => num !== "");
+        const numbers = input.value.split(",").map(num => num.trim()).filter(num => num !== "");
         let isValid = true;
         
         numbers.forEach(num => {
@@ -6471,31 +6508,35 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 isValid = false;
                 return;
             }
-            const color = rouletteColors[num] || "black"; // Default to black if not found
+            const color = rouletteColors[num] || "black";
             const badge = document.createElement("span");
             badge.className = `number-badge ${color}`;
             badge.textContent = num;
             display.appendChild(badge);
         });
         
-        // Show validation feedback
         if (numbers.length === 0) {
             validation.style.display = "none";
+            input.classList.remove("invalid");
         } else if (isValid) {
             validation.className = "valid";
             validation.textContent = "✓ Valid spins!";
             validation.style.display = "block";
+            input.classList.remove("invalid");
         } else {
             validation.className = "invalid";
             validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
             validation.style.display = "block";
+            input.classList.add("invalid");
         }
     }
     
-    // Update display on input change
     document.querySelector("#selected-spins input").addEventListener("input", updateSelectedSpinsDisplay);
-    
-    // Initial update
+    document.querySelector("#selected-spins-clear").addEventListener("click", () => {
+        const input = document.querySelector("#selected-spins input");
+        input.value = "";
+        updateSelectedSpinsDisplay();
+    });
     updateSelectedSpinsDisplay();
     </script>
     """)
