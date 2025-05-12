@@ -6425,7 +6425,248 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Start of updated section
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
-        with gr.Row():
+        gr.HTML("""
+        <style>
+            /* Styling for Hit Percentage Overview accordion */
+            #hit-percentage-overview {
+                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important; /* Purple gradient background */
+                border: 2px solid #ff66cc !important; /* Neon pink border */
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
+                animation: dataPulse 3s ease-in-out infinite !important;
+            }
+    
+            /* Data scanning pulse effect */
+            @keyframes dataPulse {
+                0%, 100% { box-shadow: 0 0 10px rgba(255, 102, 204, 0.3); }
+                50% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.5); }
+            }
+    
+            /* Styling for the accordion summary */
+            #hit-percentage-overview summary {
+                background: rgba(255, 102, 204, 0.1) !important; /* Light pink background for header */
+                color: #ff66cc !important; /* Neon pink text */
+                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #hit-percentage-overview summary:hover {
+                background: rgba(255, 102, 204, 0.2) !important; /* Slightly darker pink on hover */
+            }
+    
+            /* Ensure the summary arrow is styled */
+            #hit-percentage-overview summary::after {
+                filter: invert(100%) !important; /* White arrow for contrast */
+            }
+    
+            /* Styling for the row inside the accordion */
+            .hit-percentage-row {
+                background-color: #ffffff !important; /* White background for clarity */
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+            }
+    
+            /* Styling for columns inside the row */
+            .hit-percentage-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important; /* Ensure column doesn't get too narrow */
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
+    
+            /* Updated styling for the hit percentage display */
+            #hit-percentage-overview .hit-percentage-container {
+                background: transparent !important; /* Remove inner background */
+                border: none !important; /* Remove inner border */
+                border-radius: 0 !important; /* Remove inner border radius */
+                padding: 0 !important; /* Remove inner padding */
+                max-height: 300px !important; /* Slightly taller for more content */
+                overflow-y: auto !important;
+                width: 100% !important; /* Ensure it takes full width of parent */
+                box-sizing: border-box !important; /* Include padding/border in width */
+                position: static !important; /* Override position: relative */
+                box-shadow: none !important; /* Remove shadow */
+                animation: none !important; /* Remove animation */
+            }
+    
+            /* Add a subtle grid overlay for high-tech effect */
+            #hit-percentage-overview .hit-percentage-container::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle, rgba(255, 102, 204, 0.15) 0%, transparent 70%) !important;
+                opacity: 0.4;
+                pointer-events: none;
+            }
+    
+            /* Remove inner squares by neutralizing nested container styles */
+            #hit-percentage-overview .hit-percentage-container .hit-percentage-overview {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 20px !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+                background: none !important; /* Remove any background */
+                border: none !important; /* Remove any border */
+                padding: 0 !important; /* Remove padding */
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                padding-top: 15px !important;
+                background: none !important; /* Remove background */
+                border: none !important; /* Remove border */
+                padding: 0 !important; /* Remove padding */
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-group {
+                margin: 10px 0 !important;
+                padding-top: 15px !important;
+                flex: 1 !important;
+                min-width: 200px !important; /* Smaller min-width for better wrapping */
+                max-width: 100% !important; /* Prevent overflow */
+                background: none !important; /* Remove inner square background */
+                border: none !important; /* Remove inner square border */
+                padding: 0 !important; /* Remove padding */
+                box-shadow: none !important; /* Remove any shadow */
+                overflow: hidden !important; /* Contain content */
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-group h4 {
+                margin: 5px 0 !important;
+                color: #ffccff !important; /* Light pink for headers */
+                text-shadow: 0 0 5px rgba(255, 102, 204, 0.5) !important;
+                font-size: 18px !important;
+                font-weight: bold !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-badges {
+                display: flex !important;
+                flex-wrap: wrap !important; /* Ensure badges wrap */
+                gap: 10px !important;
+                align-items: center !important;
+                padding: 5px 0 !important;
+                width: 100% !important;
+                background: none !important; /* Remove background */
+                border: none !important; /* Remove border */
+                overflow-x: hidden !important; /* Prevent horizontal overflow */
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-item {
+                flex: 0 1 auto !important; /* Allow items to shrink if needed */
+                min-width: 100px !important; /* Ensure badges don’t get too small */
+                max-width: 150px !important; /* Limit badge width to prevent overflow */
+                box-sizing: border-box !important;
+                white-space: nowrap !important; /* Prevent text wrapping in badges */
+                overflow: hidden !important;
+                text-overflow: ellipsis !important; /* Truncate long text */
+                background: transparent !important; /* Transparent background for badges */
+                color: #fff !important; /* White text */
+                padding: 6px 14px !important;
+                border-radius: 15px !important;
+                font-size: 12px !important;
+                margin: 5px 3px !important;
+                transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
+                cursor: pointer !important;
+                border: 1px solid transparent !important;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+                font-weight: bold !important;
+                display: inline-block !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-item:hover {
+                transform: scale(1.15) !important;
+                filter: brightness(1.4) !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-item.even-money {
+                background: rgba(255, 77, 77, 0.3) !important;
+                border-color: #ff4d4d !important;
+                box-shadow: 0 0 12px rgba(255, 77, 77, 0.7) !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-item.column {
+                background: rgba(77, 121, 255, 0.3) !important;
+                border-color: #4d79ff !important;
+                box-shadow: 0 0 12px rgba(77, 121, 255, 0.7) !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-item.dozen {
+                background: rgba(77, 255, 77, 0.3) !important;
+                border-color: #4dff4d !important;
+                box-shadow: 0 0 12px rgba(77, 255, 77, 0.7) !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-item.winner {
+                font-weight: bold !important;
+                color: #fff !important;
+                border: 2px solid #ffcc00 !important;
+                box-shadow: 0 0 15px #ffcc00 !important;
+                background: rgba(255, 204, 0, 0.4) !important;
+                transform: scale(1.15) !important;
+            }
+    
+            #hit-percentage-overview .hit-percentage-container .percentage-with-bar {
+                display: inline-block !important;
+                text-align: center !important;
+                margin: 0 3px !important;
+                margin-bottom: 8px !important;
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .hit-percentage-row {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                .hit-percentage-row .gr-column {
+                    min-width: 100% !important;
+                }
+                #hit-percentage-overview {
+                    padding: 8px !important;
+                }
+                #hit-percentage-overview summary {
+                    font-size: 16px !important;
+                }
+                #hit-percentage-overview .hit-percentage-container .percentage-group {
+                    min-width: 100% !important; /* Full width on mobile */
+                    max-width: 100% !important;
+                }
+                #hit-percentage-overview .hit-percentage-container .percentage-item {
+                    min-width: 80px !important; /* Smaller badges on mobile */
+                    max-width: 120px !important;
+                    font-size: 10px !important;
+                    padding: 4px 8px !important;
+                }
+            }
+    
+            @media (max-width: 600px) {
+                #hit-percentage-overview .hit-percentage-container .percentage-badges {
+                    flex-wrap: wrap !important;
+                    overflow-x: visible !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row(elem_classes=["hit-percentage-row"]):
             with gr.Column(scale=1):
                 hit_percentage_display = gr.HTML(
                     label="Hit Percentages",
@@ -8502,15 +8743,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* TITLE: Fix Content Titles for Hit Percentage Overview and SpinTrend Radar */
-        .hit-percentage-overview > h4 {
-            color: #ff66cc !important;
-            text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            margin: 0 0 10px 0 !important;
-            outline: 2px solid yellow !important;
-        }
-        
         .traits-overview > h4 {
             color: #00ffcc !important;
             text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
@@ -8539,25 +8771,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 8px !important;
         }
-
-        #hit-percentage-overview.gr-accordion, #hit-percentage-overview.gr-accordion > details {
-            background: #3a1a5a !important;
-            border: 2px solid #ff66cc !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
-            box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-            outline: 2px solid red !important;
-        }
-        
-        #hit-percentage-overview.gr-accordion summary {
-            background: rgba(255, 102, 204, 0.1) !important;
-            color: #ff66cc !important;
-            text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            padding: 10px !important;
-            border-radius: 8px !important;
-        }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
         .progress-bar {
@@ -8580,7 +8793,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* TITLE: Traits Container - Revamped for Radar Effect */
         .traits-container {
             padding: 20px !important;
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important; /* Same as Hit Percentage Overview */
+            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
             border-radius: 10px !important;
             border: 2px solid #00ffcc !important;
             box-shadow: 0 0 15px rgba(0, 255, 204, 0.3) !important;
@@ -8629,10 +8842,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             min-width: 150px !important;
             overflow: visible !important;
         }
-        .badge-group:nth-child(1) h4 { color: #ff4d4d !important; } /* Even Money Bets - Neon Red */
-        .badge-group:nth-child(2) h4 { color: #4d79ff !important; } /* Columns - Neon Blue */
-        .badge-group:nth-child(3) h4 { color: #4dff4d !important; } /* Dozens - Neon Green */
-        .badge-group:nth-child(4) h4 { color: #cc33ff !important; } /* Repeat Numbers - Neon Purple */
+        .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
+        .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
+        .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
+        .badge-group:nth-child(4) h4 { color: #cc33ff !important; }
         .percentage-badges {
             display: flex !important;
             flex-wrap: wrap !important;
