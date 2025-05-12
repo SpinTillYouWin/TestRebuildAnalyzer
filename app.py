@@ -7199,28 +7199,142 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             )
     
     with gr.Accordion("Aggregated Scores", open=False, elem_id="aggregated-scores"):
-        with gr.Row():
+        gr.HTML("""
+        <style>
+            /* Styling for Aggregated Scores accordion */
+            #aggregated-scores {
+                background-color: #f3e5f5 !important; /* Light purple background */
+                border: 2px solid #8e24aa !important; /* Neon purple border */
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
+            }
+    
+            /* Styling for the accordion summary */
+            #aggregated-scores summary {
+                background-color: #8e24aa !important; /* Neon purple background for header */
+                color: white !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #aggregated-scores summary:hover {
+                background-color: #6a1b9a !important; /* Darker purple on hover */
+            }
+    
+            /* Ensure the summary arrow is styled */
+            #aggregated-scores summary::after {
+                filter: invert(100%) !important; /* White arrow for contrast */
+            }
+    
+            /* Styling for rows inside the accordion */
+            .aggregated-scores-row {
+                background-color: #ffffff !important; /* White background for clarity */
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin: 10px 0 !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+            }
+    
+            /* Styling for columns inside the rows */
+            .aggregated-scores-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important; /* Ensure columns don't get too narrow */
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
+    
+            /* Styling for nested accordions */
+            .aggregated-scores-row .gr-accordion {
+                background-color: #fafafa !important; /* Slightly off-white for nested accordions */
+                border: 1px solid #8e24aa !important; /* Match purple border */
+                border-radius: 6px !important;
+                margin: 5px 0 !important;
+            }
+    
+            .aggregated-scores-row .gr-accordion summary {
+                background-color: #ab47bc !important; /* Lighter purple for nested summaries */
+                color: white !important;
+                padding: 10px !important;
+                border-radius: 4px !important;
+                font-size: 16px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            .aggregated-scores-row .gr-accordion summary:hover {
+                background-color: #8e24aa !important; /* Match main accordion color on hover */
+            }
+    
+            /* Styling for textboxes inside nested accordions */
+            .aggregated-scores-row .gr-textbox {
+                background: linear-gradient(135deg, #f5f5f5, #e0e0e0) !important;
+                border: 1px solid #8e24aa !important;
+                border-radius: 6px !important;
+                padding: 8px !important;
+                max-height: 250px !important;
+                overflow-y: auto !important;
+            }
+    
+            /* Animation for accordion opening */
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .aggregated-scores-row {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                .aggregated-scores-row .gr-column {
+                    min-width: 100% !important;
+                }
+                #aggregated-scores {
+                    padding: 8px !important;
+                }
+                #aggregated-scores summary {
+                    font-size: 16px !important;
+                }
+                .aggregated-scores-row .gr-accordion summary {
+                    font-size: 14px !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row(elem_classes=["aggregated-scores-row"]):
             with gr.Column():
                 with gr.Accordion("Even Money Bets", open=False):
                     even_money_output = gr.Textbox(label="Even Money Bets", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Dozens", open=False):
                     dozens_output = gr.Textbox(label="Dozens", lines=10, max_lines=50)
-        with gr.Row():
+        with gr.Row(elem_classes=["aggregated-scores-row"]):
             with gr.Column():
                 with gr.Accordion("Columns", open=False):
                     columns_output = gr.Textbox(label="Columns", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Streets", open=False):
                     streets_output = gr.Textbox(label="Streets", lines=10, max_lines=50)
-        with gr.Row():
+        with gr.Row(elem_classes=["aggregated-scores-row"]):
             with gr.Column():
                 with gr.Accordion("Corners", open=False):
                     corners_output = gr.Textbox(label="Corners", lines=10, max_lines=50)
             with gr.Column():
                 with gr.Accordion("Double Streets", open=False):
                     six_lines_output = gr.Textbox(label="Double Streets", lines=10, max_lines=50)
-        with gr.Row():
+        with gr.Row(elem_classes=["aggregated-scores-row"]):
             with gr.Column():
                 with gr.Accordion("Splits", open=False):
                     splits_output = gr.Textbox(label="Splits", lines=10, max_lines=50)
