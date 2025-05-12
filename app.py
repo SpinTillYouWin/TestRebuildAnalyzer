@@ -6581,21 +6581,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
                 .hit-percentage-row .gr-column {
                     min-width: 100% !important;
-                }
-                #hit-percentage-overview {
-                    padding: 8px !important;
-                }
-                #hit-percentage-overview summary {
-                    font-size: 16px !important;
-                }
-                #hit-percentage-overview .hit-percentage-container .percentage-group {
-                    min-width: 100% !important; /* Full width on mobile */
-                    max-width: 100% !important;
-                }
-                #hit-percentage-overview .hit-percentage-container .percentage-item {
-                    min-width: 80px !important; /* Smaller badges on mobile */
-                    max-width: 120px !important;
-                }
+                }            
             }
         </style>
         """)
@@ -6606,17 +6592,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-    
-    with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                traits_display = gr.HTML(
-                    label="Spin Traits",
-                    value=summarize_spin_traits(36),
-                    elem_classes=["traits-container"]
-                )
-         
-
+             
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
             with gr.Column(scale=1):
