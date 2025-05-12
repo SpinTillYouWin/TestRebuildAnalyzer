@@ -8319,42 +8319,57 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
-        #spin-trend-radar.gr-accordion, #spin-trend-radar.gr-accordion > details {
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-            border: 2px solid #00ffcc !important;
+        
+        /* SpinTrend Radar Accordion */
+        #spin-trend-radar.gr-accordion,
+        #spin-trend-radar.gr-accordion > details {
+            background: #e6e6fa !important; /* Light lavender to match internal purple aesthetic */
+            border: 2px solid #00ffcc !important; /* Retain cyan border */
             border-radius: 10px !important;
             padding: 10px !important;
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.3) !important;
-            outline: 2px solid red !important;
         }
         
         #spin-trend-radar.gr-accordion summary {
-            background: rgba(0, 255, 204, 0.15) !important;
-            color: #00ffcc !important;
+            background: #d8bfd8 !important; /* Thistle for contrast */
+            color: #00ffcc !important; /* Retain cyan text */
             text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
             font-size: 18px !important;
             font-weight: bold !important;
             padding: 10px !important;
             border-radius: 8px !important;
         }
-
-        #hit-percentage-overview.gr-accordion, #hit-percentage-overview.gr-accordion > details {
-            background: #3a1a5a !important;
-            border: 2px solid #ff66cc !important;
+        
+        /* Ensure internal rows/columns blend with the new background */
+        #spin-trend-radar .gr-row,
+        #spin-trend-radar .gr-column {
+            background: transparent !important; /* Allow internal gradient to show */
+        }
+        
+        /* Hit Percentage Overview Accordion */
+        #hit-percentage-overview.gr-accordion,
+        #hit-percentage-overview.gr-accordion > details {
+            background: #e6e6fa !important; /* Light lavender to match internal purple aesthetic */
+            border: 2px solid #ff66cc !important; /* Retain pink border */
             border-radius: 10px !important;
             padding: 10px !important;
             box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-            outline: 2px solid red !important;
         }
         
         #hit-percentage-overview.gr-accordion summary {
-            background: rgba(255, 102, 204, 0.1) !important;
-            color: #ff66cc !important;
+            background: #d8bfd8 !important; /* Thistle for contrast */
+            color: #ff66cc !important; /* Retain pink text */
             text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
             font-size: 18px !important;
             font-weight: bold !important;
             padding: 10px !important;
             border-radius: 8px !important;
+        }
+        
+        /* Ensure internal rows/columns blend with the new background */
+        #hit-percentage-overview .gr-row,
+        #hit-percentage-overview .gr-column {
+            background: transparent !important; /* Allow internal gradient to show */
         }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
