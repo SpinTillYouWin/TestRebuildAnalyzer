@@ -7283,7 +7283,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
         };
         document.head.appendChild(script);
-    
+        
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
@@ -7291,1835 +7291,1249 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
-        /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        .gr-box { border-radius: 5px !important; }
-        
-        /* Style for Dealer’s Spin Tracker accordion */
-        #sides-of-zero-accordion {
-            background-color: #f5c6cb !important;
-            padding: 10px !important;
-        }
-        #sides-of-zero-accordion > div {
-            background-color: #f5c6cb !important;
-        }
-        #sides-of-zero-accordion summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* Style for Feedback Section accordion */
-        #feedback-section summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* Hide stray labels in the Sides of Zero section */
-        .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
-            display: none !important;
-        }
-        
-        /* Header Styling */
-        #header-row {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex-wrap: wrap !important;
-            background-color: white !important;
-            padding: 10px 0 !important;
-            width: 100% !important;
-            margin: 0 auto !important;
-            margin-bottom: 20px !important;
-        }
-        
-        .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
-        
-        /* Fix Selected Spins Label Cutoff */
-        #selected-spins-row {
-            width: 100% !important;
-            max-width: none !important;
-            overflow: visible !important;
-        }
-        #selected-spins label {
-            white-space: normal !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            display: block !important;
-            background-color: #87CEEB;
-            color: black;
-            padding: 10px 5px !important;
-            border-radius: 3px;
-            line-height: 1.5em !important;
-            font-size: 14px !important;
-            margin-top: 5px !important;
-        }
-        #selected-spins {
-            width: 100% !important;
-            min-width: 800px !important;
-        }
-        
-        /* Roulette Table */
-        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button:hover { opacity: 0.8; }
-        .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .roulette-table { 
-            display: flex !important; 
-            flex-direction: column !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 5px !important; 
-            background-color: #2e7d32 !important;
-            border: 2px solid #d3d3d3 !important; 
-            border-radius: 5px !important; 
-            width: 100% !important; 
-            max-width: 600px !important; 
-            margin: 0 auto !important; 
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-        }
-        .table-row { 
-            display: flex !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            flex-wrap: nowrap !important; 
-            line-height: 0 !important; 
-            min-width: 580px !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Responsive adjustments for desktop */
-        @media (min-width: 768px) {
-            .roulette-table {
-                max-width: 800px !important;
-            }
-            .table-row {
-                min-width: 754px !important;
-            }
-            .roulette-button, .empty-button {
-                width: 48px !important;
-                height: 48px !important;
-                font-size: 16px !important;
-            }
-        }
-        
-        /* Buttons */    
-        .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-        button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
-        button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
-        
-        button.green-btn {
-            background-color: #28a745 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            padding: 8px 16px !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-            box-sizing: border-box !important;
-        }
-        button.green-btn:hover {
-            background-color: #218838 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        
-        button.clear-spins-btn {
-            background-color: #ff4444 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            box-sizing: border-box !important;
-            display: inline-block !important;
-        }
-        button.clear-spins-btn:hover {
-            background-color: #cc0000 !important;
-        }
-        button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-        button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-        
-        /* NEW CODE: Add glow effect for buttons */
-        .action-button, .green-btn, .roulette-button {
-            transition: box-shadow 0.3s ease, transform 0.2s ease !important;
-        }
-        
-        .action-button:active, .green-btn:active, .roulette-button:active {
-            box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
-            transform: scale(1.05) !important; /* Slight scale for emphasis */
-        }
-        
-        /* Ensure glow works on mobile touch */
-        @media (max-width: 600px) {
-            .action-button:active, .green-btn:active, .roulette-button:active {
-                box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
-            }
-        }
-        
-        /* Optional: Glow for specific buttons like Analyze Spins */
-        .green-btn:active {
-            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
-        }
-        
-        /* Ensure columns have appropriate spacing */
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        
-        /* Compact Components */
-        .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .long-slider .gr-box { width: 100% !important; }
-        
-        /* Target the Accordion and its children */
-        .gr-accordion { background-color: #ffffff !important; }
-        .gr-accordion * { background-color: #ffffff !important; }
-        .gr-accordion .gr-column { background-color: #ffffff !important; }
-        .gr-accordion .gr-row { background-color: #ffffff !important; }
-        
-        /* Section Labels */
-        #selected-spins label {
-            background-color: #87CEEB;
-            color: black;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #spin-analysis label {
-            background-color: #90EE90 !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #strongest-numbers-table label {
-            background-color: #E6E6FA !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #number-of-random-spins label {
-            background-color: #FFDAB9 !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #aggregated-scores label {
-            background-color: #FFB6C1 !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        
-        /* Compact dropdown styling for Select Category and Select Strategy */
-        #select-category select, #strategy-dropdown select {
-            max-height: 150px !important;
-            overflow-y: auto !important;
-            scrollbar-width: thin !important;
-        }
-        #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
-            width: 6px;
-        }
-        #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 3px;
-        }
+    /* Hit Percentage Overview - Revamped for High-Tech Look with Increased Specificity */
+    #hit-percentage-overview .hit-percentage-container {
+        padding: 20px !important;
+        background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
+        border-radius: 12px !important;
+        border: 3px solid #ff66cc !important;
+        box-shadow: 0 0 20px rgba(255, 102, 204, 0.5) !important;
+        width: 100% !important;
+        max-width: 2000px !important;
+        margin-top: 10px !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: visible !important;
+        animation: dataPulse 3s ease-in-out infinite !important;
+        outline: 2px solid yellow !important;
+    }
     
-        
-        /* Scrollable Tables */
-        .scrollable-table {
-            max-height: 300px;
-            overflow-y: auto;
-            display: block;
-            width: 100%;
-        }
-        
-        /* Updated styling for the Dynamic Roulette Table */
-        .large-table {
-            max-height: 800px !important;
-            max-width: 1000px !important;
-            margin: 0 auto !important;
-            display: block !important;
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-            padding: 10px !important;
-        }
-        /* Dynamic Table Container */
-        .dynamic-table-container {
-            width: 100% !important;
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            padding: 20px 10px !important;
-            display: flex !important;
-            flex-direction: column !important; /* Ensure children stack vertically */
-            justify-content: center !important;
-            align-items: center !important;
-            box-sizing: border-box !important;
-        }
-        
-        /* Ensure all children of the container are centered */
-        .dynamic-table-container > * {
-            width: 100% !important;
-            max-width: 900px !important; /* Match the large-table max-width */
-            margin: 0 auto !important;
-        }
-        
-        /* Large Table */
-        .large-table {
-            max-height: 800px !important;
-            max-width: 900px !important;
-            width: 100% !important;
-            margin: 0 auto !important;
-            display: block !important;
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
-            padding: 15px !important;
-            box-sizing: border-box !important;
-            overflow: visible !important;
-            text-align: center !important; /* Center table content */
-            animation: tableFadeIn 0.5s ease-in-out !important; /* Add load animation */
-            /* Add gradient border */
-            background-clip: padding-box !important;
-            border-image: linear-gradient(45deg, #3b82f6, #1e90ff) 1 !important;
-        }
-        
-        /* Define the load animation */
-        @keyframes tableFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        .large-table table {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 auto !important;
-            text-align: center !important;
-        }
-        
-        .large-table th {
-            font-weight: bold !important;
-            color: #000000 !important;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
-            background: rgba(59, 130, 246, 0.1) !important;
-            padding: 10px !important;
-        }
-        
-        .large-table td {
-            padding: 8px !important;
-            text-align: center !important;
-            position: relative !important;
-            overflow: visible !important;
-        }
-        
-        /* Glowing Hover Effects for Hot Numbers (specific to Dynamic Roulette Table) */
-        .dynamic-roulette-table td.hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important;
-            transform: scale(1.1) !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        /* NEW: Enhanced Hot Number Corner Flash Effect */
-        .dynamic-roulette-table td.hot-number {
-            position: relative !important;
-            overflow: visible !important;
-        }
-        
-        /* Top-left corner highlight */
-        .dynamic-roulette-table td.hot-number::before {
-            content: '' !important;
-            position: absolute !important;
-            top: -3px !important;
-            left: -3px !important;
-            width: 10px !important;
-            height: 10px !important;
-            background-color: #ffd700 !important; /* Yellow to match existing glow */
-            border: 1px solid #ffffff !important; /* White border for contrast */
-            animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
-        }
-        
-        /* Bottom-right corner highlight */
-        .dynamic-roulette-table td.hot-number::after {
-            content: '' !important;
-            position: absolute !important;
-            bottom: -3px !important;
-            right: -3px !important;
-            width: 10px !important;
-            height: 10px !important;
-            background-color: #ffd700 !important;
-            border: 1px solid #ffffff !important;
-            animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
-        }
-        
-        /* Flashing animation for corners */
-        @keyframes flashCorner {
-            0%, 100% {
-                opacity: 1 !important;
-                transform: scale(1) !important;
-            }
-            50% {
-                opacity: 0.5 !important;
-                transform: scale(1.2) !important;
-            }
-        }
-        
-        /* Ensure hover effect remains intact and complements corner flash */
-        .dynamic-roulette-table td.hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important;
-            transform: scale(1.1) !important;
-            transition: all 0.3s ease !important;
-            z-index: 10 !important; /* Ensure hover effect is above corners */
-        }
-        
-        /* Responsive adjustments for smaller screens */
-        @media (max-width: 768px) {
-            .dynamic-roulette-table td.hot-number::before,
-            .dynamic-roulette-table td.hot-number::after {
-                width: 8px !important;
-                height: 8px !important;
-                top: -2px !important;
-                left: -2px !important;
-                bottom: -2px !important;
-                right: -2px !important;
-            }
-        }
-        
-        /* Tooltip Styles for Number Cells */
-        .dynamic-roulette-table td.has-tooltip:hover::after {
-            content: attr(data-tooltip) !important;
-            position: absolute !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 4px !important;
-            border: 1px solid #8c6bb1 !important;
-            bottom: 100% !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            white-space: nowrap !important;
-            z-index: 10 !important;
-            font-size: 12px !important;
-            font-family: Arial, sans-serif !important;
-            animation: fadeIn 0.3s ease !important;
-        }
-        
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        
-        /* Bet Tier Icons with Bounce Animation */
-        .dynamic-roulette-table td.top-tier::before {
-            content: "🔥" !important;
-            margin-right: 5px !important;
-            display: inline-block !important;
-            animation: bounce 0.5s ease-in-out !important;
-        }
-        
-        .dynamic-roulette-table td.middle-tier::before {
-            content: "⭐" !important;
-            margin-right: 5px !important;
-            display: inline-block !important;
-            animation: bounce 0.5s ease-in-out !important;
-        }
-        
-        .dynamic-roulette-table td.lower-tier::before {
-            content: "🌟" !important;
-            margin-right: 5px !important;
-            display: inline-block !important;
-            animation: bounce 0.5s ease-in-out !important;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        /* Progress Bar Styles for Bet Strength */
-        .dynamic-roulette-table .progress-bar {
-            width: 100% !important;
-            height: 5px !important;
-            background: #d3d3d3 !important;
-            border-radius: 3px !important;
-            margin-top: 3px !important;
-            position: relative !important;
-            display: block !important;
-        }
-        
-        .dynamic-roulette-table .progress-fill.top-tier {
-            height: 100% !important;
-            background: #ffd700 !important; /* Yellow for top-tier */
-            border-radius: 3px !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-        
-        .dynamic-roulette-table .progress-fill.middle-tier {
-            height: 100% !important;
-            background: #00ffff !important; /* Cyan for middle-tier */
-            border-radius: 3px !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-        
-        .dynamic-roulette-table .progress-fill.lower-tier {
-            height: 100% !important;
-            background: #00ff00 !important; /* Green for lower-tier */
-            border-radius: 3px !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-            .dynamic-table-container {
-                max-width: 90vw !important;
-                padding: 15px 5px !important;
-            }
-        
-            .dynamic-table-container > * {
-                max-width: 95% !important;
-            }
-        
-            .large-table {
-                max-width: 95% !important;
-                padding: 12px !important;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .dynamic-table-container {
-                max-width: 100vw !important;
-                padding: 10px 5px !important;
-            }
-        
-            .dynamic-table-container > * {
-                max-width: 100% !important;
-            }
-        
-            .large-table {
-                max-width: 100% !important;
-                padding: 10px !important;
-            }
-        }
-        
-        /* Strategy Card Container */
-        .strategy-card {
-            max-width: 1000px !important;
-            margin: 0 auto !important;
-            padding: 20px !important;
-            background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Match the aesthetic of other sections */
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 10px !important;
-            animation: cardFadeIn 0.5s ease-in-out !important; /* Add load animation */
-        }
-        
-        /* Load animation for the strategy card */
-        @keyframes cardFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Style for dropdowns within the strategy card */
-        .strategy-card .gr-dropdown {
-            background: rgba(59, 130, 246, 0.1) !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            margin: 5px 0 !important;
-        }
-        
-        .strategy-card .gr-dropdown select {
-            background: transparent !important;
-            color: #ffffff !important;
-            border: none !important;
-            font-size: 14px !important;
-            padding: 5px !important;
-        }
-        
-        .strategy-card .gr-dropdown label {
-            background: transparent !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-            padding: 5px !important;
-        }
-        
-        /* Style for the reset button */
-        .strategy-card .gr-button {
-            background: #3b82f6 !important;
-            color: #ffffff !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-            transition: background 0.3s ease, transform 0.2s ease !important;
-        }
-        
-        .strategy-card .gr-button:hover {
-            background: #1e90ff !important;
-            transform: scale(1.05) !important;
-        }
-        
-        /* Style for sliders */
-        .strategy-card .gr-slider {
-            background: rgba(59, 130, 246, 0.1) !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-        }
-        
-        /* Style for the strategy recommendations output */
-        .strategy-card .strategy-box {
-            max-height: 300px !important;
-            overflow-y: auto !important;
-            padding: 10px !important;
-            background: rgba(255, 255, 255, 0.05) !important; /* Slightly lighter background for contrast */
-            border-radius: 8px !important;
-            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            animation: outputFadeIn 0.5s ease-in-out !important; /* Add load animation for the output */
-        }
-        
-        .strategy-card .strategy-box p, .strategy-card .strategy-box span, .strategy-card .strategy-box ul, .strategy-card .strategy-box li {
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            font-size: 14px !important;
-        }
-        
-        /* Load animation for the strategy output */
-        @keyframes outputFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.98);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        /* Ensure the row inside the card layouts dropdowns properly */
-        .strategy-card .gr-row {
-            display: flex !important;
-            gap: 10px !important;
+    /* Data scanning pulse effect */
+    @keyframes dataPulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 102, 204, 0.5); }
+        50% { box-shadow: 0 0 30px rgba(255, 102, 204, 0.8); }
+    }
+    
+    /* Add a subtle grid overlay for high-tech effect */
+    #hit-percentage-overview .hit-percentage-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255, 102, 204, 0.15) 0%, transparent 70%) !important;
+        opacity: 0.4;
+        pointer-events: none;
+    }
+    
+    #hit-percentage-overview .hit-percentage-overview {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 20px !important;
+    }
+    
+    #hit-percentage-overview .percentage-wrapper {
+        width: 100% !important;
+        max-width: 1600px !important;
+        box-sizing: border-box !important;
+        padding-top: 15px !important;
+    }
+    
+    #hit-percentage-overview .percentage-group {
+        margin: 10px 0 !important;
+        padding-top: 15px !important;
+        flex: 1 !important;
+        min-width: 150px !important;
+        overflow: visible !important;
+    }
+    
+    #hit-percentage-overview .percentage-group h4 {
+        margin: 5px 0 !important;
+        color: #ffccff !important;
+        text-shadow: 0 0 5px rgba(255, 102, 204, 0.5) !important;
+    }
+    
+    #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        align-items: center !important;
+        padding: 5px 0 !important;
+    }
+    
+    /* Responsive adjustments for mobile */
+    @media (max-width: 600px) {
+        #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
             flex-wrap: wrap !important;
-            justify-content: center !important;
+            overflow-x: visible !important;
         }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .strategy-card {
-                padding: 15px !important;
-            }
-        
-            .strategy-card .gr-row {
-                flex-direction: column !important;
-                align-items: center !important;
-            }
-        
-            .strategy-card .gr-dropdown {
-                width: 100% !important;
-                max-width: 300px !important;
-            }
-        
-            .strategy-card .gr-button {
-                width: 100% !important;
-                max-width: 300px !important;
-            }
-        }
-        
-        .strongest-numbers-table {
-            width: 100% !important;
-            max-width: 100% !important;
-            background: linear-gradient(135deg, #2a2a72, #4682b4) !important;
-            border-collapse: collapse !important;
-            border: 1px solid #3b82f6 !important;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
-            margin: 10px 0 !important;
-        }
-        
-        .strongest-numbers-table th, .strongest-numbers-table td {
-            padding: 8px 12px !important;
-            border: 1px solid #3b82f6 !important;
-            text-align: center !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7) !important;
-        }
-        
-        .strongest-numbers-table th {
-            background: rgba(59, 130, 246, 0.2) !important;
-            font-weight: bold !important;
-        }
-        
-        .strongest-numbers-table td:nth-child(3), 
-        .strongest-numbers-table td:nth-child(6), 
-        .strongest-numbers-table td:nth-child(9) {
-            white-space: normal !important;
-            word-wrap: break-word !important;
-            max-width: 150px !important;
-        }
-        
-        /* Last Spins Container */
-        .last-spins-container {
-            background-color: #f5f5f5 !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Fade-in animation for Last Spins */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Pattern Badge for Spin Patterns */
-        .pattern-badge {
-            background-color: #ffd700 !important;
-            color: #333 !important;
-            padding: 2px 5px !important;
-            border-radius: 3px !important;
+        #hit-percentage-overview .percentage-item {
             font-size: 10px !important;
-            margin-left: 5px !important;
-            cursor: pointer !important;
-            transition: transform 0.2s ease !important;
-        }
-        .pattern-badge:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-        }
-        
-        /* Quick Trends Section for SpinTrend Radar */
-        .quick-trends {
-            background: linear-gradient(135deg, #d8bfd8 0%, #e6e6fa 100%) !important; /* Light lavender gradient */
-            padding: 12px !important;
-            border-radius: 6px !important;
-            margin-bottom: 12px !important;
-            border: 1px solid #8c6bb1 !important; /* Purple border matching Hit Percentage Overview */
-            box-shadow: 0 0 8px rgba(140, 107, 177, 0.3) !important; /* Subtle purple shadow */
-        }
-        
-        .quick-trends h4 {
-            margin: 0 0 8px 0 !important;
-            font-size: 16px !important; /* Slightly larger for emphasis */
-            color: #ff66cc !important; /* Pink to match Hit Percentage Overview border */
-            text-shadow: 0 0 4px rgba(255, 102, 204, 0.5) !important; /* Subtle glow */
-            font-weight: bold !important;
-        }
-        
-        .quick-trends ul {
-            margin: 0 !important;
-            padding-left: 15px !important; /* Slight indent for list items */
-        }
-        
-        .quick-trends ul li {
-            color: #3e2723 !important; /* Dark brown for readability */
-            font-size: 14px !important;
-            margin: 4px 0 !important;
-            font-weight: 500 !important; /* Medium weight for clarity */
-        }
-        
-        /* Spin animation for roulette table buttons */
-        .roulette-button:active {
-            animation: spin 0.5s ease-in-out !important;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Flash animation for new spins */
-        .flash.red {
-            animation: flashRed 0.3s ease-in-out;
-        }
-        .flash.green {
-            animation: flashGreen 0.3s ease-in-out;
-        }
-        .flash.black {
-            animation: flashBlack 0.3s ease-in-out;
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
-        }
-        @keyframes flashGreen {
-            0%, 100% { background-color: green; }
-            50% { background-color: #33cc33; }
-        }
-        @keyframes flashBlack {
-            0%, 100% { background-color: black; }
-            50% { background-color: #333333; }
-        }
-        
-        /* Bounce animation for Dealer's Spin Tracker numbers */
-        .bounce {
-            animation: bounce 0.4s ease-in-out;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        
-        /* New: Flip animation for Last Spins new numbers */
-        .flip {
-            animation: flip 0.5s ease-in-out;
-        }
-        @keyframes flip {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
-        }
-        /* New Spin Highlight Effect */
-        .new-spin {
-            position: relative !important;
-            animation: pulse-highlight 1s ease-in-out !important;
-        }
-        
-        @keyframes pulse-highlight {
-            0%, 100% { box-shadow: none; }
-            50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
-        }
-        
-        /* Color-coded highlights for new spins */
-        .new-spin.spin-red {
-            --highlight-color: rgba(255, 0, 0, 0.8) !important;
-        }
-        .new-spin.spin-black {
-            --highlight-color: rgba(255, 255, 255, 0.8) !important;
-        }
-        .new-spin.spin-green {
-            --highlight-color: rgba(0, 255, 0, 0.8) !important;
-        }
-        
-        /* Spin Counter Styling */
-        .spin-counter {
-            font-size: 14px !important;
-            font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
             padding: 4px 8px !important;
-            border: 2px solid #3498DB !important;
-            border-radius: 6px !important;
-            margin-top: 0 !important;
-            display: flex !important;
+        }
+    }
+    
+    /* TITLE: Percentage Item Styles - Revamped for High-Tech Effect */
+    #hit-percentage-overview .percentage-item {
+        background: transparent !important;
+        color: #fff !important;
+        padding: 6px 14px !important;
+        border-radius: 15px !important;
+        font-size: 12px !important;
+        margin: 5px 3px !important;
+        transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
+        cursor: pointer !important;
+        border: 1px solid transparent !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        font-weight: bold !important;
+        display: inline-block !important;
+    }
+    
+    #hit-percentage-overview .percentage-item:hover {
+        transform: scale(1.15) !important;
+        filter: brightness(1.4) !important;
+    }
+    
+    #hit-percentage-overview .percentage-item.even-money {
+        background: rgba(255, 77, 77, 0.3) !important;
+        border-color: #ff4d4d !important;
+        box-shadow: 0 0 12px rgba(255, 77, 77, 0.7) !important;
+    }
+    
+    #hit-percentage-overview .percentage-item.column {
+        background: rgba(77, 121, 255, 0.3) !important;
+        border-color: #4d79ff !important;
+        box-shadow: 0 0 12px rgba(77, 121, 255, 0.7) !important;
+    }
+    
+    #hit-percentage-overview .percentage-item.dozen {
+        background: rgba(77, 255, 77, 0.3) !important;
+        border-color: #4dff4d !important;
+        box-shadow: 0 0 12px rgba(77, 255, 77, 0.7) !important;
+    }
+    
+    #hit-percentage-overview .percentage-item.winner {
+        font-weight: bold !important;
+        color: #fff !important;
+        border: 2px solid #ffcc00 !important;
+        box-shadow: 0 0 15px #ffcc00 !important;
+        background: rgba(255, 204, 0, 0.4) !important;
+        transform: scale(1.15) !important;
+    }
+    
+    #hit-percentage-overview .percentage-with-bar {
+        display: inline-block !important;
+        text-align: center !important;
+        margin: 0 3px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    /* TITLE: Fix Content Titles for Hit Percentage Overview and SpinTrend Radar */
+    .hit-percentage-overview > h4 {
+        color: #ff66cc !important;
+        text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        margin: 0 0 10px 0 !important;
+        outline: 2px solid yellow !important;
+    }
+    
+    .traits-overview > h4 {
+        color: #00ffcc !important;
+        text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        margin: 0 0 10px 0 !important;
+        outline: 2px solid yellow !important;
+    }
+    
+    /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
+    
+    /* SpinTrend Radar Accordion */
+    #spin-trend-radar.gr-accordion,
+    #spin-trend-radar.gr-accordion > details {
+        background: #e6e6fa !important; /* Light lavender to match internal purple aesthetic */
+        border: 2px solid #00ffcc !important; /* Retain cyan border */
+        border-radius: 10px !important;
+        padding: 10px !important;
+        box-shadow: 0 0 10px rgba(0, 255, 204, 0.3) !important;
+    }
+    
+    #spin-trend-radar.gr-accordion summary {
+        background: #d8bfd8 !important; /* Thistle for contrast */
+        color: #00ffcc !important; /* Retain cyan text */
+        text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        padding: 10px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Ensure internal rows/columns blend with the new background */
+    #spin-trend-radar .gr-row,
+    #spin-trend-radar .gr-column {
+        background: transparent !important; /* Allow internal gradient to show */
+    }
+    
+    /* Hit Percentage Overview Accordion */
+    #hit-percentage-overview.gr-accordion,
+    #hit-percentage-overview.gr-accordion > details {
+        background: #e6e6fa !important; /* Light lavender to match internal purple aesthetic */
+        border: 2px solid #ff66cc !important; /* Retain pink border */
+        border-radius: 10px !important;
+        padding: 10px !important;
+        box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
+    }
+    
+    #hit-percentage-overview.gr-accordion summary {
+        background: #d8bfd8 !important; /* Thistle for contrast */
+        color: #ff66cc !important; /* Retain pink text */
+        text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        padding: 10px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Ensure internal rows/columns blend with the new background */
+    #hit-percentage-overview .gr-row,
+    #hit-percentage-overview .gr-column {
+        background: transparent !important; /* Allow internal gradient to show */
+    }
+    
+    /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
+    .progress-bar {
+        width: 100% !important;
+        height: 6px !important;
+        min-height: 6px !important;
+        background-color: #d3d3d3 !important;
+        border-radius: 3px !important;
+        margin-top: 6px !important;
+        overflow: hidden !important;
+        display: block !important;
+    }
+    .progress-fill {
+        height: 100% !important;
+        border-radius: 3px !important;
+        transition: width 0.3s ease !important;
+        display: block !important;
+    }
+    
+    /* TITLE: Traits Container - Revamped for Radar Effect */
+    .traits-container {
+        padding: 20px !important;
+        background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important; /* Same as Hit Percentage Overview */
+        border-radius: 10px !important;
+        border: 2px solid #00ffcc !important;
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.3) !important;
+        width: 100% !important;
+        max-width: 2000px !important;
+        margin-top: 10px !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: visible !important;
+        animation: radarPulse 4s ease-in-out infinite !important;
+    }
+    
+    /* Radar pulsing effect */
+    @keyframes radarPulse {
+        0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
+        50% { box-shadow: 0 0 25px rgba(0, 255, 204, 0.5); }
+    }
+    
+    /* Add a radar-like overlay (optional subtle grid effect) */
+    .traits-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(0, 255, 204, 0.1) 0%, transparent 70%) !important;
+        opacity: 0.3;
+        pointer-events: none;
+    }
+    
+    /* TITLE: Traits Badges Layout */
+    .traits-wrapper {
+        width: 100% !important;
+        max-width: 1600px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+        padding-top: 10px !important;
+    }
+    .badge-group {
+        margin: 10px 0 !important;
+        padding-top: 10px !important;
+        flex: 1 !important;
+        min-width: 150px !important;
+        overflow: visible !important;
+    }
+    .badge-group:nth-child(1) h4 { color: #ff4d4d !important; } /* Even Money Bets - Neon Red */
+    .badge-group:nth-child(2) h4 { color: #4d79ff !important; } /* Columns - Neon Blue */
+    .badge-group:nth-child(3) h4 { color: #4dff4d !important; } /* Dozens - Neon Green */
+    .badge-group:nth-child(4) h4 { color: #cc33ff !important; } /* Repeat Numbers - Neon Purple */
+    .percentage-badges {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        align-items: center !important;
+        padding: 5px 0 !important;
+    }
+    
+    /* TITLE: Trait Badge Styles - Revamped for Radar Effect */
+    .trait-badge {
+        background: transparent !important;
+        color: #fff !important;
+        padding: 5px 12px !important;
+        border-radius: 15px !important;
+        font-size: 12px !important;
+        margin: 5px 3px !important;
+        transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
+        cursor: pointer !important;
+        border: 1px solid transparent !important;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+        font-weight: bold !important;
+        display: inline-block !important;
+    }
+    .trait-badge:hover {
+        transform: scale(1.1) !important;
+        filter: brightness(1.3) !important;
+    }
+    .trait-badge.even-money {
+        background: rgba(255, 77, 77, 0.2) !important;
+        border-color: #ff4d4d !important;
+        box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+    }
+    .trait-badge.column {
+        background: rgba(77, 121, 255, 0.2) !important;
+        border-color: #4d79ff !important;
+        box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
+    }
+    .trait-badge.dozen {
+        background: rgba(77, 255, 77, 0.2) !important;
+        border-color: #4dff4d !important;
+        box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
+    }
+    .trait-badge.repeat {
+        background: rgba(204, 51, 255, 0.2) !important;
+        border-color: #cc33ff !important;
+        box-shadow: 0 0 10px rgba(204, 51, 255, 0.5) !important;
+    }
+    .trait-badge.winner {
+        font-weight: bold !important;
+        color: #fff !important;
+        border: 2px solid #ffd700 !important;
+        box-shadow: 0 0 12px #ffd700 !important;
+        background: rgba(255, 215, 0, 0.3) !important;
+        transform: scale(1.1) !important;
+    }
+    
+    /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
+    .hot-streak {
+        display: none !important;
+    }
+    .hot-streak:hover:after {
+        content: attr(title);
+        position: absolute;
+        background-color: #333 !important;
+        color: white !important;
+        padding: 6px 10px !important;
+        border-radius: 5px !important;
+        font-size: 12px !important;
+        font-family: Arial, sans-serif !important;
+        white-space: nowrap !important;
+        z-index: 20 !important;
+        top: -35px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+        animation: fadeInTooltip 0.3s ease-in !important;
+    }
+    @keyframes fadeInTooltip {
+        0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+        100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    /* Placeholder Section for Hit Percentage and SpinTrend Radar */
+    .placeholder-section {
+        background-color: #000 !important;
+        min-height: 200px !important;
+        height: 100% !important;
+        width: 100% !important;
+        border-radius: 5px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important;
+        font-family: Arial, sans-serif !important;
+    }
+    
+    /* Ensure the columns are truly 50/50 and aligned */
+    .hit-percentage-container, .traits-container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+        .placeholder-section {
+            min-height: 150px !important;
+        }
+        .hit-percentage-container, .traits-container {
+            padding: 5px !important;
+        }
+    }
+    
+    /* TITLE: Suggestion Box */
+    .suggestion-box {
+        background-color: #f0f8ff !important;
+        border: 1px solid #4682b4 !important;
+        border-radius: 5px !important;
+        padding: 5px !important;
+        font-size: 14px !important;
+    }
+    
+    /* TITLE: Spin Animation */
+    .play-btn:active {
+        animation: spin 0.5s ease-in-out !important;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* TITLE: Fade-In Animation */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in !important;
+    }
+    /* Row containing Dynamic Table and Strategy Recommendations */
+    .dynamic-table-strategy-row {
+        display: flex !important;
+        gap: 25px !important; /* Slightly reduced gap for better fit */
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+        max-width: 1250px !important; /* Reduced to ensure side-by-side fit */
+        margin: 0 auto !important;
+        padding: 20px 10px !important;
+    }
+    
+    /* Strategy Recommendations Container (Left Side) */
+    .strategy-recommendations-container {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 450px !important; /* Reduced to match new min_width */
+        margin: 0 auto !important;
+        padding: 15px !important;
+    }
+    
+    /* Strategy Card Styling */
+    .strategy-recommendations-container .strategy-card {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+    }
+    
+    /* Fix Dropdown Arrow Overlap */
+    .strategy-recommendations-container .gr-dropdown {
+        width: 100% !important;
+        min-width: 220px !important; /* Reduced slightly to fit narrower container */
+        position: relative !important;
+    }
+    
+    .strategy-recommendations-container .gr-dropdown select {
+        width: 100% !important;
+        padding-right: 30px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background: transparent !important;
+        color: #ffffff !important;
+        border: 1px solid #3b82f6 !important;
+        border-radius: 5px !important;
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Custom Arrow for Dropdowns */
+    .strategy-recommendations-container .gr-dropdown::after {
+        content: '▼';
+        position: absolute !important;
+        right: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: #ffffff !important;
+        font-size: 12px !important;
+        pointer-events: none !important;
+    }
+    
+    /* Ensure Dropdown Options Are Readable */
+    .strategy-recommendations-container .gr-dropdown select option {
+        background: #2a2a72 !important;
+        color: #ffffff !important;
+        font-size: 14px !important;
+    }
+    
+    /* Style for Dropdown Labels */
+    .strategy-recommendations-container .gr-dropdown label {
+        background: transparent !important;
+        color: #ffffff !important;
+        text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+        padding: 5px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Ensure Strategy Output Box Fits Well */
+    .strategy-recommendations-container .strategy-box {
+        max-height: 300px !important;
+        overflow-y: auto !important;
+        padding: 15px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 8px !important;
+        box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
+        width: 100% !important;
+    }
+    
+    /* Dynamic Table Container (Right Side) */
+    .dynamic-table-strategy-row .dynamic-table-container {
+        max-width: 750px !important;
+        width: 100% !important;
+        padding: 15px !important;
+    }
+    
+    /* Dynamic Table Styling */
+    .dynamic-table-strategy-row .large-table {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        overflow-x: auto !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 1300px) { /* Adjusted breakpoint */
+        .dynamic-table-strategy-row {
+            flex-direction: column !important;
             align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-        }
-        .spin-counter:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        .spin-counter.glow {
-            animation: counter-glow 0.5s ease-in-out !important;
-        }
-        
-        @keyframes counter-glow {
-            0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-            50% { box-shadow: 0 0 10px 5px rgba(52, 152, 219, 0.8); }
-        }
-        .sides-of-zero-container {
-            background-color: #ffffff !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin: 10px 0 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Hit Percentage Overview - Revamped for High-Tech Look with Increased Specificity */
-        #hit-percentage-overview .hit-percentage-container {
-            padding: 20px !important;
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-            border-radius: 12px !important;
-            border: 3px solid #ff66cc !important;
-            box-shadow: 0 0 20px rgba(255, 102, 204, 0.5) !important;
-            width: 100% !important;
-            max-width: 2000px !important;
-            margin-top: 10px !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            overflow: visible !important;
-            animation: dataPulse 3s ease-in-out infinite !important;
-            outline: 2px solid yellow !important;
-        }
-        
-        /* Data scanning pulse effect */
-        @keyframes dataPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 102, 204, 0.5); }
-            50% { box-shadow: 0 0 30px rgba(255, 102, 204, 0.8); }
-        }
-        
-        /* Add a subtle grid overlay for high-tech effect */
-        #hit-percentage-overview .hit-percentage-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255, 102, 204, 0.15) 0%, transparent 70%) !important;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        
-        #hit-percentage-overview .hit-percentage-overview {
-            display: flex !important;
-            flex-wrap: wrap !important;
             gap: 20px !important;
         }
-        
-        #hit-percentage-overview .percentage-wrapper {
+    
+        .dynamic-table-strategy-row .dynamic-table-container,
+        .dynamic-table-strategy-row .strategy-recommendations-container {
+            max-width: 100% !important;
             width: 100% !important;
-            max-width: 1600px !important;
-            box-sizing: border-box !important;
-            padding-top: 15px !important;
         }
-        
-        #hit-percentage-overview .percentage-group {
-            margin: 10px 0 !important;
-            padding-top: 15px !important;
-            flex: 1 !important;
-            min-width: 150px !important;
-            overflow: visible !important;
+    
+        .dynamic-table-strategy-row .large-table {
+            max-width: 100% !important;
         }
-        
-        #hit-percentage-overview .percentage-group h4 {
-            margin: 5px 0 !important;
-            color: #ffccff !important;
-            text-shadow: 0 0 5px rgba(255, 102, 204, 0.5) !important;
+    
+        .strategy-recommendations-container .strategy-card {
+            max-width: 100% !important;
         }
-        
-        #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-            align-items: center !important;
-            padding: 5px 0 !important;
+    
+        .strategy-recommendations-container .gr-dropdown {
+            min-width: 100% !important;
         }
-        
-        /* Responsive adjustments for mobile */
-        @media (max-width: 600px) {
-            #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
-                flex-wrap: wrap !important;
-                overflow-x: visible !important;
-            }
-            #hit-percentage-overview .percentage-item {
-                font-size: 10px !important;
-                padding: 4px 8px !important;
-            }
+        /* Pattern Alert Icons for Quick Trends */
+        .trend-icon {
+            display: inline-block;
+            font-size: 16px;
+            margin-right: 5px;
+            animation: subtle-rotate 2s linear infinite;
         }
-        
-        /* TITLE: Percentage Item Styles - Revamped for High-Tech Effect */
-        #hit-percentage-overview .percentage-item {
-            background: transparent !important;
-            color: #fff !important;
-            padding: 6px 14px !important;
-            border-radius: 15px !important;
-            font-size: 12px !important;
-            margin: 5px 3px !important;
-            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
-            cursor: pointer !important;
-            border: 1px solid transparent !important;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
-            font-weight: bold !important;
-            display: inline-block !important;
-        }
-        
-        #hit-percentage-overview .percentage-item:hover {
-            transform: scale(1.15) !important;
-            filter: brightness(1.4) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.even-money {
-            background: rgba(255, 77, 77, 0.3) !important;
-            border-color: #ff4d4d !important;
-            box-shadow: 0 0 12px rgba(255, 77, 77, 0.7) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.column {
-            background: rgba(77, 121, 255, 0.3) !important;
-            border-color: #4d79ff !important;
-            box-shadow: 0 0 12px rgba(77, 121, 255, 0.7) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.dozen {
-            background: rgba(77, 255, 77, 0.3) !important;
-            border-color: #4dff4d !important;
-            box-shadow: 0 0 12px rgba(77, 255, 77, 0.7) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.winner {
-            font-weight: bold !important;
-            color: #fff !important;
-            border: 2px solid #ffcc00 !important;
-            box-shadow: 0 0 15px #ffcc00 !important;
-            background: rgba(255, 204, 0, 0.4) !important;
-            transform: scale(1.15) !important;
-        }
-        
-        #hit-percentage-overview .percentage-with-bar {
-            display: inline-block !important;
-            text-align: center !important;
-            margin: 0 3px !important;
-            margin-bottom: 8px !important;
-        }
-        
-        /* TITLE: Fix Content Titles for Hit Percentage Overview and SpinTrend Radar */
-        .hit-percentage-overview > h4 {
-            color: #ff66cc !important;
-            text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            margin: 0 0 10px 0 !important;
-            outline: 2px solid yellow !important;
-        }
-        
-        .traits-overview > h4 {
-            color: #00ffcc !important;
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            margin: 0 0 10px 0 !important;
-            outline: 2px solid yellow !important;
-        }
-        
-        /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
-        
-        /* SpinTrend Radar Accordion */
-        #spin-trend-radar.gr-accordion,
-        #spin-trend-radar.gr-accordion > details {
-            background: #e6e6fa !important; /* Light lavender to match internal purple aesthetic */
-            border: 2px solid #00ffcc !important; /* Retain cyan border */
-            border-radius: 10px !important;
-            padding: 10px !important;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3) !important;
-        }
-        
-        #spin-trend-radar.gr-accordion summary {
-            background: #d8bfd8 !important; /* Thistle for contrast */
-            color: #00ffcc !important; /* Retain cyan text */
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            padding: 10px !important;
-            border-radius: 8px !important;
-        }
-        
-        /* Ensure internal rows/columns blend with the new background */
-        #spin-trend-radar .gr-row,
-        #spin-trend-radar .gr-column {
-            background: transparent !important; /* Allow internal gradient to show */
-        }
-        
-        /* Hit Percentage Overview Accordion */
-        #hit-percentage-overview.gr-accordion,
-        #hit-percentage-overview.gr-accordion > details {
-            background: #e6e6fa !important; /* Light lavender to match internal purple aesthetic */
-            border: 2px solid #ff66cc !important; /* Retain pink border */
-            border-radius: 10px !important;
-            padding: 10px !important;
-            box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-        }
-        
-        #hit-percentage-overview.gr-accordion summary {
-            background: #d8bfd8 !important; /* Thistle for contrast */
-            color: #ff66cc !important; /* Retain pink text */
-            text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            padding: 10px !important;
-            border-radius: 8px !important;
-        }
-        
-        /* Ensure internal rows/columns blend with the new background */
-        #hit-percentage-overview .gr-row,
-        #hit-percentage-overview .gr-column {
-            background: transparent !important; /* Allow internal gradient to show */
-        }
-        
-        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
-        .progress-bar {
-            width: 100% !important;
-            height: 6px !important;
-            min-height: 6px !important;
-            background-color: #d3d3d3 !important;
-            border-radius: 3px !important;
-            margin-top: 6px !important;
-            overflow: hidden !important;
-            display: block !important;
-        }
-        .progress-fill {
-            height: 100% !important;
-            border-radius: 3px !important;
-            transition: width 0.3s ease !important;
-            display: block !important;
-        }
-        
-        /* TITLE: Traits Container - Revamped for Radar Effect */
-        .traits-container {
-            padding: 20px !important;
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important; /* Same as Hit Percentage Overview */
-            border-radius: 10px !important;
-            border: 2px solid #00ffcc !important;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3) !important;
-            width: 100% !important;
-            max-width: 2000px !important;
-            margin-top: 10px !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            overflow: visible !important;
-            animation: radarPulse 4s ease-in-out infinite !important;
-        }
-        
-        /* Radar pulsing effect */
-        @keyframes radarPulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(0, 255, 204, 0.5); }
-        }
-        
-        /* Add a radar-like overlay (optional subtle grid effect) */
-        .traits-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0, 255, 204, 0.1) 0%, transparent 70%) !important;
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        
-        /* TITLE: Traits Badges Layout */
-        .traits-wrapper {
-            width: 100% !important;
-            max-width: 1600px !important;
-            box-sizing: border-box !important;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 15px !important;
-            padding-top: 10px !important;
-        }
-        .badge-group {
-            margin: 10px 0 !important;
-            padding-top: 10px !important;
-            flex: 1 !important;
-            min-width: 150px !important;
-            overflow: visible !important;
-        }
-        .badge-group:nth-child(1) h4 { color: #ff4d4d !important; } /* Even Money Bets - Neon Red */
-        .badge-group:nth-child(2) h4 { color: #4d79ff !important; } /* Columns - Neon Blue */
-        .badge-group:nth-child(3) h4 { color: #4dff4d !important; } /* Dozens - Neon Green */
-        .badge-group:nth-child(4) h4 { color: #cc33ff !important; } /* Repeat Numbers - Neon Purple */
-        .percentage-badges {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            align-items: center !important;
-            padding: 5px 0 !important;
-        }
-        
-        /* TITLE: Trait Badge Styles - Revamped for Radar Effect */
-        .trait-badge {
-            background: transparent !important;
-            color: #fff !important;
-            padding: 5px 12px !important;
-            border-radius: 15px !important;
-            font-size: 12px !important;
-            margin: 5px 3px !important;
-            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
-            cursor: pointer !important;
-            border: 1px solid transparent !important;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
-            font-weight: bold !important;
-            display: inline-block !important;
-        }
-        .trait-badge:hover {
-            transform: scale(1.1) !important;
-            filter: brightness(1.3) !important;
-        }
-        .trait-badge.even-money {
-            background: rgba(255, 77, 77, 0.2) !important;
-            border-color: #ff4d4d !important;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
-        }
-        .trait-badge.column {
-            background: rgba(77, 121, 255, 0.2) !important;
-            border-color: #4d79ff !important;
-            box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
-        }
-        .trait-badge.dozen {
-            background: rgba(77, 255, 77, 0.2) !important;
-            border-color: #4dff4d !important;
-            box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
-        }
-        .trait-badge.repeat {
-            background: rgba(204, 51, 255, 0.2) !important;
-            border-color: #cc33ff !important;
-            box-shadow: 0 0 10px rgba(204, 51, 255, 0.5) !important;
-        }
-        .trait-badge.winner {
-            font-weight: bold !important;
-            color: #fff !important;
-            border: 2px solid #ffd700 !important;
-            box-shadow: 0 0 12px #ffd700 !important;
-            background: rgba(255, 215, 0, 0.3) !important;
-            transform: scale(1.1) !important;
-        }
-        
-        /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
-        .hot-streak {
-            display: none !important;
-        }
-        .hot-streak:hover:after {
-            content: attr(title);
-            position: absolute;
-            background-color: #333 !important;
-            color: white !important;
-            padding: 6px 10px !important;
-            border-radius: 5px !important;
-            font-size: 12px !important;
-            font-family: Arial, sans-serif !important;
-            white-space: nowrap !important;
-            z-index: 20 !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
-            animation: fadeInTooltip 0.3s ease-in !important;
-        }
-        @keyframes fadeInTooltip {
-            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        
-        /* Placeholder Section for Hit Percentage and SpinTrend Radar */
-        .placeholder-section {
-            background-color: #000 !important;
-            min-height: 200px !important;
-            height: 100% !important;
-            width: 100% !important;
-            border-radius: 5px !important;
-            box-sizing: border-box !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            color: #fff !important;
-            font-family: Arial, sans-serif !important;
-        }
-        
-        /* Ensure the columns are truly 50/50 and aligned */
-        .hit-percentage-container, .traits-container {
-            width: 100% !important;
-            max-width: none !important;
-            margin: 0 !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .placeholder-section {
-                min-height: 150px !important;
-            }
-            .hit-percentage-container, .traits-container {
-                padding: 5px !important;
-            }
-        }
-        
-        /* TITLE: Suggestion Box */
-        .suggestion-box {
-            background-color: #f0f8ff !important;
-            border: 1px solid #4682b4 !important;
-            border-radius: 5px !important;
-            padding: 5px !important;
-            font-size: 14px !important;
-        }
-        
-        /* TITLE: Spin Animation */
-        .play-btn:active {
-            animation: spin 0.5s ease-in-out !important;
-        }
-        @keyframes spin {
+        .trend-icon.hot { color: #ff4500; } /* Flame for hot trends */
+        .trend-icon.cold { color: #00b7eb; } /* Snowflake for cold trends */
+        .trend-icon.streak { color: #ffd700; } /* Lightning for streaks */
+        @keyframes subtle-rotate {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        /* TITLE: Fade-In Animation */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in !important;
+        .quick-trends li {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 5px;
         }
-        /* Row containing Dynamic Table and Strategy Recommendations */
-        .dynamic-table-strategy-row {
-            display: flex !important;
-            gap: 25px !important; /* Slightly reduced gap for better fit */
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            width: 100% !important;
-            max-width: 1250px !important; /* Reduced to ensure side-by-side fit */
-            margin: 0 auto !important;
-            padding: 20px 10px !important;
+        /* Quick Bet Suggestions for Quick Trends */
+        .bet-suggestion {
+            color: #ff4500;
+            font-style: italic;
+            background: rgba(255, 69, 0, 0.1);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
         }
-        
-        /* Strategy Recommendations Container (Left Side) */
-        .strategy-recommendations-container {
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: flex-start !important;
-            align-items: center !important;
-            width: 100% !important;
-            max-width: 450px !important; /* Reduced to match new min_width */
-            margin: 0 auto !important;
-            padding: 15px !important;
+        /* Debug Highlight for SpinTrend Radar */
+        .traits-overview.debug-highlight {
+            background: rgba(200, 200, 200, 0.2); /* Light gray background to confirm rendering */
+            padding: 10px;
+            border: 1px solid #999;
         }
         
-        /* Strategy Card Styling */
-        .strategy-recommendations-container .strategy-card {
-            max-width: 100% !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 20px !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+        /* Ensure Traits Wrapper is Visible */
+        .traits-wrapper {
+            position: relative;
+            overflow: visible; /* Prevent clipping of child elements */
+            padding-bottom: 20px; /* Add space for switch-alert */
         }
         
-        /* Fix Dropdown Arrow Overlap */
-        .strategy-recommendations-container .gr-dropdown {
-            width: 100% !important;
-            min-width: 220px !important; /* Reduced slightly to fit narrower container */
-            position: relative !important;
+        /* Red/Black Switch Alert */
+        .switch-alert {
+            display: flex;
+            gap: 4px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5); /* More prominent background */
+            border: 2px solid #666; /* Thicker border for visibility */
+            border-radius: 6px;
+            margin-top: 15px;
+            justify-content: center;
+            min-height: 40px; /* Increased height for better visibility */
+            align-items: center;
+            position: relative;
+            z-index: 100; /* Ensure it’s above other elements */
         }
-        
-        .strategy-recommendations-container .gr-dropdown select {
-            width: 100% !important;
-            padding-right: 30px !important;
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            background: transparent !important;
-            color: #ffffff !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            font-size: 14px !important;
-            padding: 8px 12px !important;
-            box-sizing: border-box !important;
+        .switch-dot {
+            width: 14px; /* Slightly larger dots */
+            height: 14px;
+            border-radius: 50%;
         }
-        
-        /* Custom Arrow for Dropdowns */
-        .strategy-recommendations-container .gr-dropdown::after {
-            content: '▼';
-            position: absolute !important;
-            right: 10px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            color: #ffffff !important;
-            font-size: 12px !important;
-            pointer-events: none !important;
+        .switch-dot.red { background: #ff4444; }
+        .switch-dot.black { background: #000000; }
+        .switch-dot.green { background: #388e3c; }
+        .switch-alert.high-switches {
+            border: 2px solid #ffd700;
+            animation: flash-border 1s infinite ease-in-out;
         }
-        
-        /* Ensure Dropdown Options Are Readable */
-        .strategy-recommendations-container .gr-dropdown select option {
-            background: #2a2a72 !important;
-            color: #ffffff !important;
-            font-size: 14px !important;
+        @keyframes flash-border {
+            0%, 100% { border-color: #ffd700; }
+            50% { border-color: #ffa500; }
         }
-        
-        /* Style for Dropdown Labels */
-        .strategy-recommendations-container .gr-dropdown label {
-            background: transparent !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-            padding: 5px !important;
-            font-size: 14px !important;
+        .switch-alert:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            top: -35px; /* Adjusted for larger bar */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            z-index: 101;
         }
-        
-        /* Ensure Strategy Output Box Fits Well */
-        .strategy-recommendations-container .strategy-box {
-            max-height: 300px !important;
-            overflow-y: auto !important;
-            padding: 15px !important;
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-radius: 8px !important;
-            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            width: 100% !important;
+        /* Dozen Shift Indicator */
+        .dozen-shift-indicator {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            margin-top: 10px;
+            justify-content: center;
+            position: relative;
+            z-index: 100;
         }
-        
-        /* Dynamic Table Container (Right Side) */
-        .dynamic-table-strategy-row .dynamic-table-container {
-            max-width: 750px !important;
-            width: 100% !important;
-            padding: 15px !important;
+        .dozen-badge {
+            display: inline-block;
+            font-size: 12px;
+            color: #fff;
+            background: #388e3c; /* 1st Dozen */
+            border-radius: 3px;
+            padding: 2px 4px;
+            animation: bounce 1s infinite ease-in-out;
         }
-        
-        /* Dynamic Table Styling */
-        .dynamic-table-strategy-row .large-table {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding: 20px !important;
-            box-sizing: border-box !important;
-            overflow-x: auto !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-        }
-        
-        /* Responsive Adjustments */
-        @media (max-width: 1300px) { /* Adjusted breakpoint */
-            .dynamic-table-strategy-row {
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 20px !important;
-            }
-        
-            .dynamic-table-strategy-row .dynamic-table-container,
-            .dynamic-table-strategy-row .strategy-recommendations-container {
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-        
-            .dynamic-table-strategy-row .large-table {
-                max-width: 100% !important;
-            }
-        
-            .strategy-recommendations-container .strategy-card {
-                max-width: 100% !important;
-            }
-        
-            .strategy-recommendations-container .gr-dropdown {
-                min-width: 100% !important;
-            }
-            /* Pattern Alert Icons for Quick Trends */
-            .trend-icon {
-                display: inline-block;
-                font-size: 16px;
-                margin-right: 5px;
-                animation: subtle-rotate 2s linear infinite;
-            }
-            .trend-icon.hot { color: #ff4500; } /* Flame for hot trends */
-            .trend-icon.cold { color: #00b7eb; } /* Snowflake for cold trends */
-            .trend-icon.streak { color: #ffd700; } /* Lightning for streaks */
-            @keyframes subtle-rotate {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            .quick-trends li {
-                display: flex;
-                align-items: center;
-                padding: 5px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 5px;
-                margin-bottom: 5px;
-            }
-            /* Quick Bet Suggestions for Quick Trends */
-            .bet-suggestion {
-                color: #ff4500;
-                font-style: italic;
-                background: rgba(255, 69, 0, 0.1);
-                padding: 5px;
-                border-radius: 5px;
-                display: flex;
-                align-items: center;
-                font-weight: bold;
-                box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
-            }
-            /* Debug Highlight for SpinTrend Radar */
-            .traits-overview.debug-highlight {
-                background: rgba(200, 200, 200, 0.2); /* Light gray background to confirm rendering */
-                padding: 10px;
-                border: 1px solid #999;
-            }
-            
-            /* Ensure Traits Wrapper is Visible */
-            .traits-wrapper {
-                position: relative;
-                overflow: visible; /* Prevent clipping of child elements */
-                padding-bottom: 20px; /* Add space for switch-alert */
-            }
-            
-            /* Red/Black Switch Alert */
-            .switch-alert {
-                display: flex;
-                gap: 4px;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.5); /* More prominent background */
-                border: 2px solid #666; /* Thicker border for visibility */
-                border-radius: 6px;
-                margin-top: 15px;
-                justify-content: center;
-                min-height: 40px; /* Increased height for better visibility */
-                align-items: center;
-                position: relative;
-                z-index: 100; /* Ensure it’s above other elements */
-            }
-            .switch-dot {
-                width: 14px; /* Slightly larger dots */
-                height: 14px;
-                border-radius: 50%;
-            }
-            .switch-dot.red { background: #ff4444; }
-            .switch-dot.black { background: #000000; }
-            .switch-dot.green { background: #388e3c; }
-            .switch-alert.high-switches {
-                border: 2px solid #ffd700;
-                animation: flash-border 1s infinite ease-in-out;
-            }
-            @keyframes flash-border {
-                0%, 100% { border-color: #ffd700; }
-                50% { border-color: #ffa500; }
-            }
-            .switch-alert:hover::after {
-                content: attr(data-tooltip);
-                position: absolute;
-                background: #333;
-                color: #fff;
-                padding: 5px;
-                border-radius: 3px;
-                top: -35px; /* Adjusted for larger bar */
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 12px;
-                z-index: 101;
-            }
-            /* Dozen Shift Indicator */
-            .dozen-shift-indicator {
-                display: flex;
-                align-items: center;
-                padding: 8px;
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 6px;
-                margin-top: 10px;
-                justify-content: center;
-                position: relative;
-                z-index: 100;
-            }
-            .dozen-badge {
-                display: inline-block;
-                font-size: 12px;
-                color: #fff;
-                background: #388e3c; /* 1st Dozen */
-                border-radius: 3px;
-                padding: 2px 4px;
-                animation: bounce 1s infinite ease-in-out;
-            }
-            .dozen-badge.d1 { background: #388e3c; } /* 1st Dozen */
-            .dozen-badge.d2 { background: #ff9800; } /* 2nd Dozen */
-            .dozen-badge.d3 { background: #8e24aa; } /* 3rd Dozen */
-            @keyframes bounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-3px); }
-            }
-            .dozen-shift-indicator:hover::after {
-                content: attr(data-tooltip);
-                position: absolute;
-                background: #333;
-                color: #fff;
-                padding: 5px;
-                border-radius: 3px;
-                top: -30px;
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 12px;
-                z-index: 101;
-            }
-        /* Enhanced Red/Black Chopping Alert within Quick Trends */
-        .quick-trends .switch-alert {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 6px !important;
-            padding: 8px !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid #999 !important;
-            border-radius: 5px !important;
-            margin: 5px 0 !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            z-index: 10 !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .quick-trends .switch-dots-container {
-            display: flex !important;
-            gap: 5px !important;
-        }
-        
-        .quick-trends .switch-dot {
-            width: 14px !important;
-            height: 14px !important;
-            border-radius: 50% !important;
-            border: 1px solid #fff !important;
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
-        }
-        
-        .quick-trends .switch-dot.red { background: #ff4444 !important; }
-        .quick-trends .switch-dot.black { background: #000000 !important; }
-        .quick-trends .switch-dot.green { background: #388e3c !important; }
-        
-        .quick-trends .switch-alert.high-switches {
-            border: 2px solid #ffd700 !important;
-            background: rgba(255, 215, 0, 0.15) !important;
-            animation: chopping-glow 1.5s ease-in-out infinite !important;
-        }
-        
-        .quick-trends .chopping-alert {
-            color: #ff4500 !important;
-            font-weight: bold !important;
-            font-size: 13px !important;
-            text-align: left !important;
-            text-shadow: 0 0 3px rgba(255, 69, 0, 0.4) !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 4px !important;
-        }
-        
-        @keyframes chopping-glow {
-            0%, 100% {
-                box-shadow: 0 0 8px rgba(255, 215, 0, 0.4) !important;
-                border-color: #ffd700 !important;
-            }
-            50% {
-                box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
-                border-color: #ffa500 !important;
-            }
-        }
-        
-        .quick-trends .switch-alert:hover::after {
-            content: attr(data-tooltip) !important;
-            position: absolute !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 4px !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            font-size: 11px !important;
-            z-index: 11 !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Dozen Shift Indicator within Quick Trends */
-        .quick-trends .dozen-shift-indicator {
-            display: flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-            padding: 8px !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid #999 !important;
-            border-radius: 5px !important;
-            margin: 5px 0 !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            z-index: 10 !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .quick-trends .dozen-badge {
-            display: inline-block !important;
-            font-size: 12px !important;
-            color: #fff !important;
-            border-radius: 3px !important;
-            padding: 2px 4px !important;
-            animation: bounce 1s infinite ease-in-out !important;
-        }
-        
-        .quick-trends .dozen-badge.d1 { background: #388e3c !important; } /* 1st Dozen */
-        .quick-trends .dozen-badge.d2 { background: #ff9800 !important; } /* 2nd Dozen */
-        .quick-trends .dozen-badge.d3 { background: #8e24aa !important; } /* 3rd Dozen */
-        
+        .dozen-badge.d1 { background: #388e3c; } /* 1st Dozen */
+        .dozen-badge.d2 { background: #ff9800; } /* 2nd Dozen */
+        .dozen-badge.d3 { background: #8e24aa; } /* 3rd Dozen */
         @keyframes bounce {
-            0%, 100% { transform: translateY(0) !important; }
-            50% { transform: translateY(-3px) !important; }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
         }
-        
-        .quick-trends .dozen-shift-indicator:hover::after {
-            content: attr(data-tooltip) !important;
-            position: absolute !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 4px !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
+        .dozen-shift-indicator:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            z-index: 101;
+        }
+    }
+    /* Enhanced Red/Black Chopping Alert within Quick Trends */
+    .quick-trends .switch-alert {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid #999 !important;
+        border-radius: 5px !important;
+        margin: 5px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        z-index: 10 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .quick-trends .switch-dots-container {
+        display: flex !important;
+        gap: 5px !important;
+    }
+    
+    .quick-trends .switch-dot {
+        width: 14px !important;
+        height: 14px !important;
+        border-radius: 50% !important;
+        border: 1px solid #fff !important;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .quick-trends .switch-dot.red { background: #ff4444 !important; }
+    .quick-trends .switch-dot.black { background: #000000 !important; }
+    .quick-trends .switch-dot.green { background: #388e3c !important; }
+    
+    .quick-trends .switch-alert.high-switches {
+        border: 2px solid #ffd700 !important;
+        background: rgba(255, 215, 0, 0.15) !important;
+        animation: chopping-glow 1.5s ease-in-out infinite !important;
+    }
+    
+    .quick-trends .chopping-alert {
+        color: #ff4500 !important;
+        font-weight: bold !important;
+        font-size: 13px !important;
+        text-align: left !important;
+        text-shadow: 0 0 3px rgba(255, 69, 0, 0.4) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+    
+    @keyframes chopping-glow {
+        0%, 100% {
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.4) !important;
+            border-color: #ffd700 !important;
+        }
+        50% {
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
+            border-color: #ffa500 !important;
+        }
+    }
+    
+    .quick-trends .switch-alert:hover::after {
+        content: attr(data-tooltip) !important;
+        position: absolute !important;
+        background: #333 !important;
+        color: #fff !important;
+        padding: 5px 10px !important;
+        border-radius: 4px !important;
+        top: -35px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        font-size: 11px !important;
+        z-index: 11 !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Dozen Shift Indicator within Quick Trends */
+    .quick-trends .dozen-shift-indicator {
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        padding: 8px !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid #999 !important;
+        border-radius: 5px !important;
+        margin: 5px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        z-index: 10 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .quick-trends .dozen-badge {
+        display: inline-block !important;
+        font-size: 12px !important;
+        color: #fff !important;
+        border-radius: 3px !important;
+        padding: 2px 4px !important;
+        animation: bounce 1s infinite ease-in-out !important;
+    }
+    
+    .quick-trends .dozen-badge.d1 { background: #388e3c !important; } /* 1st Dozen */
+    .quick-trends .dozen-badge.d2 { background: #ff9800 !important; } /* 2nd Dozen */
+    .quick-trends .dozen-badge.d3 { background: #8e24aa !important; } /* 3rd Dozen */
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0) !important; }
+        50% { transform: translateY(-3px) !important; }
+    }
+    
+    .quick-trends .dozen-shift-indicator:hover::after {
+        content: attr(data-tooltip) !important;
+        position: absolute !important;
+        background: #333 !important;
+        color: #fff !important;
+        padding: 5px 10px !important;
+        border-radius: 4px !important;
+        top: -35px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        font-size: 11px !important;
+        z-index: 11 !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+        .quick-trends .switch-alert,
+        .quick-trends .dozen-shift-indicator {
+            padding: 6px !important;
+        }
+        .quick-trends .switch-dot {
+            width: 12px !important;
+            height: 12px !important;
+        }
+        .quick-trends .chopping-alert {
+            font-size: 12px !important;
+        }
+        .quick-trends .dozen-badge {
             font-size: 11px !important;
-            z-index: 11 !important;
-            white-space: nowrap !important;
+            padding: 1px 3px !important;
+        }
+        .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
+            font-size: 11px !important;
+        }
+        /* TITLE: Style Accordion Container for Create Dozen/Even Bet Triggers */
+    
+        #dozen-tracker.gr-accordion,
+        .gr-box #dozen-tracker,
+        #dozen-tracker.gr-accordion > details {
+            background: #e6e6fa !important; /* Light lavender for cohesive purple aesthetic */
+            border: 2px solid #2196f3 !important; /* Blue border to match app accents */
+            border-radius: 10px !important;
+            padding: 10px !important;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3) !important; /* Blue glow */
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .quick-trends .switch-alert,
-            .quick-trends .dozen-shift-indicator {
-                padding: 6px !important;
-            }
-            .quick-trends .switch-dot {
-                width: 12px !important;
-                height: 12px !important;
-            }
-            .quick-trends .chopping-alert {
-                font-size: 12px !important;
-            }
-            .quick-trends .dozen-badge {
-                font-size: 11px !important;
-                padding: 1px 3px !important;
-            }
-            .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
-                font-size: 11px !important;
-            }
-            /* TITLE: Style Accordion Container for Create Dozen/Even Bet Triggers */
-
-            #dozen-tracker.gr-accordion,
-            .gr-box #dozen-tracker,
-            #dozen-tracker.gr-accordion > details {
-                background: #e6e6fa !important; /* Light lavender for cohesive purple aesthetic */
-                border: 2px solid #2196f3 !important; /* Blue border to match app accents */
-                border-radius: 10px !important;
-                padding: 10px !important;
-                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3) !important; /* Blue glow */
-            }
-            
-            #dozen-tracker.gr-accordion summary {
-                background: #d8bfd8 !important; /* Thistle for contrast */
-                color: #2196f3 !important; /* Blue text to match app theme */
-                text-shadow: 0 0 8px rgba(33, 150, 243, 0.7) !important; /* Blue glow */
-                font-size: 18px !important;
-                font-weight: bold !important;
-                padding: 10px !important;
-                border-radius: 8px !important;
-            }
-            
-            /* Style nested accordions (Dozen Triggers, Even Money) */
-            #dozen-triggers.gr-accordion,
-            #even-money-tracker.gr-accordion,
-            #dozen-triggers.gr-accordion > details,
-            #even-money-tracker.gr-accordion > details {
-                background: #e6e6fa !important; /* Match parent accordion */
-                border: 1px solid #2196f3 !important; /* Thinner blue border for hierarchy */
-                border-radius: 8px !important;
-                padding: 8px !important;
-                box-shadow: 0 0 5px rgba(33, 150, 243, 0.2) !important;
-            }
-            
-            #dozen-triggers.gr-accordion summary,
-            #even-money-tracker.gr-accordion summary {
-                background: #e0e0ff !important; /* Slightly lighter purple-blue for distinction */
-                color: #2196f3 !important;
-                text-shadow: 0 0 5px rgba(33, 150, 243, 0.5) !important;
-                font-size: 16px !important; /* Slightly smaller for hierarchy */
-                font-weight: bold !important;
-                padding: 8px !important;
-                border-radius: 6px !important;
-            }
-            
-            /* Ensure internal rows/columns blend with the new background */
-            #dozen-tracker .gr-row,
-            #dozen-tracker .gr-column,
-            #dozen-triggers .gr-row,
-            #dozen-triggers .gr-column,
-            #even-money-tracker .gr-row,
-            #even-money-tracker .gr-column {
-                background: transparent !important; /* Allow accordion background to show */
-            }
-            
-            /* Ensure output HTML elements don’t override the background */
-            #dozen-tracker .gr-html,
-            #dozen-tracker .gr-textbox,
-            #dozen-triggers .gr-html,
-            #even-money-tracker .gr-html {
-                background: transparent !important;
-            }
-            /* TITLE: Style Accordion Container for Betting Progression Tracker */
-
-            /* Target the accordion with multiple selectors for robustness */
-            .betting-progression.gr-accordion,
-            .gr-box.betting-progression,
-            [class*="betting-progression"],
-            .betting-progression.gr-accordion > details {
-                background: #e6e6fa !important; /* Light lavender for cohesive purple aesthetic */
-                border: 2px solid #2196f3 !important; /* Blue border to match app accents */
-                border-radius: 10px !important;
-                padding: 10px !important;
-                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3) !important; /* Blue glow */
-            }
-            
-            /* Style the accordion summary */
-            .betting-progression.gr-accordion summary {
-                background: #d8bfd8 !important; /* Thistle for contrast */
-                color: #2196f3 !important; /* Blue text to match app theme */
-                text-shadow: 0 0 8px rgba(33, 150, 243, 0.7) !important; /* Blue glow */
-                font-size: 18px !important;
-                font-weight: bold !important;
-                padding: 10px !important;
-                border-radius: 8px !important;
-            }
-            
-            /* Ensure internal rows, columns, and inputs blend with the background */
-            .betting-progression .gr-row,
-            .betting-progression .gr-column,
-            .betting-progression .gr-number,
-            .betting-progression .gr-dropdown,
-            .betting-progression .gr-textbox,
-            .betting-progression .gr-html {
-                background: transparent !important; /* Prevent white backgrounds */
-            }
-            
-            /* Fallback selector without !important for flexibility */
-            .gr-box.betting-progression {
-                background: #e6e6fa;
-                border: 2px solid #2196f3;
-                border-radius: 10px;
-                padding: 10px;
-                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
-            }
-            
-            .gr-box.betting-progression summary {
-                background: #d8bfd8;
-                color: #2196f3;
-                text-shadow: 0 0 8px rgba(33, 150, 243, 0.7);
-                font-size: 18px;
-                font-weight: bold;
-                padding: 10px;
-                border-radius: 8px;
-            }
+        #dozen-tracker.gr-accordion summary {
+            background: #d8bfd8 !important; /* Thistle for contrast */
+            color: #2196f3 !important; /* Blue text to match app theme */
+            text-shadow: 0 0 8px rgba(33, 150, 243, 0.7) !important; /* Blue glow */
+            font-size: 18px !important;
+            font-weight: bold !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
         }
+        
+        /* Style nested accordions (Dozen Triggers, Even Money) */
+        #dozen-triggers.gr-accordion,
+        #even-money-tracker.gr-accordion,
+        #dozen-triggers.gr-accordion > details,
+        #even-money-tracker.gr-accordion > details {
+            background: #e6e6fa !important; /* Match parent accordion */
+            border: 1px solid #2196f3 !important; /* Thinner blue border for hierarchy */
+            border-radius: 8px !important;
+            padding: 8px !important;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.2) !important;
+        }
+        
+        #dozen-triggers.gr-accordion summary,
+        #even-money-tracker.gr-accordion summary {
+            background: #e0e0ff !important; /* Slightly lighter purple-blue for distinction */
+            color: #2196f3 !important;
+            text-shadow: 0 0 5px rgba(33, 150, 243, 0.5) !important;
+            font-size: 16px !important; /* Slightly smaller for hierarchy */
+            font-weight: bold !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+        }
+        
+        /* Ensure internal rows/columns blend with the new background */
+        #dozen-tracker .gr-row,
+        #dozen-tracker .gr-column,
+        #dozen-triggers .gr-row,
+        #dozen-triggers .gr-column,
+        #even-money-tracker .gr-row,
+        #even-money-tracker .gr-column {
+            background: transparent !important; /* Allow accordion background to show */
+        }
+        
+        /* Ensure output HTML elements don’t override the background */
+        #dozen-tracker .gr-html,
+        #dozen-tracker .gr-textbox,
+        #dozen-triggers .gr-html,
+        #even-money-tracker .gr-html {
+            background: transparent !important;
+        }
+        /* TITLE: Style Accordion Container for Betting Progression Tracker */
+    
+        /* Target the accordion with multiple selectors for robustness */
+        .betting-progression.gr-accordion,
+        .gr-box.betting-progression,
+        [class*="betting-progression"],
+        .betting-progression.gr-accordion > details {
+            background: #e6e6fa !important; /* Light lavender for cohesive purple aesthetic */
+            border: 2px solid #2196f3 !important; /* Blue border to match app accents */
+            border-radius: 10px !important;
+            padding: 10px !important;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3) !important; /* Blue glow */
+        }
+        
+        /* Style the accordion summary */
+        .betting-progression.gr-accordion summary {
+            background: #d8bfd8 !important; /* Thistle for contrast */
+            color: #2196f3 !important; /* Blue text to match app theme */
+            text-shadow: 0 0 8px rgba(33, 150, 243, 0.7) !important; /* Blue glow */
+            font-size: 18px !important;
+            font-weight: bold !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Ensure internal rows, columns, and inputs blend with the background */
+        .betting-progression .gr-row,
+        .betting-progression .gr-column,
+        .betting-progression .gr-number,
+        .betting-progression .gr-dropdown,
+        .betting-progression .gr-textbox,
+        .betting-progression .gr-html {
+            background: transparent !important; /* Prevent white backgrounds */
+        }
+        
+        /* Fallback selector without !important for flexibility */
+        .gr-box.betting-progression {
+            background: #e6e6fa;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .gr-box.betting-progression summary {
+            background: #d8bfd8;
+            color: #2196f3;
+            text-shadow: 0 0 8px rgba(33, 150, 243, 0.7);
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    }
     </style>
+    <script>
+      const tour = new Shepherd.Tour({
+        defaultStepOptions: {
+          cancelIcon: { enabled: true },
+          scrollTo: { behavior: 'smooth', block: 'center' },
+          classes: 'shepherd-theme-arrows',
+          buttons: [
+            { text: 'Back', action: function() { return this.back(); } },
+            { text: 'Next', action: function() { return this.next(); } },
+            { text: 'Skip', action: function() { return this.cancel(); } }
+          ]
+        },
+        useModalOverlay: true
+      });
+    
+      tour.addStep({
+        id: 'welcome',
+        text: 'Welcome to the Roulette Analysis Dashboard! This tour will guide you through the key features of the app.',
+        attachTo: { element: '#header-row', on: 'bottom' },
+        buttons: [
+          { text: 'Start Tour', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'roulette-table',
+        text: 'This is the Roulette Table where you can select numbers to simulate spins. Click any number to add it to your spin history.',
+        attachTo: { element: '.roulette-table', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'selected-spins',
+        text: 'Here you can see the numbers you’ve selected for your spin history. Use this to track your spins.',
+        attachTo: { element: '#selected-spins', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'undo-spins',
+        text: 'Use the Undo button to remove the last spin from your history.',
+        attachTo: { element: '#undo-spins-btn', on: 'right' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'last-spins',
+        text: 'The Last Spins section shows the most recent spins and their patterns.',
+        attachTo: { element: '.last-spins-container', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'analyze-spins',
+        text: 'Click the Analyze Spins button to generate detailed insights based on your spin history.',
+        attachTo: { element: '.green-btn', on: 'left' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'dynamic-table',
+        text: 'The Dynamic Table displays real-time analysis of your spins, including trends and statistics.',
+        attachTo: { element: '#dynamic-table-heading', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'betting-progression',
+        text: 'The Betting Progression Tracker helps you manage your betting strategy with customizable progressions.',
+        attachTo: { element: '.betting-progression', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'color-code-key',
+        text: 'The Color Code Key explains the color coding used in the analysis for quick reference.',
+        attachTo: { element: '#color-code-key', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'spin-analysis',
+        text: 'The Spin Analysis section provides detailed insights into your spin patterns and trends.',
+        attachTo: { element: '#spin-analysis', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'save-load-session',
+        text: 'Save or load your session to continue your analysis later.',
+        attachTo: { element: '#save-load-session', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'select-category',
+        text: 'Use the Category Selector to filter and analyze specific aspects of your spins.',
+        attachTo: { element: '#select-category', on: 'right' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'casino-data-insights',
+        text: 'Casino Data Insights provide aggregated statistics and trends from your spins.',
+        attachTo: { element: '#casino-data-insights', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'hot-cold-numbers',
+        text: 'Hot and Cold Numbers highlight the most and least frequent numbers in your spins.',
+        attachTo: { element: '#hot-cold-numbers', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'sides-of-zero',
+        text: 'Sides of Zero analysis shows patterns around the zero on the roulette wheel.',
+        attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'dozen-tracker',
+        text: 'The Dozen/Even Bet Triggers let you set alerts for specific betting patterns.',
+        attachTo: { element: '#dozen-tracker', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'top-strategies',
+        text: 'Top Strategies provide recommended betting strategies based on your spin data.',
+        attachTo: { element: '#top-strategies', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Next', action: function() { return this.next(); } },
+          { text: 'Skip', action: function() { return this.cancel(); } }
+        ]
+      });
+    
+      tour.addStep({
+        id: 'feedback',
+        text: 'Share your feedback to help improve the app!',
+        attachTo: { element: '#feedback-section', on: 'top' },
+        buttons: [
+          { text: 'Back', action: function() { return this.back(); } },
+          { text: 'Finish', action: function() { return this.complete(); } }
+        ]
+      });
+    
+      function startTour() {
+        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
+        if (typeof Shepherd === 'undefined') {
+          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
+          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
+          return;
+        }
+        setTimeout(() => {
+          console.log('Checking DOM elements for tour...');
+          const criticalElements = [
+            '#header-row',
+            '.roulette-table',
+            '#selected-spins',
+            '#undo-spins-btn',
+            '.last-spins-container',
+            '.green-btn',
+            '#dynamic-table-heading',
+            '.betting-progression',
+            '#color-code-key',
+            '#spin-analysis',
+            '#save-load-session',
+            '#select-category',
+            '#casino-data-insights',
+            '#hot-cold-numbers',
+            '#sides-of-zero-accordion',
+            '#dozen-tracker',
+            '#top-strategies',
+            '#feedback-section'
+          ];
+          const missingElements = criticalElements.filter(el => !document.querySelector(el));
+          if (missingElements.length > 0) {
+            console.error(`Cannot start tour: Missing elements: ${missingElements.join(', ')}`);
+            alert(`Tour unavailable: Missing components (${missingElements.join(', ')}). Please refresh the page or contact support.`);
+            return;
+          }
+          console.log('All critical elements found. Starting tour.');
+          try {
+            tour.start();
+            console.log('Tour started successfully.');
+          } catch (error) {
+            console.error('Error starting tour:', error);
+            alert('Tour failed to start due to an unexpected error. Please check the console for details.');
+          }
+        }, 2000);
+      }
+    
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
+        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const accordions = [
+          { id: '#hit-percentage-overview', name: 'Hit Percentage Overview' },
+          { id: '#spin-trend-radar', name: 'SpinTrend Radar' },
+          { id: '#dozen-tracker', name: 'Create Dozen/Even Bet Triggers' },
+          { id: '.betting-progression, #betting-progression', name: 'Betting Progression Tracker' }
+        ];
+        accordions.forEach(acc => {
+          const el = document.querySelector(acc.id);
+          console.log(`${acc.name} classes:`, el?.className || 'Not found');
+          console.log(`${acc.name} tag:`, el?.tagName || 'Not found');
+          console.log(`${acc.name} ID:`, el?.id || 'Not found');
+        });
+        console.log('Hit Percentage Rows:', document.querySelectorAll('.hit-percentage-row').length);
+        console.log('SpinTrend Rows:', document.querySelectorAll('.spin-trend-row').length);
+        console.log('Dozen Tracker Rows:', document.querySelectorAll('.dozen-tracker-row').length);
+        console.log('Betting Progression Rows:', document.querySelectorAll('.betting-progression-row').length);
+      });
+    </script>
     """)
     print("CSS Updated")
    
