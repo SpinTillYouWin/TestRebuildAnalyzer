@@ -6592,21 +6592,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             #hit-percentage-overview .hit-percentage-container .percentage-item.even-money {
-                background: rgba(255, 77, 77, 0.3) !important;
-                border-color: #ff4d4d !important;
-                box-shadow: 0 0 12px rgba(255, 77, 77, 0.7) !important;
+                background: rgba(255, 99, 71, 0.2) !important;
+                border-color: #ff6347 !important;
+                box-shadow: 0 0 12px rgba(255, 99, 71, 0.5) !important;
             }
     
             #hit-percentage-overview .hit-percentage-container .percentage-item.column {
-                background: rgba(77, 121, 255, 0.3) !important;
-                border-color: #4d79ff !important;
-                box-shadow: 0 0 12px rgba(77, 121, 255, 0.7) !important;
+                background: rgba(100, 149, 237, 0.2) !important;
+                border-color: #6495ed !important;
+                box-shadow: 0 0 12px rgba(100, 149, 237, 0.5) !important;
             }
     
             #hit-percentage-overview .hit-percentage-container .percentage-item.dozen {
-                background: rgba(77, 255, 77, 0.3) !important;
-                border-color: #4dff4d !important;
-                box-shadow: 0 0 12px rgba(77, 255, 77, 0.7) !important;
+                background: rgba(50, 205, 50, 0.2) !important;
+                border-color: #32cd32 !important;
+                box-shadow: 0 0 12px rgba(50, 205, 50, 0.5) !important;
             }
     
             #hit-percentage-overview .hit-percentage-container .percentage-item.winner {
