@@ -5804,16 +5804,15 @@ def select_next_spin_top_pick(last_spin_count):
             0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
             100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
           }}
-          /* Prevent jitter on page load */
+          /* Ensure visibility and smooth load for top pick */
           .top-pick-container, .first-spins {{
-            visibility: hidden;
             opacity: 0;
-            transition: visibility 0s 0.3s, opacity 0.3s ease-in;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in 0.2s, visibility 0s 0.2s;
           }}
-          .top-pick-container.loaded, .first-spins.loaded {{
-            visibility: visible;
+          .top-pick-container, .first-spins {{
             opacity: 1;
-            transition: visibility 0s, opacity 0.3s ease-in;
+            visibility: visible;
           }}
           .first-spins {{
             margin-bottom: 10px;
@@ -8388,14 +8387,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
-        /* Prevent jitter on page load */
-        .gr-panel, #app {
-            opacity: 0;
-            transition: opacity 0.5s ease-in 0.2s;
-        }
-        .gr-panel, #app {
-            opacity: 1;
-        }
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
@@ -8415,8 +8406,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             padding: 10px !important;
             border-radius: 5px !important;
         }
-
-        
+    
         /* Style for Feedback Section accordion */
         #feedback-section summary {
             background-color: #dc3545 !important;
