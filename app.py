@@ -6424,7 +6424,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     )
 
     # Start of updated section
-    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+        with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
         <style>
             #hit-percentage-overview {
@@ -6666,7 +6666,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-    
+
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         gr.HTML("""
         <style>
@@ -9143,34 +9143,34 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             box-shadow: 0 0 8px #ffd700 !important;
         }
         
-        /* Quick Trends Section for SpinTrend Radar */
+       /* Quick Trends Section for SpinTrend Radar */
         .quick-trends {
-            background: linear-gradient(135deg, #d8bfd8 0%, #e6e6fa 100%) !important; /* Light lavender gradient */
+            background: linear-gradient(135deg, #d8bfd8 0%, #e6e6fa 100%) !important;
             padding: 12px !important;
             border-radius: 6px !important;
             margin-bottom: 12px !important;
-            border: 1px solid #8c6bb1 !important; /* Purple border matching Hit Percentage Overview */
-            box-shadow: 0 0 8px rgba(140, 107, 177, 0.3) !important; /* Subtle purple shadow */
+            border: 1px solid #8c6bb1 !important;
+            box-shadow: 0 0 8px rgba(140, 107, 177, 0.3) !important;
         }
         
         .quick-trends h4 {
             margin: 0 0 8px 0 !important;
-            font-size: 16px !important; /* Slightly larger for emphasis */
-            color: #ff66cc !important; /* Pink to match Hit Percentage Overview border */
-            text-shadow: 0 0 4px rgba(255, 102, 204, 0.5) !important; /* Subtle glow */
+            font-size: 16px !important;
+            color: #ff66cc !important;
+            text-shadow: 0 0 4px rgba(255, 102, 204, 0.5) !important;
             font-weight: bold !important;
         }
         
         .quick-trends ul {
             margin: 0 !important;
-            padding-left: 15px !important; /* Slight indent for list items */
+            padding-left: 15px !important;
         }
         
         .quick-trends ul li {
-            color: #3e2723 !important; /* Dark brown for readability */
+            color: #3e2723 !important;
             font-size: 14px !important;
             margin: 4px 0 !important;
-            font-weight: 500 !important; /* Medium weight for clarity */
+            font-weight: 500 !important;
         }
         
         /* Spin animation for roulette table buttons */
@@ -9192,10 +9192,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         .flash.black {
             animation: flashBlack 0.3s ease-in-out;
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
         }
         @keyframes flashRed {
             0%, 100% { background-color: red; }
@@ -9227,6 +9223,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(360deg); }
         }
+        
         /* New Spin Highlight Effect */
         .new-spin {
             position: relative !important;
@@ -9277,6 +9274,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
             50% { box-shadow: 0 0 10px 5px rgba(52, 152, 219, 0.8); }
         }
+        
+        /* Sides of Zero Container */
         .sides-of-zero-container {
             background-color: #ffffff !important;
             border: 1px solid #d3d3d3 !important;
@@ -9284,174 +9283,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             margin: 10px 0 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Hit Percentage Overview - Revamped for High-Tech Look with Increased Specificity */
-        #hit-percentage-overview .hit-percentage-container {
-            padding: 20px !important;
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-            border-radius: 12px !important;
-            border: 3px solid #ff66cc !important;
-            box-shadow: 0 0 20px rgba(255, 102, 204, 0.5) !important;
-            width: 100% !important;
-            max-width: 2000px !important;
-            margin-top: 10px !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            overflow: visible !important;
-            animation: dataPulse 3s ease-in-out infinite !important;
-            outline: 2px solid yellow !important;
-        }
-        
-        /* Data scanning pulse effect */
-        @keyframes dataPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 102, 204, 0.5); }
-            50% { box-shadow: 0 0 30px rgba(255, 102, 204, 0.8); }
-        }
-        
-        /* Add a subtle grid overlay for high-tech effect */
-        #hit-percentage-overview .hit-percentage-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255, 102, 204, 0.15) 0%, transparent 70%) !important;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        
-        #hit-percentage-overview .hit-percentage-overview {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 20px !important;
-        }
-        
-        #hit-percentage-overview .percentage-wrapper {
-            width: 100% !important;
-            max-width: 1600px !important;
-            box-sizing: border-box !important;
-            padding-top: 15px !important;
-        }
-        
-        #hit-percentage-overview .percentage-group {
-            margin: 10px 0 !important;
-            padding-top: 15px !important;
-            flex: 1 !important;
-            min-width: 150px !important;
-            overflow: visible !important;
-        }
-        
-        #hit-percentage-overview .percentage-group h4 {
-            margin: 5px 0 !important;
-            color: #ffccff !important;
-            text-shadow: 0 0 5px rgba(255, 102, 204, 0.5) !important;
-        }
-        
-        #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-            align-items: center !important;
-            padding: 5px 0 !important;
-        }
-        
-        /* Responsive adjustments for mobile */
-        @media (max-width: 600px) {
-            #hit-percentage-overview .percentage-badges, #hit-percentage-overview .percentage-badges {
-                flex-wrap: wrap !important;
-                overflow-x: visible !important;
-            }
-            #hit-percentage-overview .percentage-item {
-                font-size: 10px !important;
-                padding: 4px 8px !important;
-            }
-        }
-        
-        /* TITLE: Percentage Item Styles - Revamped for High-Tech Effect */
-        #hit-percentage-overview .percentage-item {
-            background: transparent !important;
-            color: #fff !important;
-            padding: 6px 14px !important;
-            border-radius: 15px !important;
-            font-size: 12px !important;
-            margin: 5px 3px !important;
-            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
-            cursor: pointer !important;
-            border: 1px solid transparent !important;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
-            font-weight: bold !important;
-            display: inline-block !important;
-        }
-        
-        #hit-percentage-overview .percentage-item:hover {
-            transform: scale(1.15) !important;
-            filter: brightness(1.4) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.even-money {
-            background: rgba(255, 77, 77, 0.3) !important;
-            border-color: #ff4d4d !important;
-            box-shadow: 0 0 12px rgba(255, 77, 77, 0.7) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.column {
-            background: rgba(77, 121, 255, 0.3) !important;
-            border-color: #4d79ff !important;
-            box-shadow: 0 0 12px rgba(77, 121, 255, 0.7) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.dozen {
-            background: rgba(77, 255, 77, 0.3) !important;
-            border-color: #4dff4d !important;
-            box-shadow: 0 0 12px rgba(77, 255, 77, 0.7) !important;
-        }
-        
-        #hit-percentage-overview .percentage-item.winner {
-            font-weight: bold !important;
-            color: #fff !important;
-            border: 2px solid #ffcc00 !important;
-            box-shadow: 0 0 15px #ffcc00 !important;
-            background: rgba(255, 204, 0, 0.4) !important;
-            transform: scale(1.15) !important;
-        }
-        
-        #hit-percentage-overview .percentage-with-bar {
-            display: inline-block !important;
-            text-align: center !important;
-            margin: 0 3px !important;
-            margin-bottom: 8px !important;
-        }
-        
-        /* TITLE: Fix Content Titles for Hit Percentage Overview and SpinTrend Radar */
-        .traits-overview > h4 {
-            color: #00ffcc !important;
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            margin: 0 0 10px 0 !important;
-            outline: 2px solid yellow !important;
-        }
-        
-        /* TITLE: Style Accordion Containers for SpinTrend Radar and Hit Percentage Overview */
-        #spin-trend-radar.gr-accordion, #spin-trend-radar.gr-accordion > details {
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-            border: 2px solid #00ffcc !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3) !important;
-            outline: 2px solid red !important;
-        }
-        
-        #spin-trend-radar.gr-accordion summary {
-            background: rgba(0, 255, 204, 0.15) !important;
-            color: #00ffcc !important;
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.7) !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            padding: 10px !important;
-            border-radius: 8px !important;
         }
         
         /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
@@ -9470,118 +9301,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 3px !important;
             transition: width 0.3s ease !important;
             display: block !important;
-        }
-        
-        /* TITLE: Traits Container - Revamped for Radar Effect */
-        .traits-container {
-            padding: 20px !important;
-            background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-            border-radius: 10px !important;
-            border: 2px solid #00ffcc !important;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3) !important;
-            width: 100% !important;
-            max-width: 2000px !important;
-            margin-top: 10px !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            overflow: visible !important;
-            animation: radarPulse 4s ease-in-out infinite !important;
-        }
-        
-        /* Radar pulsing effect */
-        @keyframes radarPulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(0, 255, 204, 0.5); }
-        }
-        
-        /* Add a radar-like overlay (optional subtle grid effect) */
-        .traits-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0, 255, 204, 0.1) 0%, transparent 70%) !important;
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        
-        /* TITLE: Traits Badges Layout */
-        .traits-wrapper {
-            width: 100% !important;
-            max-width: 1600px !important;
-            box-sizing: border-box !important;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 15px !important;
-            padding-top: 10px !important;
-        }
-        .badge-group {
-            margin: 10px 0 !important;
-            padding-top: 10px !important;
-            flex: 1 !important;
-            min-width: 150px !important;
-            overflow: visible !important;
-        }
-        .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
-        .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
-        .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
-        .badge-group:nth-child(4) h4 { color: #cc33ff !important; }
-        .percentage-badges {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            align-items: center !important;
-            padding: 5px 0 !important;
-        }
-        
-        /* TITLE: Trait Badge Styles - Revamped for Radar Effect */
-        .trait-badge {
-            background: transparent !important;
-            color: #fff !important;
-            padding: 5px 12px !important;
-            border-radius: 15px !important;
-            font-size: 12px !important;
-            margin: 5px 3px !important;
-            transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
-            cursor: pointer !important;
-            border: 1px solid transparent !important;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
-            font-weight: bold !important;
-            display: inline-block !important;
-        }
-        .trait-badge:hover {
-            transform: scale(1.1) !important;
-            filter: brightness(1.3) !important;
-        }
-        .trait-badge.even-money {
-            background: rgba(255, 77, 77, 0.2) !important;
-            border-color: #ff4d4d !important;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
-        }
-        .trait-badge.column {
-            background: rgba(77, 121, 255, 0.2) !important;
-            border-color: #4d79ff !important;
-            box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
-        }
-        .trait-badge.dozen {
-            background: rgba(77, 255, 77, 0.2) !important;
-            border-color: #4dff4d !important;
-            box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
-        }
-        .trait-badge.repeat {
-            background: rgba(204, 51, 255, 0.2) !important;
-            border-color: #cc33ff !important;
-            box-shadow: 0 0 10px rgba(204, 51, 255, 0.5) !important;
-        }
-        .trait-badge.winner {
-            font-weight: bold !important;
-            color: #fff !important;
-            border: 2px solid #ffd700 !important;
-            box-shadow: 0 0 12px #ffd700 !important;
-            background: rgba(255, 215, 0, 0.3) !important;
-            transform: scale(1.1) !important;
         }
         
         /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
@@ -9664,15 +9383,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .fade-in {
             animation: fadeIn 0.5s ease-in !important;
         }
+        
         /* Row containing Dynamic Table and Strategy Recommendations */
         .dynamic-table-strategy-row {
             display: flex !important;
-            gap: 25px !important; /* Slightly reduced gap for better fit */
+            gap: 25px !important;
             flex-wrap: wrap !important;
             justify-content: center !important;
             align-items: flex-start !important;
             width: 100% !important;
-            max-width: 1250px !important; /* Reduced to ensure side-by-side fit */
+            max-width: 1250px !important;
             margin: 0 auto !important;
             padding: 20px 10px !important;
         }
@@ -9684,7 +9404,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             justify-content: flex-start !important;
             align-items: center !important;
             width: 100% !important;
-            max-width: 450px !important; /* Reduced to match new min_width */
+            max-width: 450px !important;
             margin: 0 auto !important;
             padding: 15px !important;
         }
@@ -9703,7 +9423,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         /* Fix Dropdown Arrow Overlap */
         .strategy-recommendations-container .gr-dropdown {
             width: 100% !important;
-            min-width: 220px !important; /* Reduced slightly to fit narrower container */
+            min-width: 220px !important;
             position: relative !important;
         }
         
@@ -9781,7 +9501,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
         
         /* Responsive Adjustments */
-        @media (max-width: 1300px) { /* Adjusted breakpoint */
+        @media (max-width: 1300px) {
             .dynamic-table-strategy-row {
                 flex-direction: column !important;
                 align-items: center !important;
@@ -9805,139 +9525,145 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             .strategy-recommendations-container .gr-dropdown {
                 min-width: 100% !important;
             }
-            /* Pattern Alert Icons for Quick Trends */
-            .trend-icon {
-                display: inline-block;
-                font-size: 16px;
-                margin-right: 5px;
-                animation: subtle-rotate 2s linear infinite;
-            }
-            .trend-icon.hot { color: #ff4500; } /* Flame for hot trends */
-            .trend-icon.cold { color: #00b7eb; } /* Snowflake for cold trends */
-            .trend-icon.streak { color: #ffd700; } /* Lightning for streaks */
-            @keyframes subtle-rotate {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            .quick-trends li {
-                display: flex;
-                align-items: center;
-                padding: 5px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 5px;
-                margin-bottom: 5px;
-            }
-            /* Quick Bet Suggestions for Quick Trends */
-            .bet-suggestion {
-                color: #ff4500;
-                font-style: italic;
-                background: rgba(255, 69, 0, 0.1);
-                padding: 5px;
-                border-radius: 5px;
-                display: flex;
-                align-items: center;
-                font-weight: bold;
-                box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
-            }
-            /* Debug Highlight for SpinTrend Radar */
-            .traits-overview.debug-highlight {
-                background: rgba(200, 200, 200, 0.2); /* Light gray background to confirm rendering */
-                padding: 10px;
-                border: 1px solid #999;
-            }
-            
-            /* Ensure Traits Wrapper is Visible */
-            .traits-wrapper {
-                position: relative;
-                overflow: visible; /* Prevent clipping of child elements */
-                padding-bottom: 20px; /* Add space for switch-alert */
-            }
-            
-            /* Red/Black Switch Alert */
-            .switch-alert {
-                display: flex;
-                gap: 4px;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.5); /* More prominent background */
-                border: 2px solid #666; /* Thicker border for visibility */
-                border-radius: 6px;
-                margin-top: 15px;
-                justify-content: center;
-                min-height: 40px; /* Increased height for better visibility */
-                align-items: center;
-                position: relative;
-                z-index: 100; /* Ensure it’s above other elements */
-            }
-            .switch-dot {
-                width: 14px; /* Slightly larger dots */
-                height: 14px;
-                border-radius: 50%;
-            }
-            .switch-dot.red { background: #ff4444; }
-            .switch-dot.black { background: #000000; }
-            .switch-dot.green { background: #388e3c; }
-            .switch-alert.high-switches {
-                border: 2px solid #ffd700;
-                animation: flash-border 1s infinite ease-in-out;
-            }
-            @keyframes flash-border {
-                0%, 100% { border-color: #ffd700; }
-                50% { border-color: #ffa500; }
-            }
-            .switch-alert:hover::after {
-                content: attr(data-tooltip);
-                position: absolute;
-                background: #333;
-                color: #fff;
-                padding: 5px;
-                border-radius: 3px;
-                top: -35px; /* Adjusted for larger bar */
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 12px;
-                z-index: 101;
-            }
-            /* Dozen Shift Indicator */
-            .dozen-shift-indicator {
-                display: flex;
-                align-items: center;
-                padding: 8px;
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 6px;
-                margin-top: 10px;
-                justify-content: center;
-                position: relative;
-                z-index: 100;
-            }
-            .dozen-badge {
-                display: inline-block;
-                font-size: 12px;
-                color: #fff;
-                background: #388e3c; /* 1st Dozen */
-                border-radius: 3px;
-                padding: 2px 4px;
-                animation: bounce 1s infinite ease-in-out;
-            }
-            .dozen-badge.d1 { background: #388e3c; } /* 1st Dozen */
-            .dozen-badge.d2 { background: #ff9800; } /* 2nd Dozen */
-            .dozen-badge.d3 { background: #8e24aa; } /* 3rd Dozen */
-            @keyframes bounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-3px); }
-            }
-            .dozen-shift-indicator:hover::after {
-                content: attr(data-tooltip);
-                position: absolute;
-                background: #333;
-                color: #fff;
-                padding: 5px;
-                border-radius: 3px;
-                top: -30px;
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 12px;
-                z-index: 101;
-            }
+        }
+        
+        /* Pattern Alert Icons for Quick Trends */
+        .trend-icon {
+            display: inline-block;
+            font-size: 16px;
+            margin-right: 5px;
+            animation: subtle-rotate 2s linear infinite;
+        }
+        .trend-icon.hot { color: #ff4500; }
+        .trend-icon.cold { color: #00b7eb; }
+        .trend-icon.streak { color: #ffd700; }
+        @keyframes subtle-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .quick-trends li {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        
+        /* Quick Bet Suggestions for Quick Trends */
+        .bet-suggestion {
+            color: #ff4500;
+            font-style: italic;
+            background: rgba(255, 69, 0, 0.1);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
+        }
+        
+        /* Debug Highlight for SpinTrend Radar */
+        .traits-overview.debug-highlight {
+            background: rgba(200, 200, 200, 0.2);
+            padding: 10px;
+            border: 1px solid #999;
+        }
+        
+        /* Ensure Traits Wrapper is Visible */
+        .traits-wrapper {
+            position: relative;
+            overflow: visible;
+            padding-bottom: 20px;
+        }
+        
+        /* Red/Black Switch Alert */
+        .switch-alert {
+            display: flex;
+            gap: 4px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid #666;
+            border-radius: 6px;
+            margin-top: 15px;
+            justify-content: center;
+            min-height: 40px;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+        }
+        .switch-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+        .switch-dot.red { background: #ff4444; }
+        .switch-dot.black { background: #000000; }
+        .switch-dot.green { background: #388e3c; }
+        .switch-alert.high-switches {
+            border: 2px solid #ffd700;
+            animation: flash-border 1s infinite ease-in-out;
+        }
+        @keyframes flash-border {
+            0%, 100% { border-color: #ffd700; }
+            50% { border-color: #ffa500; }
+        }
+        .switch-alert:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            z-index: 101;
+        }
+        
+        /* Dozen Shift Indicator */
+        .dozen-shift-indicator {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            margin-top: 10px;
+            justify-content: center;
+            position: relative;
+            z-index: 100;
+        }
+        .dozen-badge {
+            display: inline-block;
+            font-size: 12px;
+            color: #fff;
+            background: #388e3c;
+            border-radius: 3px;
+            padding: 2px 4px;
+            animation: bounce 1s infinite ease-in-out;
+        }
+        .dozen-badge.d1 { background: #388e3c; }
+        .dozen-badge.d2 { background: #ff9800; }
+        .dozen-badge.d3 { background: #8e24aa; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .dozen-shift-indicator:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            z-index: 101;
+        }
+        
         /* Enhanced Red/Black Chopping Alert within Quick Trends */
         .quick-trends .switch-alert {
             display: flex !important;
@@ -10042,9 +9768,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             animation: bounce 1s infinite ease-in-out !important;
         }
         
-        .quick-trends .dozen-badge.d1 { background: #388e3c !important; } /* 1st Dozen */
-        .quick-trends .dozen-badge.d2 { background: #ff9800 !important; } /* 2nd Dozen */
-        .quick-trends .dozen-badge.d3 { background: #8e24aa !important; } /* 3rd Dozen */
+        .quick-trends .dozen-badge.d1 { background: #388e3c !important; }
+        .quick-trends .dozen-badge.d2 { background: #ff9800 !important; }
+        .quick-trends .dozen-badge.d3 { background: #8e24aa !important; }
         
         @keyframes bounce {
             0%, 100% { transform: translateY(0) !important; }
