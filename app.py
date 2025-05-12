@@ -6480,7 +6480,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 10px !important;
             }
     
-            /* Styling for the hit percentage display */
+            /* Updated styling for the hit percentage display */
             .hit-percentage-row .hit-percentage-container {
                 background: linear-gradient(135deg, #f5f5f5, #e0e0e0) !important;
                 border: 1px solid #2196f3 !important; /* Match neon blue border */
@@ -6488,6 +6488,54 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 12px !important;
                 max-height: 300px !important; /* Slightly taller for more content */
                 overflow-y: auto !important;
+                width: 100% !important; /* Ensure it takes full width of parent */
+                box-sizing: border-box !important; /* Include padding/border in width */
+            }
+    
+            /* Override existing styles to fix layout issues */
+            .hit-percentage-row .hit-percentage-container .hit-percentage-overview {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 20px !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+    
+            .hit-percentage-row .hit-percentage-container .percentage-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                padding-top: 15px !important;
+                overflow: hidden !important; /* Prevent content from spilling out */
+            }
+    
+            .hit-percentage-row .hit-percentage-container .percentage-group {
+                margin: 10px 0 !important;
+                padding-top: 15px !important;
+                flex: 1 !important;
+                min-width: 200px !important; /* Smaller min-width for better wrapping */
+                max-width: 100% !important; /* Prevent overflow */
+                overflow: hidden !important; /* Contain content */
+            }
+    
+            .hit-percentage-row .hit-percentage-container .percentage-badges {
+                display: flex !important;
+                flex-wrap: wrap !important; /* Ensure badges wrap */
+                gap: 10px !important;
+                align-items: center !important;
+                padding: 5px 0 !important;
+                width: 100% !important;
+                overflow-x: hidden !important; /* Prevent horizontal overflow */
+            }
+    
+            .hit-percentage-row .hit-percentage-container .percentage-item {
+                flex: 0 1 auto !important; /* Allow items to shrink if needed */
+                min-width: 100px !important; /* Ensure badges don’t get too small */
+                max-width: 150px !important; /* Limit badge width to prevent overflow */
+                box-sizing: border-box !important;
+                white-space: nowrap !important; /* Prevent text wrapping in badges */
+                overflow: hidden !important;
+                text-overflow: ellipsis !important; /* Truncate long text */
             }
     
             /* Animation for accordion opening */
@@ -6514,6 +6562,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 .hit-percentage-row .hit-percentage-container {
                     padding: 8px !important;
                 }
+                .hit-percentage-row .hit-percentage-container .percentage-group {
+                    min-width: 100% !important; /* Full width on mobile */
+                    max-width: 100% !important;
+                }
+                .hit-percentage-row .hit-percentage-container .percentage-item {
+                    min-width: 80px !important; /* Smaller badges on mobile */
+                    max-width: 120px !important;
+                }
             }
         </style>
         """)
@@ -6524,7 +6580,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-                
 
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
