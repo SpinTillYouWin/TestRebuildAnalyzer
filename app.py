@@ -5843,24 +5843,39 @@ def select_next_spin_top_pick(last_spin_count):
             position: relative; /* Prevent shifts */
             min-height: 200px; /* Reserve space */
             overflow: hidden; /* Avoid content jumping */
-            transition: none; /* Remove all transitions */
           }}
-          /* Disable animations and set fixed badge sizes */
+          /* Delay badge visibility until loaded */
+          .top-pick-badge, .secondary-badge {{
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease-in, visibility 0s 0.2s;
+          }}
+          .top-pick-badge.loaded, .secondary-badge.loaded {{
+            opacity: 1;
+            visibility: visible;
+          }}
+          /* Disable animations, transitions, and set fixed badge sizes */
           .top-pick-container, .first-spins, .top-pick-badge, .confidence-bar, .secondary-picks {{
             animation: none !important; /* No animations */
             transition: none !important; /* No transitions */
+            transform: none !important; /* No transforms */
+            -webkit-transform: none !important; /* No browser-specific transforms */
           }}
           .top-pick-badge {{
-            width: 60px; /* Fixed size to prevent resizing jitter */
+            width: 60px; /* Fixed size */
             height: 60px;
-            line-height: 60px; /* Center text vertically */
-            display: inline-block; /* Ensure consistent rendering */
+            line-height: 60px; /* Center text */
+            font-size: 24px; /* Consistent font */
+            display: inline-block;
+            box-sizing: border-box; /* Include padding/borders in size */
           }}
           .secondary-badge {{
-            width: 50px; /* Fixed size for secondary picks */
+            width: 50px; /* Fixed size */
             height: 50px;
             line-height: 50px;
+            font-size: 20px; /* Consistent font */
             display: inline-block;
+            box-sizing: border-box;
           }}
           .first-spins {{
             margin-bottom: 10px;
@@ -6182,11 +6197,13 @@ def select_next_spin_top_pick(last_spin_count):
               console.error('Failed to copy: ', err);
             }});
           }}
-          /* Apply loaded class to prevent jitter */
+          /* Add loaded class to badges to prevent jitter */
           document.addEventListener('DOMContentLoaded', () => {{
             setTimeout(() => {{
-              document.querySelectorAll('.top-pick-container, .first-spins').forEach(el => el.classList.add('loaded'));
-            }}, 100);
+              document.querySelectorAll('.top-pick-badge, .secondary-badge').forEach(el => {{
+                el.classList.add('loaded');
+              }});
+            }}, 50); /* Small delay to ensure DOM is ready */
           }});
         </script>
         '''
