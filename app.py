@@ -5835,16 +5835,32 @@ def select_next_spin_top_pick(last_spin_count):
             0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
             100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
           }}
-          /* Ensure visibility and prevent jitter for top pick */
+          /* Ensure visibility and eliminate jitter for top pick */
           .top-pick-container, .first-spins {{
             opacity: 1;
             visibility: visible;
-            min-height: 200px; /* Prevent layout shifts */
+            display: block; /* Stabilize layout */
+            position: relative; /* Prevent shifts */
+            min-height: 200px; /* Reserve space */
             overflow: hidden; /* Avoid content jumping */
+            transition: none; /* Remove all transitions */
           }}
-          /* Disable fadeIn animation to reduce jitter */
+          /* Disable animations and set fixed badge sizes */
           .top-pick-container, .first-spins, .top-pick-badge, .confidence-bar, .secondary-picks {{
-            animation: none !important; /* Override fadeIn animation */
+            animation: none !important; /* No animations */
+            transition: none !important; /* No transitions */
+          }}
+          .top-pick-badge {{
+            width: 60px; /* Fixed size to prevent resizing jitter */
+            height: 60px;
+            line-height: 60px; /* Center text vertically */
+            display: inline-block; /* Ensure consistent rendering */
+          }}
+          .secondary-badge {{
+            width: 50px; /* Fixed size for secondary picks */
+            height: 50px;
+            line-height: 50px;
+            display: inline-block;
           }}
           .first-spins {{
             margin-bottom: 10px;
