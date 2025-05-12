@@ -6427,28 +6427,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
         <style>
-            /* Styling for Hit Percentage Overview accordion */
             #hit-percentage-overview {
-                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-                border: 2px solid #ff66cc !important;
+                background-color: #f3e5f5 !important;
+                border: 2px solid #8e24aa !important;
                 border-radius: 8px !important;
                 padding: 12px !important;
                 margin-bottom: 15px !important;
-                box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-                animation: dataPulse 3s ease-in-out infinite !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
             }
     
-            /* Data scanning pulse effect */
-            @keyframes dataPulse {
-                0%, 100% { box-shadow: 0 0 10px rgba(255, 102, 204, 0.3); }
-                50% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.5); }
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
             }
     
-            /* Styling for the accordion summary */
             #hit-percentage-overview summary {
-                background: rgba(255, 102, 204, 0.1) !important;
-                color: #ff66cc !important;
-                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                background-color: #8e24aa !important;
+                color: white !important;
                 padding: 12px !important;
                 border-radius: 6px !important;
                 font-weight: bold !important;
@@ -6458,17 +6454,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             #hit-percentage-overview summary:hover {
-                background: rgba(255, 102, 204, 0.2) !important;
+                background-color: #6a1b9a !important;
             }
     
-            /* Ensure the summary arrow is styled */
             #hit-percentage-overview summary::after {
                 filter: invert(100%) !important;
             }
     
-            /* Styling for the row inside the accordion */
             .hit-percentage-row {
-                background-color: #ffffff !important;
+                background-color: #f3e5f5 !important;
                 padding: 10px !important;
                 border-radius: 6px !important;
                 display: flex !important;
@@ -6478,12 +6472,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 margin-top: 10px !important;
                 box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
                 width: 100% !important;
-                min-height: fit-content !important; /* Allow the container to grow */
-                height: auto !important; /* Expand to fit content */
+                min-height: fit-content !important;
+                height: auto !important;
                 box-sizing: border-box !important;
             }
     
-            /* Styling for columns inside the row */
             .hit-percentage-row .gr-column {
                 flex: 1 !important;
                 min-width: 300px !important;
@@ -6491,14 +6484,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 padding: 10px !important;
             }
     
-            /* Updated styling for the hit percentage display */
             #hit-percentage-overview .hit-percentage-container {
                 background: transparent !important;
                 border: none !important;
                 border-radius: 0 !important;
                 padding: 0 !important;
-                max-height: none !important; /* Remove max-height to allow full expansion */
-                overflow-y: visible !important; /* Allow content to expand without scrolling */
+                max-height: none !important;
+                overflow-y: visible !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
                 position: static !important;
@@ -6506,7 +6498,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 animation: none !important;
             }
     
-            /* Add a subtle grid overlay for high-tech effect */
             #hit-percentage-overview .hit-percentage-container::before {
                 content: '';
                 position: absolute;
@@ -6514,12 +6505,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: radial-gradient(circle, rgba(255, 102, 204, 0.15) 0%, transparent 70%) !important;
+                background: radial-gradient(circle, rgba(142, 36, 170, 0.15) 0%, transparent 70%) !important;
                 opacity: 0.4;
                 pointer-events: none;
             }
     
-            /* Remove inner squares by neutralizing nested container styles */
             #hit-percentage-overview .hit-percentage-container .hit-percentage-overview {
                 display: flex !important;
                 flex-wrap: wrap !important;
@@ -6544,7 +6534,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             #hit-percentage-overview .hit-percentage-container .percentage-group {
                 margin: 10px 0 !important;
                 padding-top: 15px !important;
-                flex: 1 1 200px !important; /* Allow groups to grow and shrink, with a base width */
+                flex: 1 1 200px !important;
                 min-width: 200px !important;
                 max-width: 100% !important;
                 background: none !important;
@@ -6556,8 +6546,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
             #hit-percentage-overview .hit-percentage-container .percentage-group h4 {
                 margin: 5px 0 !important;
-                color: #ffccff !important;
-                text-shadow: 0 0 5px rgba(255, 102, 204, 0.5) !important;
+                color: #ab47bc !important;
+                text-shadow: 0 0 5px rgba(142, 36, 170, 0.5) !important;
                 font-size: 18px !important;
                 font-weight: bold !important;
             }
@@ -6583,7 +6573,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 overflow: hidden !important;
                 text-overflow: ellipsis !important;
                 background: transparent !important;
-                color: #fff !important;
+                color: #333 !important;
                 padding: 6px 14px !important;
                 border-radius: 15px !important;
                 font-size: 12px !important;
@@ -6591,7 +6581,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
                 cursor: pointer !important;
                 border: 1px solid transparent !important;
-                box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+                box-shadow: 0 0 10px rgba(142, 36, 170, 0.3) !important;
                 font-weight: bold !important;
                 display: inline-block !important;
             }
@@ -6621,7 +6611,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
             #hit-percentage-overview .hit-percentage-container .percentage-item.winner {
                 font-weight: bold !important;
-                color: #fff !important;
+                color: #333 !important;
                 border: 2px solid #ffcc00 !important;
                 box-shadow: 0 0 15px #ffcc00 !important;
                 background: rgba(255, 204, 0, 0.4) !important;
@@ -6635,7 +6625,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 margin-bottom: 8px !important;
             }
     
-            /* Responsive adjustments */
             @media (max-width: 768px) {
                 .hit-percentage-row {
                     flex-direction: column !important;
@@ -6677,28 +6666,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
+    
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         gr.HTML("""
         <style>
             #spin-trend-radar {
-                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
-                border: 2px solid #ff66cc !important;
+                background-color: #f3e5f5 !important;
+                border: 2px solid #8e24aa !important;
                 border-radius: 8px !important;
                 padding: 12px !important;
                 margin-bottom: 15px !important;
-                box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
-                animation: radarPulse 4s ease-in-out infinite !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
             }
     
-            @keyframes radarPulse {
-                0%, 100% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.3); }
-                50% { box-shadow: 0 0 25px rgba(255, 102, 204, 0.5); }
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
             }
     
             #spin-trend-radar summary {
-                background: rgba(255, 102, 204, 0.1) !important;
-                color: #ff66cc !important;
-                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                background-color: #8e24aa !important;
+                color: white !important;
                 padding: 12px !important;
                 border-radius: 6px !important;
                 font-weight: bold !important;
@@ -6708,7 +6697,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             #spin-trend-radar summary:hover {
-                background: rgba(255, 102, 204, 0.2) !important;
+                background-color: #6a1b9a !important;
             }
     
             #spin-trend-radar summary::after {
@@ -6716,7 +6705,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             .spin-trend-row {
-                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
+                background-color: #f3e5f5 !important;
                 padding: 10px !important;
                 border-radius: 6px !important;
                 display: flex !important;
@@ -6759,7 +6748,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: radial-gradient(circle, rgba(255, 102, 204, 0.1) 0%, transparent 70%) !important;
+                background: radial-gradient(circle, rgba(142, 36, 170, 0.1) 0%, transparent 70%) !important;
                 opacity: 0.3;
                 pointer-events: none;
             }
@@ -6775,8 +6764,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
     
             #spin-trend-radar .traits-container .traits-overview > h4 {
-                color: #ff66cc !important;
-                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                color: #ab47bc !important;
+                text-shadow: 0 0 8px rgba(142, 36, 170, 0.7) !important;
                 font-size: 18px !important;
                 font-weight: bold !important;
                 margin: 0 0 10px 0 !important;
@@ -6794,7 +6783,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             #spin-trend-radar .traits-container .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
-            #spin-trend-radar .traits-container .badge-group:nth-child(4) h4 { color: #cc33ff !important; }
+            #spin-trend-radar .traits-container .badge-group:nth-child(4) h4 { color: #ffd700 !important; }
     
             #spin-trend-radar .traits-container .percentage-badges {
                 display: flex !important;
@@ -6808,7 +6797,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
             #spin-trend-radar .traits-container .trait-badge {
                 background: transparent !important;
-                color: #fff !important;
+                color: #333 !important;
                 padding: 5px 12px !important;
                 border-radius: 15px !important;
                 font-size: 12px !important;
@@ -6816,7 +6805,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 transition: transform 0.2s, box-shadow 0.3s, filter 0.3s !important;
                 cursor: pointer !important;
                 border: 1px solid transparent !important;
-                box-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+                box-shadow: 0 0 8px rgba(142, 36, 170, 0.2) !important;
                 font-weight: bold !important;
                 display: inline-block !important;
             }
@@ -6846,13 +6835,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
             #spin-trend-radar .traits-container .trait-badge.repeat {
                 background: rgba(204, 51, 255, 0.2) !important;
-                border-color: #cc33ff !important;
-                box-shadow: 0 0 10px rgba(204, 51, 255, 0.5) !important;
+                border-color: #ab47bc !important;
+                box-shadow: 0 0 10px rgba(142, 36, 170, 0.5) !important;
             }
     
             #spin-trend-radar .traits-container .trait-badge.winner {
                 font-weight: bold !important;
-                color: #fff !important;
+                color: #333 !important;
                 border: 2px solid #ffd700 !important;
                 box-shadow: 0 0 12px #ffd700 !important;
                 background: rgba(255, 215, 0, 0.3) !important;
