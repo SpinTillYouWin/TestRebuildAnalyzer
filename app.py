@@ -6235,7 +6235,6 @@ STRATEGIES = {
 
 
 # Line 1: Start of show_strategy_recommendations function (updated)
-# Line 1: Start of show_strategy_recommendations function (updated)
 def show_strategy_recommendations(strategy_name, neighbours_count, *args):
     """Generate strategy recommendations based on the selected strategy."""
     try:
