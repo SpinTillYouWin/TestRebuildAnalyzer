@@ -9065,6 +9065,59 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             #even-money-tracker .gr-html {
                 background: transparent !important;
             }
+            /* TITLE: Style Accordion Container for Betting Progression Tracker */
+
+            /* Target the accordion with multiple selectors for robustness */
+            .betting-progression.gr-accordion,
+            .gr-box.betting-progression,
+            [class*="betting-progression"],
+            .betting-progression.gr-accordion > details {
+                background: #e6e6fa !important; /* Light lavender for cohesive purple aesthetic */
+                border: 2px solid #2196f3 !important; /* Blue border to match app accents */
+                border-radius: 10px !important;
+                padding: 10px !important;
+                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3) !important; /* Blue glow */
+            }
+            
+            /* Style the accordion summary */
+            .betting-progression.gr-accordion summary {
+                background: #d8bfd8 !important; /* Thistle for contrast */
+                color: #2196f3 !important; /* Blue text to match app theme */
+                text-shadow: 0 0 8px rgba(33, 150, 243, 0.7) !important; /* Blue glow */
+                font-size: 18px !important;
+                font-weight: bold !important;
+                padding: 10px !important;
+                border-radius: 8px !important;
+            }
+            
+            /* Ensure internal rows, columns, and inputs blend with the background */
+            .betting-progression .gr-row,
+            .betting-progression .gr-column,
+            .betting-progression .gr-number,
+            .betting-progression .gr-dropdown,
+            .betting-progression .gr-textbox,
+            .betting-progression .gr-html {
+                background: transparent !important; /* Prevent white backgrounds */
+            }
+            
+            /* Fallback selector without !important for flexibility */
+            .gr-box.betting-progression {
+                background: #e6e6fa;
+                border: 2px solid #2196f3;
+                border-radius: 10px;
+                padding: 10px;
+                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+            }
+            
+            .gr-box.betting-progression summary {
+                background: #d8bfd8;
+                color: #2196f3;
+                text-shadow: 0 0 8px rgba(33, 150, 243, 0.7);
+                font-size: 18px;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 8px;
+            }
         }
     </style>
     """)
