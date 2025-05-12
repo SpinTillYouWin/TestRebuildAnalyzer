@@ -7531,12 +7531,96 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # 10. Row 10: Analysis Outputs (Collapsible, Renumbered)
     with gr.Accordion("Spin Logic Reactor 🧠", open=False, elem_id="spin-analysis"):
-        spin_analysis_output = gr.Textbox(
-            label="",
-            value="",
-            interactive=False,
-            lines=5
-        )
+        gr.HTML("""
+        <style>
+            #spin-analysis {
+                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
+                border: 2px solid #ff66cc !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 0 10px rgba(255, 102, 204, 0.3) !important;
+                animation: dataPulse 3s ease-in-out infinite !important;
+            }
+    
+            @keyframes dataPulse {
+                0%, 100% { box-shadow: 0 0 10px rgba(255, 102, 204, 0.3); }
+                50% { box-shadow: 0 0 15px rgba(255, 102, 204, 0.5); }
+            }
+    
+            #spin-analysis summary {
+                background: rgba(255, 102, 204, 0.1) !important;
+                color: #ff66cc !important;
+                text-shadow: 0 0 8px rgba(255, 102, 204, 0.7) !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #spin-analysis summary:hover {
+                background: rgba(255, 102, 204, 0.2) !important;
+            }
+    
+            #spin-analysis summary::after {
+                filter: invert(100%) !important;
+            }
+    
+            .spin-analysis-row {
+                background: linear-gradient(135deg, #6b4e8c 0%, #8c6bb1 100%) !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+                width: 100% !important;
+                min-height: fit-content !important;
+                height: auto !important;
+                box-sizing: border-box !important;
+            }
+    
+            .spin-analysis-row .gr-textbox {
+                background: transparent !important;
+                border: 1px solid #ff66cc !important;
+                border-radius: 6px !important;
+                padding: 8px !important;
+                color: #fff !important;
+                font-size: 14px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+    
+            @media (max-width: 768px) {
+                #spin-analysis {
+                    padding: 8px !important;
+                }
+                #spin-analysis summary {
+                    font-size: 16px !important;
+                }
+                .spin-analysis-row {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                .spin-analysis-row .gr-textbox {
+                    font-size: 12px !important;
+                    padding: 6px !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row(elem_classes=["spin-analysis-row"]):
+            spin_analysis_output = gr.Textbox(
+                label="",
+                value="",
+                interactive=False,
+                lines=5
+            )
+
     
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
         gr.HTML("""
