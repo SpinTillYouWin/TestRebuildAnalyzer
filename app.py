@@ -5824,6 +5824,7 @@ def select_next_spin_top_pick(last_spin_count):
           </div>
         </div>
         <style>
+          <!-- Styles for Top Pick Display -->
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
           @keyframes fadeIn {{
             from {{ opacity: 0; }}
@@ -6115,6 +6116,24 @@ def select_next_spin_top_pick(last_spin_count):
               font-size: 16px;
             }}
           }}
+          /* Smaller screens (phones under 480px) */
+          @media (max-width: 480px) {{
+            .top-pick-badge {{
+              width: 40px;
+              height: 40px;
+              font-size: 20px;
+            }}
+            .first-spin {{
+              width: 20px;
+              height: 20px;
+              font-size: 12px;
+            }}
+            .secondary-badge {{
+              width: 35px;
+              height: 35px;
+              font-size: 18px;
+            }}
+          }}
         </style>
         <script>
           function triggerConfetti() {{
@@ -6138,9 +6157,15 @@ def select_next_spin_top_pick(last_spin_count):
         </script>
         '''
         return html
+    except ValueError as ve:
+        print(f"select_next_spin_top_pick: Invalid spin data: {str(ve)}")
+        return "<p>Error: Please enter valid spin numbers (0-36).</p>"
+    except KeyError as ke:
+        print(f"select_next_spin_top_pick: Missing data: {str(ke)}")
+        return "<p>Error: Missing roulette data. Check configuration.</p>"
     except Exception as e:
-        print(f"select_next_spin_top_pick: Error: {str(e)}")
-        return "<p>Error selecting top pick.</p>"
+        print(f"select_next_spin_top_pick: Unexpected error: {str(e)}")
+        return "<p>Error selecting top pick. Try again.</p>"
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
