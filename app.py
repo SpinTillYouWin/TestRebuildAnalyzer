@@ -6846,27 +6846,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     color: #333;
                 }
             </style>
-            """)
-        
-        # Last Spins Display and Slider (fourth, right after Next Spin Top Pick)
-        with gr.Row():
-            with gr.Column():
-                last_spin_display = gr.HTML(
-                    label="Last Spins",
-                    value='<h4>Last Spins</h4><p>No spins yet.</p>',
-                    elem_classes=["last-spins-container"]
-                )
-                last_spin_count = gr.Slider(
-                    label="",
-                    minimum=1,
-                    maximum=36,
-                    step=1,
-                    value=36,
-                    interactive=True,
-                    elem_classes="long-slider"
-                )
-
-    # 2. Row 2: European Roulette Table
+        """)
+    
+    # Last Spins Display and Slider (moved outside the accordion, right after Next Spin Top Pick)
+    with gr.Row():
+        with gr.Column():
+            last_spin_display = gr.HTML(
+                label="Last Spins",
+                value='<h4>Last Spins</h4><p>No spins yet.</p>',
+                elem_classes=["last-spins-container"]
+            )
+            last_spin_count = gr.Slider(
+                label="",
+                minimum=1,
+                maximum=36,
+                step=1,
+                value=36,
+                interactive=True,
+                elem_classes="long-slider"
+            )
+    
+    # 2. Row 2: European Roulette Table (unchanged)
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
