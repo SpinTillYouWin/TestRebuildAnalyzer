@@ -6425,13 +6425,106 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Start of updated section
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
-        with gr.Row():
+        gr.HTML("""
+        <style>
+            /* Styling for Hit Percentage Overview accordion */
+            #hit-percentage-overview {
+                background-color: #e3f2fd !important; /* Light blue background */
+                border: 2px solid #2196f3 !important; /* Neon blue border */
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
+            }
+    
+            /* Styling for the accordion summary */
+            #hit-percentage-overview summary {
+                background-color: #2196f3 !important; /* Neon blue background for header */
+                color: white !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+    
+            #hit-percentage-overview summary:hover {
+                background-color: #1976d2 !important; /* Darker blue on hover */
+            }
+    
+            /* Ensure the summary arrow is styled */
+            #hit-percentage-overview summary::after {
+                filter: invert(100%) !important; /* White arrow for contrast */
+            }
+    
+            /* Styling for the row inside the accordion */
+            .hit-percentage-row {
+                background-color: #ffffff !important; /* White background for clarity */
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+            }
+    
+            /* Styling for columns inside the row */
+            .hit-percentage-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important; /* Ensure column doesn't get too narrow */
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
+    
+            /* Styling for the hit percentage display */
+            .hit-percentage-row .hit-percentage-container {
+                background: linear-gradient(135deg, #f5f5f5, #e0e0e0) !important;
+                border: 1px solid #2196f3 !important; /* Match neon blue border */
+                border-radius: 6px !important;
+                padding: 12px !important;
+                max-height: 300px !important; /* Slightly taller for more content */
+                overflow-y: auto !important;
+            }
+    
+            /* Animation for accordion opening */
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .hit-percentage-row {
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+                .hit-percentage-row .gr-column {
+                    min-width: 100% !important;
+                }
+                #hit-percentage-overview {
+                    padding: 8px !important;
+                }
+                #hit-percentage-overview summary {
+                    font-size: 16px !important;
+                }
+                .hit-percentage-row .hit-percentage-container {
+                    padding: 8px !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row(elem_classes=["hit-percentage-row"]):
             with gr.Column(scale=1):
                 hit_percentage_display = gr.HTML(
                     label="Hit Percentages",
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
+                
 
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         with gr.Row():
