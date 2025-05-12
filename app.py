@@ -6414,7 +6414,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["last-spins-container"]
     )
     last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
+        label="",
         minimum=1,
         maximum=36,
         step=1,
@@ -6422,7 +6422,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-
+    
     # Start of updated section
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
@@ -6666,7 +6666,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
-
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         gr.HTML("""
         <style>
