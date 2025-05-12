@@ -6143,253 +6143,194 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '''
         )
 
-    # Define state and components used across sections
-    spins_display = gr.State(value="")
-    show_trends_state = gr.State(value=True)  # Default to showing trends
-    toggle_trends_label = gr.State(value="Hide Trends")  # Default label when trends are shown
-    analysis_cache = gr.State(value={})  # New: Cache for analysis results
-    spins_textbox = gr.Textbox(
-        label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="selected-spins"
-    )
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
-    with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
-        sides_of_zero_display = gr.HTML(
-            label="Sides of Zero",
-            value=render_sides_of_zero_display(),
-            elem_classes=["sides-of-zero-container"]
-        )
-    last_spin_display = gr.HTML(
-        label="Last Spins",
-        value='<h4>Last Spins</h4><p>No spins yet.</p>',
-        elem_classes=["last-spins-container"]
-    )
-    last_spin_count = gr.Slider(
-        label="",  # Remove the label to be safe
-        minimum=1,
-        maximum=36,
-        step=1,
-        value=36,
-        interactive=True,
-        elem_classes="long-slider"
-    )
+    def suggest_hot_cold_numbers():
+        """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
+        try:
+            if not state.scores or not any(state.scores.values()):
+                return "", "<p>No spin data available for suggestions.</p>"
 
-def suggest_hot_cold_numbers():
-    """Suggest top 5 hot and bottom 5 cold numbers based on state.scores."""
-    try:
-        if not state.scores or not any(state.scores.values()):
-            return "", "<p>No spin data available for suggestions.</p>"
+            sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
+            hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
+            cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score >= 0]
 
-        sorted_scores = sorted(state.scores.items(), key=lambda x: x[1], reverse=True)
-        hot_numbers = [str(num) for num, score in sorted_scores[:5] if score > 0]
-        cold_numbers = [str(num) for num, score in sorted_scores[-5:] if score >= 0]
+            if not hot_numbers:
+                hot_numbers = ["No hot numbers"]
+            if not cold_numbers:
+                cold_numbers = ["No cold numbers"]
 
-        if not hot_numbers:
-            hot_numbers = ["No hot numbers"]
-        if not cold_numbers:
-            cold_numbers = ["No cold numbers"]
+            # Update state with suggestions
+            state.hot_suggestions = ", ".join(hot_numbers)
+            state.cold_suggestions = ", ".join(cold_numbers)
 
-        # Update state with suggestions
-        state.hot_suggestions = ", ".join(hot_numbers)
-        state.cold_suggestions = ", ".join(cold_numbers)
+            return state.hot_suggestions, state.cold_suggestions
+        except Exception as e:
+            print(f"suggest_hot_cold_numbers: Error: {str(e)}")
+            return "", "<p>Error generating suggestions.</p>"
 
-        return state.hot_suggestions, state.cold_suggestions
-    except Exception as e:
-        print(f"suggest_hot_cold_numbers: Error: {str(e)}")
-        return "", "<p>Error generating suggestions.</p>"
+    STRATEGIES = {
+        "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
+        "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
+        "Best Even Money Bets": {"function": best_even_money_bets, "categories": ["even_money"]},
+        "Best Even Money Bets + Top Pick 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},
+        "Best Dozens": {"function": best_dozens, "categories": ["dozens"]},
+        "Best Dozens + Top Pick 18 Numbers": {"function": best_dozens_and_top_18, "categories": ["dozens", "numbers"]},
+        "Best Columns": {"function": best_columns, "categories": ["columns"]},
+        "Best Columns + Top Pick 18 Numbers": {"function": best_columns_and_top_18, "categories": ["columns", "numbers"]},
+        "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_dozens_even_money_and_top_18, "categories": ["dozens", "even_money", "numbers", "trends"]},
+        "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_columns_even_money_and_top_18, "categories": ["columns", "even_money", "numbers", "trends"]},
+        "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
+        "Best Streets": {"function": best_streets, "categories": ["streets"]},
+        "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
+        "Best Corners": {"function": best_corners, "categories": ["corners"]},
+        "Best Splits": {"function": best_splits, "categories": ["splits"]},
+        "Best Dozens + Best Streets": {"function": best_dozens_and_streets, "categories": ["dozens", "streets"]},
+        "Best Columns + Best Streets": {"function": best_columns_and_streets, "categories": ["columns", "streets"]},
+        "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
+        "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
+        "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
+        "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
+        "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
+        "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
+        "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
+        "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
+        "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
+    }
 
-STRATEGIES = {
-    "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
-    "Cold Bet Strategy": {"function": cold_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
-    "Best Even Money Bets": {"function": best_even_money_bets, "categories": ["even_money"]},
-    "Best Even Money Bets + Top Pick 18 Numbers": {"function": best_even_money_and_top_18, "categories": ["even_money", "numbers"]},
-    "Best Dozens": {"function": best_dozens, "categories": ["dozens"]},
-    "Best Dozens + Top Pick 18 Numbers": {"function": best_dozens_and_top_18, "categories": ["dozens", "numbers"]},
-    "Best Columns": {"function": best_columns, "categories": ["columns"]},
-    "Best Columns + Top Pick 18 Numbers": {"function": best_columns_and_top_18, "categories": ["columns", "numbers"]},
-    "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_dozens_even_money_and_top_18, "categories": ["dozens", "even_money", "numbers", "trends"]},
-    "Best Columns + Best Even Money Bets + Top Pick 18 Numbers": {"function": best_columns_even_money_and_top_18, "categories": ["columns", "even_money", "numbers", "trends"]},
-    "Fibonacci Strategy": {"function": fibonacci_strategy, "categories": ["dozens", "columns"]},
-    "Best Streets": {"function": best_streets, "categories": ["streets"]},
-    "Best Double Streets": {"function": best_double_streets, "categories": ["six_lines"]},
-    "Best Corners": {"function": best_corners, "categories": ["corners"]},
-    "Best Splits": {"function": best_splits, "categories": ["splits"]},
-    "Best Dozens + Best Streets": {"function": best_dozens_and_streets, "categories": ["dozens", "streets"]},
-    "Best Columns + Best Streets": {"function": best_columns_and_streets, "categories": ["columns", "streets"]},
-    "Non-Overlapping Double Street Strategy": {"function": non_overlapping_double_street_strategy, "categories": ["six_lines"]},
-    "Non-Overlapping Corner Strategy": {"function": non_overlapping_corner_strategy, "categories": ["corners"]},
-    "Romanowksy Missing Dozen": {"function": romanowksy_missing_dozen_strategy, "categories": ["dozens", "numbers"]},
-    "Fibonacci To Fortune": {"function": fibonacci_to_fortune_strategy, "categories": ["even_money", "dozens", "columns", "six_lines"]},
-    "3-8-6 Rising Martingale": {"function": three_eight_six_rising_martingale, "categories": ["streets"]},
-    "1 Dozen +1 Column Strategy": {"function": one_dozen_one_column_strategy, "categories": ["dozens", "columns"]},
-    "Top Pick 18 Numbers without Neighbours": {"function": top_pick_18_numbers_without_neighbours, "categories": ["numbers"]},
-    "Top Numbers with Neighbours (Tiered)": {"function": top_numbers_with_neighbours_tiered, "categories": ["numbers"]},
-    "Neighbours of Strong Number": {"function": neighbours_of_strong_number, "categories": ["neighbours"]}
-}
+    # Line 1: Start of show_strategy_recommendations function (updated)
+    def show_strategy_recommendations(strategy_name, neighbours_count, *args):
+        """Generate strategy recommendations based on the selected strategy."""
+        try:
+            print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
+            print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
+            print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
+            print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, args = {args}")
 
+            if strategy_name == "None":
+                return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
+            
+            # If no spins yet, provide a default for "Best Even Money Bets"
+            if not any(state.scores.values()) and not any(state.even_money_scores.values()):
+                if strategy_name == "Best Even Money Bets":
+                    return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
+                return "<p>Please analyze some spins first to generate scores.</p>"
 
-# Line 1: Start of show_strategy_recommendations function (updated)
-# Line 1: Start of show_strategy_recommendations function (updated)
-def show_strategy_recommendations(strategy_name, neighbours_count, *args):
-    """Generate strategy recommendations based on the selected strategy."""
-    try:
-        print(f"show_strategy_recommendations: scores = {dict(state.scores)}")
-        print(f"show_strategy_recommendations: even_money_scores = {dict(state.even_money_scores)}")
-        print(f"show_strategy_recommendations: any_scores = {any(state.scores.values())}, any_even_money = {any(state.even_money_scores.values())}")
-        print(f"show_strategy_recommendations: strategy_name = {strategy_name}, neighbours_count = {neighbours_count}, args = {args}")
+            strategy_info = STRATEGIES[strategy_name]
+            strategy_func = strategy_info["function"]
 
-        if strategy_name == "None":
-            return "<p>No strategy selected. Please choose a strategy to see recommendations.</p>"
-        
-        # If no spins yet, provide a default for "Best Even Money Bets"
-        if not any(state.scores.values()) and not any(state.even_money_scores.values()):
-            if strategy_name == "Best Even Money Bets":
-                return "<p>No spins yet. Default Even Money Bets to consider:<br>1. Red<br>2. Black<br>3. Even</p>"
-            return "<p>Please analyze some spins first to generate scores.</p>"
-
-        strategy_info = STRATEGIES[strategy_name]
-        strategy_func = strategy_info["function"]
-
-        if strategy_name == "Neighbours of Strong Number":
-            try:
-                neighbours_count = int(neighbours_count)
-                strong_numbers_count = int(args[0]) if args else 1  # Assuming strong_numbers_count is first in args
-                print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
-            except (ValueError, TypeError) as e:
-                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
-                neighbours_count = 2
-                strong_numbers_count = 1
-            result = strategy_func(neighbours_count, strong_numbers_count)
-            # Handle the tuple return value for Neighbours of Strong Number
-            if isinstance(result, tuple) and len(result) == 2:
-                recommendations, _ = result  # We only need the recommendations string for display
-            else:
-                recommendations = result
-        elif strategy_name == "Dozen Tracker":
-            # Dozen Tracker expects multiple arguments and returns a tuple
-            result = strategy_func(*args)
-            if isinstance(result, tuple) and len(result) == 3:
-                recommendations, _, _ = result  # Unpack the tuple, we only need the first element
-            else:
-                recommendations = result
-        elif strategy_name == "Top Numbers Strategy":
-            # Handle Top Numbers Strategy
-            try:
-                strong_numbers_count = int(args[0]) if args else 5  # Number of top numbers to show
-                print(f"show_strategy_recommendations: Using strong_numbers_count = {strong_numbers_count} for Top Numbers Strategy")
-            except (ValueError, TypeError) as e:
-                print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 5.")
-                strong_numbers_count = 5
-            # Call the strategy function to get the top numbers
-            top_numbers = strategy_func()  # Assuming this returns a list of (number, score) tuples
-            if not top_numbers:
-                return "<p>No top numbers available. Please analyze more spins.</p>"
-            # Limit to strong_numbers_count and sort by score
-            top_numbers = sorted(top_numbers, key=lambda x: x[1], reverse=True)[:strong_numbers_count]
-            # Generate neighbors for each number
-            html = "<p>Here are the top numbers to consider based on recent spins:</p>"
-            html += '<table class="strongest-numbers-table">'
-            html += "<tr><th>Number</th><th>Score</th><th>Neighbors</th><th>Number</th><th>Score</th><th>Neighbors</th><th>Number</th><th>Score</th><th>Neighbors</th></tr>"
-            # Pad the list with empty entries to make it divisible by 3
-            while len(top_numbers) % 3 != 0:
-                top_numbers.append(("", ""))
-            # Group numbers into sets of 3
-            for i in range(0, len(top_numbers), 3):
-                group = top_numbers[i:i+3]
-                html += "<tr>"
-                for number, score in group:
-                    if number:
-                        neighbors = get_neighbors(number, neighbours_count)
-                        html += f"<td>{number}</td><td>{score}</td><td>{', '.join(map(str, neighbors))}</td>"
-                    else:
-                        html += "<td></td><td></td><td></td>"
-                html += "</tr>"
-            html += "</table>"
-            return html
-        else:
-            # Other strategies return a single string
-            recommendations = strategy_func()
-
-        print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
-
-        # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
-        if strategy_name == "Top Numbers with Neighbours (Tiered)":
-            return recommendations
-        # Special handling for "Neighbours of Strong Number" to format Suggestions section
-        elif strategy_name == "Neighbours of Strong Number":
-            lines = recommendations.split("\n")
-            html_lines = []
-            in_suggestions = False
-            for line in lines:
-                if line.strip() == "Suggestions:":
-                    in_suggestions = True
-                    html_lines.append('<p style="margin: 2px 0; font-weight: bold;">Suggestions:</p>')
-                elif line.strip() == "" and in_suggestions:
-                    in_suggestions = False
-                    html_lines.append('<p style="margin: 2px 0;"></p>')
-                elif in_suggestions:
-                    html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
+            if strategy_name == "Neighbours of Strong Number":
+                try:
+                    neighbours_count = int(neighbours_count)
+                    strong_numbers_count = int(args[0]) if args else 1  # Assuming strong_numbers_count is first in args
+                    print(f"show_strategy_recommendations: Using neighbours_count = {neighbours_count}, strong_numbers_count = {strong_numbers_count}")
+                except (ValueError, TypeError) as e:
+                    print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 2 and 1.")
+                    neighbours_count = 2
+                    strong_numbers_count = 1
+                result = strategy_func(neighbours_count, strong_numbers_count)
+                # Handle the tuple return value for Neighbours of Strong Number
+                if isinstance(result, tuple) and len(result) == 2:
+                    recommendations, _ = result  # We only need the recommendations string for display
                 else:
-                    html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
-            return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
-        # Otherwise, convert plain text to HTML with proper line breaks
-        else:
-            # Split the output into lines, removing any empty lines
-            lines = [line for line in recommendations.split("\n") if line.strip()]
-            # Wrap each line in <p> tags and join with <br> for proper spacing
-            html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
-            return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
+                    recommendations = result
+            elif strategy_name == "Dozen Tracker":
+                # Dozen Tracker expects multiple arguments and returns a tuple
+                result = strategy_func(*args)
+                if isinstance(result, tuple) and len(result) == 3:
+                    recommendations, _, _ = result  # Unpack the tuple, we only need the first element
+                else:
+                    recommendations = result
+            elif strategy_name == "Top Numbers Strategy":
+                # Handle Top Numbers Strategy
+                try:
+                    strong_numbers_count = int(args[0]) if args else 5  # Number of top numbers to show
+                    print(f"show_strategy_recommendations: Using strong_numbers_count = {strong_numbers_count} for Top Numbers Strategy")
+                except (ValueError, TypeError) as e:
+                    print(f"show_strategy_recommendations: Error converting inputs: {str(e)}, defaulting to 5.")
+                    strong_numbers_count = 5
+                # Call the strategy function to get the top numbers
+                top_numbers = strategy_func()  # Assuming this returns a list of (number, score) tuples
+                if not top_numbers:
+                    return "<p>No top numbers available. Please analyze more spins.</p>"
+                # Limit to strong_numbers_count and sort by score
+                top_numbers = sorted(top_numbers, key=lambda x: x[1], reverse=True)[:strong_numbers_count]
+                # Generate neighbors for each number
+                html = "<p>Here are the top numbers to consider based on recent spins:</p>"
+                html += '<table class="strongest-numbers-table">'
+                html += "<tr><th>Number</th><th>Score</th><th>Neighbors</th><th>Number</th><th>Score</th><th>Neighbors</th><th>Number</th><th>Score</th><th>Neighbors</th></tr>"
+                # Pad the list with empty entries to make it divisible by 3
+                while len(top_numbers) % 3 != 0:
+                    top_numbers.append(("", ""))
+                # Group numbers into sets of 3
+                for i in range(0, len(top_numbers), 3):
+                    group = top_numbers[i:i+3]
+                    html += "<tr>"
+                    for number, score in group:
+                        if number:
+                            neighbors = get_neighbors(number, neighbours_count)
+                            html += f"<td>{number}</td><td>{score}</td><td>{', '.join(map(str, neighbors))}</td>"
+                        else:
+                            html += "<td></td><td></td><td></td>"
+                    html += "</tr>"
+                html += "</table>"
+                return html
+            else:
+                # Other strategies return a single string
+                recommendations = strategy_func()
 
-    except Exception as e:
-        print(f"show_strategy_recommendations: Error: {str(e)}")
-        raise  # Re-raise for debugging
+            print(f"show_strategy_recommendations: Raw strategy output for {strategy_name} = '{recommendations}'")
 
-# Line 3: Start of clear_outputs function (unchanged)
-def clear_outputs():
-    return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
+            # If the output is already HTML (e.g., for "Top Numbers with Neighbours (Tiered)"), return it as is
+            if strategy_name == "Top Numbers with Neighbours (Tiered)":
+                return recommendations
+            # Special handling for "Neighbours of Strong Number" to format Suggestions section
+            elif strategy_name == "Neighbours of Strong Number":
+                lines = recommendations.split("\n")
+                html_lines = []
+                in_suggestions = False
+                for line in lines:
+                    if line.strip() == "Suggestions:":
+                        in_suggestions = True
+                        html_lines.append('<p style="margin: 2px 0; font-weight: bold;">Suggestions:</p>')
+                    elif line.strip() == "" and in_suggestions:
+                        in_suggestions = False
+                        html_lines.append('<p style="margin: 2px 0;"></p>')
+                    elif in_suggestions:
+                        html_lines.append(f'<p style="margin: 2px 0; padding-left: 10px;">{line}</p>')
+                    else:
+                        html_lines.append(f'<p style="margin: 2px 0;">{line}</p>')
+                return '<div style="font-family: Arial, sans-serif; font-size: 14px;">' + "".join(html_lines) + "</div>"
+            # Otherwise, convert plain text to HTML with proper line breaks
+            else:
+                # Split the output into lines, removing any empty lines
+                lines = [line for line in recommendations.split("\n") if line.strip()]
+                # Wrap each line in <p> tags and join with <br> for proper spacing
+                html_lines = [f"<p style='margin: 2px 0;'>{line}</p>" for line in lines]
+                return "<div style='font-family: Arial, sans-serif; font-size: 14px;'>" + "".join(html_lines) + "</div>"
 
-# Lines after (context, unchanged)
-def toggle_checkboxes(strategy_name):
-    return (gr.update(visible=strategy_name == "Kitchen Martingale"),
-            gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
+        except Exception as e:
+            print(f"show_strategy_recommendations: Error: {str(e)}")
+            raise  # Re-raise for debugging
 
-def reset_colors():
-    """Reset color pickers to default values and update the dynamic table."""
-    default_top = "rgba(255, 255, 0, 0.5)"  # Yellow
-    default_middle = "rgba(0, 255, 255, 0.5)"  # Cyan
-    default_lower = "rgba(0, 255, 0, 0.5)"  # Green
-    return default_top, default_middle, default_lower
+    # Line 3: Start of clear_outputs function (unchanged)
+    def clear_outputs():
+        return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 
+    # Lines after (context, unchanged)
+    def toggle_checkboxes(strategy_name):
+        return (gr.update(visible=strategy_name == "Kitchen Martingale"),
+                gr.update(visible=strategy_name == "S.T.Y.W: Victory Vortex"))
 
-# Build the Gradio interface
-with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # 1. Row 1: Header (Moved to the top)
-    with gr.Row(elem_id="header-row"):
-        gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
-        gr.HTML(
-            '''
-            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">       
-                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
-            </div>
-            <style>
-                #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
-                    transform: scale(1.05);
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-            </style>
-            '''
-        )
+    def reset_colors():
+        """Reset color pickers to default values and update the dynamic table."""
+        default_top = "rgba(255, 255, 0, 0.5)"  # Yellow
+        default_middle = "rgba(0, 255, 255, 0.5)"  # Cyan
+        default_lower = "rgba(0, 255, 0, 0.5)"  # Green
+        return default_top, default_middle, default_lower
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
-    show_trends_state = gr.State(value=True)  # Default to showing trends
-    toggle_trends_label = gr.State(value="Hide Trends")  # Default label when trends are shown
+    show_trends_state = gr.State(value=False)  # Default to hiding trends
+    toggle_trends_label = gr.State(value="Show Trends")  # Default label when trends are hidden
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
     spins_textbox = gr.Textbox(
         label="Selected Spins (Edit manually with commas, e.g., 5, 12, 0)",
@@ -6422,7 +6363,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         interactive=True,
         elem_classes="long-slider"
     )
-    
+
     # Start of updated section
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
