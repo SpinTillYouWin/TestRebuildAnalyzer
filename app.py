@@ -6451,6 +6451,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     };
     
     function updateSelectedSpinsDisplay() {
+        console.log("Updating Selected Spins Display");
         const input = document.querySelector("#selected-spins input");
         const display = document.querySelector("#selected-spins-display");
         
