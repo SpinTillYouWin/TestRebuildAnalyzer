@@ -5651,7 +5651,7 @@ def select_next_spin_top_pick(last_spin_count):
             min_traits = sorted([x[2] for x in scores[:10]], reverse=True)[9]
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
-        top_picks = scores[:10]
+            top_picks = scores[:10]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
         # Calculate confidence with realistic max traits (one per category)
