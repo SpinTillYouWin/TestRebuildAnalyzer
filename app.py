@@ -4998,14 +4998,11 @@ def clear_hot_cold_picks(type_label, current_spins_display):
 def calculate_hit_percentages(last_spin_count):
     """Calculate hit percentages for Even Money Bets, Columns, and Dozens."""
     try:
-        last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
+        last_spin_count = int(last_spin_count) if last_spin_count is not None else 36
         last_spin_count = max(1, min(last_spin_count, 36))
-        # Only keep valid spins (numbers 0-36)
-        last_spins = [spin for spin in state.last_spins[-last_spin_count:] if spin.isdigit() and 0 <= int(spin) <= 36] if state.last_spins else []
+        last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
-        # Log the spins being analyzed
-        print(f"Analyzing last {last_spin_count} spins: {last_spins}")
 
         total_spins = len(last_spins)
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
@@ -5450,18 +5447,15 @@ def select_next_spin_top_pick(last_spin_count):
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
             return "<p>No spins available for analysis.</p>"
-
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
-        from collections import Counter
         numbers = set(range(37))
-        # Count spins quickly
-        hit_counts = Counter(int(spin) for spin in last_spins if spin.isdigit())
-        hit_counts = {n: hit_counts.get(n, 0) for n in range(37)}  # Fill in zeros for missing numbers
+        hit_counts = {n: 0 for n in range(37)}
         last_positions = {n: -1 for n in range(37)}
         for i, spin in enumerate(last_spins):
             try:
                 num = int(spin)
+                hit_counts[num] += 1
                 last_positions[num] = i
             except ValueError:
                 continue
@@ -5654,21 +5648,8 @@ def select_next_spin_top_pick(last_spin_count):
             top_picks = scores[:10]
         state.current_top_pick = top_picks[0][0]
         top_pick = top_picks[0][0]
-        # Calculate confidence with realistic max traits (one per category)
-        trait_categories = set()
-        for trait in hottest_traits:
-            if trait in ["Red", "Black"]:
-                trait_categories.add("Red-Black")
-            elif trait in ["Even", "Odd"]:
-                trait_categories.add("Even-Odd")
-            elif trait in ["Low", "High"]:
-                trait_categories.add("Low-High")
-            elif trait in ["1st Dozen", "2nd Dozen", "3rd Dozen"]:
-                trait_categories.add("Dozens")
-            elif trait in ["1st Column", "2nd Column", "3rd Column"]:
-                trait_categories.add("Columns")
-        max_possible_traits = len(trait_categories)
-        max_possible_traits = max(1, max_possible_traits)  # Avoid division by zero
+        # Calculate confidence based on matching traits
+        max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
         confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
         characteristics = []
@@ -5792,9 +5773,38 @@ def select_next_spin_top_pick(last_spin_count):
           <h5>Last 5 Spins</h5>
           <div class="first-spins-container">{last_five_spins_html}</div>
         </div>
-        <!-- ... rest of HTML ... -->
+        <div class="top-pick-container">
+          <h4>Top Pick for Next Spin</h4>
+          <div class="top-pick-wrapper">
+            <div class="badge-wrapper">
+              <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+            </div>
+            <div class="top-pick-characteristics">
+              {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill" style="width: {confidence}%"></div>
+            <span>Confidence: {confidence}%</span>
+          </div>
+          <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
+          <div class="accordion">
+            <input type="checkbox" id="reasons-toggle" class="accordion-toggle">
+            <label for="reasons-toggle" class="accordion-header">Why This Number Was Chosen</label>
+            <div class="accordion-content">
+              <div class="top-pick-reasons">
+                {reasons_html}
+              </div>
+            </div>
+          </div>
+          <div class="secondary-picks">
+            <h5>Other Top Picks</h5>
+            <div class="secondary-picks-container">
+              {top_5_html}
+            </div>
+          </div>
+        </div>
         <style>
-          <!-- Styles for Top Pick Display -->
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
           @keyframes fadeIn {{
             from {{ opacity: 0; }}
@@ -5803,17 +5813,6 @@ def select_next_spin_top_pick(last_spin_count):
           @keyframes confetti {{
             0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
             100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
-          }}
-          /* Prevent jitter on page load */
-          .top-pick-container, .first-spins {{
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s 0.3s, opacity 0.3s ease-in;
-          }}
-          .top-pick-container.loaded, .first-spins.loaded {{
-            visibility: visible;
-            opacity: 1;
-            transition: visibility 0s, opacity 0.3s ease-in;
           }}
           .first-spins {{
             margin-bottom: 10px;
@@ -6097,24 +6096,6 @@ def select_next_spin_top_pick(last_spin_count):
               font-size: 16px;
             }}
           }}
-          /* Smaller screens (phones under 480px) */
-          @media (max-width: 480px) {{
-            .top-pick-badge {{
-              width: 40px;
-              height: 40px;
-              font-size: 20px;
-            }}
-            .first-spin {{
-              width: 20px;
-              height: 20px;
-              font-size: 12px;
-            }}
-            .secondary-badge {{
-              width: 35px;
-              height: 35px;
-              font-size: 18px;
-            }}
-          }}
         </style>
         <script>
           function triggerConfetti() {{
@@ -6135,24 +6116,12 @@ def select_next_spin_top_pick(last_spin_count):
               console.error('Failed to copy: ', err);
             }});
           }}
-          /* Apply loaded class to prevent jitter */
-          document.addEventListener('DOMContentLoaded', () => {{
-            setTimeout(() => {{
-              document.querySelectorAll('.top-pick-container, .first-spins').forEach(el => el.classList.add('loaded'));
-            }}, 100);
-          }});
         </script>
         '''
         return html
-    except ValueError as ve:
-        print(f"select_next_spin_top_pick: Invalid spin data: {str(ve)}")
-        return "<p>Error: Please enter valid spin numbers (0-36).</p>"
-    except KeyError as ke:
-        print(f"select_next_spin_top_pick: Missing data: {str(ke)}")
-        return "<p>Error: Missing roulette data. Check configuration.</p>"
     except Exception as e:
-        print(f"select_next_spin_top_pick: Unexpected error: {str(e)}")
-        return "<p>Error selecting top pick. Try again.</p>"
+        print(f"select_next_spin_top_pick: Error: {str(e)}")
+        return "<p>Error selecting top pick.</p>"
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
