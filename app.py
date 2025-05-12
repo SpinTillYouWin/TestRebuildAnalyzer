@@ -5792,7 +5792,37 @@ def select_next_spin_top_pick(last_spin_count):
           <h5>Last 5 Spins</h5>
           <div class="first-spins-container">{last_five_spins_html}</div>
         </div>
-        <!-- ... rest of HTML ... -->
+        <div class="top-pick-container">
+          <h4>Top Pick for Next Spin</h4>
+          <div class="top-pick-wrapper">
+            <div class="badge-wrapper">
+              <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+            </div>
+            <div class="top-pick-characteristics">
+              {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill" style="width: {confidence}%"></div>
+            <span>Confidence: {confidence}%</span>
+          </div>
+          <p class="top-pick-description">Based on analysis of the last {last_spin_count} spins.</p>
+          <div class="accordion">
+            <input type="checkbox" id="reasons-toggle" class="accordion-toggle">
+            <label for="reasons-toggle" class="accordion-header">Why This Number Was Chosen</label>
+            <div class="accordion-content">
+              <div class="top-pick-reasons">
+                {reasons_html}
+              </div>
+            </div>
+          </div>
+          <div class="secondary-picks">
+            <h5>Other Top Picks</h5>
+            <div class="secondary-picks-container">
+              {top_5_html}
+            </div>
+          </div>
+        </div>
         <style>
           <!-- Styles for Top Pick Display -->
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
@@ -5806,13 +5836,9 @@ def select_next_spin_top_pick(last_spin_count):
           }}
           /* Ensure visibility and smooth load for top pick */
           .top-pick-container, .first-spins {{
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease-in 0.2s, visibility 0s 0.2s;
-          }}
-          .top-pick-container, .first-spins {{
             opacity: 1;
             visibility: visible;
+            transition: opacity 0.3s ease-in; /* Smooth fade-in without initial hide */
           }}
           .first-spins {{
             margin-bottom: 10px;
@@ -6142,6 +6168,9 @@ def select_next_spin_top_pick(last_spin_count):
           }});
         </script>
         '''
+        return html
+    except ValueError as ve:
+        print("Returning HTML for top pick:", html[:200])  # Print first 200 chars to debug
         return html
     except ValueError as ve:
         print(f"select_next_spin_top_pick: Invalid spin data: {str(ve)}")
