@@ -6364,7 +6364,68 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes="long-slider"
     )
 
-    # Start of updated section
+# Parent Accordion for grouping
+with gr.Accordion("Trends & Top Picks 🌟", open=False, elem_id="trends-top-picks"):
+    gr.HTML("""
+    <style>
+        #trends-top-picks {
+            background-color: #f0f0f0 !important; /* Light gray background for distinction */
+            border: 3px solid #888 !important; /* Neutral border to stand out */
+            border-radius: 10px !important;
+            padding: 15px !important;
+            margin-bottom: 20px !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+            animation: fadeInAccordion 0.5s ease-in-out !important;
+        }
+
+        #trends-top-picks summary {
+            background-color: #888 !important; /* Neutral gray header */
+            color: white !important;
+            padding: 15px !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            font-size: 20px !important;
+            cursor: pointer !important;
+            transition: background-color 0.3s ease !important;
+        }
+
+        #trends-top-picks summary:hover {
+            background-color: #777 !important; /* Slightly darker on hover */
+        }
+
+        #trends-top-picks summary::after {
+            filter: invert(100%) !important; /* White arrow for contrast */
+        }
+
+        /* Add a subtle unifying style to nested accordions */
+        #trends-top-picks .gr-accordion {
+            border-left: 4px solid #888 !important; /* Tie them together visually */
+            margin: 10px 0 !important;
+        }
+
+        /* Add a divider between nested accordions */
+        #trends-top-picks .gr-accordion:not(:last-child)::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: #ccc;
+            margin: 10px 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #trends-top-picks {
+                padding: 10px !important;
+            }
+            #trends-top-picks summary {
+                font-size: 18px !important;
+            }
+        }
+    </style>
+    """)
+    gr.Markdown("Explore trends in your spins and find the top pick for your next bet.")
+
+    # Hit Percentage Overview (unchanged)
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
         <style>
