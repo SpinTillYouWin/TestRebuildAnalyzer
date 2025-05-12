@@ -6424,7 +6424,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     )
 
     # Start of updated section
-        with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
+    with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
         <style>
             #hit-percentage-overview {
