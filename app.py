@@ -7515,12 +7515,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                     animation: fadeInAccordion 0.5s ease-in-out !important;
                 }
-    
+        
                 @keyframes fadeInAccordion {
                     0% { opacity: 0; transform: translateY(5px); }
                     100% { opacity: 1; transform: translateY(0); }
                 }
-    
+        
                 .betting-progression summary {
                     background-color: #ffca28 !important;
                     color: white !important;
@@ -7531,22 +7531,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     cursor: pointer !important;
                     transition: background-color 0.3s ease !important;
                 }
-    
+        
                 .betting-progression summary:hover {
                     background-color: #ffb300 !important;
                 }
-    
+        
                 .betting-progression summary::after {
                     filter: invert(100%) !important;
                 }
-    
+        
                 .betting-progression .gr-row {
                     background-color: #fffde7 !important;
                     padding: 5px !important;
                     border-radius: 6px !important;
                     margin: 5px 0 !important;
                 }
-    
+        
                 .betting-progression .gr-textbox {
                     background: transparent !important;
                     border: 1px solid #ffca28 !important;
@@ -7557,7 +7557,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     width: 100% !important;
                     box-sizing: border-box !important;
                 }
-    
+        
                 @media (max-width: 768px) {
                     .betting-progression {
                         padding: 8px !important;
@@ -7581,12 +7581,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Row():
                 bet_type_dropdown = gr.Dropdown(
                     label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Straight Bets"],
+                    choices=["Even Money", "Dozens", "Columns", "Streets", "Straight Bets"],
                     value="Even Money"
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss"],
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", "Double Loss / +50% Win"],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
@@ -12046,6 +12046,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[progression_dropdown],
             outputs=[labouchere_sequence]
         )
+
 
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
