@@ -7025,23 +7025,28 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             </style>
         """)
     
-    # Last Spins Display and Slider (moved outside the accordion, right after Next Spin Top Pick)
-    with gr.Row():
-        with gr.Column():
-            last_spin_display = gr.HTML(
-                label="Last Spins",
-                value='<h4>Last Spins</h4><p>No spins yet.</p>',
-                elem_classes=["last-spins-container"]
-            )
-            last_spin_count = gr.Slider(
-                label="",
-                minimum=1,
-                maximum=36,
-                step=1,
-                value=36,
-                interactive=True,
-                elem_classes="long-slider"
-            )
+    # Define spin_counter before the roulette table to avoid NameError
+    spin_counter = gr.HTML(
+        label="Total Spins",
+        value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
+        elem_classes=["spin-counter"]
+    )
+    
+    # Last Spins Display and Slider (positioned before the roulette table, adjust if needed)
+    last_spin_display = gr.HTML(
+        label="Last Spins",
+        value='<h4>Last Spins</h4><p>No spins yet.</p>',
+        elem_classes=["last-spins-container"]
+    )
+    last_spin_count = gr.Slider(
+        label="",
+        minimum=1,
+        maximum=36,
+        step=1,
+        value=36,
+        interactive=True,
+        elem_classes="long-slider"
+    )
     
     # 2. Row 2: European Roulette Table (unchanged)
     with gr.Group():
@@ -7097,13 +7102,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # New: Total Spins Section (Placed right after European Roulette Table)
     with gr.Row():
         with gr.Column(scale=1, min_width=200):
-            spin_counter = gr.HTML(
-                label="Total Spins",
-                value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
-                elem_classes=["spin-counter"]
-            )
+            # Reference the already-defined spin_counter
+            spin_counter
     
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider (unchanged)
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
