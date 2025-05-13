@@ -7558,12 +7558,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                     animation: fadeInAccordion 0.5s ease-in-out !important;
                 }
-        
                 @keyframes fadeInAccordion {
                     0% { opacity: 0; transform: translateY(5px); }
                     100% { opacity: 1; transform: translateY(0); }
                 }
-        
                 .betting-progression summary {
                     background-color: #ffca28 !important;
                     color: white !important;
@@ -7574,22 +7572,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     cursor: pointer !important;
                     transition: background-color 0.3s ease !important;
                 }
-        
                 .betting-progression summary:hover {
                     background-color: #ffb300 !important;
                 }
-        
                 .betting-progression summary::after {
                     filter: invert(100%) !important;
                 }
-        
                 .betting-progression .gr-row {
                     background-color: #fffde7 !important;
                     padding: 5px !important;
                     border-radius: 6px !important;
                     margin: 5px 0 !important;
                 }
-        
                 .betting-progression .gr-textbox {
                     background: transparent !important;
                     border: 1px solid #ffca28 !important;
@@ -7600,7 +7594,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     width: 100% !important;
                     box-sizing: border-box !important;
                 }
-        
                 @media (max-width: 768px) {
                     .betting-progression {
                         padding: 8px !important;
@@ -7611,7 +7604,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     .betting-progression .gr-textbox {
                         font-size: 12px !important;
                         padding: 6px !important;
-                    Facetune App - DIY Photography & Videography Tools
                     }
                 }
             </style>
@@ -7630,7 +7622,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", "Double Loss / +50% Win"],
+                    choices=[
+                        "Martingale",
+                        "Fibonacci",
+                        "Triple Martingale",
+                        "Oscar’s Grind",
+                        "Labouchere",
+                        "Ladder",
+                        "D’Alembert",
+                        "Double After a Win",
+                        "+1 Win / -1 Loss",
+                        "+2 Win / -1 Loss",
+                        "Double Loss / +50% Win",
+                        "Double Loss / Repeat on Win / Halve After Two Wins"
+                    ],
                     value="Martingale"
                 )
                 labouchere_sequence = gr.Textbox(
@@ -12009,33 +12014,36 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         state.stop_win = stop_win
         state.bet_type = bet_type
         state.progression = progression
-        # Line 1: Enforce minimum value and reset labouchere_sequence
-        target_profit = int(target_profit) if target_profit is not None else 10  # Ensure integer, default to 10
-        state.target_profit = max(1, target_profit)  # Enforce minimum value of 1
+        target_profit = int(target_profit) if target_profit is not None else 10
+        state.target_profit = max(1, target_profit)
+        state.consecutive_wins = 0  # Reset for all progressions
+        state.is_stopped = False  # Reset stopped state
+    
         if progression == "Labouchere":
             try:
-                # Only use the sequence if it's non-empty and valid; otherwise, auto-generate
                 if sequence and sequence.strip():
                     parsed_sequence = [int(x.strip()) for x in sequence.split(",")]
                     if all(isinstance(x, int) and x > 0 for x in parsed_sequence):
                         state.progression_state = parsed_sequence
-                        state.labouchere_sequence = sequence  # Keep the user-provided sequence
+                        state.labouchere_sequence = sequence
                     else:
                         state.progression_state = [1] * state.target_profit
-                        state.labouchere_sequence = ""  # Clear the sequence to use auto-generated
+                        state.labouchere_sequence = ""
                         return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
                 else:
                     state.progression_state = [1] * state.target_profit
-                    state.labouchere_sequence = ""  # Ensure auto-generated sequence is used
+                    state.labouchere_sequence = ""
             except ValueError:
                 state.progression_state = [1] * state.target_profit
-                state.labouchere_sequence = ""  # Clear the sequence on error
+                state.labouchere_sequence = ""
                 return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
         else:
-            state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
+            state.labouchere_sequence = ""
+            state.progression_state = None  # Clear for non-Labouchere, including new progression
+    
         state.reset_progression()
         return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
-    
+   
     try:
         bankroll_input.change(
             fn=update_config,
@@ -12091,8 +12099,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[progression_dropdown],
             outputs=[labouchere_sequence]
         )
-
-
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
     
@@ -12104,6 +12110,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in labouchere_sequence.change handler: {str(e)}")
+    
+    try:
+        target_profit_input.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+        )
+    except Exception as e:
+        print(f"Error in target_profit_input.change handler: {str(e)}")
     
     try:
         win_button.click(
