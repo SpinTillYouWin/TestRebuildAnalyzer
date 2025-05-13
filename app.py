@@ -9381,23 +9381,57 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             justify-content: center !important;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important; /* Subtle shadow */
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important; /* Text shadow for depth */
-            transition: transform 0.2s ease, box-shadow 0.3s ease !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
         }
         .spin-counter:hover {
-            transform: rotate(5deg) scale(1.05) !important; /* Slight rotation and scale */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4) !important; /* Enhanced shadow */
+            transform: scale(1.1) !important; /* Gentle scale, no rotation */
+            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7) !important; /* Gold glow */
+            border-color: #ffd700 !important; /* Gold border */
+            animation: sparkle-and-pulse 0.6s ease-in-out !important; /* Smooth pulse */
         }
         .spin-counter.glow {
-            animation: roulette-glow 1s ease-in-out infinite !important; /* Roulette-themed glow */
+            animation: casino-flicker 1.8s ease-in-out infinite !important; /* Multi-color flicker */
         }
-        @keyframes roulette-glow {
-            0%, 100% {
+        @keyframes sparkle-and-pulse {
+            0% {
+                transform: scale(1);
                 box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                border-color: #ffffff;
             }
             50% {
-                box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.5); /* Red glow to match red numbers */
+                transform: scale(1.15);
+                box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8);
+                border-color: #ffd700;
+            }
+            100% {
+                transform: scale(1.1);
+                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
+                border-color: #ffd700;
             }
         }
+        @keyframes casino-flicker {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                border-color: #ffffff;
+            }
+            33% {
+                transform: scale(1.05);
+                box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.6); /* Red glow */
+                border-color: #ff0000;
+            }
+            66% {
+                transform: scale(1.03);
+                box-shadow: 0 0 12px 6px rgba(0, 128, 0, 0.6); /* Green glow */
+                border-color: #008000;
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.6); /* White glow */
+                border-color: #ffffff;
+            }
+        }
+
         
         /* Sides of Zero Container */
         .sides-of-zero-container {
