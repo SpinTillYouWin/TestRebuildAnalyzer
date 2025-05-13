@@ -164,7 +164,6 @@ def validate_roulette_data():
     return errors if errors else None
 
 # In Part 1, replace the RouletteState class with the following:
-
 class RouletteState:
     def __init__(self):
         self.scores = {n: 0 for n in range(37)}
@@ -282,6 +281,19 @@ class RouletteState:
         else:
             self.status = "Active"
             self.status_color = "white"
+
+    def reset_bankroll(self):
+        self.bankroll = self.initial_bankroll
+        self.is_stopped = False
+        self.message = f"Bankroll reset to {self.initial_bankroll}."
+        self.check_status()
+        return (
+            self.bankroll,
+            self.current_bet,
+            self.next_bet,
+            self.message,
+            f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+        )
 
     def update_bankroll(self, won):
         payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Streets": 11, "Straight Bets": 35}[self.bet_type]
@@ -7599,6 +7611,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     .betting-progression .gr-textbox {
                         font-size: 12px !important;
                         padding: 6px !important;
+                    Facetune App - DIY Photography & Videography Tools
                     }
                 }
             </style>
@@ -7629,6 +7642,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 win_button = gr.Button("Win")
                 lose_button = gr.Button("Lose")
                 reset_progression_button = gr.Button("Reset Progression")
+                reset_bankroll_button = gr.Button("Reset Bankroll")
             with gr.Row():
                 bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
                 current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
@@ -12114,6 +12128,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=lambda: state.reset_progression(),
             inputs=[],
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )
+        reset_bankroll_button.click(  # Line 1
+            fn=lambda: state.reset_bankroll(),
+            inputs=[],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+        )  # Line 3
+        bankroll_input.change(
+            fn=update_config,
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
         )
     except Exception as e:
         print(f"Error in reset_progression_button.click handler: {str(e)}")
