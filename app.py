@@ -9368,31 +9368,35 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         
         /* Spin Counter Styling */
         .spin-counter {
-            font-size: 14px !important;
-            font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #87CEEB, #5DADE2) !important;
-            padding: 4px 8px !important;
-            border: 2px solid #3498DB !important;
-            border-radius: 6px !important;
-            margin-top: 0 !important;
-            display: flex !important;
+            font-size: 16px !important; /* Slightly larger for emphasis */
+            font-weight: bold !important; /* Bold to match roulette buttons */
+            color: #ffffff !important; /* White text like roulette buttons */
+            background: linear-gradient(135deg, #2e7d32, #1b5e20) !important; /* Green felt gradient */
+            padding: 8px 16px !important; /* Padding for chip-like look */
+            border: 2px solid #ffffff !important; /* White border like roulette buttons */
+            border-radius: 10px !important; /* Rounded for casino chip aesthetic */
+            margin: 10px auto !important; /* Centered with margin */
+            display: inline-flex !important; /* Inline-flex for alignment */
             align-items: center !important;
             justify-content: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important; /* Subtle shadow */
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important; /* Text shadow for depth */
+            transition: transform 0.2s ease, box-shadow 0.3s ease !important;
         }
         .spin-counter:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+            transform: rotate(5deg) scale(1.05) !important; /* Slight rotation and scale */
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4) !important; /* Enhanced shadow */
         }
         .spin-counter.glow {
-            animation: counter-glow 0.5s ease-in-out !important;
+            animation: roulette-glow 1s ease-in-out infinite !important; /* Roulette-themed glow */
         }
-        
-        @keyframes counter-glow {
-            0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-            50% { box-shadow: 0 0 10px 5px rgba(52, 152, 219, 0.8); }
+        @keyframes roulette-glow {
+            0%, 100% {
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.5); /* Red glow to match red numbers */
+            }
         }
         
         /* Sides of Zero Container */
