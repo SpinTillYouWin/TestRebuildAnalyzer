@@ -8500,7 +8500,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
         };
         document.head.appendChild(script);
-    
+
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
@@ -8508,9 +8508,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
-    """)
         /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+        .gr-row { margin: 0 !important; padding: 5px 0px !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
         .gr-box { border-radius: 5px !important; }
         
