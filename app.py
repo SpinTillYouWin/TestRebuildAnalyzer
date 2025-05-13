@@ -6168,7 +6168,122 @@ def select_next_spin_top_pick(last_spin_count):
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # 1. Row 1: Header (Moved to the top)
+    # Terms and Conditions Modal
+    gr.HTML("""
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <h2>Terms and Conditions Agreement</h2>
+            <p>Please read and accept the Terms and Conditions to use WheelPulse by S.T.Y.W. You must agree to proceed.</p>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                <p><strong>Summary of Key Points:</strong></p>
+                <ul>
+                    <li>WheelPulse by S.T.Y.W is a tracking and analysis tool, not a predictive or gambling system.</li>
+                    <li>You are solely responsible for any financial losses from gambling activities.</li>
+                    <li>The App is provided "as-is" without warranties; we are not liable for losses or damages.</li>
+                    <li>You must be 19+ and comply with your local gambling laws.</li>
+                    <li>These Terms are governed by Ontario, Canada laws.</li>
+                </ul>
+                <p>Review the full <a href="https://huggingface.co/spaces/ysforce1/SpinTillYouWinFreshStart2025/resolve/main/Terms%20and%20Conditions%20for%20WheelPulse%20by%20S.T.Y.html" target="_blank">Terms and Conditions</a> for details.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="accept-btn" onclick="acceptTerms()">Accept</button>
+                <button class="decline-btn" onclick="declineTerms()">Decline</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #ff9800;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .accept-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .decline-btn {
+            background-color: #d32f2f;
+            color: #fff;
+        }
+        .disabled-app {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .modal a {
+            color: #2196f3;
+            text-decoration: underline;
+        }
+        .modal a:hover {
+            text-decoration: none;
+        }
+    </style>
+    <script>
+        const termsAccepted = localStorage.getItem('termsAccepted');
+        const modal = document.getElementById('termsModal');
+        const appContainer = document.body;
+
+        function showModal() {
+            modal.style.display = 'flex';
+            appContainer.classList.add('disabled-app');
+        }
+
+        function acceptTerms() {
+            localStorage.setItem('termsAccepted', 'true');
+            modal.style.display = 'none';
+            appContainer.classList.remove('disabled-app');
+        }
+
+        function declineTerms() {
+            alert('You must accept the Terms and Conditions to use WheelPulse by S.T.Y.W.');
+            modal.style.display = 'none';
+            appContainer.classList.add('disabled-app');
+        }
+
+        if (!termsAccepted) {
+            showModal();
+        }
+
+        window.addEventListener('load', () => {
+            if (!termsAccepted) {
+                appContainer.classList.add('disabled-app');
+            }
+        });
+    </script>
+    """)
+
+    # 1. Row 1: Header
     with gr.Row(elem_id="header-row"):
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
         gr.HTML(
@@ -6176,9 +6291,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
                 <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
                 <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+                <a href="https://huggingface.co/spaces/ysforce1/SpinTillYouWinFreshStart2025/resolve/main/Terms%20and%20Conditions%20for%20WheelPulse%20by%20S.T.Y.html" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #2196f3; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📜 Terms & Conditions</a>
             </div>
             <style>
-                #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
+                #start-tour-btn:hover, a[href*="drive.google.com"]:hover, a[href*="Terms%20and%20Conditions"]:hover {
                     transform: scale(1.05);
                     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 }
