@@ -7097,6 +7097,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[],
                                 outputs=[]
                             )
+                            spin_counter = gr.HTML(
+                                label="Total Spins",
+                                value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
+                                elem_classes=["spin-counter"]
+                            )
 
     # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
