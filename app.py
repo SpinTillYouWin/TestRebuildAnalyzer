@@ -6167,8 +6167,8 @@ def select_next_spin_top_pick(last_spin_count):
         return "<p>Error selecting top pick.</p>"
 
 # Lines after (context, unchanged from Part 2)
-with gr.Blocks() as demo:  # Simplified title for browser tab
-    # T&C and Privacy Policy Modal with Slider (unchanged from previous)
+with gr.Blocks() as demo:  # Removed title attribute to prevent default rendering
+    # T&C and Privacy Policy Modal with Slider (unchanged)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
@@ -6563,7 +6563,7 @@ with gr.Blocks() as demo:  # Simplified title for browser tab
 
     # App Content
     with gr.Group(visible=False, elem_id="appContent"):
-        # Header Row (keep only one instance)
+        # Header Row (ensure only one instance)
         with gr.Row(elem_id="header-row"):
             gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
             gr.HTML("""
@@ -6582,13 +6582,26 @@ with gr.Blocks() as demo:  # Simplified title for browser tab
         # Rest of your app content (unchanged)
         # ... (spins_display, spins_textbox, and other components as per your original code)
 
-        # Ensure app content is shown after acceptance
+        # Ensure app content is shown after acceptance and prevent header duplication
         gr.HTML("""
             <script>
                 window.onload = function() {
                     if (localStorage.getItem('termsAccepted') === 'true') {
                         document.getElementById('appContent').style.display = 'block';
                     }
+                    // Check for duplicate headers and remove extras
+                    const headers = document.querySelectorAll('h1');
+                    const headerText = "WheelPulse by S.T.Y.W 📈";
+                    let found = false;
+                    headers.forEach((header) => {
+                        if (header.textContent.trim() === headerText) {
+                            if (found) {
+                                header.remove(); // Remove duplicate headers
+                            } else {
+                                found = true;
+                            }
+                        }
+                    });
                 };
             </script>
             <style>
@@ -6598,9 +6611,13 @@ with gr.Blocks() as demo:  # Simplified title for browser tab
                 #appContent[style*="display: block"] {
                     display: block !important;
                 }
+                /* Hide any default Gradio title rendering if present */
+                .gradio-container > h1:not([id="header-row"] h1) {
+                    display: none !important;
+                }
             </style>
         """)
-
+ 
     # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
