@@ -9368,44 +9368,44 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
         /* Spin Counter Styling */
         .spin-counter {
-            font-size: 16px !important;
+            font-size: 14px !important; /* Smaller text */
             font-weight: bold !important;
             color: #ffffff !important;
             background: linear-gradient(135deg, #2e7d32, #1b5e20) !important;
-            padding: 8px 16px !important;
-            border: 2px solid #ffffff !important;
-            border-radius: 10px !important;
-            margin: 10px auto !important;
+            padding: 6px 12px !important; /* Reduced padding */
+            border: 1px solid #ffffff !important; /* Thinner border */
+            border-radius: 8px !important; /* Slightly smaller radius */
+            margin: 5px auto !important; /* Less margin */
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important; /* Smaller shadow */
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) !important;
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
             position: relative !important;
         }
         .spin-counter:hover {
             transform: scale(1.1) !important;
-            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7) !important;
+            box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.7) !important; /* Smaller glow */
             border-color: #ffd700 !important;
             animation: sparkle-and-pulse 0.6s ease-in-out !important;
         }
         .spin-counter:hover::after {
-            content: attr(data-tip); /* Dynamic tip from JavaScript */
+            content: attr(data-tip);
             position: absolute !important;
-            top: -50px !important;
+            top: -45px !important; /* Adjusted for smaller counter */
             left: 50% !important;
             transform: translateX(-50%) !important;
             background: #333 !important;
             color: #fff !important;
-            padding: 4px 8px !important;
-            border-radius: 4px !important;
-            font-size: 10px !important;
-            max-width: 150px !important;
+            padding: 3px 6px !important; /* Smaller padding */
+            border-radius: 3px !important;
+            font-size: 9px !important; /* Smaller font */
+            max-width: 120px !important; /* Smaller width */
             white-space: normal !important;
             text-align: center !important;
             z-index: 10 !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
         }
         .spin-counter.glow {
             animation: casino-flicker 1.8s ease-in-out infinite, color-shift 1.8s ease-in-out infinite !important;
@@ -9416,39 +9416,39 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes sparkle-and-pulse {
             0% {
                 transform: scale(1);
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                 border-color: #ffffff;
             }
             50% {
                 transform: scale(1.15);
-                box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8);
+                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
                 border-color: #ffd700;
             }
             100% {
                 transform: scale(1.1);
-                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
+                box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.7);
                 border-color: #ffd700;
             }
         }
         @keyframes casino-flicker {
             0% {
                 transform: scale(1);
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                 border-color: #ffffff;
             }
             33% {
                 transform: scale(1.05);
-                box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.6);
+                box-shadow: 0 0 8px 4px rgba(255, 0, 0, 0.6);
                 border-color: #ff0000;
             }
             66% {
                 transform: scale(1.03);
-                box-shadow: 0 0 12px 6px rgba(0, 128, 0, 0.6);
+                box-shadow: 0 0 8px 4px rgba(0, 128, 0, 0.6);
                 border-color: #008000;
             }
             100% {
                 transform: scale(1);
-                box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.6);
+                box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.6);
                 border-color: #ffffff;
             }
         }
@@ -9461,17 +9461,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         @keyframes milestone-glow {
             0% {
                 border-color: #ffffff;
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             }
             50% {
                 border-color: #ffd700;
-                box-shadow: 0 0 20px 10px rgba(255, 215, 0, 0.8);
+                box-shadow: 0 0 15px 7px rgba(255, 215, 0, 0.8);
             }
             100% {
                 border-color: #ffffff;
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             }
         }
+
         </style>
         <script>
         const rouletteTips = [
