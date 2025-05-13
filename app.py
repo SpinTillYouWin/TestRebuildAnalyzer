@@ -6167,7 +6167,7 @@ def select_next_spin_top_pick(last_spin_count):
         return "<p>Error selecting top pick.</p>"
 
 # Lines after (context, unchanged from Part 2)
-with gr.Blocks(title="WheelPulse") as demo:  # Simplified title for browser tab
+with gr.Blocks() as demo:  # Simplified title for browser tab
     # T&C and Privacy Policy Modal with Slider (unchanged from previous)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
