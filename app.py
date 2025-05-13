@@ -6329,6 +6329,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
+
     show_trends_state = gr.State(value=False)  # Default to hiding trends
     toggle_trends_label = gr.State(value="Show Trends")  # Default label when trends are hidden
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
@@ -6519,11 +6520,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     });
     </script>
     """)
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
@@ -7097,22 +7093,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[],
                                 outputs=[]
                             )
-                            spin_counter = gr.HTML(
-                                label="Total Spins",
-                                value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
-                                elem_classes=["spin-counter"]
-                            )
-
-    # Row 3 (keep the accordion here)
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    
+    # New: Total Spins Section (Placed right after European Roulette Table)
+    with gr.Row():
+        with gr.Column(scale=1, min_width=200):
+            spin_counter = gr.HTML(
+                label="Total Spins",
+                value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
+                elem_classes=["spin-counter"]
+            )
+    
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider (unchanged)
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
-        
-            
-
-    # 4. Row 4: Spin Controls
+    
+    # 4. Row 4: Spin Controls (unchanged)
     with gr.Row():
         with gr.Column(scale=1):
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
@@ -7125,14 +7122,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 elem_id="toggle-trends-btn"
             )
     
-    # 5. Row 5: Selected Spins Textbox and Spin Counter
+    # 5. Row 5: Selected Spins Textbox (Updated to exclude spin_counter)
     with gr.Row(elem_id="selected-spins-row"):
-        with gr.Column(scale=4, min_width=600):
+        with gr.Column(scale=1, min_width=600):
             spins_textbox
-        with gr.Column(scale=1, min_width=200):
-            spin_counter  # Restore side-by-side layout with styling
-      
-
+       
     # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
