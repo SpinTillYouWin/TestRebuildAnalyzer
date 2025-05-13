@@ -6402,20 +6402,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             raise  # Re-raise for debugging
+
     def use_top_10_picks():
-        """Copy the top 10 picks to the clipboard as a comma-separated string."""
-        if not state.top_picks:
-            return "<script>alert('No top picks available to copy.')</script>"
-        picks_str = ", ".join(str(num) for num in state.top_picks)
-        return f"""
-        <script>
-            navigator.clipboard.writeText('{picks_str}').then(() => {{
-                alert('Top 10 picks copied to clipboard: {picks_str}');
-            }}).catch(err => {{
-                console.error('Failed to copy: ', err);
-            }});
-        </script>
-        """
+          """Copy the top 10 picks to the clipboard as a comma-separated string."""
+          if not state.top_picks:
+              return "<script>alert('No top picks available to copy.')</script>"
+          picks_str = ", ".join(str(num) for num in state.top_picks)
+          # Line 1: Updated JavaScript with custom notification
+          return f"""
+          <div id="toast-notification" style="position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1000;">
+              Top 10 picks copied: {picks_str}
+          </div>
+          <script>
+              navigator.clipboard.writeText('{picks_str}').then(() => {{
+                  setTimeout(() => {{ document.getElementById('toast-notification').style.display = 'none'; }}, 3000);
+              }}).catch(err => {{
+                  console.error('Failed to copy: ', err);
+                  alert('Failed to copy picks.');
+              }});
+          </script>
+          """
     def play_top_10_picks(spins_display, last_spin_count):
         """Transfer the top 10 picks to the Selected Spins textbox."""
         if not state.top_picks:
@@ -6498,7 +6504,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         #selected-spins input.typing {
             animation: pulse 1s infinite ease-in-out;
         }
-    
+        #selected-spins input.highlight {
+          animation: highlight-pulse 1s ease-in-out 2;
+        }
+        # Line 2: New keyframes for highlight animation
+        @keyframes highlight-pulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); background-color: #fff3e0; }
+            50% { box-shadow: 0 0 12px rgba(255, 215, 0, 1); background-color: #fffacd; }
+        }
+  
         @keyframes pulse {
             0%, 100% { box-shadow: 0 0 8px rgba(255, 111, 97, 0.5); }
             50% { box-shadow: 0 0 12px rgba(255, 111, 97, 0.8); }
@@ -7151,8 +7165,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     elem_classes=["top-picks-container"]
                 )
                 with gr.Row():
-                    use_top_picks_button = gr.Button("Use Top 10 Picks", elem_classes=["action-button"])
-                    play_top_picks_button = gr.Button("Play Top 10 Picks", elem_classes=["action-button"])
+                    use_top_picks_button = gr.Button("Use Top 10 Picks", elem_classes=["action-button"], interactive=bool(state.top_picks))
+                    play_top_picks_button = gr.Button("Play Top 10 Picks", elem_classes=["action-button"], interactive=bool(state.top_picks))
     
     # Define spin_counter before the roulette table to avoid NameError
     spin_counter = gr.HTML(
@@ -11167,10 +11181,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[hot_suggestions, cold_suggestions]
         ).then(
+            # Line 1: Add new .then() to update button interactivity
+            fn=lambda: [gr.update(interactive=bool(state.top_picks)), gr.update(interactive=bool(state.top_picks))],
+            inputs=[],
+            outputs=[use_top_picks_button, play_top_picks_button]
+        ).then(
+            # Line 2: Existing debug print (unchanged)
             fn=lambda: print(f"After analyze_button click: state.last_spins = {state.last_spins}, top_picks = {state.top_picks}"),
             inputs=[],
             outputs=[]
         )
+
+    # Context lines after (unchanged)
     except Exception as e:
         print(f"Error in analyze_button.click handler: {str(e)}")
         gr.Warning(f"Error during analysis: {str(e)}")
@@ -12335,12 +12357,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in use_top_picks_button.click handler: {str(e)}")
 
+    # Context lines before (unchanged)
     try:
         play_top_picks_button.click(
             fn=play_top_10_picks,
             inputs=[spins_display, last_spin_count],
-            outputs=[spins_display, spins_textbox, top_picks_display, spins_display]
+            outputs=[spins_display, spins_textbox, top_picks_display]
         ).then(
+            # Line 1: New .then() to add highlight class
+            fn=lambda: gr.update(elem_classes=["highlight"]),
+            inputs=[],
+            outputs=[spins_textbox]
+        ).then(
+            # Line 2: Existing format_spins_as_html (unchanged)
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
@@ -12349,6 +12378,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[traits_display]
         ).then(
+
+    # Context lines after (unchanged)
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
@@ -12378,6 +12409,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
+        ).then(
+          # Line 1: Add new .then() to update button interactivity
+            fn=lambda: [gr.update(interactive=bool(state.top_picks)), gr.update(interactive=bool(state.top_picks))],
+            inputs=[],
+            outputs=[use_top_picks_button, play_top_picks_button]
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
