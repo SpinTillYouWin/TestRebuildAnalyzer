@@ -6519,11 +6519,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     });
     </script>
     """)
-    spin_counter = gr.HTML(
-        label="Total Spins",
-        value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
-        elem_classes=["spin-counter"]
-    )
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
@@ -7093,12 +7088,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[top_pick_spin_count],
                                 outputs=[top_pick_display]
                             ).then(
+
                                 fn=lambda: print(f"After add_spin: state.last_spins = {state.last_spins}"),
                                 inputs=[],
                                 outputs=[]
                             )
+    # New: Total Spins Section (Moved from Row 5)
+    with gr.Row():
+        with gr.Column(scale=1, min_width=200):
+            spin_counter = gr.HTML(
+                label="Total Spins",
+                value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
+                elem_classes=["spin-counter"]
+            )
 
-    # Row 3 (keep the accordion here)
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
