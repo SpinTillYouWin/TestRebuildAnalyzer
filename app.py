@@ -8508,20 +8508,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       }
     </script>
     <style>
-        /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0px !important; }
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        .gr-box { border-radius: 5px !important; }
-        
-        /* Style for Dealer’s Spin Tracker accordion */
-        #sides-of-zero-accordion {
-            background-color: #f5c6cb !important;
-            padding: 10px !important;
-        }
-        #sides-of-zero-accordion > div {
-            background-color: #f5c6cb !important;
-        }
-    </style>
     """)
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
