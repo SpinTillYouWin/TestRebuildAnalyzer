@@ -1,0 +1,289 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions - WheelPulse by S.T.Y.W</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #ff9800;
+        }
+        h2 {
+            color: #2e7d32;
+            margin-top: 20px;
+        }
+        p {
+            margin: 10px 0;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #d32f2f;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .accept-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .decline-btn {
+            background-color: #d32f2f;
+            color: #fff;
+        }
+        .disabled-app {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Terms and Conditions for WheelPulse by S.T.Y.W</h1>
+        <p><strong>Last Updated: May 13, 2025</strong></p>
+        <p>Welcome to <strong>WheelPulse by S.T.Y.W</strong> ("the App"), a roulette spin tracking and analysis tool provided by [Your Legal Name or Business Entity] ("we," "us," or "our"), operated from Ontario, Canada, and hosted on Hugging Face. By accessing or using the App, you ("User," "you," or "your") agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you must not use the App.</p>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing or using the App, you confirm that you are at least 19 years of age (the legal gambling age in Ontario, Canada), have the legal capacity to enter into this agreement, and agree to comply with these Terms. You must click "Accept" on the Terms and Conditions popup to use the App. Clicking "Decline" will prevent access to the App’s functionality.</p>
+
+        <h2>2. Nature of the App</h2>
+        <p>WheelPulse by S.T.Y.W is a tool designed to track and analyze roulette spins, highlighting trends, hot sections, and statistical data based on user-inputted spin history. The App does not predict future outcomes, guarantee wins, or provide gambling advice. It is solely an informational and analytical tool to assist users in tracking roulette game patterns.</p>
+        <p class="highlight">The App does not facilitate gambling, place bets, or interact with any gambling platforms. Any use of the App’s data for gambling purposes is at your sole discretion and risk.</p>
+
+        <h2>3. User Responsibility and Risk</h2>
+        <p>You acknowledge and agree that:</p>
+        <ul>
+            <li>Gambling involves significant financial risk, and you are solely responsible for any financial losses incurred while using the App or engaging in gambling activities.</li>
+            <li>The App’s analysis, trends, and highlighted sections are based on historical data provided by you and do not guarantee future results.</li>
+            <li>We do not provide financial, gambling, or investment advice. You should consult a qualified professional before making gambling decisions.</li>
+            <li>You are responsible for ensuring that your use of the App complies with all applicable laws and regulations in your jurisdiction, including those related to online gambling.</li>
+        </ul>
+        <p class="highlight">We are not liable for any losses, damages, or consequences arising from your use of the App or your gambling activities.</p>
+
+        <h2>4. Disclaimers</h2>
+        <p>The App is provided on an "as-is" and "as-available" basis without warranties of any kind, express or implied, including but not limited to:</p>
+        <ul>
+            <li>Accuracy, reliability, or completeness of the data or analysis provided.</li>
+            <li>Fitness for a particular purpose or suitability for gambling decisions.</li>
+            <li>Uninterrupted or error-free operation of the App.</li>
+        </ul>
+        <p>We do not guarantee that the App will meet your expectations or result in gambling success. The App’s data is for informational purposes only.</p>
+
+        <h2>5. Limitation of Liability</h2>
+        <p>To the fullest extent permitted by law, [Your Legal Name or Business Entity] and its affiliates, officers, directors, employees, or agents shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages, including but not limited to financial losses, loss of data, or emotional distress, arising from:</p>
+        <ul>
+            <li>Your use of or reliance on the App.</li>
+            <li>Errors, omissions, or inaccuracies in the App’s data or analysis.</li>
+            <li>Decisions made based on the App’s information, including gambling outcomes.</li>
+            <li>Interruptions, technical issues, or unavailability of the App.</li>
+        </ul>
+        <p>In no event shall our total liability exceed CAD $100, regardless of the cause of action.</p>
+
+        <h2>6. Intellectual Property</h2>
+        <p>The App, including its design, code, content, trademarks, and logos, is owned by [Your Legal Name or Business Entity] or its licensors and is protected by Canadian and international intellectual property laws. You may not copy, modify, distribute, reproduce, or create derivative works from the App without our prior written consent.</p>
+        <p>You are granted a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes, subject to these Terms.</p>
+
+        <h2>7. User Conduct</h2>
+        <p>You agree to use the App lawfully and responsibly. You shall not:</p>
+        <ul>
+            <li>Use the App for any illegal or unauthorized purpose, including violating gambling laws in your jurisdiction.</li>
+            <li>Attempt to hack, reverse-engineer, or interfere with the App’s functionality.</li>
+            <li>Use the App to harm, harass, or defame others.</li>
+            <li>Share, sell, or transfer your access to the App to third parties.</li>
+        </ul>
+        <p>We reserve the right to suspend or terminate your access to the App at our sole discretion if you violate these Terms.</p>
+
+        <h2>8. Privacy</h2>
+        <p>Your use of the App is subject to our Privacy Policy, which outlines how we collect, use, and protect your personal information. By using the App, you consent to our data practices as described in the Privacy Policy. [Note: You must create a separate Privacy Policy document compliant with the *Personal Information Protection and Electronic Documents Act (PIPEDA)* and Ontario privacy laws.]</p>
+
+        <h2>9. Third-Party Services</h2>
+        <p>The App is hosted on Hugging Face, a third-party platform. We are not responsible for the availability, performance, or policies of Hugging Face or any other third-party services linked to or integrated with the App. Your use of third-party services is subject to their respective terms and conditions.</p>
+
+        <h2>10. Governing Law and Jurisdiction</h2>
+        <p>These Terms are governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable therein. Any disputes arising from these Terms or your use of the App shall be resolved exclusively in the courts of Ontario, Canada.</p>
+
+        <h2>11. Changes to the Terms</h2>
+        <p>We may update these Terms from time to time to reflect changes in the App, legal requirements, or our business practices. The updated Terms will be posted within the App, and the "Last Updated" date will be revised. Your continued use of the App after such changes constitutes your acceptance of the new Terms. If you do not agree to the updated Terms, you must stop using the App.</p>
+
+        <h2>12. Termination</h2>
+        <p>We may suspend or terminate your access to the App at any time, with or without notice, for any reason, including but not limited to violation of these Terms, suspected illegal activity, or operational requirements. Upon termination, your right to use the App will cease immediately.</p>
+
+        <h2>13. Contact Information</h2>
+        <p>If you have questions, concerns, or feedback about these Terms, please contact us at:</p>
+        <p>
+            [Your Legal Name or Business Entity]<br>
+            [Your Email Address]<br>
+            [Your Mailing Address in Ontario, Canada, if applicable]<br>
+        </p>
+        <p>We will respond to inquiries as soon as practicable.</p>
+
+        <h2>14. Entire Agreement</h2>
+        <p>These Terms, together with the Privacy Policy, constitute the entire agreement between you and [Your Legal Name or Business Entity] regarding your use of the App and supersede all prior agreements or understandings, whether written or oral.</p>
+
+        <h2>15. Severability</h2>
+        <p>If any provision of these Terms is found to be invalid or unenforceable by a court of competent jurisdiction, the remaining provisions shall remain in full force and effect.</p>
+
+        <p class="highlight">By clicking "Accept" below, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. If you click "Decline," you will not be able to use the App.</p>
+    </div>
+
+    <!-- Modal Popup for Terms Acceptance -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <h2>Terms and Conditions Agreement</h2>
+            <p>Please read and accept the Terms and Conditions to use WheelPulse by S.T.Y.W. You must agree to proceed.</p>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                <!-- Inline Terms Summary for Modal -->
+                <p><strong>Summary of Key Points:</strong></p>
+                <ul>
+                    <li>WheelPulse by S.T.Y.W is a tracking and analysis tool, not a predictive or gambling system.</li>
+                    <li>You are solely responsible for any financial losses from gambling activities.</li>
+                    <li>The App is provided "as-is" without warranties; we are not liable for losses or damages.</li>
+                    <li>You must be 19+ and comply with your local gambling laws.</li>
+                    <li>These Terms are governed by Ontario, Canada laws.</li>
+                </ul>
+                <p>Please review the full Terms and Conditions above or within the App for complete details.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="accept-btn" onclick="acceptTerms()">Accept</button>
+                <button class="decline-btn" onclick="declineTerms()">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if terms have been accepted (using localStorage)
+        const termsAccepted = localStorage.getItem('termsAccepted');
+
+        // Reference to the modal and app container
+        const modal = document.getElementById('termsModal');
+        const appContainer = document.body; // Adjust to your app's main container if needed
+
+        // Function to show the modal
+        function showModal() {
+            modal.style.display = 'flex';
+            appContainer.classList.add('disabled-app'); // Disable app interaction
+        }
+
+        // Function to accept terms
+        function acceptTerms() {
+            localStorage.setItem('termsAccepted', 'true');
+            modal.style.display = 'none';
+            appContainer.classList.remove('disabled-app'); // Re-enable app
+        }
+
+        // Function to decline terms
+        function declineTerms() {
+            alert('You must accept the Terms and Conditions to use WheelPulse by S.T.Y.W.');
+            modal.style.display = 'none';
+            appContainer.classList.add('disabled-app'); // Keep app disabled
+            // Optionally, redirect to a different page
+            // window.location.href = 'https://your-exit-page.com';
+        }
+
+        // Show modal if terms not accepted
+        if (!termsAccepted) {
+            showModal();
+        }
+
+        // Prevent interaction if terms not accepted
+        window.addEventListener('load', () => {
+            if (!termsAccepted) {
+                appContainer.classList.add('disabled-app');
+            }
+        });
+    </script>
+</body>
+</html>
