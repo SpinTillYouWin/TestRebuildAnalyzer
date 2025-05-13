@@ -181,16 +181,16 @@ class RouletteState:
         self.spin_history = []
         self.casino_data = {
             "spins_count": 100,
-            "hot_numbers": [],  # Store 5 user-specified hot numbers
-            "cold_numbers": [],  # Store 5 user-specified cold numbers
+            "hot_numbers": [],
+            "cold_numbers": [],
             "even_odd": {"Even": 0.0, "Odd": 0.0},
             "red_black": {"Red": 0.0, "Black": 0.0},
             "low_high": {"Low": 0.0, "High": 0.0},
             "dozens": {"1st Dozen": 0.0, "2nd Dozen": 0.0, "3rd Dozen": 0.0},
             "columns": {"1st Column": 0.0, "2nd Column": 0.0, "3rd Column": 0.0}
         }
-        self.hot_suggestions = ""  # Store suggested hot numbers
-        self.cold_suggestions = ""  # Store suggested cold numbers
+        self.hot_suggestions = ""
+        self.cold_suggestions = ""
         self.use_casino_winners = False
         self.bankroll = 1000
         self.initial_bankroll = 1000
@@ -203,6 +203,7 @@ class RouletteState:
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
         self.progression_state = None
+        self.consecutive_wins = 0
         self.message = f"Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
         self.status = "Active"
         self.status_color = "white"
@@ -212,9 +213,8 @@ class RouletteState:
         self.labouchere_sequence = ""
 
     def reset(self):
-        # Preserve use_casino_winners and casino_data before resetting
         use_casino_winners = self.use_casino_winners
-        casino_data = self.casino_data.copy()  # Create a deep copy to preserve the data
+        casino_data = self.casino_data.copy()
         self.scores = {n: 0 for n in range(37)}
         self.even_money_scores = {name: 0 for name in EVEN_MONEY.keys()}
         self.dozen_scores = {name: 0 for name in DOZENS.keys()}
@@ -227,7 +227,6 @@ class RouletteState:
         self.selected_numbers = set(int(s) for s in self.last_spins if s.isdigit())
         self.last_spins = []
         self.spin_history = []
-        # Restore use_casino_winners and casino_data
         self.use_casino_winners = use_casino_winners
         self.casino_data = casino_data
         self.reset_progression()
@@ -239,21 +238,17 @@ class RouletteState:
         column_scores = {name: 0 for name in COLUMNS.keys()}
 
         for number in numbers:
-            # Skip 0 for category counts (consistent with scoring logic)
             if number == 0:
                 continue
 
-            # Even Money Bets
             for name, numbers_set in EVEN_MONEY.items():
                 if number in numbers_set:
                     even_money_scores[name] += 1
 
-            # Dozens
             for name, numbers_set in DOZENS.items():
                 if number in numbers_set:
                     dozen_scores[name] += 1
 
-            # Columns
             for name, numbers_set in COLUMNS.items():
                 if number in numbers_set:
                     column_scores[name] += 1
@@ -264,13 +259,32 @@ class RouletteState:
         self.current_bet = self.base_unit
         self.next_bet = self.base_unit
         self.progression_state = None
+        self.consecutive_wins = 0
         self.is_stopped = False
         self.message = f"Progression reset. Start with base bet of {self.base_unit} on {self.bet_type} ({self.progression})"
-        self.status = "Active"
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status
+        self.check_status()
+        return (
+            self.bankroll,
+            self.current_bet,
+            self.next_bet,
+            self.message,
+            f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+        )
+
+    def check_status(self):
+        profit = self.bankroll - self.initial_bankroll
+        if profit <= self.stop_loss:
+            self.status = "Stopped: Stop Loss Reached"
+            self.status_color = "red"
+        elif profit >= self.stop_win:
+            self.status = "Stopped: Stop Win Reached"
+            self.status_color = "green"
+        else:
+            self.status = "Active"
+            self.status_color = "white"
 
     def update_bankroll(self, won):
-        payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Straight Bets": 35}[self.bet_type]
+        payout = {"Even Money": 1, "Dozens": 2, "Columns": 2, "Streets": 11, "Straight Bets": 35}[self.bet_type]
         if won:
             self.bankroll += self.current_bet * payout
         else:
@@ -279,24 +293,36 @@ class RouletteState:
         if profit <= self.stop_loss:
             self.is_stopped = True
             self.status = f"Stopped: Hit Stop Loss of {self.stop_loss}"
-            self.status_color = "red"  # Red for stop loss
+            self.status_color = "red"
         elif profit >= self.stop_win:
             self.is_stopped = True
             self.status = f"Stopped: Hit Stop Win of {self.stop_win}"
-            self.status_color = "green"  # Green for stop win
+            self.status_color = "green"
         else:
-            self.status_color = "white"  # Neutral when active
+            self.status_color = "white"
 
     def update_progression(self, won):
         if self.is_stopped:
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+            return (
+                self.bankroll,
+                self.current_bet,
+                self.next_bet,
+                self.message,
+                f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+            )
         self.update_bankroll(won)
         if self.bankroll < self.current_bet:
             self.is_stopped = True
             self.status = "Stopped: Insufficient bankroll"
-            self.status_color = "red"  # Red for insufficient bankroll
+            self.status_color = "red"
             self.message = "Cannot continue: Bankroll too low."
-            return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
+            return (
+                self.bankroll,
+                self.current_bet,
+                self.next_bet,
+                self.message,
+                f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+            )
     
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
@@ -332,33 +358,25 @@ class RouletteState:
                 self.next_bet = self.current_bet
                 self.message = f"Loss! Keep bet at {self.next_bet}"
         elif self.progression == "Labouchere":
-            # Initialize the sequence if not set
             if self.progression_state is None:
                 try:
-                    # Try to use the user-provided sequence if available
                     if self.labouchere_sequence and self.labouchere_sequence.strip():
                         sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
-                        # Validate sequence: ensure all numbers are positive integers
                         if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
-                            # Auto-generate sequence based on target_profit if invalid
-                            sequence = [1] * self.target_profit  # e.g., target_profit=10 -> [1,1,1,1,1,1,1,1,1,1]
+                            sequence = [1] * self.target_profit
                     else:
-                        # Auto-generate sequence based on target_profit
-                        sequence = [1] * self.target_profit  # e.g., target_profit=10 -> [1,1,1,1,1,1,1,1,1,1]
+                        sequence = [1] * self.target_profit
                 except (ValueError, AttributeError):
-                    # Auto-generate sequence based on target_profit if parsing fails
                     sequence = [1] * self.target_profit
                 self.progression_state = sequence
 
             self.current_bet = self.next_bet
 
             try:
-                # Handle empty sequence
                 if not self.progression_state:
-                    self.progression_state = [1] * self.target_profit  # Reset sequence based on target_profit
+                    self.progression_state = [1] * self.target_profit
                     self.next_bet = self.base_unit
                     self.message = f"Sequence cleared! Reset to {self.next_bet}"
-                # Handle sequence with one number
                 elif len(self.progression_state) == 1:
                     self.next_bet = self.progression_state[0] * self.base_unit
                     if won:
@@ -366,23 +384,17 @@ class RouletteState:
                         self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
                     else:
                         self.message = f"Loss! Next bet: {self.next_bet}"
-                # Handle sequence with two or more numbers
                 else:
                     if won:
-                        # Remove first and last numbers
                         self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
-                        # Calculate next bet, default to base_unit if sequence is empty
                         self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
                         self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
                     else:
-                        # Add the lost bet to the end (ensure it's a positive integer)
-                        lost_bet = max(1, self.current_bet // self.base_unit)  # Ensure positive
+                        lost_bet = max(1, self.current_bet // self.base_unit)
                         self.progression_state.append(lost_bet)
-                        # Calculate next bet
                         self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
                         self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
             except Exception as e:
-                # Fallback in case of any error
                 self.progression_state = [1] * self.target_profit
                 self.next_bet = self.base_unit
                 self.message = f"Error in Labouchere progression: {str(e)}. Resetting sequence to {self.progression_state}, next bet: {self.next_bet}"
@@ -426,23 +438,42 @@ class RouletteState:
             else:
                 self.next_bet = max(self.base_unit, self.current_bet - self.base_unit)
                 self.message = f"Loss! Decrease to {self.next_bet}"
+        elif self.progression == "Double Loss / +50% Win":
+            self.current_bet = self.next_bet
+            if won:
+                self.consecutive_wins += 1
+                if self.consecutive_wins >= 2:
+                    self.next_bet = self.base_unit
+                    self.message = f"Win! Resetting to base bet of {self.next_bet} after {self.consecutive_wins} wins."
+                    self.consecutive_wins = 0
+                else:
+                    self.next_bet = round(self.current_bet * 1.5, 2)
+                    self.message = f"Win! Increasing bet by 50% to {self.next_bet}."
+            else:
+                self.consecutive_wins = 0
+                self.next_bet = round(self.current_bet * 2, 2)
+                self.message = f"Loss! Doubling bet to {self.next_bet}."
         
         # Check stop conditions
         profit = self.bankroll - self.initial_bankroll
         if profit <= self.stop_loss:
             self.is_stopped = True
             self.status = "Stopped: Stop Loss Reached"
-            self.status_color = "red"  # Red for stop loss
+            self.status_color = "red"
             self.message = f"Stop Loss reached at {profit}. Current bankroll: {self.bankroll}"
         elif profit >= self.stop_win:
             self.is_stopped = True
             self.status = "Stopped: Stop Win Reached"
-            self.status_color = "green"  # Green for stop win
+            self.status_color = "green"
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
         
-        return self.bankroll, self.current_bet, self.next_bet, self.message, self.status, self.status_color
-        
-        
+        return (
+            self.bankroll,
+            self.current_bet,
+            self.next_bet,
+            self.message,
+            f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
+        )
 
 # Lines before (context, unchanged)
 state = RouletteState()
