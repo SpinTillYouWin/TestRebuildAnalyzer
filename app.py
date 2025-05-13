@@ -6192,61 +6192,78 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </div>
     </div>
     <style>
+        /* Ensure modal is above all elements */
         .modal {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            z-index: 10000 !important; /* Increased z-index */
+            justify-content: center !important;
+            align-items: center !important;
+            pointer-events: auto !important; /* Ensure modal can receive clicks */
         }
         .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
+            background-color: #fff !important;
+            padding: 20px !important;
+            border-radius: 8px !important;
+            max-width: 600px !important;
+            width: 90% !important;
+            max-height: 80vh !important;
+            overflow-y: auto !important;
+            z-index: 10001 !important; /* Increased z-index */
+            position: relative !important;
+            pointer-events: auto !important; /* Ensure content can receive clicks */
         }
         .modal-content h2 {
-            margin-top: 0;
-            color: #ff9800;
+            margin-top: 0 !important;
+            color: #ff9800 !important;
         }
         .modal-buttons {
-            margin-top: 20px;
-            text-align: center;
+            margin-top: 20px !important;
+            text-align: center !important;
         }
         .modal-buttons button {
-            padding: 10px 20px;
-            margin: 0 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
+            padding: 10px 20px !important;
+            margin: 0 10px !important;
+            border: none !important;
+            border-radius: 5px !important;
+            cursor: pointer !important;
+            font-size: 16px !important;
+            z-index: 10002 !important; /* Ensure buttons are clickable */
+            position: relative !important;
+            pointer-events: auto !important; /* Ensure buttons can receive clicks */
         }
         .accept-btn {
-            background-color: #28a745;
-            color: #fff;
+            background-color: #28a745 !important;
+            color: #fff !important;
         }
         .decline-btn {
-            background-color: #d32f2f;
-            color: #fff;
+            background-color: #d32f2f !important;
+            color: #fff !important;
         }
         .disabled-app {
-            pointer-events: none;
-            opacity: 0.5;
+            pointer-events: none !important;
+            opacity: 0.5 !important;
+        }
+        /* Ensure Gradio containers don't block the modal */
+        .gr-box, .gr-row, .gr-column {
+            z-index: 1 !important; /* Lower z-index for Gradio elements */
+        }
+        /* Override any potential Shepherd.js overlay */
+        .shepherd-modal-overlay, .shepherd-element {
+            z-index: 9999 !important; /* Below the modal */
         }
         .modal a {
-            color: #2196f3;
-            text-decoration: underline;
+            color: #2196f3 !important;
+            text-decoration: underline !important;
+            z-index: 10002 !important;
         }
         .modal a:hover {
-            text-decoration: none;
+            text-decoration: none !important;
         }
     </style>
     <script>
@@ -6257,6 +6274,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         function showModal() {
             modal.style.display = 'flex';
             appContainer.classList.add('disabled-app');
+            // Ensure modal is interactive
+            modal.style.pointerEvents = 'auto';
+            modal.querySelector('.modal-content').style.pointerEvents = 'auto';
         }
 
         function acceptTerms() {
@@ -6283,7 +6303,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     </script>
     """)
 
-    # 1. Row 1: Header
+    # 1. Row 1: Header (Moved to the top)
     with gr.Row(elem_id="header-row"):
         gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
         gr.HTML(
