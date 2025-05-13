@@ -8507,7 +8507,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         document.head.appendChild(link);
       }
     </script>
-    """)
     <style>
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
