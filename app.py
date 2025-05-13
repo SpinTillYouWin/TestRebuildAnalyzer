@@ -6167,40 +6167,42 @@ def select_next_spin_top_pick(last_spin_count):
         return "<p>Error selecting top pick.</p>"
 
 # Lines after (context, unchanged from Part 2)
-with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal with Slider
+with gr.Blocks(title="WheelPulse") as demo:  # Simplified title for browser tab
+    # T&C and Privacy Policy Modal with Slider (unchanged from previous)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
-                <!-- Slider -->
-                <div class="slider-container">
-                    <div class="slider">
-                        <div class="slide active">
-                            <div class="icon">📚</div>
-                            <h3>Educational Use Only</h3>
-                            <p>WheelPulse is for learning about roulette patterns, not for gambling. Use it to study spins and strategies academically.</p>
+                <!-- Slider Section -->
+                <div class="slider-section" id="sliderSection">
+                    <div class="slider-container">
+                        <div class="slider">
+                            <div class="slide active">
+                                <div class="icon">📚</div>
+                                <h3>Educational Use Only</h3>
+                                <p>WheelPulse is for learning about roulette patterns, not for gambling. Use it to study spins and strategies academically.</p>
+                            </div>
+                            <div class="slide">
+                                <div class="icon">🚫</div>
+                                <h3>No Gambling Allowed</h3>
+                                <p>Do not use the App for real-money betting. We are not liable for any losses if you misuse it for gambling.</p>
+                            </div>
+                            <div class="slide">
+                                <div class="icon">🔒</div>
+                                <h3>Your Privacy Matters</h3>
+                                <p>Spin data stays on your device. Feedback form data is optional and secure, per <em>PIPEDA</em>. No cookies or trackers.</p>
+                            </div>
+                            <div class="slide">
+                                <div class="icon">📩</div>
+                                <h3>Contact Us</h3>
+                                <p>Questions? Message us at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win</a>.</p>
+                            </div>
                         </div>
-                        <div class="slide">
-                            <div class="icon">🚫</div>
-                            <h3>No Gambling Allowed</h3>
-                            <p>Do not use the App for real-money betting. We are not liable for any losses if you misuse it for gambling.</p>
+                        <div class="slider-nav">
+                            <span class="dot active" onclick="setSlide(0)"></span>
+                            <span class="dot" onclick="setSlide(1)"></span>
+                            <span class="dot" onclick="setSlide(2)"></span>
+                            <span class="dot" onclick="setSlide(3)"></span>
                         </div>
-                        <div class="slide">
-                            <div class="icon">🔒</div>
-                            <h3>Your Privacy Matters</h3>
-                            <p>Spin data stays on your device. Feedback form data is optional and secure, per <em>PIPEDA</em>. No cookies or trackers.</p>
-                        </div>
-                        <div class="slide">
-                            <div class="icon">📩</div>
-                            <h3>Contact Us</h3>
-                            <p>Questions? Message us at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win</a>.</p>
-                        </div>
-                    </div>
-                    <div class="slider-nav">
-                        <span class="dot active" onclick="setSlide(0)"></span>
-                        <span class="dot" onclick="setSlide(1)"></span>
-                        <span class="dot" onclick="setSlide(2)"></span>
-                        <span class="dot" onclick="setSlide(3)"></span>
                     </div>
                 </div>
                 <!-- Full Text Links -->
@@ -6355,6 +6357,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-family: Arial, sans-serif;
             }
             /* Slider Styles */
+            .slider-section {
+                display: block;
+            }
             .slider-container {
                 position: relative;
                 overflow: hidden;
@@ -6529,10 +6534,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 currentSlide = (currentSlide + 1) % slides.length;
                 setSlide(currentSlide);
             }
-            setInterval(autoSlide, 5000); // Auto-slide every 5 seconds
+            setInterval(autoSlide, 5000);
             function toggleFullText(id) {
                 const text = document.getElementById(id);
-                text.style.display = text.style.display === 'block' ? 'none' : 'block';
+                const sliderSection = document.getElementById('sliderSection');
+                const isVisible = text.style.display === 'block';
+                text.style.display = isVisible ? 'none' : 'block';
+                sliderSection.style.display = isVisible ? 'block' : 'none';
             }
             function toggleAgreeButton() {
                 const checkbox = document.getElementById('agreeTerms');
@@ -6555,10 +6563,24 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # App Content
     with gr.Group(visible=False, elem_id="appContent"):
-        # Your existing app content
+        # Header Row (keep only one instance)
         with gr.Row(elem_id="header-row"):
             gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
-            # ... rest of your existing code ...
+            gr.HTML("""
+                <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                    <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                    <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+                </div>
+                <style>
+                    #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
+                        transform: scale(1.05);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    }
+                </style>
+            """)
+
+        # Rest of your app content (unchanged)
+        # ... (spins_display, spins_textbox, and other components as per your original code)
 
         # Ensure app content is shown after acceptance
         gr.HTML("""
