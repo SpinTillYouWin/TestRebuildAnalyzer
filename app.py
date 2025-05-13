@@ -8542,20 +8542,55 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
         .gr-box { border-radius: 5px !important; }
         
+
         /* Style for Dealer’s Spin Tracker accordion */
         #sides-of-zero-accordion {
-            background-color: #f5c6cb !important;
-            padding: 10px !important;
+            background-color: #f3e5f5 !important;
+            border: 2px solid #8e24aa !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            margin-bottom: 15px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            animation: fadeInAccordion 0.5s ease-in-out !important;
         }
+        
+        @keyframes fadeInAccordion {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
         #sides-of-zero-accordion > div {
-            background-color: #f5c6cb !important;
+            background-color: transparent !important;
         }
+        
         #sides-of-zero-accordion summary {
-            background-color: #dc3545 !important;
+            background-color: #8e24aa !important;
             color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
+            padding: 12px !important;
+            border-radius: 6px !important;
+            font-weight: bold !important;
+            font-size: 18px !important;
+            cursor: pointer !important;
+            transition: background-color 0.3s ease !important;
         }
+        
+        #sides-of-zero-accordion summary:hover {
+            background-color: #6a1b9a !important;
+        }
+        
+        #sides-of-zero-accordion summary::after {
+            filter: invert(100%) !important;
+        }
+        
+        @media (max-width: 768px) {
+            #sides-of-zero-accordion {
+                padding: 8px !important;
+            }
+            #sides-of-zero-accordion summary {
+                font-size: 16px !important;
+            }
+        }
+
         
         /* Style for Feedback Section accordion */
         #feedback-section summary {
