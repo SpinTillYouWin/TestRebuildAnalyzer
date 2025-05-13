@@ -6168,205 +6168,161 @@ def select_next_spin_top_pick(last_spin_count):
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal
+    # T&C and Privacy Policy Modal with Slider
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
-                <div class="tabs">
-                    <div class="tab active" onclick="showTab('terms')">Terms and Conditions</div>
-                    <div class="tab" onclick="showTab('privacy')">Privacy Policy</div>
+                <!-- Slider -->
+                <div class="slider-container">
+                    <div class="slider">
+                        <div class="slide active">
+                            <div class="icon">📚</div>
+                            <h3>Educational Use Only</h3>
+                            <p>WheelPulse is for learning about roulette patterns, not for gambling. Use it to study spins and strategies academically.</p>
+                        </div>
+                        <div class="slide">
+                            <div class="icon">🚫</div>
+                            <h3>No Gambling Allowed</h3>
+                            <p>Do not use the App for real-money betting. We are not liable for any losses if you misuse it for gambling.</p>
+                        </div>
+                        <div class="slide">
+                            <div class="icon">🔒</div>
+                            <h3>Your Privacy Matters</h3>
+                            <p>Spin data stays on your device. Feedback form data is optional and secure, per <em>PIPEDA</em>. No cookies or trackers.</p>
+                        </div>
+                        <div class="slide">
+                            <div class="icon">📩</div>
+                            <h3>Contact Us</h3>
+                            <p>Questions? Message us at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win</a>.</p>
+                        </div>
+                    </div>
+                    <div class="slider-nav">
+                        <span class="dot active" onclick="setSlide(0)"></span>
+                        <span class="dot" onclick="setSlide(1)"></span>
+                        <span class="dot" onclick="setSlide(2)"></span>
+                        <span class="dot" onclick="setSlide(3)"></span>
+                    </div>
                 </div>
-                <!-- Terms and Conditions -->
-                <div class="tab-content active" id="terms">
+                <!-- Full Text Links -->
+                <div class="full-text-links">
+                    <button onclick="toggleFullText('terms')">View Full Terms and Conditions</button>
+                    <button onclick="toggleFullText('privacy')">View Full Privacy Policy</button>
+                </div>
+                <!-- Full Terms -->
+                <div class="full-text" id="terms" style="display: none;">
                     <h2>WheelPulse Terms and Conditions</h2>
                     <p><strong>Last Updated: May 13, 2025</strong></p>
-                    <p>Welcome to WheelPulse, an educational application developed by S.T.Y.W. for analyzing roulette table patterns and trends for academic and learning purposes. By accessing or using WheelPulse (the “App”), you agree to be bound by these Terms and Conditions (the “Terms”). If you do not agree with these Terms, you must not use the App. These Terms are a legal agreement between you (the “User”) and S.T.Y.W. (the “Developer”), located in Ontario, Canada.</p>
-                    <h3>1. Purpose and Scope of the App</h3>
+                    <p>By using WheelPulse (the “App”), you agree to these Terms and Conditions (“Terms”), a legal agreement between you (“User”) and S.T.Y.W. (“Developer”) in Ontario, Canada. If you do not agree, do not use the App.</p>
+                    <h3>1. Educational Purpose Only</h3>
                     <ul>
-                        <li><strong>Educational Use Only</strong>: WheelPulse is designed solely for educational purposes to analyze historical roulette spin data, identify statistical patterns (e.g., even money bets, dozens, columns, streets, corners, splits, sides of zero), and simulate betting strategies in a theoretical context. The App is not a gambling platform, tool, or service, and it must not be used for real-money gambling, betting, or any form of wagering.</li>
-                        <li><strong>Prohibited Use</strong>: You agree not to use the App for any gambling-related activities, including but not limited to placing bets in casinos, online gambling platforms, or informal wagering. The Developer expressly disclaims any responsibility for losses, damages, or consequences arising from using the App for gambling purposes.</li>
-                        <li><strong>Features Covered</strong>:
-                            <ul>
-                                <li><strong>Spin Analysis</strong>: Tracks and analyzes user-entered roulette spins to display trends (e.g., hit percentages, repeat numbers, hot/cold numbers).</li>
-                                <li><strong>Strategy Recommendations</strong>: Provides theoretical betting strategies (e.g., Martingale, Fibonacci, Dozen Strategies) for educational study.</li>
-                                <li><strong>Betting Progression Tracker</strong>: Simulates betting progressions (e.g., bankroll management, bet sizing) for learning purposes.</li>
-                                <li><strong>Hot/Cold Numbers</strong>: Identifies frequently or infrequently hit numbers based on spin history for statistical analysis.</li>
-                                <li><strong>Dealer’s Spin Tracker</strong>: Analyzes spins relative to the wheel’s layout (e.g., sides of zero) to study potential biases.</li>
-                                <li><strong>Casino Data Insights</strong>: Allows users to input hypothetical casino data to explore trends.</li>
-                                <li><strong>Feedback Form</strong>: Collects optional user feedback or strategy suggestions.</li>
-                            </ul>
-                        </li>
+                        <li>WheelPulse is an educational tool for analyzing roulette patterns (e.g., spins, strategies, hot/cold numbers, betting progressions) for learning, not gambling.</li>
+                        <li><strong>No Gambling</strong>: You must not use the App for real-money gambling, betting, or wagering. The Developer is not liable for any losses from such misuse.</li>
+                        <li>Features include spin analysis, strategy simulations, betting progression tracking, hot/cold numbers, dealer’s spin tracker, casino data insights, and a feedback form.</li>
                     </ul>
                     <h3>2. Eligibility</h3>
                     <ul>
-                        <li>You must be at least 19 years old to use the App, in accordance with Ontario’s legal gambling age for casino activities, even though the App is not for gambling.</li>
-                        <li>You must reside in a jurisdiction where use of the App for educational purposes is lawful. By using the App, you represent that you meet these eligibility requirements.</li>
+                        <li>You must be 19+ to use the App, aligning with Ontario’s casino gambling age, though the App is not for gambling.</li>
+                        <li>Use must comply with local laws.</li>
                     </ul>
                     <h3>3. Intellectual Property</h3>
                     <ul>
-                        <li>The App, including its design, code, content, and features, is owned by the Developer and protected by Canadian and international copyright laws.</li>
-                        <li>You are granted a limited, non-exclusive, non-transferable license to use the App for personal, educational purposes only. You may not copy, modify, distribute, reverse-engineer, or create derivative works from the App without prior written consent from the Developer.</li>
+                        <li>The App is owned by the Developer, protected by Canadian copyright laws. You have a limited license for personal, educational use only.</li>
                     </ul>
-                    <h3>4. User Conduct and Prohibited Activities</h3>
-                    <p>You agree not to:</p>
+                    <h3>4. Prohibited Actions</h3>
                     <ul>
-                        <li>Use the App for any illegal or unauthorized purpose, including gambling or wagering.</li>
-                        <li>Attempt to access, interfere with, or disrupt the App’s functionality, servers, or security.</li>
-                        <li>Use the App to promote, facilitate, or engage in real-money gambling activities.</li>
-                        <li>Share, publish, or misuse the App’s outputs (e.g., spin analysis, strategy recommendations) in a way that suggests endorsement of gambling.</li>
-                        <li>Submit false, misleading, or harmful data via the feedback form.</li>
+                        <li>Do not use the App for gambling, illegal activities, or to disrupt its functionality.</li>
+                        <li>Do not misuse outputs (e.g., spin trends, strategies) to promote gambling.</li>
                     </ul>
-                    <h3>5. Feature-Specific Terms</h3>
+                    <h3>5. Privacy</h3>
                     <ul>
-                        <li><strong>Spin Analysis and Trends</strong>: The App’s analysis of roulette spins (e.g., even money bets, dozens, columns, hot/cold numbers) is based on user-entered data and statistical calculations. Results are theoretical and do not predict future outcomes. The Developer is not liable for any decisions or actions taken based on these analyses.</li>
-                        <li><strong>Strategy Recommendations</strong>: Strategies provided (e.g., Hot Bet, Cold Bet, Fibonacci) are simulations for educational exploration. They do not guarantee success in real-world scenarios, and their use for gambling is strictly prohibited. You assume all risks associated with applying these strategies outside the App’s educational context.</li>
-                        <li><strong>Betting Progression Tracker</strong>: This feature simulates betting progressions (e.g., Martingale, Labouchere) to study bankroll management. It is not intended for real-world betting, and the Developer disclaims liability for any financial losses incurred from applying these simulations.</li>
-                        <li><strong>Hot/Cold Numbers and Dealer’s Spin Tracker</strong>: These features analyze patterns for educational purposes. They do not reflect actual casino conditions or dealer biases, and reliance on them for gambling is at your own risk.</li>
-                        <li><strong>Casino Data Insights</strong>: User-entered casino data is used to simulate trends and is not verified for accuracy. The Developer is not responsible for errors in user inputs or decisions based on this feature.</li>
-                        <li><strong>Feedback Form</strong>: By submitting feedback, you grant the Developer a non-exclusive, royalty-free license to use, modify, and publish your suggestions. Personal information submitted is subject to our <a href="javascript:showTab('privacy')">Privacy Policy</a>.</li>
+                        <li>See our <a href="javascript:toggleFullText('privacy')">Privacy Policy</a> for how we handle your data (e.g., local spin data, optional feedback form).</li>
                     </ul>
-                    <h3>6. Privacy</h3>
+                    <h3>6. No Advice or Liability</h3>
                     <ul>
-                        <li>We are committed to protecting your privacy. Please review our <a href="javascript:showTab('privacy')">Privacy Policy</a> for details on how we collect, use, and protect your information.</li>
+                        <li>The App’s outputs (e.g., trends, strategies) are for education, not financial or gambling advice. Roulette outcomes are random.</li>
+                        <li>The App is “as is.” The Developer is not liable for losses, damages, or issues from use or misuse, with liability capped at CAD $50.</li>
                     </ul>
-                    <h3>7. No Financial or Gambling Advice</h3>
+                    <h3>7. Termination</h3>
                     <ul>
-                        <li>The App’s outputs, including spin analysis, strategy recommendations, and betting simulations, are for educational purposes only and do not constitute financial, investment, or gambling advice.</li>
-                        <li>You acknowledge that roulette outcomes are random, and the App’s analyses do not predict or influence real-world results. The Developer is not liable for any financial losses, debts, or damages resulting from reliance on the App’s outputs.</li>
+                        <li>We may suspend access if you violate these Terms. You may stop using the App anytime.</li>
                     </ul>
-                    <h3>8. Limitation of Liability</h3>
+                    <h3>8. Governing Law</h3>
                     <ul>
-                        <li><strong>As-Is Basis</strong>: The App is provided “as is” without warranties of any kind, express or implied, including accuracy, reliability, or fitness for a particular purpose.</li>
-                        <li><strong>No Liability for Misuse</strong>: To the maximum extent permitted by law, the Developer, its affiliates, and agents are not liable for any direct, indirect, incidental, consequential, or punitive damages arising from:
-                            <ul>
-                                <li>Use of the App for gambling or wagering, contrary to these Terms.</li>
-                                <li>Financial losses, debts, or other consequences from applying the App’s outputs in real-world scenarios.</li>
-                                <li>Errors, inaccuracies, or omissions in the App’s analyses or outputs.</li>
-                                <li>Unauthorized access to or loss of user data.</li>
-                                <li>Interruptions, bugs, or unavailability of the App.</li>
-                            </ul>
-                        </li>
-                        <li><strong>Maximum Liability</strong>: If any liability is found, the Developer’s total liability shall not exceed CAD $50.</li>
+                        <li>These Terms are governed by Ontario, Canada laws. Disputes are handled in Ontario courts.</li>
                     </ul>
-                    <h3>9. Indemnification</h3>
+                    <h3>9. Contact</h3>
                     <ul>
-                        <li>You agree to indemnify, defend, and hold harmless the Developer and its affiliates from any claims, losses, damages, or expenses (including legal fees) arising from your misuse of the App, violation of these Terms, or use of the App for gambling purposes.</li>
+                        <li>Message us at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win</a> for questions.</li>
                     </ul>
-                    <h3>10. Termination</h3>
+                    <h3>10. Changes</h3>
                     <ul>
-                        <li>The Developer reserves the right to suspend or terminate your access to the App at any time, without notice, if you violate these Terms or engage in prohibited activities (e.g., gambling).</li>
-                        <li>You may stop using the App at any time, but these Terms remain in effect for any prior use.</li>
+                        <li>We may update these Terms. Continued use means acceptance.</li>
                     </ul>
-                    <h3>11. Governing Law and Dispute Resolution</h3>
-                    <ul>
-                        <li>These Terms are governed by the laws of the Province of Ontario and the federal laws of Canada applicable therein.</li>
-                        <li>Any disputes arising from these Terms or use of the App shall be resolved through good-faith negotiation. If unresolved, disputes shall be subject to the exclusive jurisdiction of the courts of Ontario, Canada.</li>
-                    </ul>
-                    <h3>12. Changes to the Terms</h3>
-                    <ul>
-                        <li>The Developer may update these Terms at any time by posting the revised version in the App. Continued use of the App after such changes constitutes acceptance of the new Terms.</li>
-                        <li>You are responsible for reviewing the Terms periodically for updates.</li>
-                    </ul>
-                    <h3>13. Contact Information</h3>
-                    <ul>
-                        <li>For questions, concerns, or to report violations of these Terms, message us via our Spin Till You Win Facebook page at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">https://www.facebook.com/SpinTillYouWin</a>.</li>
-                    </ul>
-                    <h3>14. Severability</h3>
-                    <ul>
-                        <li>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.</li>
-                    </ul>
-                    <h3>15. Entire Agreement</h3>
-                    <ul>
-                        <li>These Terms, together with our <a href="javascript:showTab('privacy')">Privacy Policy</a>, constitute the entire agreement between you and the Developer regarding the use of the App, superseding any prior agreements or understandings.</li>
-                    </ul>
-                    <h3>Acceptance of Terms</h3>
-                    <p>By checking the box below and clicking “I Agree,” you confirm that you:</p>
-                    <ul>
-                        <li>Are 19 years of age or older.</li>
-                        <li>Have read, understood, and agree to be bound by these Terms and our <a href="javascript:showTab('privacy')">Privacy Policy</a>.</li>
-                        <li>Will use the App solely for educational purposes and not for gambling or wagering.</li>
-                    </ul>
+                    <h3>Acceptance</h3>
+                    <p>By checking “I agree” and clicking “I Agree,” you confirm you are 19+, understand these Terms and the <a href="javascript:toggleFullText('privacy')">Privacy Policy</a>, and will use the App only for education, not gambling.</p>
                 </div>
-                <!-- Privacy Policy -->
-                <div class="tab-content" id="privacy">
+                <!-- Full Privacy Policy -->
+                <div class="full-text" id="privacy" style="display: none;">
                     <h2>WheelPulse Privacy Policy</h2>
                     <p><strong>Last Updated: May 13, 2025</strong></p>
-                    <p>At WheelPulse, developed by S.T.Y.W. (“We,” “Us,” or the “Developer”), we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our WheelPulse application (the “App”), an educational tool for analyzing roulette table patterns for academic purposes, not for gambling. This Privacy Policy complies with Canada’s <em>Personal Information Protection and Electronic Documents Act (PIPEDA)</em> and applies to all users of the App. By using the App, you consent to the practices described in this Privacy Policy. If you do not agree, please do not use the App.</p>
-                    <h3>1. Information We Collect</h3>
-                    <p>We collect minimal information to operate the App and provide its educational features. The types of information include:</p>
+                    <p>WheelPulse, developed by S.T.Y.W. in Ontario, Canada, values your privacy. This Privacy Policy, compliant with <em>PIPEDA</em>, explains how we handle your data. By using the App, you consent to these practices. If you disagree, do not use the App.</p>
+                    <h3>1. Data We Collect</h3>
                     <ul>
-                        <li><strong>Non-Personal Data</strong>:
+                        <li><strong>Non-Personal Data</strong>: Spin history, casino data, and betting settings are stored locally on your device (localStorage/session memory), not on our servers.</li>
+                        <li><strong>Personal Data</strong>: Optional feedback form may collect your name, email, and comments if you submit them.</li>
+                        <li>No other personal data (e.g., location) is collected.</li>
+                    </ul>
+                    <h3>2. How We Use Data</h3>
+                    <ul>
+                        <li><strong>App Functionality</strong>: Local data powers educational features (e.g., spin trends, strategies).</li>
+                        <li><strong>Feedback</strong>: Form data helps us respond to you or improve the App.</li>
+                        <li><strong>Improvements</strong>: Anonymized usage data enhances the App.</li>
+                    </ul>
+                    <h3>3. Data Sharing</h3>
+                    <ul>
+                        <li>We do not sell or share personal data, except:
                             <ul>
-                                <li><strong>Spin History and User Inputs</strong>: The App stores roulette spin data, casino data insights, betting progression settings, and other inputs you provide (e.g., for spin analysis, hot/cold numbers, dealer’s spin tracker) locally on your device using localStorage or in temporary session memory. This data is not transmitted to our servers or stored remotely unless you choose to submit it via the feedback form.</li>
-                                <li><strong>Usage Data</strong>: We may collect anonymized data about how you interact with the App (e.g., feature usage frequency) to improve its functionality. This data does not identify you personally.</li>
+                                <li>With form processors (e.g., Formspree) for feedback, under <em>PIPEDA</em> compliance.</li>
+                                <li>If required by law (e.g., court order).</li>
                             </ul>
                         </li>
-                        <li><strong>Personal Information</strong>:
-                            <ul>
-                                <li><strong>Feedback Form</strong>: If you voluntarily submit feedback or suggestions through the App’s feedback form, we may collect your name, email address, and any other information you provide (e.g., feedback content, strategy suggestions). Submission is optional, and you control what information you share.</li>
-                                <li><strong>No Other Personal Data</strong>: The App does not collect other personal information (e.g., location, device identifiers, or demographic data) unless explicitly provided by you through the feedback form.</li>
-                            </ul>
-                        </li>
+                        <li>Local data stays on your device unless submitted via feedback.</li>
                     </ul>
-                    <h3>2. How We Use Your Information</h3>
-                    <p>We use the collected information solely for the following purposes:</p>
+                    <h3>4. Security and Storage</h3>
                     <ul>
-                        <li><strong>Providing App Functionality</strong>: Non-personal data (e.g., spin history, betting progression settings) is used to generate educational analyses, such as hit percentages, strategy recommendations, hot/cold numbers, and dealer’s spin tracker insights, all stored locally on your device.</li>
-                        <li><strong>Processing Feedback</strong>: Personal information submitted via the feedback form is used to review your suggestions, respond to inquiries, or incorporate improvements into the App.</li>
-                        <li><strong>Improving the App</strong>: Anonymized usage data helps us understand feature performance and enhance the App’s educational value.</li>
-                        <li><strong>Legal Compliance</strong>: We may use information to comply with applicable laws, regulations, or legal processes (e.g., responding to a court order).</li>
+                        <li>Local data is deleted when you clear your browser cache.</li>
+                        <li>Feedback data is encrypted (HTTPS) and kept up to 12 months, unless legally required.</li>
+                        <li>We protect data but cannot guarantee against external threats (e.g., hacking).</li>
                     </ul>
-                    <h3>3. How We Share Your Information</h3>
-                    <p>We do not sell, trade, or share your personal information with third parties, except in the following limited circumstances:</p>
+                    <h3>5. Your Rights (<em>PIPEDA</em>)</h3>
                     <ul>
-                        <li><strong>Feedback Form Processing</strong>: If you submit feedback, your information is stored securely and only shared with service providers (e.g., Formspree for form submissions) as necessary to process your submission. These providers are bound by confidentiality obligations and <em>PIPEDA</em> compliance.</li>
-                        <li><strong>Legal Requirements</strong>: We may disclose information if required by law, such as to comply with a subpoena, court order, or regulatory investigation by the Alcohol and Gaming Commission of Ontario or other authorities.</li>
-                        <li><strong>Business Transfers</strong>: If the Developer sells or transfers the App, user data may be transferred to the new owner, subject to equivalent privacy protections.</li>
+                        <li>Request access, correction, or deletion of your data, or withdraw consent, by messaging us.</li>
+                        <li>Contact: <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win</a>. We respond within 30 days.</li>
                     </ul>
-                    <p>Non-personal data (e.g., spin history) remains local to your device and is not shared unless you include it in a feedback submission.</p>
-                    <h3>4. Data Storage and Security</h3>
+                    <h3>6. No Cookies</h3>
                     <ul>
-                        <li><strong>Local Storage</strong>: Spin data, casino data insights, and betting progression settings are stored locally on your device using localStorage or session memory. This data is not transmitted to our servers and is deleted when you clear your browser data or uninstall the App.</li>
-                        <li><strong>Feedback Form Security</strong>: Personal information submitted via the feedback form is stored securely using industry-standard encryption (e.g., HTTPS for form submissions). We implement reasonable measures to protect this data but cannot guarantee absolute security due to potential external threats (e.g., hacking).</li>
-                        <li><strong>Data Retention</strong>: Feedback form data is retained only as long as necessary to respond to your inquiry or implement your suggestions, typically no longer than 12 months, unless required by law.</li>
+                        <li>We use localStorage, not cookies or trackers. Clear cache to reset data.</li>
                     </ul>
-                    <h3>5. Your Rights and Choices</h3>
-                    <p>Under <em>PIPEDA</em>, you have the following rights regarding your personal information:</p>
+                    <h3>7. Children</h3>
                     <ul>
-                        <li><strong>Access</strong>: You may request access to the personal information we hold about you (e.g., feedback form submissions) by contacting us.</li>
-                        <li><strong>Correction</strong>: You may request corrections to inaccurate or incomplete personal information.</li>
-                        <li><strong>Withdrawal of Consent</strong>: You may withdraw consent for us to process your personal information at any time by contacting us, though this may prevent you from using the feedback form.</li>
-                        <li><strong>Deletion</strong>: You may request deletion of your personal information, subject to legal retention requirements.</li>
+                        <li>The App is for users 19+. We do not collect data from those under 19.</li>
                     </ul>
-                    <p>To exercise these rights, message us at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">https://www.facebook.com/SpinTillYouWin</a>. We will respond within 30 days, as required by <em>PIPEDA</em>.</p>
-                    <h3>6. Cookies and Tracking Technologies</h3>
+                    <h3>8. International Use</h3>
                     <ul>
-                        <li>The App uses localStorage to store non-personal data (e.g., spin history, T&C acceptance) and session memory for temporary data. We do not use cookies or third-party tracking technologies (e.g., analytics trackers).</li>
-                        <li>You can clear localStorage data by clearing your browser’s cache, which will reset the App’s stored data (e.g., spin history).</li>
+                        <li>Data is processed in Canada. Using the App outside Canada means you consent to this.</li>
                     </ul>
-                    <h3>7. Children’s Privacy</h3>
+                    <h3>9. Updates</h3>
                     <ul>
-                        <li>The App is not intended for users under 19, in alignment with Ontario’s legal gambling age for casino activities, even though the App is for educational purposes only. We do not knowingly collect personal information from individuals under 19. If we learn that such data has been collected, we will delete it promptly.</li>
+                        <li>We may update this Policy. Continued use means acceptance.</li>
                     </ul>
-                    <h3>8. International Users</h3>
+                    <h3>10. Contact</h3>
                     <ul>
-                        <li>The App is hosted in Canada and subject to Canadian law. If you use the App from outside Canada, your data may be processed in Canada, where privacy laws may differ from your jurisdiction. By using the App, you consent to this processing.</li>
+                        <li>Message us at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win</a>.</li>
                     </ul>
-                    <h3>9. Changes to This Privacy Policy</h3>
-                    <ul>
-                        <li>We may update this Privacy Policy to reflect changes in our practices or legal requirements. Updates will be posted in the App, with the “Last Updated” date revised. Continued use of the App after changes constitutes acceptance of the new Privacy Policy.</li>
-                    </ul>
-                    <h3>10. Contact Us</h3>
-                    <ul>
-                        <li>For questions, concerns, or to exercise your privacy rights, message us via our Spin Till You Win Facebook page at <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">https://www.facebook.com/SpinTillYouWin</a>. We will respond promptly in accordance with <em>PIPEDA</em>.</li>
-                    </ul>
-                    <h3>11. Governing Law</h3>
-                    <ul>
-                        <li>This Privacy Policy is governed by the laws of the Province of Ontario and the federal laws of Canada applicable therein.</li>
-                    </ul>
-                    <h3>Acceptance of Privacy Policy</h3>
-                    <p>By checking the box below and clicking “I Agree,” you confirm that you have read, understood, and consent to this Privacy Policy and our <a href="javascript:showTab('terms')">Terms and Conditions</a>.</p>
+                    <h3>Acceptance</h3>
+                    <p>By checking “I agree” and clicking “I Agree,” you consent to this Privacy Policy and the <a href="javascript:toggleFullText('terms')">Terms and Conditions</a>.</p>
                 </div>
+                <!-- Checkbox and Button -->
                 <div class="checkbox-container">
                     <input type="checkbox" id="agreeTerms" onchange="toggleAgreeButton()">
                     <label for="agreeTerms">I agree to the Terms and Conditions and Privacy Policy</label>
@@ -6381,7 +6337,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 0.7);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -6389,98 +6345,140 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
             .modal-content {
                 background: #fff;
-                padding: 30px;
-                border-radius: 10px;
-                max-width: 800px;
+                padding: 20px;
+                border-radius: 8px;
+                max-width: 600px;
                 width: 90%;
-                max-height: 85vh;
+                max-height: 80vh;
                 overflow-y: auto;
-                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                 font-family: Arial, sans-serif;
             }
-            .tabs {
-                display: flex;
-                border-bottom: 2px solid #2e7d32;
+            /* Slider Styles */
+            .slider-container {
+                position: relative;
+                overflow: hidden;
                 margin-bottom: 20px;
             }
-            .tab {
-                flex: 1;
-                padding: 10px;
-                text-align: center;
-                cursor: pointer;
-                background: #f5f5f5;
-                color: #333;
-                font-weight: bold;
-                transition: background 0.3s ease;
+            .slider {
+                display: flex;
+                transition: transform 0.5s ease;
             }
-            .tab.active {
+            .slide {
+                min-width: 100%;
+                text-align: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+            .slide .icon {
+                font-size: 40px;
+                margin-bottom: 10px;
+            }
+            .slide h3 {
+                color: #2e7d32;
+                font-size: 18px;
+                margin: 10px 0;
+            }
+            .slide p {
+                color: #555;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+            .slider-nav {
+                text-align: center;
+                margin-top: 10px;
+            }
+            .dot {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                background: #ccc;
+                border-radius: 50%;
+                margin: 0 5px;
+                cursor: pointer;
+            }
+            .dot.active {
+                background: #2e7d32;
+            }
+            /* Full Text Links */
+            .full-text-links {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            .full-text-links button {
+                background: #f5f5f5;
+                border: 1px solid #2e7d32;
+                color: #2e7d32;
+                padding: 8px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            .full-text-links button:hover {
                 background: #2e7d32;
                 color: white;
             }
-            .tab:hover:not(.active) {
-                background: #e0e0e0;
+            /* Full Text */
+            .full-text {
+                margin-top: 20px;
+                padding: 15px;
+                background: #f9f9f9;
+                border-radius: 5px;
             }
-            .tab-content {
-                display: none;
-            }
-            .tab-content.active {
-                display: block;
-            }
-            .tab-content h2 {
+            .full-text h2 {
                 color: #2e7d32;
-                margin-top: 0;
-                font-size: 24px;
+                font-size: 20px;
             }
-            .tab-content h3 {
+            .full-text h3 {
                 color: #333;
-                font-size: 18px;
-                margin: 15px 0 10px;
-            }
-            .tab-content p, .tab-content li {
-                color: #555;
-                line-height: 1.8;
-                font-size: 14px;
-            }
-            .tab-content ul {
-                padding-left: 25px;
+                font-size: 16px;
                 margin: 10px 0;
             }
-            .tab-content li {
-                margin-bottom: 8px;
+            .full-text p, .full-text li {
+                color: #555;
+                font-size: 13px;
+                line-height: 1.6;
             }
-            .tab-content a {
+            .full-text ul {
+                padding-left: 20px;
+            }
+            .full-text a {
                 color: #2e7d32;
                 text-decoration: underline;
             }
-            .tab-content a:hover {
+            .full-text a:hover {
                 color: #1b5e20;
             }
+            /* Checkbox */
             .checkbox-container {
-                margin: 25px 0;
+                margin: 20px 0;
                 display: flex;
                 align-items: center;
-                gap: 12px;
+                gap: 10px;
             }
             .checkbox-container input {
-                width: 22px;
-                height: 22px;
+                width: 18px;
+                height: 18px;
                 cursor: pointer;
             }
             .checkbox-container label {
-                font-size: 15px;
+                font-size: 14px;
                 color: #333;
                 font-weight: bold;
             }
+            /* Button */
             .agree-btn {
                 background: #28a745;
                 color: white;
-                padding: 12px 25px;
+                padding: 10px 20px;
                 border: none;
-                border-radius: 6px;
+                border-radius: 5px;
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 15px;
                 width: 100%;
-                transition: background 0.3s ease, transform 0.2s ease;
+                transition: background 0.3s ease;
             }
             .agree-btn:disabled {
                 background: #ccc;
@@ -6488,49 +6486,53 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
             .agree-btn:hover:not(:disabled) {
                 background: #1b5e20;
-                transform: scale(1.02);
             }
+            /* Responsive */
             @media (max-width: 600px) {
                 .modal-content {
-                    padding: 20px;
+                    padding: 15px;
                     width: 95%;
                 }
-                .tabs {
-                    flex-direction: column;
-                }
-                .tab {
-                    padding: 8px;
-                    font-size: 14px;
-                }
-                .tab-content h2 {
-                    font-size: 20px;
-                }
-                .tab-content h3 {
+                .slide h3 {
                     font-size: 16px;
                 }
-                .tab-content p, .tab-content li, .checkbox-container label {
+                .slide p {
                     font-size: 13px;
+                }
+                .full-text h2 {
+                    font-size: 18px;
+                }
+                .full-text h3 {
+                    font-size: 14px;
+                }
+                .full-text p, .full-text li {
+                    font-size: 12px;
                 }
                 .agree-btn {
                     font-size: 14px;
-                    padding: 10px 20px;
-                }
-                .checkbox-container input {
-                    width: 18px;
-                    height: 18px;
+                    padding: 8px 15px;
                 }
             }
         </style>
         <script>
-            function showTab(tabId) {
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            function setSlide(index) {
+                currentSlide = index;
+                document.querySelector('.slider').style.transform = `translateX(-${index * 100}%)`;
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
                 });
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.getElementById(tabId).classList.add('active');
-                document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+            }
+            function autoSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                setSlide(currentSlide);
+            }
+            setInterval(autoSlide, 5000); // Auto-slide every 5 seconds
+            function toggleFullText(id) {
+                const text = document.getElementById(id);
+                text.style.display = text.style.display === 'block' ? 'none' : 'block';
             }
             function toggleAgreeButton() {
                 const checkbox = document.getElementById('agreeTerms');
