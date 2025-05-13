@@ -10251,6 +10251,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
                 font-size: 11px !important;
             }
+            /* Ensure Terms Modal is on top */
+            .modal {
+                z-index: 1000 !important;
+            }
+            .modal-content {
+                z-index: 1001 !important;
+            }
         }
     </style>
     """)
