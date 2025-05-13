@@ -9365,74 +9365,153 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         .new-spin.spin-green {
             --highlight-color: rgba(0, 255, 0, 0.8) !important;
         }
-        
-        /* Spin Counter Styling */
-        .spin-counter {
-            font-size: 16px !important; /* Slightly larger for emphasis */
-            font-weight: bold !important; /* Bold to match roulette buttons */
-            color: #ffffff !important; /* White text like roulette buttons */
-            background: linear-gradient(135deg, #2e7d32, #1b5e20) !important; /* Green felt gradient */
-            padding: 8px 16px !important; /* Padding for chip-like look */
-            border: 2px solid #ffffff !important; /* White border like roulette buttons */
-            border-radius: 10px !important; /* Rounded for casino chip aesthetic */
-            margin: 10px auto !important; /* Centered with margin */
-            display: inline-flex !important; /* Inline-flex for alignment */
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important; /* Subtle shadow */
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important; /* Text shadow for depth */
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-        }
-        .spin-counter:hover {
-            transform: scale(1.1) !important; /* Gentle scale, no rotation */
-            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7) !important; /* Gold glow */
-            border-color: #ffd700 !important; /* Gold border */
-            animation: sparkle-and-pulse 0.6s ease-in-out !important; /* Smooth pulse */
-        }
-        .spin-counter.glow {
-            animation: casino-flicker 1.8s ease-in-out infinite !important; /* Multi-color flicker */
-        }
-        @keyframes sparkle-and-pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-                border-color: #ffffff;
-            }
-            50% {
-                transform: scale(1.15);
-                box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8);
-                border-color: #ffd700;
-            }
-            100% {
-                transform: scale(1.1);
-                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
-                border-color: #ffd700;
-            }
-        }
-        @keyframes casino-flicker {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-                border-color: #ffffff;
-            }
-            33% {
-                transform: scale(1.05);
-                box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.6); /* Red glow */
-                border-color: #ff0000;
-            }
-            66% {
-                transform: scale(1.03);
-                box-shadow: 0 0 12px 6px rgba(0, 128, 0, 0.6); /* Green glow */
-                border-color: #008000;
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.6); /* White glow */
-                border-color: #ffffff;
-            }
-        }
 
-        
+        /* Spin Counter Styling */
+            .spin-counter {
+                font-size: 16px !important;
+                font-weight: bold !important;
+                color: #ffffff !important;
+                background: linear-gradient(135deg, #2e7d32, #1b5e20) !important;
+                padding: 8px 16px !important;
+                border: 2px solid #ffffff !important;
+                border-radius: 10px !important;
+                margin: 10px auto !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+                transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+                position: relative !important;
+            }
+            .spin-counter::before {
+                content: '⚙️';
+                font-size: 14px !important;
+                margin-right: 8px !important;
+                display: inline-block !important;
+            }
+            .spin-counter:hover {
+                transform: scale(1.1) !important;
+                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7) !important;
+                border-color: #ffd700 !important;
+                animation: sparkle-and-pulse 0.6s ease-in-out !important;
+            }
+            .spin-counter:hover::after {
+                content: 'Tip: Bet on neighbors of hot numbers for better odds!';
+                position: absolute !important;
+                top: -40px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 5px 10px !important;
+                border-radius: 5px !important;
+                font-size: 12px !important;
+                white-space: nowrap !important;
+                z-index: 10 !important;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            }
+            .spin-counter.glow {
+                animation: casino-flicker 1.8s ease-in-out infinite, color-shift 1.8s ease-in-out infinite !important;
+            }
+            .spin-counter.spin-counter-updated::before {
+                animation: spin-wheel 0.8s ease-in-out !important;
+            }
+            .spin-counter.milestone::after {
+                content: '🎉';
+                position: absolute !important;
+                top: -20px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                font-size: 20px !important;
+                animation: confetti-burst 1s ease-out forwards !important;
+            }
+            @keyframes sparkle-and-pulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                    border-color: #ffffff;
+                }
+                50% {
+                    transform: scale(1.15);
+                    box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8);
+                    border-color: #ffd700;
+                }
+                100% {
+                    transform: scale(1.1);
+                    box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
+                    border-color: #ffd700;
+                }
+            }
+            @keyframes casino-flicker {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                    border-color: #ffffff;
+                }
+                33% {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.6);
+                    border-color: #ff0000;
+                }
+                66% {
+                    transform: scale(1.03);
+                    box-shadow: 0 0 12px 6px rgba(0, 128, 0, 0.6);
+                    border-color: #008000;
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.6);
+                    border-color: #ffffff;
+                }
+            }
+            @keyframes color-shift {
+                0% { color: #ffffff; }
+                33% { color: #ff0000; }
+                66% { color: #008000; }
+                100% { color: #ffffff; }
+            }
+            @keyframes spin-wheel {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes confetti-burst {
+                0% {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(-50px);
+                }
+            }
+        </style>
+        <script>
+        function playChipSound() {
+            const audio = new Audio('https://example.com/chip_clink.mp3'); // Replace with your sound file URL
+            audio.play().catch(error => console.log('Audio play failed:', error));
+        }
+        function updateSpinCounter() {
+            const counter = document.querySelector('.spin-counter');
+            if (counter) {
+                const currentCount = parseInt(counter.textContent.match(/\d+/)[0]) || 0;
+                counter.textContent = `Total Spins: ${currentCount}`;
+                counter.classList.add('glow', 'spin-counter-updated');
+                playChipSound();
+                if (currentCount === 10 || currentCount === 50 || currentCount === 100) {
+                    counter.classList.add('milestone');
+                    setTimeout(() => counter.classList.remove('milestone'), 1000);
+                }
+                setTimeout(() => counter.classList.remove('spin-counter-updated'), 800);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const counter = document.querySelector('.spin-counter');
+            if (counter) {
+                const observer = new MutationObserver(() => updateSpinCounter());
+                observer.observe(counter, { childList: true, characterData: true, subtree: true });
+            }
+
         /* Sides of Zero Container */
         .sides-of-zero-container {
             background-color: #ffffff !important;
