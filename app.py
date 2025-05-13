@@ -9367,126 +9367,130 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
 
         /* Spin Counter Styling */
-            .spin-counter {
-                font-size: 16px !important;
-                font-weight: bold !important;
-                color: #ffffff !important;
-                background: linear-gradient(135deg, #2e7d32, #1b5e20) !important;
-                padding: 8px 16px !important;
-                border: 2px solid #ffffff !important;
-                border-radius: 10px !important;
-                margin: 10px auto !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-                transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-                position: relative !important;
+        .spin-counter {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20) !important;
+            padding: 8px 16px !important;
+            border: 2px solid #ffffff !important;
+            border-radius: 10px !important;
+            margin: 10px auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+            position: relative !important;
+        }
+        .spin-counter:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7) !important;
+            border-color: #ffd700 !important;
+            animation: sparkle-and-pulse 0.6s ease-in-out !important;
+        }
+        .spin-counter:hover::after {
+            content: attr(data-tip); /* Dynamic tip from JavaScript */
+            position: absolute !important;
+            top: -50px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #333 !important;
+            color: #fff !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 10px !important;
+            max-width: 150px !important;
+            white-space: normal !important;
+            text-align: center !important;
+            z-index: 10 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+        .spin-counter.glow {
+            animation: casino-flicker 1.8s ease-in-out infinite, color-shift 1.8s ease-in-out infinite !important;
+        }
+        .spin-counter.milestone {
+            animation: milestone-glow 1s ease-out !important;
+        }
+        @keyframes sparkle-and-pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                border-color: #ffffff;
             }
-            .spin-counter::before {
-                content: '⚙️';
-                font-size: 14px !important;
-                margin-right: 8px !important;
-                display: inline-block !important;
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8);
+                border-color: #ffd700;
             }
-            .spin-counter:hover {
-                transform: scale(1.1) !important;
-                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7) !important;
-                border-color: #ffd700 !important;
-                animation: sparkle-and-pulse 0.6s ease-in-out !important;
+            100% {
+                transform: scale(1.1);
+                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
+                border-color: #ffd700;
             }
-            .spin-counter:hover::after {
-                content: 'Tip: Bet on neighbors of hot numbers for better odds!';
-                position: absolute !important;
-                top: -40px !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                background: #333 !important;
-                color: #fff !important;
-                padding: 5px 10px !important;
-                border-radius: 5px !important;
-                font-size: 12px !important;
-                white-space: nowrap !important;
-                z-index: 10 !important;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+        @keyframes casino-flicker {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                border-color: #ffffff;
             }
-            .spin-counter.glow {
-                animation: casino-flicker 1.8s ease-in-out infinite, color-shift 1.8s ease-in-out infinite !important;
+            33% {
+                transform: scale(1.05);
+                box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.6);
+                border-color: #ff0000;
             }
-            .spin-counter.spin-counter-updated::before {
-                animation: spin-wheel 0.8s ease-in-out !important;
+            66% {
+                transform: scale(1.03);
+                box-shadow: 0 0 12px 6px rgba(0, 128, 0, 0.6);
+                border-color: #008000;
             }
-            .spin-counter.milestone::after {
-                content: '🎉';
-                position: absolute !important;
-                top: -20px !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                font-size: 20px !important;
-                animation: confetti-burst 1s ease-out forwards !important;
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.6);
+                border-color: #ffffff;
             }
-            @keyframes sparkle-and-pulse {
-                0% {
-                    transform: scale(1);
-                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-                    border-color: #ffffff;
-                }
-                50% {
-                    transform: scale(1.15);
-                    box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.8);
-                    border-color: #ffd700;
-                }
-                100% {
-                    transform: scale(1.1);
-                    box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
-                    border-color: #ffd700;
-                }
+        }
+        @keyframes color-shift {
+            0% { color: #ffffff; }
+            33% { color: #ff0000; }
+            66% { color: #008000; }
+            100% { color: #ffffff; }
+        }
+        @keyframes milestone-glow {
+            0% {
+                border-color: #ffffff;
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
             }
-            @keyframes casino-flicker {
-                0% {
-                    transform: scale(1);
-                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-                    border-color: #ffffff;
-                }
-                33% {
-                    transform: scale(1.05);
-                    box-shadow: 0 0 12px 6px rgba(255, 0, 0, 0.6);
-                    border-color: #ff0000;
-                }
-                66% {
-                    transform: scale(1.03);
-                    box-shadow: 0 0 12px 6px rgba(0, 128, 0, 0.6);
-                    border-color: #008000;
-                }
-                100% {
-                    transform: scale(1);
-                    box-shadow: 0 0 12px 6px rgba(255, 255, 255, 0.6);
-                    border-color: #ffffff;
-                }
+            50% {
+                border-color: #ffd700;
+                box-shadow: 0 0 20px 10px rgba(255, 215, 0, 0.8);
             }
-            @keyframes color-shift {
-                0% { color: #ffffff; }
-                33% { color: #ff0000; }
-                66% { color: #008000; }
-                100% { color: #ffffff; }
+            100% {
+                border-color: #ffffff;
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
             }
-            @keyframes spin-wheel {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            @keyframes confetti-burst {
-                0% {
-                    opacity: 1;
-                    transform: translateX(-50%) translateY(0);
-                }
-                100% {
-                    opacity: 0;
-                    transform: translateX(-50%) translateY(-50px);
-                }
-            }
+        }
         </style>
         <script>
+        const rouletteTips = [
+            "Bet on neighbors of hot numbers for better odds!",
+            "Red and black have equal chances, but zero is green!",
+            "Try the Martingale strategy for even-money bets.",
+            "Dozens cover 12 numbers for a balanced risk.",
+            "Watch for dealer biases in the Spin Tracker!",
+            "Fibonacci betting can manage your bankroll.",
+            "Columns offer a 2:1 payout—worth a try!",
+            "Zero’s neighbors are hot in European roulette."
+        ];
+        function setRandomTip() {
+            const counter = document.querySelector('.spin-counter');
+            if (counter) {
+                const randomTip = rouletteTips[Math.floor(Math.random() * rouletteTips.length)];
+                counter.setAttribute('data-tip', randomTip);
+            }
+        }
         function playChipSound() {
             const audio = new Audio('https://example.com/chip_clink.mp3'); // Replace with your sound file URL
             audio.play().catch(error => console.log('Audio play failed:', error));
@@ -9496,13 +9500,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             if (counter) {
                 const currentCount = parseInt(counter.textContent.match(/\d+/)[0]) || 0;
                 counter.textContent = `Total Spins: ${currentCount}`;
-                counter.classList.add('glow', 'spin-counter-updated');
+                counter.classList.add('glow');
                 playChipSound();
                 if (currentCount === 10 || currentCount === 50 || currentCount === 100) {
                     counter.classList.add('milestone');
                     setTimeout(() => counter.classList.remove('milestone'), 1000);
                 }
-                setTimeout(() => counter.classList.remove('spin-counter-updated'), 800);
             }
         }
         document.addEventListener('DOMContentLoaded', () => {
@@ -9510,6 +9513,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             if (counter) {
                 const observer = new MutationObserver(() => updateSpinCounter());
                 observer.observe(counter, { childList: true, characterData: true, subtree: true });
+                counter.addEventListener('mouseenter', setRandomTip);
+                setRandomTip(); // Set initial tip
             }
 
         /* Sides of Zero Container */
