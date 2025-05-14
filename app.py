@@ -8256,7 +8256,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # 8. Row 8: Betting Progression Tracker
     with gr.Row():
-        with gr.Accordion("Betting Progression Tracker", open=False, elem_classes=["betting-progression"]):
+        with gr.Accordion("Betting Progression Tracker", open=False, elem_id="betting-progression", elem_classes=["betting-progression"]):
             gr.HTML("""
             <style>
                 .betting-progression {
@@ -9272,6 +9272,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
+
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
@@ -10968,6 +10969,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             resolve();
             return;
           }
+          console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200)); // Log partial HTML
           const toggle = accordion.querySelector('input.accordion-toggle');
           const content = accordion.querySelector('.accordion-content');
           if (toggle && content && window.getComputedStyle(content).display === 'none') {
@@ -11076,9 +11078,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         id: 'part8',
         title: 'Bet Smart, Track the Art!',
         text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#betting-progression', on: 'top' },
+        attachTo: { element: '.betting-progression', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('#betting-progression');
+          return forceAccordionOpen('.betting-progression');
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11323,15 +11325,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      function startTour() {
-        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
-        if (typeof Shepherd === 'undefined') {
-          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
-          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
+      function tryStartTour(attempts = 3, delay = 2000) {
+        if (attempts <= 0) {
+          console.error('Max attempts reached. Tour failed.');
+          alert('Tour unavailable: Components not loaded after multiple attempts. Please refresh.');
           return;
         }
         setTimeout(() => {
-          console.log('Checking DOM elements for tour...');
+          console.log(`Checking DOM elements for tour (attempt ${4 - attempts}/3)...`);
           const criticalElements = [
             '#header-row',
             '.roulette-table',
@@ -11340,7 +11341,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '.last-spins-container',
             '.green-btn',
             '#dynamic-table-heading',
-            '#betting-progression',
+            '.betting-progression', // Fixed from #betting-progression
             '#color-code-key',
             '#spin-analysis',
             '#save-load-session',
@@ -11354,24 +11355,42 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           ];
           const missingElements = criticalElements.filter(el => !document.querySelector(el));
           if (missingElements.length > 0) {
-            console.error(`Cannot start tour: Missing elements: ${missingElements.join(', ')}`);
-            alert(`Tour unavailable: Missing components (${missingElements.join(', ')}). Please refresh the page or contact support.`);
-            return;
+            console.warn(`Retrying (${attempts} attempts left)... Missing: ${missingElements.join(', ')}`);
+            tryStartTour(attempts - 1, delay);
+          } else {
+            console.log('All critical elements found. Starting tour.');
+            try {
+              tour.start();
+              console.log('Tour started successfully.');
+            } catch (error) {
+              console.error('Error starting tour:', error);
+              alert('Tour failed to start due to an unexpected error. Please check the console for details.');
+            }
           }
-          console.log('All critical elements found. Starting tour.');
-          try {
-            tour.start();
-            console.log('Tour started successfully.');
-          } catch (error) {
-            console.error('Error starting tour:', error);
-            alert('Tour failed to start due to an unexpected error. Please check the console for details.');
-          }
-        }, 5000); // Increased to 5 seconds
+        }, delay);
       }
     
-      // Add click handler for button
+      function startTour() {
+        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
+        const btn = document.querySelector('#start-tour-btn');
+        if (btn) {
+          btn.innerHTML = 'Loading Tour...';
+        }
+        if (typeof Shepherd === 'undefined') {
+          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
+          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
+          if (btn) btn.innerHTML = '🚀 Take the Tour!';
+          return;
+        }
+        tryStartTour(3, 5000); // Initial delay of 5 seconds
+        setTimeout(() => {
+          if (btn) btn.innerHTML = '🚀 Take the Tour!';
+        }, 10000); // Reset button text after max retry time
+      }
+    
       document.addEventListener('DOMContentLoaded', () => {
         console.log('DOM Loaded, #header-row exists:', !!document.querySelector('#header-row'));
+        console.log('DOM Loaded, .betting-progression exists:', !!document.querySelector('.betting-progression'));
         console.log('Shepherd.js available:', typeof Shepherd !== 'undefined');
         const tourButton = document.querySelector('#start-tour-btn');
         if (tourButton) {
