@@ -6168,7 +6168,7 @@ def select_next_spin_top_pick(last_spin_count):
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal (Updated Messages and Checkbox Styling)
+    # T&C and Privacy Policy Modal (Updated Version)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
@@ -6187,10 +6187,113 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             <ul>
                                 <li><strong>Educational Use Only</strong>: WheelPulse is for educational purposes to analyze roulette spin data and simulate strategies theoretically. It is not a gambling platform.</li>
                                 <li><strong>Prohibited Use</strong>: Do not use for real-money gambling or betting. We’re not responsible for losses from such use.</li>
-                                <!-- ... (rest of T&C content abbreviated for brevity) ... -->
+                                <li><strong>Features Covered</strong>:
+                                    <ul>
+                                        <li><strong>Spin Analysis</strong>: Tracks spins to display trends (e.g., hit percentages, hot/cold numbers).</li>
+                                        <li><strong>Strategy Recommendations</strong>: Offers theoretical strategies (e.g., Martingale, Fibonacci) for study.</li>
+                                        <li><strong>Betting Progression Tracker</strong>: Simulates betting progressions for learning.</li>
+                                        <li><strong>Hot/Cold Numbers</strong>: Identifies frequent/infrequent numbers for analysis.</li>
+                                        <li><strong>Dealer’s Spin Tracker</strong>: Analyzes spins to study potential biases.</li>
+                                        <li><strong>Casino Data Insights</strong>: Allows input of hypothetical casino data to explore trends.</li>
+                                        <li><strong>Feedback Form</strong>: Collects optional user feedback.</li>
+                                    </ul>
+                                </li>
                             </ul>
                         </details>
-                        <!-- ... (other T&C sections) ... -->
+                        <details>
+                            <summary>2. Eligibility</summary>
+                            <ul>
+                                <li>You must be 19+ and reside where using the app for education is legal.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>3. Intellectual Property</summary>
+                            <ul>
+                                <li>The app, its design, code, and content are owned by S.T.Y.W. and protected by Canadian and international copyright laws.</li>
+                                <li>You’re granted a limited, non-exclusive license for personal, educational use. Do not copy, modify, or reverse-engineer the app without permission.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>4. User Conduct and Prohibited Activities</summary>
+                            <ul>
+                                <li>Do not use for illegal purposes, gambling, or to disrupt the app’s functionality.</li>
+                                <li>Do not misuse the app’s outputs to promote gambling.</li>
+                                <li>Do not submit false or harmful data via the feedback form.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>5. Feature-Specific Terms</summary>
+                            <ul>
+                                <li><strong>Spin Analysis and Trends</strong>: Results are theoretical and do not predict outcomes. We’re not liable for decisions based on these.</li>
+                                <li><strong>Strategy Recommendations</strong>: Strategies (e.g., Hot Bet, Fibonacci) are simulations for education. Using them for gambling is prohibited.</li>
+                                <li><strong>Betting Progression Tracker</strong>: Simulates progressions (e.g., Martingale). We’re not liable for losses if applied in real betting.</li>
+                                <li><strong>Hot/Cold Numbers and Dealer’s Spin Tracker</strong>: For educational analysis only. Reliance for gambling is at your risk.</li>
+                                <li><strong>Casino Data Insights</strong>: User-entered data is unverified. We’re not responsible for errors or decisions based on it.</li>
+                                <li><strong>Feedback Form</strong>: By submitting, you grant us a royalty-free license to use your suggestions. Personal info is subject to our Privacy Policy.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>6. Privacy</summary>
+                            <ul>
+                                <li>We protect your privacy. See our <a href="javascript:showTab('privacy')">Privacy Policy</a> for details.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>7. No Financial or Gambling Advice</summary>
+                            <ul>
+                                <li>App outputs are for education, not financial or gambling advice. Roulette is random, and we’re not liable for losses from reliance on outputs.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>8. Limitation of Liability</summary>
+                            <ul>
+                                <li><strong>As-Is Basis</strong>: The app is provided “as is” without warranties of accuracy or fitness.</li>
+                                <li><strong>No Liability for Misuse</strong>: We’re not liable for damages from gambling, errors, data loss, or app interruptions.</li>
+                                <li><strong>Maximum Liability</strong>: Our total liability is capped at CAD $50.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>9. Indemnification</summary>
+                            <ul>
+                                <li>You agree to indemnify S.T.Y.W. from claims arising from your misuse of the app or violation of these Terms.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>10. Termination</summary>
+                            <ul>
+                                <li>We may suspend your access if you violate these Terms.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>11. Governing Law and Dispute Resolution</summary>
+                            <ul>
+                                <li>These Terms are governed by Ontario, Canada laws. Disputes will be resolved in Ontario courts.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>12. Changes to the Terms</summary>
+                            <ul>
+                                <li>We may update these Terms. Continued use after changes means you accept them.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>13. Contact Information</summary>
+                            <ul>
+                                <li>Questions? Message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>14. Severability</summary>
+                            <ul>
+                                <li>If any provision is invalid, the remaining provisions remain in effect.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>15. Entire Agreement</summary>
+                            <ul>
+                                <li>These Terms and our Privacy Policy are the entire agreement between you and S.T.Y.W.</li>
+                            </ul>
+                        </details>
                         <h3>Acceptance of Terms</h3>
                         <p>By checking the box below, you confirm you are 19+, agree to these Terms and our <a href="javascript:showTab('privacy')">Privacy Policy</a>, and will use the app for education only, not gambling.</p>
                     </div>
@@ -6204,11 +6307,89 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <details>
                             <summary>1. Information We Collect</summary>
                             <ul>
-                                <li><strong>Non-Personal Data</strong>: Spin history, usage data...</li>
-                                <li><strong>Personal Information</strong>: Feedback form, consent tracking...</li>
+                                <li><strong>Non-Personal Data</strong>:
+                                    <ul>
+                                        <li><strong>Spin History and Inputs</strong>: Stored locally on your device (localStorage), not transmitted unless submitted via feedback.</li>
+                                        <li><strong>Usage Data</strong>: Anonymized data on feature usage to improve the app.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Personal Information</strong>:
+                                    <ul>
+                                        <li><strong>Feedback Form</strong>: Name, email, and feedback content (optional submission).</li>
+                                        <li><strong>Consent Tracking</strong>: Email (optional) when agreeing to these terms, for legal records.</li>
+                                        <li>No other personal data is collected unless you provide it.</li>
+                                    </ul>
+                                </li>
                             </ul>
                         </details>
-                        <!-- ... (other Privacy Policy sections) ... -->
+                        <details>
+                            <summary>2. How We Use Your Information</summary>
+                            <ul>
+                                <li>Provide app functionality (e.g., spin analysis).</li>
+                                <li>Process feedback and improve the app.</li>
+                                <li>Log consent for legal purposes (if email is provided).</li>
+                                <li>Use anonymized data for app enhancements.</li>
+                                <li>Comply with legal requirements.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>3. How We Share Your Information</summary>
+                            <ul>
+                                <li>We don’t sell your data.</li>
+                                <li>Feedback and consent data may be shared with providers (e.g., Formspree) or if required by law.</li>
+                                <li>Data may be shared in case of business transfers, with privacy protections.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>4. Data Storage and Security</summary>
+                            <ul>
+                                <li>Spin data is stored locally on your device and deleted when you clear browser data.</li>
+                                <li>Feedback and consent data are encrypted and retained for up to 12 months, or longer if required for legal purposes.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>5. Your Rights and Choices</summary>
+                            <ul>
+                                <li>Access, correct, or delete your personal data by contacting us.</li>
+                                <li>Withdraw consent for processing, though this may limit feedback form use.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>6. Cookies and Tracking Technologies</summary>
+                            <ul>
+                                <li>We use localStorage, not cookies. Clear your browser cache to reset data.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>7. Children’s Privacy</summary>
+                            <ul>
+                                <li>Not for users under 19. We don’t knowingly collect their data.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>8. International Users</summary>
+                            <ul>
+                                <li>Data is processed in Canada. Using the app from outside Canada means you consent to this.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>9. Changes to This Privacy Policy</summary>
+                            <ul>
+                                <li>We may update this policy. Continued use after changes means you accept them.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>10. Contact Us</summary>
+                            <ul>
+                                <li>Questions? Message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
+                            </ul>
+                        </details>
+                        <details>
+                            <summary>11. Governing Law</summary>
+                            <ul>
+                                <li>This policy is governed by Ontario, Canada laws.</li>
+                            </ul>
+                        </details>
                         <h3>Acceptance</h3>
                         <p>By checking the box below, you consent to this Privacy Policy and our <a href="javascript:showTab('terms')">Terms and Conditions</a>.</p>
                     </div>
@@ -6468,43 +6649,47 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 agreeBtn.disabled = !checkbox.checked;
             }
             function acceptTermsAndLogConsent() {
-                const email = document.getElementById('userEmail').value;
+                const email = document.getElementById('userEmail').value.trim();
                 const timestamp = new Date().toISOString();
                 const termsVersion = 'May 13, 2025';
                 const consentMessageDiv = document.getElementById('consentMessage');
 
-                consentMessageDiv.innerHTML = '<p style="color: #333;">Recording your consent...</p>';
+                if (email) {
+                    consentMessageDiv.innerHTML = '<p style="color: #333;">Recording your consent...</p>';
 
-                const formData = new FormData();
-                formData.append('email', email || 'Anonymous');
-                formData.append('timestamp', timestamp);
-                formData.append('terms_version', termsVersion);
-                formData.append('action', 'User agreed to Terms and Privacy Policy');
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('timestamp', timestamp);
+                    formData.append('terms_version', termsVersion);
+                    formData.append('action', 'User agreed to Terms and Privacy Policy');
 
-                fetch('https://formspree.io/f/mnnpllqq', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        consentMessageDiv.innerHTML = '<p style="color: green;">Consent recorded successfully!</p>';
+                    fetch('https://formspree.io/f/mnnpllqq', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            consentMessageDiv.innerHTML = '<p style="color: green;">Consent recorded successfully!</p>';
+                            localStorage.setItem('termsAccepted', 'true');
+                            document.getElementById('termsModal').style.display = 'none';
+                            document.getElementById('appContent').style.display = 'block';
+                        } else {
+                            consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Please try again.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Failed to log consent:', error);
+                        consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Proceeding anyway...</p>';
                         localStorage.setItem('termsAccepted', 'true');
                         document.getElementById('termsModal').style.display = 'none';
                         document.getElementById('appContent').style.display = 'block';
-                    } else {
-                        consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Please try again.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to log consent:', error);
-                    consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Proceeding anyway...</p>';
+                    });
+                } else {
                     localStorage.setItem('termsAccepted', 'true');
                     document.getElementById('termsModal').style.display = 'none';
                     document.getElementById('appContent').style.display = 'block';
-                });
+                }
             }
             window.onload = function() {
                 if (localStorage.getItem('termsAccepted') === 'true') {
