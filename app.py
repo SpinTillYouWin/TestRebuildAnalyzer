@@ -11167,27 +11167,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#casino-data-insights', on: 'bottom' },
         beforeShowPromise: function() {
+          console.log('Starting Step 14: Casino Data Insights');
           return forceAccordionOpen('#casino-data-insights');
         },
         buttons: [
           { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 14', 'Part 14a') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part14a',
-        title: 'Hot and Cold Numbers!',
-        text: 'Enter hot and cold numbers to refine your betting strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
-        beforeShowPromise: function() {
-          console.log('Starting Step 14a: Hot and Cold Numbers');
-          return forceAccordionOpen('#casino-data-insights').then(() => forceAccordionOpen('#hot-cold-numbers'));
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Finish', action: function() { console.log('Tour completed at Step 14a'); tour.complete(); } }
+          { text: 'Finish', action: function() {
+            console.log('Tour completed at Step 14');
+            tour.complete();
+            document.querySelector('.shepherd-modal-overlay-container')?.classList.remove('shepherd-modal-is-visible');
+          } }
         ]
       });
     
@@ -11212,8 +11201,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '#spin-analysis',
             '#save-load-session',
             '#select-category',
-            '#casino-data-insights',
-            '#hot-cold-numbers'
+            '#casino-data-insights'
           ];
           const missingElements = criticalElements.filter(el => !document.querySelector(el));
           if (missingElements.length > 0) {
@@ -11253,6 +11241,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
       document.addEventListener('DOMContentLoaded', () => {
         console.log('DOM Loaded, #header-row exists:', !!document.querySelector('#header-row'));
         console.log('DOM Loaded, .betting-progression exists:', !!document.querySelector('.betting-progression'));
+        console.log('DOM Loaded, #casino-data-insights exists:', !!document.querySelector('#casino-data-insights'));
         console.log('Shepherd.js available:', typeof Shepherd !== 'undefined');
         const tourButton = document.querySelector('#start-tour-btn');
         if (tourButton) {
