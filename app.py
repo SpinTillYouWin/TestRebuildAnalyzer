@@ -6168,7 +6168,7 @@ def select_next_spin_top_pick(last_spin_count):
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal (Updated Version)
+    # T&C and Privacy Policy Modal (Updated Privacy Policy)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
@@ -6298,7 +6298,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <p>By checking the box below, you confirm you are 19+, agree to these Terms and our <a href="javascript:showTab('privacy')">Privacy Policy</a>, and will use the app for education only, not gambling.</p>
                     </div>
                 </div>
-                <!-- Privacy Policy -->
+                <!-- Privacy Policy (Updated Version) -->
                 <div class="tab-content" id="privacy">
                     <h2>WheelPulse Privacy Policy</h2>
                     <p><strong>Last Updated: May 13, 2025</strong></p>
@@ -6309,15 +6309,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             <ul>
                                 <li><strong>Non-Personal Data</strong>:
                                     <ul>
-                                        <li><strong>Spin History and Inputs</strong>: Stored locally on your device (localStorage), not transmitted unless submitted via feedback.</li>
-                                        <li><strong>Usage Data</strong>: Anonymized data on feature usage to improve the app.</li>
+                                        <li><strong>Spin History and Inputs</strong>: Data you enter, such as roulette spins, casino data insights, and betting progressions, is stored locally on your device using localStorage. This data powers features like spin analysis, hot/cold numbers, and dealer’s spin tracking.</li>
+                                        <li><strong>Usage Data</strong>: We may collect anonymized data on how you interact with the app (e.g., which features like strategy recommendations or progression trackers are used most) to improve WheelPulse.</li>
                                     </ul>
                                 </li>
                                 <li><strong>Personal Information</strong>:
                                     <ul>
-                                        <li><strong>Feedback Form</strong>: Name, email, and feedback content (optional submission).</li>
-                                        <li><strong>Consent Tracking</strong>: Email (optional) when agreeing to these terms, for legal records.</li>
-                                        <li>No other personal data is collected unless you provide it.</li>
+                                        <li><strong>Consent Email</strong>: When you agree to our Terms and Conditions, you may optionally provide an email address, which we use to log your consent for legal purposes.</li>
+                                        <li><strong>Feedback Form</strong>: If you choose to submit feedback, you may provide your name, email, and feedback content. This is entirely optional.</li>
+                                        <li>We do not collect any other personal information unless you voluntarily provide it through feedback.</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -6325,69 +6325,77 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <details>
                             <summary>2. How We Use Your Information</summary>
                             <ul>
-                                <li>Provide app functionality (e.g., spin analysis).</li>
-                                <li>Process feedback and improve the app.</li>
-                                <li>Log consent for legal purposes (if email is provided).</li>
-                                <li>Use anonymized data for app enhancements.</li>
-                                <li>Comply with legal requirements.</li>
+                                <li><strong>Enable App Features</strong>: We use your non-personal data (e.g., spin history, casino data inputs) to power features like spin analysis, strategy recommendations (e.g., Martingale, Fibonacci), betting progression tracking, hot/cold number identification, and dealer’s spin tracking for bias analysis.</li>
+                                <li><strong>Improve the App</strong>: Feedback you provide (if any) helps us enhance WheelPulse’s functionality and user experience. Anonymized usage data (e.g., which features are used most) may also be used to make improvements.</li>
+                                <li><strong>Record Consent</strong>: If you provide an email when agreeing to these terms, we use it to log your consent for legal purposes, as required under Canada’s <em>PIPEDA</em>.</li>
+                                <li><strong>Comply with Legal Obligations</strong>: We may use your information to meet legal requirements, such as responding to lawful requests or ensuring compliance with applicable laws.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>3. How We Share Your Information</summary>
                             <ul>
-                                <li>We don’t sell your data.</li>
-                                <li>Feedback and consent data may be shared with providers (e.g., Formspree) or if required by law.</li>
-                                <li>Data may be shared in case of business transfers, with privacy protections.</li>
+                                <li>We do not sell or share your data for marketing purposes.</li>
+                                <li><strong>Service Providers</strong>: If you provide an email for consent or feedback, we share it with Formspree (our form processing provider) to log your consent or feedback securely.</li>
+                                <li><strong>Legal Requirements</strong>: We may share your information if required by law (e.g., to comply with a court order or legal process).</li>
+                                <li><strong>Business Transfers</strong>: If S.T.Y.W. undergoes a business transfer (e.g., merger), your data may be shared, but we’ll ensure it remains protected under this policy.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>4. Data Storage and Security</summary>
                             <ul>
-                                <li>Spin data is stored locally on your device and deleted when you clear browser data.</li>
-                                <li>Feedback and consent data are encrypted and retained for up to 12 months, or longer if required for legal purposes.</li>
+                                <li><strong>Local Storage</strong>: Spin data, casino data inputs, and other non-personal data are stored locally on your device via localStorage. This data is not transmitted to our servers unless you submit feedback including such data.</li>
+                                <li><strong>Consent and Feedback Data</strong>: Emails provided for consent or feedback are securely transmitted to Formspree and retained for up to 12 months, or longer if required for legal purposes.</li>
+                                <li><strong>Security Measures</strong>: We use reasonable measures (e.g., encryption for Formspree submissions) to protect your data, but no method is 100% secure. You use the app at your own risk.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>5. Your Rights and Choices</summary>
                             <ul>
-                                <li>Access, correct, or delete your personal data by contacting us.</li>
-                                <li>Withdraw consent for processing, though this may limit feedback form use.</li>
+                                <li><strong>Access and Correction</strong>: You can request access to or correction of your personal data (e.g., consent email, feedback) by contacting us.</li>
+                                <li><strong>Deletion</strong>: You can request deletion of your consent email or feedback data, though we may retain it if required for legal purposes.</li>
+                                <li><strong>Withdraw Consent</strong>: You can withdraw consent for us to process your personal data, but this may limit your ability to use the feedback form.</li>
+                                <li><strong>Clear Local Data</strong>: To delete spin data or other local data, clear your browser’s cache or localStorage.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>6. Cookies and Tracking Technologies</summary>
                             <ul>
-                                <li>We use localStorage, not cookies. Clear your browser cache to reset data.</li>
+                                <li>We do not use cookies. We use localStorage to store non-personal data (e.g., spin history, casino data) on your device for app functionality.</li>
+                                <li>You can clear this data by resetting your browser’s cache or localStorage, which will reset your app data (e.g., spin history).</li>
                             </ul>
                         </details>
                         <details>
                             <summary>7. Children’s Privacy</summary>
                             <ul>
-                                <li>Not for users under 19. We don’t knowingly collect their data.</li>
+                                <li>WheelPulse is not intended for users under 19. We do not knowingly collect personal information from individuals under 19.</li>
+                                <li>If we learn such data has been collected, we will delete it promptly.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>8. International Users</summary>
                             <ul>
-                                <li>Data is processed in Canada. Using the app from outside Canada means you consent to this.</li>
+                                <li>Data you provide (e.g., consent email, feedback) is processed in Canada, where S.T.Y.W. is based.</li>
+                                <li>If you use WheelPulse from outside Canada, you consent to your data being transferred to and processed in Canada under this policy.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>9. Changes to This Privacy Policy</summary>
                             <ul>
-                                <li>We may update this policy. Continued use after changes means you accept them.</li>
+                                <li>We may update this Privacy Policy to reflect changes in our practices or legal requirements.</li>
+                                <li>We’ll notify you of significant changes by updating the “Last Updated” date at the top of this policy. Continued use of WheelPulse after changes means you accept the updated policy.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>10. Contact Us</summary>
                             <ul>
-                                <li>Questions? Message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
+                                <li>For questions about this Privacy Policy or your data, message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>11. Governing Law</summary>
                             <ul>
-                                <li>This policy is governed by Ontario, Canada laws.</li>
+                                <li>This Privacy Policy is governed by the laws of Ontario, Canada, consistent with Canada’s <em>PIPEDA</em>.</li>
+                                <li>Any disputes related to this policy will be resolved in Ontario courts.</li>
                             </ul>
                         </details>
                         <h3>Acceptance</h3>
@@ -6700,7 +6708,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
 
-    # App Content (Header Section - Unchanged from Previous Fix)
+    # App Content (Header Section - Unchanged)
     with gr.Group(visible=False, elem_id="appContent"):
         with gr.Row(elem_id="header-row"):
             gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
