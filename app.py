@@ -6734,19 +6734,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <!-- Outer rim (red) -->
-                                <circle cx="50" cy="50" r="45" fill="#ff4444" stroke="#ffd700" stroke-width="5"/>
+                                <!-- Outer rim (red with silver stroke) -->
+                                <circle cx="50" cy="50" r="45" fill="#ff4444" stroke="#c0c0c0" stroke-width="5"/>
                                 <!-- Inner circle (green felt) -->
                                 <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
-                                <!-- Black and red sections -->
-                                <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#000000"/>
-                                <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#ff4444"/>
-                                <!-- Green zero slot -->
-                                <circle cx="50" cy="20" r="5" fill="#00ff00"/>
+                                <!-- Smaller black and red sections -->
+                                <path d="M50 20 A30 30 0 0 1 80 50 A30 30 0 0 1 50 80 A30 30 0 0 1 20 50 A30 30 0 0 1 50 20" fill="#000000"/>
+                                <path d="M50 20 A30 30 0 0 0 20 50 A30 30 0 0 0 50 80 A30 30 0 0 0 80 50 A30 30 0 0 0 50 20" fill="#ff4444"/>
+                                <!-- White ball (previously green zero slot) with gray shadow -->
+                                <circle cx="50" cy="25" r="5" fill="#ffffff" class="ball-spin" style="filter: drop-shadow(1px 1px 1px rgba(128, 128, 128, 0.5));"/>
                                 <!-- Gold center -->
                                 <circle cx="50" cy="50" r="5" fill="#ffd700"/>
-                                <!-- White ball with gray shadow -->
-                                <circle cx="50" cy="25" r="3" fill="#ffffff" class="ball-spin" style="filter: drop-shadow(1px 1px 1px rgba(128, 128, 128, 0.5));"/>
                             </svg>
                         </span>
                     </h1>
