@@ -6168,7 +6168,7 @@ def select_next_spin_top_pick(last_spin_count):
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal (Updated Privacy Policy)
+    # T&C and Privacy Policy Modal (Fixed Positioning)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
@@ -6298,7 +6298,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <p>By checking the box below, you confirm you are 19+, agree to these Terms and our <a href="javascript:showTab('privacy')">Privacy Policy</a>, and will use the app for education only, not gambling.</p>
                     </div>
                 </div>
-                <!-- Privacy Policy (Updated Version) -->
+                <!-- Privacy Policy -->
                 <div class="tab-content" id="privacy">
                     <h2>WheelPulse Privacy Policy</h2>
                     <p><strong>Last Updated: May 13, 2025</strong></p>
@@ -6415,6 +6415,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             </div>
         </div>
         <style>
+            body.modal-open {
+                overflow: hidden;
+            }
             .modal-overlay {
                 position: fixed;
                 top: 0;
@@ -6422,10 +6425,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.8);
-                display: flex;
+                display: flex !important;
                 justify-content: center;
                 align-items: center;
                 z-index: 1000;
+                visibility: visible;
+            }
+            .modal-overlay[style*="display: none"] {
+                visibility: hidden;
             }
             .modal-content {
                 background: #fff;
@@ -6680,8 +6687,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         if (response.ok) {
                             consentMessageDiv.innerHTML = '<p style="color: green;">Consent recorded successfully!</p>';
                             localStorage.setItem('termsAccepted', 'true');
-                            document.getElementById('termsModal').style.display = 'none';
+                            document.getElementById('termsModal').style.visibility = 'hidden';
                             document.getElementById('appContent').style.display = 'block';
+                            document.body.classList.remove('modal-open');
                         } else {
                             consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Please try again.</p>';
                         }
@@ -6690,19 +6698,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         console.error('Failed to log consent:', error);
                         consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Proceeding anyway...</p>';
                         localStorage.setItem('termsAccepted', 'true');
-                        document.getElementById('termsModal').style.display = 'none';
+                        document.getElementById('termsModal').style.visibility = 'hidden';
                         document.getElementById('appContent').style.display = 'block';
+                        document.body.classList.remove('modal-open');
                     });
                 } else {
                     localStorage.setItem('termsAccepted', 'true');
-                    document.getElementById('termsModal').style.display = 'none';
+                    document.getElementById('termsModal').style.visibility = 'hidden';
                     document.getElementById('appContent').style.display = 'block';
+                    document.body.classList.remove('modal-open');
                 }
             }
             window.onload = function() {
                 if (localStorage.getItem('termsAccepted') === 'true') {
-                    document.getElementById('termsModal').style.display = 'none';
+                    document.getElementById('termsModal').style.visibility = 'hidden';
                     document.getElementById('appContent').style.display = 'block';
+                    document.body.classList.remove('modal-open');
+                } else {
+                    document.getElementById('termsModal').style.visibility = 'visible';
+                    document.getElementById('appContent').style.display = 'none';
+                    document.body.classList.add('modal-open');
+                    window.scrollTo(0, 0);
                 }
             };
         </script>
