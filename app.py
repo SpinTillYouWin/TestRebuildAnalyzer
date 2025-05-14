@@ -7845,7 +7845,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         elem_classes=["spin-counter"]
     )
     
-    # Last Spins Display and Slider (positioned before the roulette table, adjust if needed)
+    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    with gr.Row():
+        with gr.Column():
             last_spin_display = gr.HTML(
                 label="Last Spins",
                 value='<h4>Last Spins</h4><p>No spins yet.</p>',
@@ -8012,7 +8014,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         });
     </script>
     """)
-    
+
     # 2. Row 2: European Roulette Table (unchanged)
     with gr.Group():
         gr.Markdown("### European Roulette Table")
