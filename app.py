@@ -6724,7 +6724,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
     
-    # App Content (Header Section - Current State from Last Update)
+    # App Content (Header Section - Updated)
     with gr.Group(visible=False, elem_id="appContent"):
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
@@ -6734,38 +6734,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <!-- Outer rim -->
-                                <circle cx="50" cy="50" r="48" fill="#000000" stroke="#ffd700" stroke-width="4"/>
-                                <!-- Inner rim (silver) -->
-                                <circle cx="50" cy="50" r="42" fill="#c0c0c0" stroke="#000000" stroke-width="2"/>
-                                <!-- Green felt center -->
-                                <circle cx="50" cy="50" r="38" fill="#2e7d32"/>
-                                <!-- Red/Black sections (18 simplified slots) -->
-                                <path d="M50 12 A38 38 0 0 1 62 15.5 A38 38 0 0 1 74 22 A38 38 0 0 1 83 31 A38 38 0 0 1 88 42 A38 38 0 0 1 88 58 A38 38 0 0 1 83 69 A38 38 0 0 1 74 78 A38 38 0 0 1 62 84.5 A38 38 0 0 1 50 88" fill="#ff4444"/>
-                                <path d="M50 12 A38 38 0 0 0 38 15.5 A38 38 0 0 0 26 22 A38 38 0 0 0 17 31 A38 38 0 0 0 12 42 A38 38 0 0 0 12 58 A38 38 0 0 0 17 69 A38 38 0 0 0 26 78 A38 38 0 0 0 38 84.5 A38 38 0 0 0 50 88" fill="#000000"/>
-                                <path d="M50 12 L62 15.5 L74 22 L50 12" fill="#000000"/>
-                                <path d="M74 22 L83 31 L62 15.5 L74 22" fill="#ff4444"/>
-                                <path d="M83 31 L88 42 L74 22 L83 31" fill="#000000"/>
-                                <path d="M88 42 L88 58 L83 31 L88 42" fill="#ff4444"/>
-                                <path d="M88 58 L83 69 L88 42 L88 58" fill="#000000"/>
-                                <path d="M83 69 L74 78 L88 58 L83 69" fill="#ff4444"/>
-                                <path d="M74 78 L62 84.5 L83 69 L74 78" fill="#000000"/>
-                                <path d="M62 84.5 L50 88 L74 78 L62 84.5" fill="#ff4444"/>
-                                <path d="M50 88 L38 84.5 L62 84.5 L50 88" fill="#000000"/>
-                                <path d="M38 84.5 L26 78 L50 88 L38 84.5" fill="#ff4444"/>
-                                <path d="M26 78 L17 69 L38 84.5 L26 78" fill="#000000"/>
-                                <path d="M17 69 L12 58 L26 78 L17 69" fill="#ff4444"/>
-                                <path d="M12 58 L12 42 L17 69 L12 58" fill="#000000"/>
-                                <path d="M12 42 L17 31 L12 58 L12 42" fill="#ff4444"/>
-                                <path d="M17 31 L26 22 L12 42 L17 31" fill="#000000"/>
-                                <path d="M26 22 L38 15.5 L17 31 L26 22" fill="#ff4444"/>
-                                <path d="M38 15.5 L50 12 L26 22 L38 15.5" fill="#000000"/>
+                                <!-- Outer rim (red) -->
+                                <circle cx="50" cy="50" r="45" fill="#ff4444" stroke="#ffd700" stroke-width="5"/>
+                                <!-- Inner circle (green felt) -->
+                                <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
+                                <!-- Black and red sections -->
+                                <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#000000"/>
+                                <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#ff4444"/>
                                 <!-- Green zero slot -->
-                                <path d="M50 12 L62 15.5 L50 88 L38 15.5 Z" fill="#00ff00"/>
+                                <circle cx="50" cy="20" r="5" fill="#00ff00"/>
                                 <!-- Gold center -->
                                 <circle cx="50" cy="50" r="5" fill="#ffd700"/>
-                                <!-- White ball marker -->
-                                <circle cx="50" cy="12" r="3" fill="#ffffff" class="ball-spin"/>
+                                <!-- White ball with gray shadow -->
+                                <circle cx="50" cy="25" r="3" fill="#ffffff" class="ball-spin" style="filter: drop-shadow(1px 1px 1px rgba(128, 128, 128, 0.5));"/>
                             </svg>
                         </span>
                     </h1>
@@ -6833,6 +6814,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         animation: spin 4s linear infinite !important;
                     }
                     .ball-spin {
+                        transform-origin: 50px 50px !important; /* Center of the SVG */
                         animation: spinReverse 2s linear infinite !important;
                     }
                     @keyframes neonFlicker {
@@ -6852,8 +6834,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         100% { transform: rotate(360deg); }
                     }
                     @keyframes spinReverse {
-                        0% { transform: rotate(360deg); }
-                        100% { transform: rotate(0deg); }
+                        0% { transform: rotate(0deg) translate(0, -25px) rotate(0deg); }
+                        100% { transform: rotate(-360deg) translate(0, -25px) rotate(360deg); }
                     }
                     .halo-effect {
                         position: absolute !important;
