@@ -10870,6 +10870,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             z-index: 11 !important;
             white-space: nowrap !important;
         }
+          /* Tour Button */
+          .tour-button {
+            width: 150px !important;
+            height: 40px !important;
+            padding: 8px 15px !important;
+            background-color: #ff9800 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 5px !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            line-height: 1 !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            box-sizing: border-box !important;
+            z-index: 100 !important;
+          }
+          .tour-button:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+          }
         
         /* Responsive adjustments */
         @media (max-width: 600px) {
@@ -10898,74 +10919,76 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
    
     # Shepherd.js Tour Script
     gr.HTML("""
+    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
+    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
-        const tour = new Shepherd.Tour({
-            defaultStepOptions: {
-                cancelIcon: { enabled: true },
-                scrollTo: { behavior: 'smooth', block: 'center' },
-                classes: 'shepherd-theme-arrows',
-                buttons: [
-                    { text: 'Back', action: function() { return this.back(); } },
-                    { text: 'Next', action: function() { return this.next(); } },
-                    { text: 'Skip', action: function() { return this.cancel(); } }
-                ]
-            },
-            useModalOverlay: true
-        });
+      function loadShepherdFallback() {
+        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
+        script.onerror = () => {
+          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
+          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
+        };
+        document.head.appendChild(script);
     
-        // Debug function to log step transitions
-        function logStep(stepId, nextStepId) {
-            return () => {
-                console.log(`Moving from ${stepId} to ${nextStepId}`);
-                tour.next();
-            };
-        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
+        document.head.appendChild(link);
+      }
     
-        // Force accordion open with direct DOM manipulation and Promise
-        function forceAccordionOpen(accordionId) {
-            console.log(`Checking accordion: ${accordionId}`);
-            return new Promise(resolve => {
-                const accordion = document.querySelector(accordionId);
-                if (!accordion) {
-                    console.warn(`Accordion ${accordionId} not found`);
-                    resolve();
-                    return;
-                }
-                const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-                if (content && window.getComputedStyle(content).display === 'none') {
-                    console.log(`Forcing ${accordionId} open`);
-                    content.style.display = 'block';
-                    accordion.setAttribute('open', '');
-                    setTimeout(() => {
-                        if (window.getComputedStyle(content).display === 'none') {
-                            console.warn(`Fallback: Forcing visibility for ${accordionId}`);
-                            content.style.display = 'block';
-                        }
-                        resolve();
-                    }, 500);
-                } else {
-                    console.log(`${accordionId} already open or no content found`);
-                    resolve();
-                }
-            });
-        }
+      const tour = new Shepherd.Tour({
+        defaultStepOptions: {
+          cancelIcon: { enabled: true },
+          scrollTo: { behavior: 'smooth', block: 'center' },
+          classes: 'shepherd-theme-arrows',
+          buttons: [
+            { text: 'Back', action: function() { return this.back(); } },
+            { text: 'Next', action: function() { return this.next(); } },
+            { text: 'Skip', action: function() { return this.cancel(); } }
+          ]
+        },
+        useModalOverlay: true
+      });
     
-        // Force Gradio refresh for spin_traits_display
-        document.addEventListener('DOMContentLoaded', function() {
-            const spinTraitsDisplay = document.querySelector('#spin_traits_display');
-            if (spinTraitsDisplay) {
-                // Force re-render by triggering a DOM update
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach(() => {
-                        spinTraitsDisplay.style.display = 'block'; // Ensure visibility
-                    });
-                });
-                observer.observe(spinTraitsDisplay, { childList: true, subtree: true });
-            }
+      function logStep(stepId, nextStepId) {
+        return () => {
+          console.log(`Moving from ${stepId} to ${nextStepId}`);
+          tour.next();
+        };
+      }
+    
+      function forceAccordionOpen(accordionSelector) {
+        console.log(`Attempting to open accordion: ${accordionSelector}`);
+        return new Promise(resolve => {
+          const accordion = document.querySelector(accordionSelector);
+          if (!accordion) {
+            console.warn(`Accordion ${accordionSelector} not found`);
+            resolve();
+            return;
+          }
+          const toggle = accordion.querySelector('input.accordion-toggle');
+          const content = accordion.querySelector('.accordion-content');
+          if (toggle && content && window.getComputedStyle(content).display === 'none') {
+            console.log(`Opening ${accordionSelector} via toggle`);
+            toggle.checked = true;
+            content.style.display = 'block !important';
+            accordion.setAttribute('open', '');
+            setTimeout(() => {
+              if (window.getComputedStyle(content).display === 'none') {
+                console.warn(`Fallback: Forcing visibility for ${accordionSelector}`);
+                content.style.display = 'block !important';
+              }
+              resolve();
+            }, 500);
+          } else {
+            console.log(`${accordionSelector} already open or no toggle/content found`);
+            resolve();
+          }
         });
       }
     
-      // Step 1: Header
       tour.addStep({
         id: 'part1',
         title: 'Your Roulette Adventure Begins!',
@@ -10977,7 +11000,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 2: Roulette Table
       tour.addStep({
         id: 'part2',
         title: 'Spin the Wheel, Start the Thrill!',
@@ -10990,7 +11012,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 3: Last Spins Display
       tour.addStep({
         id: 'part3',
         title: 'Peek at Your Spin Streak!',
@@ -11003,7 +11024,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 4: Spin Controls
       tour.addStep({
         id: 'part4',
         title: 'Master Your Spin Moves!',
@@ -11016,7 +11036,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 5: Selected Spins Textbox
       tour.addStep({
         id: 'part5',
         title: 'Jot Spins, Count Wins!',
@@ -11029,7 +11048,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 6: Analyze Button
       tour.addStep({
         id: 'part6',
         title: 'Analyze and Reset Like a Pro!',
@@ -11042,7 +11060,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 7: Dynamic Table
       tour.addStep({
         id: 'part7',
         title: 'Light Up Your Lucky Spots!',
@@ -11055,14 +11072,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 8: Betting Progression Tracker
       tour.addStep({
         id: 'part8',
         title: 'Bet Smart, Track the Art!',
         text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.betting-progression', on: 'top' },
+        attachTo: { element: '#betting-progression', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('.betting-progression');
+          return forceAccordionOpen('#betting-progression');
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11071,7 +11087,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 9: Color Code Key
       tour.addStep({
         id: 'part9',
         title: 'Paint Your Winning Hue!',
@@ -11087,7 +11102,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 10: Color Code Key (Continued)
       tour.addStep({
         id: 'part10',
         title: 'Decode the Color Clue!',
@@ -11103,7 +11117,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 11: Spin Analysis
       tour.addStep({
         id: 'part11',
         title: 'Unleash the Spin Secrets!',
@@ -11119,7 +11132,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 12: Save/Load Session
       tour.addStep({
         id: 'part12',
         title: 'Save Your Spin Glory!',
@@ -11135,7 +11147,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 13: Strategy Selection
       tour.addStep({
         id: 'part13',
         title: 'Pick Your Strategy Groove!',
@@ -11148,7 +11159,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 14: Casino Data Insights
       tour.addStep({
         id: 'part14',
         title: 'Boost Wins with Casino Intel!',
@@ -11164,24 +11174,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 14a: Hot and Cold Numbers
       tour.addStep({
-          id: 'part14',
-          title: 'Boost Wins with Casino Intel!',
-          text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-          attachTo: { element: '#casino-data-insights', on: 'bottom' },
-          beforeShowPromise: function() {
-            console.log('Starting Step 14: Casino Data Insights');
-            return forceAccordionOpen('#casino-data-insights');
-          },
-          buttons: [
-            { text: 'Back', action: tour.back },
-            { text: 'Finish', action: function() { console.log('Tour completed at Step 14'); tour.complete(); } },
-            { text: 'Skip', action: tour.cancel }
-          ]
-        });
+        id: 'part14a',
+        title: 'Hot and Cold Numbers!',
+        text: 'Enter hot and cold numbers to refine your betting strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+        attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
+        beforeShowPromise: function() {
+          return forceAccordionOpen('#casino-data-insights').then(() => forceAccordionOpen('#hot-cold-numbers'));
+        },
+        buttons: [
+          { text: 'Back', action: tour.back },
+          { text: 'Next', action: logStep('Part 14a', 'Part 15') },
+          { text: 'Skip', action: tour.cancel }
+        ]
+      });
     
-      // Step 15: Dealer’s Spin Tracker
       tour.addStep({
         id: 'part15',
         title: 'Spot the Dealer’s Bias!',
@@ -11197,7 +11204,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 16a: Create Dozen/Even Bet Triggers - Dozen Triggers
       tour.addStep({
         id: 'part16a',
         title: 'Trigger Dozen Wins!',
@@ -11213,14 +11219,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 16a1: Create Dozen/Even Bet Triggers - Dozen Triggers: Alert on Consecutive Dozen Hits
       tour.addStep({
         id: 'part16a1',
         title: 'Catch Dozen Streaks!',
         text: 'Enable alerts for consecutive Dozen hits to spot trends fast.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/e6KAOAoImNQ?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#dozen-tracker', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
+          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#dozen-triggers'));
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11229,14 +11234,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 16a2: Create Dozen/Even Bet Triggers - Dozen Triggers: Sequence Length to Match (X), Follow-Up Spins to Track (Y)
       tour.addStep({
         id: 'part16a2',
         title: 'Match Dozen Sequences!',
         text: 'Track sequences and follow-ups to predict Dozen patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/X4mFSMMc21g?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#dozen-tracker', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
+          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#dozen-triggers'));
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11245,14 +11249,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 16b: Create Dozen/Even Bet Triggers - Even Money Bet Triggers
       tour.addStep({
         id: 'part16b',
         title: 'Trigger Even Money Magic!',
         text: 'Set Even Money Triggers to catch winning streaks and traits.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/5z7TjjwpTs0?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#dozen-tracker', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
+          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#even-money-tracker'));
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11261,14 +11264,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 16b1: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Alert on Consecutive Even Money Hits (And/Or)
       tour.addStep({
         id: 'part16b1',
         title: 'Even Money Streaks On!',
         text: 'Get alerts for consecutive Even Money hits with And/Or logic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/gjQcOdNDGKc?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#dozen-tracker', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
+          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#even-money-tracker'));
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11277,14 +11279,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 16b2: Create Dozen/Even Bet Triggers - Even Money Bet Triggers - Track Consecutive Identical Traits
       tour.addStep({
         id: 'part16b2',
         title: 'Track Even Money Traits!',
         text: 'Spot consecutive identical traits to refine your Even Money bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iRz_y8DeqCU?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#dozen-tracker', on: 'top' },
         beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
+          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#even-money-tracker'));
         },
         buttons: [
           { text: 'Back', action: tour.back },
@@ -11293,7 +11294,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 17: Top Strategies with Roulette Spin Analyzer
       tour.addStep({
         id: 'part17',
         title: 'Learn Top Strategies!',
@@ -11309,7 +11309,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         ]
       });
     
-      // Step 18: Feedback & Suggestions
       tour.addStep({
         id: 'part18',
         title: 'Share Your Winning Ideas!',
@@ -11341,13 +11340,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '.last-spins-container',
             '.green-btn',
             '#dynamic-table-heading',
-            '.betting-progression',
+            '#betting-progression',
             '#color-code-key',
             '#spin-analysis',
             '#save-load-session',
             '#select-category',
             '#casino-data-insights',
-            '#hot-cold-numbers',  // Added for Hot and Cold Numbers
+            '#hot-cold-numbers',
             '#sides-of-zero-accordion',
             '#dozen-tracker',
             '#top-strategies',
@@ -11367,12 +11366,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             console.error('Error starting tour:', error);
             alert('Tour failed to start due to an unexpected error. Please check the console for details.');
           }
-        }, 2000);
+        }, 5000); // Increased to 5 seconds
       }
     
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
+      // Add click handler for button
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM Loaded, #header-row exists:', !!document.querySelector('#header-row'));
+        console.log('Shepherd.js available:', typeof Shepherd !== 'undefined');
+        const tourButton = document.querySelector('#start-tour-btn');
+        if (tourButton) {
+          tourButton.addEventListener('click', (e) => {
+            console.log('Tour button clicked');
+            startTour();
+          });
+        } else {
+          console.error('Tour button (#start-tour-btn) not found');
+        }
       });
     </script>
     """)
