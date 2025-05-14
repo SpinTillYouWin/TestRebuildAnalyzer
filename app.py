@@ -6732,11 +6732,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     <h1 class="header-title">
                         <span class="wheelpulse-text">WheelPulse</span>
                         <span class="by-styw">by S.T.Y.W</span>
-                        <span class="chart-emoji">📈</span>
+                        <span class="roulette-icon">
+                            <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
+                                <circle cx="50" cy="50" r="45" fill="#000000" stroke="#ffd700" stroke-width="5"/>
+                                <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
+                                <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
+                                <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
+                                <circle cx="50" cy="20" r="5" fill="#00ff00"/>
+                                <circle cx="50" cy="50" r="5" fill="#ffd700"/>
+                            </svg>
+                        </span>
                     </h1>
                     <div class="celebration"></div>
                 </div>
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@400;700&display=swap');
                     .header-container {
                         display: flex !important;
                         justify-content: center !important;
@@ -6751,7 +6761,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         overflow: hidden !important;
                     }
                     .header-title {
-                        font-family: 'Montserrat', sans-serif !important;
                         font-size: 2.8em !important;
                         color: #ffffff !important;
                         text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5) !important;
@@ -6769,27 +6778,31 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 0, 0, 0.7) !important;
                     }
                     .wheelpulse-text {
+                        font-family: 'Bebas Neue', sans-serif !important;
                         background: linear-gradient(90deg, #ffd700, #ffffff, #ffd700) !important;
                         background-size: 200% !important;
                         -webkit-background-clip: text !important;
                         background-clip: text !important;
                         color: transparent !important;
-                        font-weight: 900 !important;
+                        letter-spacing: 2px !important;
                         animation: shimmer 3s linear infinite !important;
                     }
                     .by-styw {
+                        font-family: 'Dancing Script', cursive !important;
                         font-size: 0.7em !important;
-                        color: #ffd700 !important;
-                        font-style: italic !important;
-                        letter-spacing: 2px !important;
-                        text-shadow: 0 0 10px rgba(255, 215, 0, 0.6) !important;
+                        color: #333333 !important;
+                        font-weight: 700 !important;
+                        letter-spacing: 1px !important;
+                        text-shadow: 0 0 5px rgba(255, 215, 0, 0.3) !important;
                         animation: subtleGlow 1.5s ease-in-out infinite !important;
                     }
-                    .chart-emoji {
-                        font-size: 1.2em !important;
+                    .roulette-icon {
                         display: inline-block !important;
-                        animation: spinAndPulse 2s ease-in-out infinite !important;
-                        text-shadow: 0 0 10px rgba(0, 255, 0, 0.8) !important;
+                        width: 40px !important;
+                        height: 40px !important;
+                    }
+                    .spin-roulette {
+                        animation: spin 4s linear infinite !important;
                     }
                     @keyframes neonFlicker {
                         0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5); }
@@ -6800,13 +6813,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         100% { background-position: -200%; }
                     }
                     @keyframes subtleGlow {
-                        0%, 100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
-                        50% { text-shadow: 0 0 15px rgba(255, 215, 0, 1); }
+                        0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+                        50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
                     }
-                    @keyframes spinAndPulse {
-                        0% { transform: rotate(0deg) scale(1); text-shadow: 0 0 10px rgba(0, 255, 0, 0.8); }
-                        50% { transform: rotate(360deg) scale(1.3); text-shadow: 0 0 20px rgba(0, 255, 0, 1); }
-                        100% { transform: rotate(720deg) scale(1); text-shadow: 0 0 10px rgba(0, 255, 0, 0.8); }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
                     }
                     .celebration {
                         position: absolute !important;
@@ -6838,8 +6850,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         .by-styw {
                             font-size: 0.6em !important;
                         }
-                        .chart-emoji {
-                            font-size: 1em !important;
+                        .roulette-icon {
+                            width: 30px !important;
+                            height: 30px !important;
                         }
                         .header-container {
                             padding: 10px 0 !important;
@@ -6857,6 +6870,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         }
                         .by-styw {
                             font-size: 0.55em !important;
+                        }
+                        .roulette-icon {
+                            width: 25px !important;
+                            height: 25px !important;
                         }
                         .header-container {
                             border-radius: 8px !important;
