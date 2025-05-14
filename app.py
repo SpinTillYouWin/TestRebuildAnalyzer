@@ -6734,12 +6734,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <circle cx="50" cy="50" r="45" fill="#000000" stroke="#ffd700" stroke-width="5"/>
+                                <circle cx="50" cy="50" r="45" fill="#8a0707" stroke="#339e45" stroke-width="5"/>
                                 <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
                                 <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
                                 <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
-                                <circle cx="50" cy="20" r="5" fill="#00ff00"/>
-                                <circle cx="50" cy="50" r="5" fill="#ffd700"/>
+                                <circle cx="50" cy="20" r="5" fill="#e4f2e4"/>
+                                <circle cx="50" cy="50" r="5" fill="#ff0000"/>
                             </svg>
                         </span>
                     </h1>
