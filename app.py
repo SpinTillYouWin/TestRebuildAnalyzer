@@ -135,11 +135,7 @@ def validate_roulette_data():
         "LEFT_OF_ZERO_EUROPEAN": LEFT_OF_ZERO_EUROPEAN,
         "RIGHT_OF_ZERO_EUROPEAN": RIGHT_OF_ZERO_EUROPEAN
     }
-
-# Lines after (context, unchanged)
     errors = []
-
-    # Check betting category dictionaries
     for name, data in required_dicts.items():
         if not isinstance(data, dict):
             errors.append(f"{name} must be a dictionary.")
@@ -147,8 +143,6 @@ def validate_roulette_data():
         for key, value in data.items():
             if not isinstance(key, str) or not isinstance(value, (list, set, tuple)) or not all(isinstance(n, int) for n in value):
                 errors.append(f"{name}['{key}'] must map to a list/set/tuple of integers.")
-
-    # Check neighbor data
     for name, data in required_neighbors.items():
         if name == "NEIGHBORS_EUROPEAN":
             if not isinstance(data, dict):
@@ -160,7 +154,6 @@ def validate_roulette_data():
         else:
             if not isinstance(data, (list, set, tuple)) or not all(isinstance(n, int) for n in data):
                 errors.append(f"{name} must be a list/set/tuple of integers.")
-
     return errors if errors else None
 
 # In Part 1, replace the RouletteState class with the following:
@@ -5123,7 +5116,7 @@ def calculate_hit_percentages(last_spin_count):
 DEBUG = True  # Keep debugging enabled
 
 def summarize_spin_traits(last_spin_count):
-    """Summarize traits for the last X spins as HTML badges, highlighting winners and hot streaks."""
+    """Summarize traits for the last X spins as HTML badges, highlighting winners, hot streaks, and chopping patterns."""
     try:
         if DEBUG:
             print(f"summarize_spin_traits: last_spin_count = {last_spin_count}")
@@ -5231,7 +5224,7 @@ def summarize_spin_traits(last_spin_count):
                         dozen_streaks[name]["current"] += 1
                         dozen_streaks[name]["spins"].append(str(num))
                         if len(dozen_streaks[name]["spins"]) > dozen_streaks[name]["current"]:
-                            dozen_streaks[name]["spins"] = dozen_streaks[name]["spins"][-dozen_streaks[name]["current"]:]
+                            dozen_streaks[name]["spins"] = dozen_streaks[name]["spins"][-even_money_streaks[name]["current"]:]
                         dozen_streaks[name]["max"] = max(dozen_streaks[name]["max"], dozen_streaks[name]["current"])
                     else:
                         if not dozen_streaks[name]["last_hit"]:
@@ -5368,7 +5361,10 @@ def summarize_spin_traits(last_spin_count):
                         html += f'<span class="switch-dot {color}"></span>'
                 html += '</div>'
                 if switch_count >= 4:
-                    html += '<span class="chopping-alert">⚠️ Red/Black Chopping Alert: High switch rate!</span>'
+                    spins_str = ", ".join(recent_spins)
+                    html += f'<div class="chopping-alert"><span class="switch-alert">⚠️ Red/Black Chopping Alert: {switch_count} switches in {spins_str}!</span> <span class="red-badge">Red</span> <span class="black-badge">Black</span></div>'
+                else:
+                    html += f'<span style="color: #666; font-size: 12px;">Color switches: {switch_count}</span>'
             else:
                 html += '<span style="color: #666; font-size: 12px;">No valid spins for color switch analysis.</span>'
             html += '</li>'
@@ -10762,7 +10758,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 border-color: #ffa500 !important;
             }
         }
-        
         .quick-trends .switch-alert:hover::after {
             content: attr(data-tooltip) !important;
             position: absolute !important;
@@ -10777,6 +10772,53 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             z-index: 11 !important;
             white-space: nowrap !important;
         }
+        .quick-trends .chopping-alert {
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            padding: 8px !important;
+            color: #ff4500 !important;
+            font-weight: bold !important;
+            font-size: 13px !important;
+            text-align: left !important;
+            text-shadow: 0 0 3px rgba(255, 69, 0, 0.4) !important;
+            border-radius: 5px !important;
+          }
+          .quick-trends .red-badge {
+            display: inline-block !important;
+            background: #ff0000 !important;
+            color: white !important;
+            padding: 3px 8px !important;
+            margin: 2px !important;
+            border-radius: 10px !important;
+            font-size: 0.8em !important;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
+          }
+          .quick-trends .black-badge {
+            display: inline-block !important;
+            background: #000000 !important;
+            color: white !important;
+            padding: 3px 8px !important;
+            margin: 2px !important;
+            border-radius: 10px !important;
+            font-size: 0.8em !important;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
+          }
+          .quick-trends .dozen-alert.d1 {
+            background: #FF6347 !important; /* Tomato red for 1st Dozen */
+            padding: 8px !important;
+            border-radius: 5px !important;
+          }
+          .quick-trends .dozen-alert.d2 {
+            background: #4682B4 !important; /* Steel blue for 2nd Dozen */
+            padding: 8px !important;
+            border-radius: 5px !important;
+          }
+          .quick-trends .dozen-alert.d3 {
+            background: #32CD32 !important; /* Lime green for 3rd Dozen */
+            padding: 8px !important;
+            border-radius: 5px !important;
+          }
         
         /* Dozen Shift Indicator within Quick Trends */
         .quick-trends .dozen-shift-indicator {
