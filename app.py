@@ -6748,7 +6748,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             </svg>
                         </span>
                     </h1>
-                    <div class="celebration"></div>
                 </div>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
@@ -6758,7 +6757,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         align-items: center !important;
                         width: 100% !important;
                         padding: 15px 0 !important;
-                        background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000) !important; /* Lighter gradient, no green or yellow */
+                        background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000) !important;
                         border-radius: 10px !important;
                         box-shadow: 0 0 20px rgba(0, 0, 0, 0.7) !important;
                         margin-bottom: 20px !important;
@@ -6785,13 +6784,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     .wheelpulse-text {
                         font-family: 'Poppins', sans-serif !important;
                         font-weight: 700 !important;
-                        background: linear-gradient(90deg, #4B4B4B, #1C2526, #4B4B4B) !important; /* Darker gradient */
+                        background: linear-gradient(90deg, #4B4B4B, #1C2526, #4B4B4B) !important;
                         background-size: 200% !important;
                         -webkit-background-clip: text !important;
                         background-clip: text !important;
                         color: transparent !important;
                         letter-spacing: 2px !important;
                         animation: shimmer 3s linear infinite !important;
+                        text-shadow: none !important; /* Remove glow from WheelPulse */
                     }
                     .by-styw {
                         font-family: 'Dancing Script', cursive !important;
@@ -6826,28 +6826,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
-                    .celebration {
-                        position: absolute !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        width: 100% !important;
-                        height: 100% !important;
-                        pointer-events: none !important;
-                        z-index: 1 !important;
-                        background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%) !important;
-                    }
-                    .confetti {
-                        position: absolute !important;
-                        width: 8px !important;
-                        height: 8px !important;
-                        background-color: #ffd700 !important;
-                        border-radius: 50% !important;
-                        animation: fall 3s linear infinite !important;
-                    }
-                    @keyframes fall {
-                        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-                        100% { transform: translateY(100%) rotate(720deg); opacity: 0; }
-                    }
                     /* Responsive adjustments */
                     @media (max-width: 768px) {
                         .header-title {
@@ -6862,10 +6840,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         }
                         .header-container {
                             padding: 10px 0 !important;
-                        }
-                        .confetti {
-                            width: 6px !important;
-                            height: 6px !important;
                         }
                     }
                     @media (max-width: 600px) {
@@ -6886,22 +6860,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         }
                     }
                 </style>
-                <script>
-                    function triggerConfetti() {
-                        const celebration = document.querySelector('.celebration');
-                        for (let i = 0; i < 30; i++) {
-                            const confetti = document.createElement('div');
-                            confetti.className = 'confetti';
-                            confetti.style.left = Math.random() * 100 + 'vw';
-                            confetti.style.backgroundColor = ['#ffd700', '#000000', '#2e7d32'][Math.floor(Math.random() * 3)];
-                            confetti.style.animationDelay = Math.random() * 2 + 's';
-                            celebration.appendChild(confetti);
-                        }
-                    }
-                    document.addEventListener('DOMContentLoaded', () => {
-                        triggerConfetti();
-                    });
-                </script>
             """)
             gr.HTML(
                 '''
