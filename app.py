@@ -1508,30 +1508,29 @@ def render_sides_of_zero_display():
     </script>
     """
 
-# Line 1: Start of updated validate_spins_input function
+import gradio as gr
+import time
+
 def validate_spins_input(spins_input):
-    """Validate manually entered spins and update state."""
-    import gradio as gr
-    import time
-    start_time = time.time()  # CHANGED: Added for performance logging
+    """Validate manually entered spins and update state with user-friendly error messages."""
+    start_time = time.time()  # UNCHANGED: Performance logging
     
-    # CHANGED: Enhanced logging with input details
-    print(f"validate_spins_input: Processing spins_input='{spins_input}'")
+    print(f"validate_spins_input: Processing spins_input='{spins_input}'")  # UNCHANGED: Logging
     
-    # UNCHANGED: Handle empty input
+    # Handle empty input with clear message
     if not spins_input or not spins_input.strip():
         print("validate_spins_input: No spins input provided.")
-        return "", "<h4>Last Spins</h4><p>No spins entered.</p>"
-
-    # CHANGED: Split and clean spins, enforce max limit
+        return "", "<h4>Last Spins</h4><p style='color: #555; font-style: italic;'>Please enter spins (e.g., 5, 12, 0).</p>"  # CHANGED: Simplified, styled message
+    
+    # Split and clean spins, enforce max limit
     raw_spins = [s.strip() for s in spins_input.split(",") if s.strip()]
     if len(raw_spins) > 1000:
-        error_msg = f"Too many spins ({len(raw_spins)}). Maximum allowed is 1000."
+        error_msg = f"You entered {len(raw_spins)} spins, but the maximum allowed is 1000."
         gr.Warning(error_msg)
         print(f"validate_spins_input: Error - {error_msg}")
-        return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
-
-    # CHANGED: Batch validate spins
+        return "", f"<h4>Last Spins</h4><p style='color: red; font-weight: bold;'>⚠ {error_msg}</p><p style='color: #555;'>Please enter up to 1000 spins (e.g., 5, 12, 0).</p>"  # CHANGED: Styled, user-friendly
+    
+    # Batch validate spins
     valid_spins = []
     errors = []
     invalid_inputs = []
@@ -1540,47 +1539,48 @@ def validate_spins_input(spins_input):
         try:
             num = int(spin)
             if not (0 <= num <= 36):
-                errors.append(f"'{spin}' is out of range (must be 0-36)")
+                errors.append(f"'{spin}' is not between 0 and 36")
                 invalid_inputs.append(spin)
             else:
                 valid_spins.append(str(num))
         except ValueError:
-            errors.append(f"'{spin}' is not a valid integer")
+            errors.append(f"'{spin}' is not a valid number")
             invalid_inputs.append(spin)
-
-    # CHANGED: Improved error handling and messaging
+    
+    # Handle case with no valid spins
     if not valid_spins:
-        error_msg = "No valid spins found:\n- " + "\n- ".join(errors) + "\nUse comma-separated integers between 0 and 36 (e.g., 5, 12, 0)."
+        error_msg = f"No valid spins found:\n- " + "\n- ".join(errors) + "\nPlease use comma-separated numbers between 0 and 36 (e.g., 5, 12, 0)."
         gr.Warning(error_msg)
         print(f"validate_spins_input: Errors - {error_msg}")
-        return "", f"<h4>Last Spins</h4><p>{error_msg}</p>"
-
-    # UNCHANGED: Update state and scores
+        return "", f"<h4>Last Spins</h4><p style='color: red; font-weight: bold;'>⚠ No valid spins entered.</p><p style='color: #555;'>{error_msg}</p>"  # CHANGED: Clear, styled error
+    
+    # Update state and scores
     state.last_spins = valid_spins
     state.selected_numbers = set(int(s) for s in valid_spins)
     action_log = update_scores_batch(valid_spins)
     for i, spin in enumerate(valid_spins):
         state.spin_history.append(action_log[i])
-        # UNCHANGED: Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history.pop(0)
-
-    # UNCHANGED: Generate output
-    spins_display_value = ", ".join(valid_spins)
-    formatted_html = format_spins_as_html(spins_display_value, 36)  # Default to showing all spins
     
-    # CHANGED: Detailed success logging
+    # Generate output
+    spins_display_value = ", ".join(valid_spins)
+    formatted_html = format_spins_as_html(spins_display_value, 36)  # UNCHANGED: Default to all spins
+    
+    # Log success
     print(f"validate_spins_input: Processed {len(valid_spins)} valid spins, spins_display_value='{spins_display_value}', time={time.time() - start_time:.3f}s")
     if invalid_inputs:
         print(f"validate_spins_input: Ignored invalid inputs: {', '.join(invalid_inputs)}")
     
-    # CHANGED: Include invalid inputs in warning if present
+    # Handle partial success with clear feedback
     if errors:
-        warning_msg = f"Processed {len(valid_spins)} valid spins. Invalid inputs ignored:\n- " + "\n- ".join(errors) + "\nUse integers 0-36."
+        warning_msg = f"Added {len(valid_spins)} valid spin{'s' if len(valid_spins) != 1 else ''}. Ignored invalid inputs:\n- " + "\n- ".join(errors) + "\nPlease use numbers between 0 and 36."
         gr.Warning(warning_msg)
         print(f"validate_spins_input: Warning - {warning_msg}")
+        formatted_html = f"<h4>Last Spins</h4><p style='color: green; font-weight: bold;'>✓ Added {len(valid_spins)} spin{'s' if len(valid_spins) != 1 else ''}.</p><p style='color: red; font-weight: bold;'>⚠ Ignored invalid inputs:</p><ul style='color: #555; margin: 5px 0; padding-left: 20px;'>{"".join(f"<li>{error}</li>" for error in errors)}</ul><p style='color: #555;'>{formatted_html}</p>"  # CHANGED: Detailed, styled partial success
     
     return spins_display_value, formatted_html
+    
 
 # Line 1: Start of updated add_spin function
 def add_spin(number, current_spins, num_to_show):
