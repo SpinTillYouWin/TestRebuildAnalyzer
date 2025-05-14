@@ -10969,7 +10969,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             resolve();
             return;
           }
-          console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200)); // Log partial HTML
+          console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200));
           const toggle = accordion.querySelector('input.accordion-toggle');
           const content = accordion.querySelector('.accordion-content');
           if (toggle && content && window.getComputedStyle(content).display === 'none') {
@@ -11182,146 +11182,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         text: 'Enter hot and cold numbers to refine your betting strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
         attachTo: { element: '#hot-cold-numbers', on: 'bottom' },
         beforeShowPromise: function() {
+          console.log('Starting Step 14a: Hot and Cold Numbers');
           return forceAccordionOpen('#casino-data-insights').then(() => forceAccordionOpen('#hot-cold-numbers'));
         },
         buttons: [
           { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 14a', 'Part 15') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part15',
-        title: 'Spot the Dealer’s Bias!',
-        text: 'Uncover potential biases in the Dealer’s Spin Tracker to gain an edge.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ISoFvrnXbHA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#sides-of-zero-accordion', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#sides-of-zero-accordion');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 15', 'Part 16a') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part16a',
-        title: 'Trigger Dozen Wins!',
-        text: 'Set up Dozen Triggers to catch hot streaks and patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iYfhd8_C1IM?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16a', 'Part 16a1') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part16a1',
-        title: 'Catch Dozen Streaks!',
-        text: 'Enable alerts for consecutive Dozen hits to spot trends fast.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/e6KAOAoImNQ?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#dozen-triggers'));
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16a1', 'Part 16a2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part16a2',
-        title: 'Match Dozen Sequences!',
-        text: 'Track sequences and follow-ups to predict Dozen patterns.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/X4mFSMMc21g?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#dozen-triggers'));
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16a2', 'Part 16b') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part16b',
-        title: 'Trigger Even Money Magic!',
-        text: 'Set Even Money Triggers to catch winning streaks and traits.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/5z7TjjwpTs0?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#even-money-tracker'));
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16b', 'Part 16b1') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part16b1',
-        title: 'Even Money Streaks On!',
-        text: 'Get alerts for consecutive Even Money hits with And/Or logic.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/gjQcOdNDGKc?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#even-money-tracker'));
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16b1', 'Part 16b2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part16b2',
-        title: 'Track Even Money Traits!',
-        text: 'Spot consecutive identical traits to refine your Even Money bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iRz_y8DeqCU?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dozen-tracker', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#dozen-tracker').then(() => forceAccordionOpen('#even-money-tracker'));
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 16b2', 'Part 17') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part17',
-        title: 'Learn Top Strategies!',
-        text: 'Explore winning strategies with video tutorials to level up your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/t_5gvje0SKI?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#top-strategies', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#top-strategies');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 17', 'Part 18') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part18',
-        title: 'Share Your Winning Ideas!',
-        text: 'Submit feedback or suggest new strategies to enhance the app.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/9MgXNg2oDvk?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#feedback-section', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#feedback-section');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
+          { text: 'Finish', action: function() { console.log('Tour completed at Step 14a'); tour.complete(); } }
         ]
       });
     
@@ -11341,17 +11207,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             '.last-spins-container',
             '.green-btn',
             '#dynamic-table-heading',
-            '.betting-progression', // Fixed from #betting-progression
+            '.betting-progression',
             '#color-code-key',
             '#spin-analysis',
             '#save-load-session',
             '#select-category',
             '#casino-data-insights',
-            '#hot-cold-numbers',
-            '#sides-of-zero-accordion',
-            '#dozen-tracker',
-            '#top-strategies',
-            '#feedback-section'
+            '#hot-cold-numbers'
           ];
           const missingElements = criticalElements.filter(el => !document.querySelector(el));
           if (missingElements.length > 0) {
@@ -11382,10 +11244,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           if (btn) btn.innerHTML = '🚀 Take the Tour!';
           return;
         }
-        tryStartTour(3, 5000); // Initial delay of 5 seconds
+        tryStartTour(3, 5000);
         setTimeout(() => {
           if (btn) btn.innerHTML = '🚀 Take the Tour!';
-        }, 10000); // Reset button text after max retry time
+        }, 10000);
       }
     
       document.addEventListener('DOMContentLoaded', () => {
