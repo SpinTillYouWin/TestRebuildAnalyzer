@@ -6734,26 +6734,31 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
+                                <!-- Outer rim -->
                                 <circle cx="50" cy="50" r="45" fill="#8a0707" stroke="#339e45" stroke-width="5"/>
+                                <!-- Inner circle (green felt) -->
                                 <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
+                                <!-- Alternating sections -->
                                 <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
                                 <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
+                                <!-- Zero slot -->
                                 <circle cx="50" cy="20" r="5" fill="#e4f2e4"/>
-                                <circle cx="50" cy="50" r="5" fill="#ff0000"/>
+                                <!-- Center dot -->
+                                <circle cx="50" cy="50" r="5" fill="#000000"/>
                             </svg>
                         </span>
                     </h1>
-                    <div class="halo-effect"></div>
+                    <div class="celebration"></div>
                 </div>
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Dancing+Script:wght@400;700&display=swap');
+                    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
                     .header-container {
                         display: flex !important;
                         justify-content: center !important;
                         align-items: center !important;
                         width: 100% !important;
                         padding: 15px 0 !important;
-                        background: linear-gradient(135deg, #1b5e20, #ffd700, #b71c1c) !important;
+                        background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000) !important; /* Lighter gradient, no green or yellow */
                         border-radius: 10px !important;
                         box-shadow: 0 0 20px rgba(0, 0, 0, 0.7) !important;
                         margin-bottom: 20px !important;
@@ -6763,7 +6768,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     .header-title {
                         font-size: 2.8em !important;
                         color: #ffffff !important;
-                        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5) !important;
+                        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5) !important;
                         margin: 0 !important;
                         display: flex !important;
                         align-items: center !important;
@@ -6775,12 +6780,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     }
                     .header-title:hover {
                         transform: perspective(500px) rotateX(10deg) scale(1.05) !important;
-                        text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 0, 0, 0.7) !important;
+                        text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7) !important;
                     }
                     .wheelpulse-text {
-                        font-family: 'Orbitron', sans-serif !important;
+                        font-family: 'Poppins', sans-serif !important;
                         font-weight: 700 !important;
-                        background: linear-gradient(90deg, #b8860b, #333333, #b8860b) !important;
+                        background: linear-gradient(90deg, #4B4B4B, #1C2526, #4B4B4B) !important; /* Darker gradient */
                         background-size: 200% !important;
                         -webkit-background-clip: text !important;
                         background-clip: text !important;
@@ -6801,18 +6806,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         display: inline-block !important;
                         width: 40px !important;
                         height: 40px !important;
-                        position: relative !important;
                     }
                     .spin-roulette {
                         animation: spin 4s linear infinite !important;
                     }
-                    .ball-spin {
-                        transform-origin: 50px 50px !important; /* Center of the SVG */
-                        animation: spinReverse 2s linear infinite !important;
-                    }
                     @keyframes neonFlicker {
-                        0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5); }
-                        50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 0, 0, 0.8); }
+                        0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5); }
+                        50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); }
                     }
                     @keyframes shimmer {
                         0% { background-position: 200%; }
@@ -6826,11 +6826,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
-                    @keyframes spinReverse {
-                        0% { transform: rotate(0deg) translate(0, -25px) rotate(0deg); }
-                        100% { transform: rotate(-360deg) translate(0, -25px) rotate(360deg); }
-                    }
-                    .halo-effect {
+                    .celebration {
                         position: absolute !important;
                         top: 0 !important;
                         left: 0 !important;
@@ -6840,19 +6836,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         z-index: 1 !important;
                         background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%) !important;
                     }
-                    .halo-particle {
+                    .confetti {
                         position: absolute !important;
-                        width: 6px !important;
-                        height: 6px !important;
+                        width: 8px !important;
+                        height: 8px !important;
                         background-color: #ffd700 !important;
                         border-radius: 50% !important;
-                        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important;
-                        animation: orbit 2s linear infinite !important;
+                        animation: fall 3s linear infinite !important;
                     }
-                    @keyframes orbit {
-                        0% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 1; }
-                        50% { opacity: 0.5; }
-                        100% { transform: translateX(0) translateY(0) rotate(360deg); opacity: 1; }
+                    @keyframes fall {
+                        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                        100% { transform: translateY(100%) rotate(720deg); opacity: 0; }
                     }
                     /* Responsive adjustments */
                     @media (max-width: 768px) {
@@ -6869,9 +6863,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         .header-container {
                             padding: 10px 0 !important;
                         }
-                        .halo-particle {
-                            width: 4px !important;
-                            height: 4px !important;
+                        .confetti {
+                            width: 6px !important;
+                            height: 6px !important;
                         }
                     }
                     @media (max-width: 600px) {
@@ -6893,25 +6887,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     }
                 </style>
                 <script>
-                    function triggerHaloEffect() {
-                        const halo = document.querySelector('.halo-effect');
-                        const rouletteIcon = document.querySelector('.roulette-icon');
-                        const rect = rouletteIcon.getBoundingClientRect();
-                        const centerX = rect.left + rect.width / 2;
-                        const centerY = rect.top + rect.height / 2;
-                        const radius = rect.width * 0.6; // Orbit radius slightly larger than the wheel
-                        for (let i = 0; i < 8; i++) {
-                            const particle = document.createElement('div');
-                            particle.className = 'halo-particle';
-                            particle.style.left = `${centerX}px`;
-                            particle.style.top = `${centerY}px`;
-                            particle.style.transform = `translateX(${radius * Math.cos(i * Math.PI / 4)}px) translateY(${radius * Math.sin(i * Math.PI / 4)}px)`;
-                            particle.style.animationDelay = `${i * 0.2}s`;
-                            halo.appendChild(particle);
+                    function triggerConfetti() {
+                        const celebration = document.querySelector('.celebration');
+                        for (let i = 0; i < 30; i++) {
+                            const confetti = document.createElement('div');
+                            confetti.className = 'confetti';
+                            confetti.style.left = Math.random() * 100 + 'vw';
+                            confetti.style.backgroundColor = ['#ffd700', '#000000', '#2e7d32'][Math.floor(Math.random() * 3)];
+                            confetti.style.animationDelay = Math.random() * 2 + 's';
+                            celebration.appendChild(confetti);
                         }
                     }
                     document.addEventListener('DOMContentLoaded', () => {
-                        triggerHaloEffect();
+                        triggerConfetti();
                     });
                 </script>
             """)
