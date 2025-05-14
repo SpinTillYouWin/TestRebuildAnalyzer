@@ -6858,6 +6858,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         .header-container {
                             border-radius: 8px !important;
                         }
+                    /* Reduced motion for accessibility */
+                    @media (prefers-reduced-motion: reduce) {
+                        .roulette-button, .action-button, .spin-counter, .number-badge, 
+                        .hot-number, .trait-badge, .pattern-badge, .new-spin, 
+                        .switch-alert, .dozen-badge {
+                            animation: none !important;
+                            transition: none !important;
+                        }
                     }
                 </style>
             """)
