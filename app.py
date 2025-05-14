@@ -6734,19 +6734,45 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <circle cx="50" cy="50" r="45" fill="#000000" stroke="#ffd700" stroke-width="5"/>
-                                <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
-                                <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
-                                <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
-                                <circle cx="50" cy="20" r="5" fill="#00ff00"/>
+                                <!-- Outer rim -->
+                                <circle cx="50" cy="50" r="48" fill="#000000" stroke="#ffd700" stroke-width="4"/>
+                                <!-- Inner rim (silver) -->
+                                <circle cx="50" cy="50" r="42" fill="#c0c0c0" stroke="#000000" stroke-width="2"/>
+                                <!-- Green felt center -->
+                                <circle cx="50" cy="50" r="38" fill="#2e7d32"/>
+                                <!-- Red/Black sections (18 simplified slots) -->
+                                <path d="M50 12 A38 38 0 0 1 62 15.5 A38 38 0 0 1 74 22 A38 38 0 0 1 83 31 A38 38 0 0 1 88 42 A38 38 0 0 1 88 58 A38 38 0 0 1 83 69 A38 38 0 0 1 74 78 A38 38 0 0 1 62 84.5 A38 38 0 0 1 50 88" fill="#ff4444"/>
+                                <path d="M50 12 A38 38 0 0 0 38 15.5 A38 38 0 0 0 26 22 A38 38 0 0 0 17 31 A38 38 0 0 0 12 42 A38 38 0 0 0 12 58 A38 38 0 0 0 17 69 A38 38 0 0 0 26 78 A38 38 0 0 0 38 84.5 A38 38 0 0 0 50 88" fill="#000000"/>
+                                <path d="M50 12 L62 15.5 L74 22 L50 12" fill="#000000"/>
+                                <path d="M74 22 L83 31 L62 15.5 L74 22" fill="#ff4444"/>
+                                <path d="M83 31 L88 42 L74 22 L83 31" fill="#000000"/>
+                                <path d="M88 42 L88 58 L83 31 L88 42" fill="#ff4444"/>
+                                <path d="M88 58 L83 69 L88 42 L88 58" fill="#000000"/>
+                                <path d="M83 69 L74 78 L88 58 L83 69" fill="#ff4444"/>
+                                <path d="M74 78 L62 84.5 L83 69 L74 78" fill="#000000"/>
+                                <path d="M62 84.5 L50 88 L74 78 L62 84.5" fill="#ff4444"/>
+                                <path d="M50 88 L38 84.5 L62 84.5 L50 88" fill="#000000"/>
+                                <path d="M38 84.5 L26 78 L50 88 L38 84.5" fill="#ff4444"/>
+                                <path d="M26 78 L17 69 L38 84.5 L26 78" fill="#000000"/>
+                                <path d="M17 69 L12 58 L26 78 L17 69" fill="#ff4444"/>
+                                <path d="M12 58 L12 42 L17 69 L12 58" fill="#000000"/>
+                                <path d="M12 42 L17 31 L12 58 L12 42" fill="#ff4444"/>
+                                <path d="M17 31 L26 22 L12 42 L17 31" fill="#000000"/>
+                                <path d="M26 22 L38 15.5 L17 31 L26 22" fill="#ff4444"/>
+                                <path d="M38 15.5 L50 12 L26 22 L38 15.5" fill="#000000"/>
+                                <!-- Green zero slot -->
+                                <path d="M50 12 L62 15.5 L50 88 L38 15.5 Z" fill="#00ff00"/>
+                                <!-- Gold center -->
                                 <circle cx="50" cy="50" r="5" fill="#ffd700"/>
+                                <!-- White ball marker -->
+                                <circle cx="50" cy="12" r="3" fill="#ffffff" class="ball-spin"/>
                             </svg>
                         </span>
                     </h1>
-                    <div class="celebration"></div>
+                    <div class="halo-effect"></div>
                 </div>
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@400;700&display=swap');
+                    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Dancing+Script:wght@400;700&display=swap');
                     .header-container {
                         display: flex !important;
                         justify-content: center !important;
@@ -6778,8 +6804,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 0, 0, 0.7) !important;
                     }
                     .wheelpulse-text {
-                        font-family: 'Bebas Neue', sans-serif !important;
-                        background: linear-gradient(90deg, #ffd700, #ffffff, #ffd700) !important;
+                        font-family: 'Orbitron', sans-serif !important;
+                        font-weight: 700 !important;
+                        background: linear-gradient(90deg, #b8860b, #333333, #b8860b) !important;
                         background-size: 200% !important;
                         -webkit-background-clip: text !important;
                         background-clip: text !important;
@@ -6800,9 +6827,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         display: inline-block !important;
                         width: 40px !important;
                         height: 40px !important;
+                        position: relative !important;
                     }
                     .spin-roulette {
                         animation: spin 4s linear infinite !important;
+                    }
+                    .ball-spin {
+                        animation: spinReverse 2s linear infinite !important;
                     }
                     @keyframes neonFlicker {
                         0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5); }
@@ -6820,7 +6851,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
-                    .celebration {
+                    @keyframes spinReverse {
+                        0% { transform: rotate(360deg); }
+                        100% { transform: rotate(0deg); }
+                    }
+                    .halo-effect {
                         position: absolute !important;
                         top: 0 !important;
                         left: 0 !important;
@@ -6830,17 +6865,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         z-index: 1 !important;
                         background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%) !important;
                     }
-                    .confetti {
+                    .halo-particle {
                         position: absolute !important;
-                        width: 8px !important;
-                        height: 8px !important;
+                        width: 6px !important;
+                        height: 6px !important;
                         background-color: #ffd700 !important;
                         border-radius: 50% !important;
-                        animation: fall 3s linear infinite !important;
+                        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important;
+                        animation: orbit 2s linear infinite !important;
                     }
-                    @keyframes fall {
-                        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-                        100% { transform: translateY(100%) rotate(720deg); opacity: 0; }
+                    @keyframes orbit {
+                        0% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 1; }
+                        50% { opacity: 0.5; }
+                        100% { transform: translateX(0) translateY(0) rotate(360deg); opacity: 1; }
                     }
                     /* Responsive adjustments */
                     @media (max-width: 768px) {
@@ -6857,9 +6894,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         .header-container {
                             padding: 10px 0 !important;
                         }
-                        .confetti {
-                            width: 6px !important;
-                            height: 6px !important;
+                        .halo-particle {
+                            width: 4px !important;
+                            height: 4px !important;
                         }
                     }
                     @media (max-width: 600px) {
@@ -6881,19 +6918,25 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     }
                 </style>
                 <script>
-                    function triggerConfetti() {
-                        const celebration = document.querySelector('.celebration');
-                        for (let i = 0; i < 30; i++) {
-                            const confetti = document.createElement('div');
-                            confetti.className = 'confetti';
-                            confetti.style.left = Math.random() * 100 + 'vw';
-                            confetti.style.backgroundColor = ['#ffd700', '#ff4444', '#2e7d32'][Math.floor(Math.random() * 3)];
-                            confetti.style.animationDelay = Math.random() * 2 + 's';
-                            celebration.appendChild(confetti);
+                    function triggerHaloEffect() {
+                        const halo = document.querySelector('.halo-effect');
+                        const rouletteIcon = document.querySelector('.roulette-icon');
+                        const rect = rouletteIcon.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        const radius = rect.width * 0.6; // Orbit radius slightly larger than the wheel
+                        for (let i = 0; i < 8; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'halo-particle';
+                            particle.style.left = `${centerX}px`;
+                            particle.style.top = `${centerY}px`;
+                            particle.style.transform = `translateX(${radius * Math.cos(i * Math.PI / 4)}px) translateY(${radius * Math.sin(i * Math.PI / 4)}px)`;
+                            particle.style.animationDelay = `${i * 0.2}s`;
+                            halo.appendChild(particle);
                         }
                     }
                     document.addEventListener('DOMContentLoaded', () => {
-                        triggerConfetti();
+                        triggerHaloEffect();
                     });
                 </script>
             """)
