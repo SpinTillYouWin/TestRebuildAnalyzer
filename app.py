@@ -6723,11 +6723,163 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             };
         </script>
     """)
-
-    # App Content (Header Section - Unchanged)
+    
+    # App Content (Header Section - Updated)
     with gr.Group(visible=False, elem_id="appContent"):
         with gr.Row(elem_id="header-row"):
-            gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
+            gr.HTML("""
+                <div class="header-container">
+                    <h1 class="header-title">
+                        <span class="wheelpulse-text">WheelPulse</span>
+                        <span class="by-styw">by S.T.Y.W</span>
+                        <span class="chart-emoji">📈</span>
+                    </h1>
+                    <div class="celebration"></div>
+                </div>
+                <style>
+                    .header-container {
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                        padding: 15px 0 !important;
+                        background: linear-gradient(135deg, #1b5e20, #ffd700, #b71c1c) !important;
+                        border-radius: 10px !important;
+                        box-shadow: 0 0 20px rgba(0, 0, 0, 0.7) !important;
+                        margin-bottom: 20px !important;
+                        position: relative !important;
+                        overflow: hidden !important;
+                    }
+                    .header-title {
+                        font-family: 'Montserrat', sans-serif !important;
+                        font-size: 2.8em !important;
+                        color: #ffffff !important;
+                        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5) !important;
+                        margin: 0 !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 10px !important;
+                        position: relative !important;
+                        z-index: 2 !important;
+                        transition: transform 0.3s ease, text-shadow 0.3s ease !important;
+                        animation: neonFlicker 2s ease-in-out infinite !important;
+                    }
+                    .header-title:hover {
+                        transform: perspective(500px) rotateX(10deg) scale(1.05) !important;
+                        text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 0, 0, 0.7) !important;
+                    }
+                    .wheelpulse-text {
+                        background: linear-gradient(90deg, #ffd700, #ffffff, #ffd700) !important;
+                        background-size: 200% !important;
+                        -webkit-background-clip: text !important;
+                        background-clip: text !important;
+                        color: transparent !important;
+                        font-weight: 900 !important;
+                        animation: shimmer 3s linear infinite !important;
+                    }
+                    .by-styw {
+                        font-size: 0.7em !important;
+                        color: #ffd700 !important;
+                        font-style: italic !important;
+                        letter-spacing: 2px !important;
+                        text-shadow: 0 0 10px rgba(255, 215, 0, 0.6) !important;
+                        animation: subtleGlow 1.5s ease-in-out infinite !important;
+                    }
+                    .chart-emoji {
+                        font-size: 1.2em !important;
+                        display: inline-block !important;
+                        animation: spinAndPulse 2s ease-in-out infinite !important;
+                        text-shadow: 0 0 10px rgba(0, 255, 0, 0.8) !important;
+                    }
+                    @keyframes neonFlicker {
+                        0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(255, 0, 0, 0.5); }
+                        50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 0, 0, 0.8); }
+                    }
+                    @keyframes shimmer {
+                        0% { background-position: 200%; }
+                        100% { background-position: -200%; }
+                    }
+                    @keyframes subtleGlow {
+                        0%, 100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+                        50% { text-shadow: 0 0 15px rgba(255, 215, 0, 1); }
+                    }
+                    @keyframes spinAndPulse {
+                        0% { transform: rotate(0deg) scale(1); text-shadow: 0 0 10px rgba(0, 255, 0, 0.8); }
+                        50% { transform: rotate(360deg) scale(1.3); text-shadow: 0 0 20px rgba(0, 255, 0, 1); }
+                        100% { transform: rotate(720deg) scale(1); text-shadow: 0 0 10px rgba(0, 255, 0, 0.8); }
+                    }
+                    .celebration {
+                        position: absolute !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100% !important;
+                        height: 100% !important;
+                        pointer-events: none !important;
+                        z-index: 1 !important;
+                        background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%) !important;
+                    }
+                    .confetti {
+                        position: absolute !important;
+                        width: 8px !important;
+                        height: 8px !important;
+                        background-color: #ffd700 !important;
+                        border-radius: 50% !important;
+                        animation: fall 3s linear infinite !important;
+                    }
+                    @keyframes fall {
+                        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                        100% { transform: translateY(100%) rotate(720deg); opacity: 0; }
+                    }
+                    /* Responsive adjustments */
+                    @media (max-width: 768px) {
+                        .header-title {
+                            font-size: 2em !important;
+                        }
+                        .by-styw {
+                            font-size: 0.6em !important;
+                        }
+                        .chart-emoji {
+                            font-size: 1em !important;
+                        }
+                        .header-container {
+                            padding: 10px 0 !important;
+                        }
+                        .confetti {
+                            width: 6px !important;
+                            height: 6px !important;
+                        }
+                    }
+                    @media (max-width: 600px) {
+                        .header-title {
+                            font-size: 1.5em !important;
+                            flex-direction: column !important;
+                            gap: 5px !important;
+                        }
+                        .by-styw {
+                            font-size: 0.55em !important;
+                        }
+                        .header-container {
+                            border-radius: 8px !important;
+                        }
+                    }
+                </style>
+                <script>
+                    function triggerConfetti() {
+                        const celebration = document.querySelector('.celebration');
+                        for (let i = 0; i < 30; i++) {
+                            const confetti = document.createElement('div');
+                            confetti.className = 'confetti';
+                            confetti.style.left = Math.random() * 100 + 'vw';
+                            confetti.style.backgroundColor = ['#ffd700', '#ff4444', '#2e7d32'][Math.floor(Math.random() * 3)];
+                            confetti.style.animationDelay = Math.random() * 2 + 's';
+                            celebration.appendChild(confetti);
+                        }
+                    }
+                    document.addEventListener('DOMContentLoaded', () => {
+                        triggerConfetti();
+                    });
+                </script>
+            """)
             gr.HTML(
                 '''
                 <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
@@ -6742,7 +6894,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </style>
                 '''
             )
-
+    
         # Ensure app content is shown after acceptance
         gr.HTML("""
             <script>
