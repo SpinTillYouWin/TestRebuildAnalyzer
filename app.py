@@ -6724,7 +6724,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
     
-    # App Content (Header Section - Updated)
+    # App Content (Header Section - Current State from Last Update)
     with gr.Group(visible=False, elem_id="appContent"):
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
