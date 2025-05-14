@@ -6241,7 +6241,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         <details>
                             <summary>6. Privacy</summary>
                             <ul>
-                                <li>We protect your privacy. See our <a href="javascript:showTab('privacy')">Privacy Policy</a> for details.</li>
+                                <li>We protect your privacy. Details are available in the Privacy Policy tab.</li>
                             </ul>
                         </details>
                         <details>
