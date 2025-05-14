@@ -6723,6 +6723,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # App Content (Header Section - Updated)
     with gr.Group(visible=False, elem_id="appContent"):
+        # Buttons Row (Moved Above Header)
+        with gr.Row(elem_id="buttons-row"):
+            gr.HTML(
+                '''
+                <div style="display: flex; gap: 10px; justify-content: center; align-items: center; padding: 10px;">
+                    <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                    <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+                </div>
+                <style>
+                    #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
+                        transform: scale(1.05);
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                    }
+                    #buttons-row {
+                        display: flex;
+                        justify-content: center;
+                        width: 100%;
+                        margin-bottom: 10px;
+                    }
+                </style>
+                '''
+            )
+    
+        # Header Row (Now Below Buttons)
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
                 <div class="header-container">
@@ -6855,6 +6879,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         .header-container {
                             border-radius: 8px !important;
                         }
+                    }
                     /* Reduced motion for accessibility */
                     @media (prefers-reduced-motion: reduce) {
                         .roulette-button, .action-button, .spin-counter, .number-badge, 
@@ -6866,20 +6891,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     }
                 </style>
             """)
-            gr.HTML(
-                '''
-                <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                    <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                    <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
-                </div>
-                <style>
-                    #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
-                        transform: scale(1.05);
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    }
-                </style>
-                '''
-            )
     
         # Ensure app content is shown after acceptance
         gr.HTML("""
@@ -6899,6 +6910,108 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
             </style>
         """)
+    
+    # Updated Selected Spins Accordion Styling
+    gr.HTML("""
+    <style>
+        #selected-spins label {
+            background: linear-gradient(135deg, #008080, #00CED1) !important;
+            color: #fff !important;
+            padding: 8px 12px !important;
+            border-radius: 5px !important;
+            font-size: 16px !important;
+            font-weight: bold !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.2s ease, box-shadow 0.3s ease !important;
+            display: inline-block !important;
+            margin-bottom: 5px !important;
+        }
+        #selected-spins label:hover {
+            transform: scale(1.02) !important;
+            box-shadow: 0 0 10px rgba(0, 128, 128, 0.5) !important;
+        }
+        #selected-spins input {
+            background-color: #fff3e0 !important;
+            border: 2px solid #008080 !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            font-size: 16px !important;
+            color: #333 !important;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            position: relative !important;
+        }
+        #selected-spins input:focus {
+            border-color: #00CED1 !important;
+            box-shadow: 0 0 8px rgba(0, 128, 128, 0.5) !important;
+            outline: none !important;
+        }
+        #selected-spins input.typing {
+            animation: pulse 1s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(0, 128, 128, 0.5); }
+            50% { box-shadow: 0 0 12px rgba(0, 128, 128, 0.8); }
+        }
+        #selected-spins-display {
+            margin-top: 10px !important;
+            display: flex !important;
+            gap: 8px !important;
+            flex-wrap: wrap !important;
+        }
+        .number-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 15px !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: #fff !important;
+            border: 1px solid #fff !important;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
+            transition: transform 0.2s ease !important;
+            animation: popIn 0.3s ease-in-out;
+        }
+        .number-badge:hover {
+            transform: scale(1.1) !important;
+        }
+        .number-badge.red {
+            background-color: #ff0000 !important;
+        }
+        .number-badge.black {
+            background-color: #000000 !important;
+        }
+        .number-badge.green {
+            background-color: #008000 !important;
+        }
+        #selected-spins-validation {
+            margin-top: 5px !important;
+            font-size: 12px !important;
+            color: #666 !important;
+            display: none !important;
+        }
+        #selected-spins-validation.valid {
+            color: #008000 !important;
+            display: block !important;
+        }
+        #selected-spins-validation.invalid {
+            color: #ff0000 !important;
+            display: block !important;
+            animation: shake 0.3s ease-in-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+    """)
 
     # Start of the app layout (next section after the header)
     def suggest_hot_cold_numbers():
