@@ -7921,8 +7921,172 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # 3. Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
-            last_spin_display
-            last_spin_count
+            last_spin_display = gr.HTML(
+                label="Last Spins",
+                value='<h4>Last Spins</h4><p>No spins yet.</p>',
+                elem_classes=["last-spins-container"]
+            )
+            last_spin_count = gr.Slider(
+                label="",
+                minimum=1,
+                maximum=36,
+                step=1,
+                value=36,
+                interactive=True,
+                elem_classes="long-slider"
+            )
+    
+    # Updated CSS and Debounce Script for Last Spins
+    gr.HTML("""
+    <style>
+        .last-spins-container {
+            background-color: #f5f5f5 !important;
+            border: 1px solid #d3d3d3 !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            margin-top: 10px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            min-height: 100px !important; /* Fixed minimum height to prevent jitter */
+            max-height: 150px !important; /* Maximum height with scrollbar */
+            overflow-y: auto !important; /* Scrollable content */
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 5px !important;
+        }
+        .last-spins-container h4 {
+            margin: 0 0 5px 0 !important;
+            font-size: 16px !important;
+            color: #333 !important;
+        }
+        .last-spins-container .spins-wrapper {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 5px !important;
+            align-items: center !important;
+        }
+        .last-spins-container .new-spin {
+            position: relative !important;
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 15px !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: #fff !important;
+            border: 1px solid #fff !important;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            animation: pulse-highlight 1s ease-in-out !important;
+        }
+        .last-spins-container .new-spin.spin-red {
+            background-color: #ff0000 !important;
+            --highlight-color: rgba(255, 0, 0, 0.8) !important;
+        }
+        .last-spins-container .new-spin.spin-black {
+            background-color: #000000 !important;
+            --highlight-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        .last-spins-container .new-spin.spin-green {
+            background-color: #008000 !important;
+            --highlight-color: rgba(0, 255, 0, 0.8) !important;
+        }
+        .last-spins-container .flip {
+            animation: flip 0.5s ease-in-out !important;
+        }
+        @keyframes flip {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+        @keyframes pulse-highlight {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
+        }
+        .last-spins-container .switch-alert, .last-spins-container .dozen-shift-indicator {
+            margin-top: 5px !important;
+            padding: 8px !important;
+            background: rgba(255, 255, 255, 0.3) !important;
+            border-radius: 6px !important;
+            visibility: hidden !important; /* Hidden but reserves space */
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 40px !important; /* Fixed height for trends */
+        }
+        .last-spins-container .switch-alert.visible, .last-spins-container .dozen-shift-indicator.visible {
+            visibility: visible !important; /* Show when trends are toggled */
+        }
+        .last-spins-container .switch-dot {
+            width: 14px !important;
+            height: 14px !important;
+            border-radius: 50% !important;
+        }
+        .last-spins-container .switch-dot.red { background: #ff4444 !important; }
+        .last-spins-container .switch-dot.black { background: #000000 !important; }
+        .last-spins-container .switch-dot.green { background: #388e3c !important; }
+        .last-spins-container .dozen-badge {
+            display: inline-block !important;
+            font-size: 12px !important;
+            color: #fff !important;
+            border-radius: 3px !important;
+            padding: 2px 4px !important;
+        }
+        .last-spins-container .dozen-badge.d1 { background: #388e3c !important; }
+        .last-spins-container .dozen-badge.d2 { background: #ff9800 !important; }
+        .last-spins-container .dozen-badge.d3 { background: #8e24aa !important; }
+        @media (max-width: 600px) {
+            .last-spins-container {
+                min-height: 80px !important;
+                max-height: 120px !important;
+            }
+            .last-spins-container .new-spin {
+                width: 25px !important;
+                height: 25px !important;
+                font-size: 12px !important;
+            }
+            .last-spins-container .switch-alert, .last-spins-container .dozen-shift-indicator {
+                min-height: 30px !important;
+            }
+        }
+    </style>
+    <script>
+        // Debounce function to smooth out rapid updates
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    
+        // Update spins display with debouncing
+        const updateSpinsDisplay = debounce(function() {
+            const container = document.querySelector('.last-spins-container');
+            if (container) {
+                // Trigger reflow only after content is stable
+                container.style.display = 'none';
+                setTimeout(() => {
+                    container.style.display = 'flex';
+                }, 0);
+            }
+        }, 100);
+    
+        // Observe changes to last-spins-container
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.last-spins-container');
+            if (container) {
+                const observer = new MutationObserver(() => {
+                    updateSpinsDisplay();
+                });
+                observer.observe(container, { childList: true, subtree: true, characterData: true });
+            }
+        });
+    </script>
+    """)
     
     # 4. Row 4: Spin Controls (unchanged)
     with gr.Row():
