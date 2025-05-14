@@ -1,5 +1,6 @@
 import gradio as gr
 import math
+import time
 import pandas as pd
 import json
 from itertools import combinations
@@ -118,6 +119,8 @@ def update_scores_batch(spins):
     
     # UNCHANGED: Return the action log for undo functionality
     return action_log
+
+
 
 import gradio as gr
 import time
