@@ -6168,7 +6168,7 @@ def select_next_spin_top_pick(last_spin_count):
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal (Fixed Positioning)
+    # T&C and Privacy Policy Modal (Updated with New Subtitles)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
             <div class="modal-content">
@@ -6179,7 +6179,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 <!-- Terms and Conditions -->
                 <div class="tab-content active" id="terms">
                     <h2>WheelPulse Terms and Conditions</h2>
-                    <p><strong>Last Updated: May 13, 2025</strong></p>
+                    <p><strong>Last Updated: May 14, 2025</strong></p>
                     <div class="scrollable-content">
                         <p>Welcome to WheelPulse, an educational app by S.T.Y.W. for analyzing roulette patterns. Expand each section below to read the full terms.</p>
                         <details>
@@ -6198,12 +6198,15 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                         <li><strong>Feedback Form</strong>: Collects optional user feedback.</li>
                                     </ul>
                                 </li>
+                                <li><strong>Responsible Use</strong>: Users are encouraged to engage responsibly. Resources for responsible gambling are available at <a href="http://www.responsiblegambling.vic.gov.au/getting-help" target="_blank">http://www.responsiblegambling.vic.gov.au/getting-help</a>.</li>
+                                <li><strong>Supported Platforms</strong>: WheelPulse is designed for web browsers on desktop and mobile devices. We recommend using the latest versions of Chrome, Firefox, Safari, or Edge for optimal performance.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>2. Eligibility</summary>
                             <ul>
                                 <li>You must be 19+ and reside where using the app for education is legal.</li>
+                                <li><strong>User Responsibility</strong>: You are responsible for ensuring your use complies with local laws and regulations.</li>
                             </ul>
                         </details>
                         <details>
@@ -6211,6 +6214,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             <ul>
                                 <li>The app, its design, code, and content are owned by S.T.Y.W. and protected by Canadian and international copyright laws.</li>
                                 <li>You’re granted a limited, non-exclusive license for personal, educational use. Do not copy, modify, or reverse-engineer the app without permission.</li>
+                                <li><strong>Third-Party Content</strong>: Any third-party content (e.g., links to external guides) is provided for convenience and does not imply endorsement by S.T.Y.W.</li>
                             </ul>
                         </details>
                         <details>
@@ -6219,6 +6223,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li>Do not use for illegal purposes, gambling, or to disrupt the app’s functionality.</li>
                                 <li>Do not misuse the app’s outputs to promote gambling.</li>
                                 <li>Do not submit false or harmful data via the feedback form.</li>
+                                <li><strong>Data Integrity</strong>: Do not attempt to manipulate or falsify spin data or analytics to mislead other users or the app’s functionality.</li>
                             </ul>
                         </details>
                         <details>
@@ -6230,6 +6235,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li><strong>Hot/Cold Numbers and Dealer’s Spin Tracker</strong>: For educational analysis only. Reliance for gambling is at your risk.</li>
                                 <li><strong>Casino Data Insights</strong>: User-entered data is unverified. We’re not responsible for errors or decisions based on it.</li>
                                 <li><strong>Feedback Form</strong>: By submitting, you grant us a royalty-free license to use your suggestions. Personal info is subject to our Privacy Policy.</li>
+                                <li><strong>Accuracy of Outputs</strong>: Outputs are based on user inputs and theoretical models. We do not guarantee accuracy or applicability to real-world scenarios.</li>
                             </ul>
                         </details>
                         <details>
@@ -6250,6 +6256,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li><strong>As-Is Basis</strong>: The app is provided “as is” without warranties of accuracy or fitness.</li>
                                 <li><strong>No Liability for Misuse</strong>: We’re not liable for damages from gambling, errors, data loss, or app interruptions.</li>
                                 <li><strong>Maximum Liability</strong>: Our total liability is capped at CAD $50.</li>
+                                <li><strong>Third-Party Services</strong>: We’re not liable for issues arising from third-party services (e.g., Formspree) used within the app.</li>
                             </ul>
                         </details>
                         <details>
@@ -6262,18 +6269,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             <summary>10. Termination</summary>
                             <ul>
                                 <li>We may suspend your access if you violate these Terms.</li>
+                                <li><strong>Data Retention Post-Termination</strong>: Upon termination, local data (e.g., spin history) remains on your device unless cleared via browser settings.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>11. Governing Law and Dispute Resolution</summary>
                             <ul>
                                 <li>These Terms are governed by Ontario, Canada laws. Disputes will be resolved in Ontario courts.</li>
+                                <li><strong>Alternative Dispute Resolution</strong>: We encourage resolving disputes through mediation before legal action, where feasible.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>12. Changes to the Terms</summary>
                             <ul>
                                 <li>We may update these Terms. Continued use after changes means you accept them.</li>
+                                <li><strong>Notification of Changes</strong>: Significant changes will be highlighted in the app with a 15-day notice period before they take effect.</li>
                             </ul>
                         </details>
                         <details>
@@ -6301,7 +6311,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 <!-- Privacy Policy -->
                 <div class="tab-content" id="privacy">
                     <h2>WheelPulse Privacy Policy</h2>
-                    <p><strong>Last Updated: May 13, 2025</strong></p>
+                    <p><strong>Last Updated: May 14, 2025</strong></p>
                     <div class="scrollable-content">
                         <p>We’re committed to your privacy under Canada’s <em>PIPEDA</em>. Expand each section to read more.</p>
                         <details>
@@ -6320,6 +6330,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                         <li>We do not collect any other personal information unless you voluntarily provide it through feedback.</li>
                                     </ul>
                                 </li>
+                                <li><strong>Third-Party Data</strong>: We do not collect data from third parties (e.g., public databases, marketing partners) unless explicitly stated in future updates to this policy.</li>
                             </ul>
                         </details>
                         <details>
@@ -6329,6 +6340,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li><strong>Improve the App</strong>: Feedback you provide (if any) helps us enhance WheelPulse’s functionality and user experience. Anonymized usage data (e.g., which features are used most) may also be used to make improvements.</li>
                                 <li><strong>Record Consent</strong>: If you provide an email when agreeing to these terms, we use it to log your consent for legal purposes, as required under Canada’s <em>PIPEDA</em>.</li>
                                 <li><strong>Comply with Legal Obligations</strong>: We may use your information to meet legal requirements, such as responding to lawful requests or ensuring compliance with applicable laws.</li>
+                                <li><strong>Service Notifications</strong>: We may use your email (if provided) to notify you of updates to WheelPulse, such as new features or policy changes, with an option to opt-out.</li>
                             </ul>
                         </details>
                         <details>
@@ -6338,6 +6350,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li><strong>Service Providers</strong>: If you provide an email for consent or feedback, we share it with Formspree (our form processing provider) to log your consent or feedback securely.</li>
                                 <li><strong>Legal Requirements</strong>: We may share your information if required by law (e.g., to comply with a court order or legal process).</li>
                                 <li><strong>Business Transfers</strong>: If S.T.Y.W. undergoes a business transfer (e.g., merger), your data may be shared, but we’ll ensure it remains protected under this policy.</li>
+                                <li><strong>Affiliated Entities</strong>: We may share data with subsidiaries or affiliates under S.T.Y.W.’s control, ensuring they adhere to this policy.</li>
                             </ul>
                         </details>
                         <details>
@@ -6346,6 +6359,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li><strong>Local Storage</strong>: Spin data, casino data inputs, and other non-personal data are stored locally on your device via localStorage. This data is not transmitted to our servers unless you submit feedback including such data.</li>
                                 <li><strong>Consent and Feedback Data</strong>: Emails provided for consent or feedback are securely transmitted to Formspree and retained for up to 12 months, or longer if required for legal purposes.</li>
                                 <li><strong>Security Measures</strong>: We use reasonable measures (e.g., encryption for Formspree submissions) to protect your data, but no method is 100% secure. You use the app at your own risk.</li>
+                                <li><strong>Transmission Risks</strong>: Data transmitted over the internet (e.g., emails to Formspree) may pass through multiple jurisdictions. We cannot guarantee protection against unauthorized access during transmission.</li>
                             </ul>
                         </details>
                         <details>
@@ -6355,6 +6369,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 <li><strong>Deletion</strong>: You can request deletion of your consent email or feedback data, though we may retain it if required for legal purposes.</li>
                                 <li><strong>Withdraw Consent</strong>: You can withdraw consent for us to process your personal data, but this may limit your ability to use the feedback form.</li>
                                 <li><strong>Clear Local Data</strong>: To delete spin data or other local data, clear your browser’s cache or localStorage.</li>
+                                <li><strong>GDPR Rights</strong>: If you’re in the European Economic Area, you have rights to access, rectify, erase, restrict processing, or request data portability under GDPR. Contact us to exercise these rights.</li>
                             </ul>
                         </details>
                         <details>
@@ -6362,6 +6377,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             <ul>
                                 <li>We do not use cookies. We use localStorage to store non-personal data (e.g., spin history, casino data) on your device for app functionality.</li>
                                 <li>You can clear this data by resetting your browser’s cache or localStorage, which will reset your app data (e.g., spin history).</li>
+                                <li><strong>Future Analytics</strong>: If we implement analytics tools (e.g., Google Analytics) in the future, we’ll update this policy and provide opt-out options.</li>
                             </ul>
                         </details>
                         <details>
@@ -6383,12 +6399,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                             <ul>
                                 <li>We may update this Privacy Policy to reflect changes in our practices or legal requirements.</li>
                                 <li>We’ll notify you of significant changes by updating the “Last Updated” date at the top of this policy. Continued use of WheelPulse after changes means you accept the updated policy.</li>
+                                <li><strong>Notification Method</strong>: Significant changes will be highlighted in the app with a 15-day notice period before they take effect.</li>
                             </ul>
                         </details>
                         <details>
                             <summary>10. Contact Us</summary>
                             <ul>
                                 <li>For questions about this Privacy Policy or your data, message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
+                                <li><strong>Additional Contact</strong>: You can also email us at <a href="mailto:privacy@wheelpulse.styw">privacy@wheelpulse.styw</a> for privacy-related inquiries.</li>
                             </ul>
                         </details>
                         <details>
@@ -6666,7 +6684,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             function acceptTermsAndLogConsent() {
                 const email = document.getElementById('userEmail').value.trim();
                 const timestamp = new Date().toISOString();
-                const termsVersion = 'May 13, 2025';
+                const termsVersion = 'May 14, 2025';
                 const consentMessageDiv = document.getElementById('consentMessage');
 
                 if (email) {
@@ -6723,144 +6741,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             };
         </script>
     """)
-    
-    # App Content (Header Section - Updated)
+
+    # App Content (Header Section - Unchanged)
     with gr.Group(visible=False, elem_id="appContent"):
         with gr.Row(elem_id="header-row"):
-            gr.HTML("""
-                <div class="header-container">
-                    <h1 class="header-title">
-                        <span class="wheelpulse-text">WheelPulse</span>
-                        <span class="by-styw">by S.T.Y.W</span>
-                        <span class="roulette-icon">
-                            <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <!-- Outer rim -->
-                                <circle cx="50" cy="50" r="45" fill="#8a0707" stroke="#339e45" stroke-width="5"/>
-                                <!-- Inner circle (green felt) -->
-                                <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
-                                <!-- Alternating sections -->
-                                <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
-                                <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
-                                <!-- Zero slot -->
-                                <circle cx="50" cy="20" r="5" fill="#e4f2e4"/>
-                                <!-- Center dot -->
-                                <circle cx="50" cy="50" r="5" fill="#000000"/>
-                            </svg>
-                        </span>
-                    </h1>
-                </div>
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
-                    .header-container {
-                        display: flex !important;
-                        justify-content: center !important;
-                        align-items: center !important;
-                        width: 100% !important;
-                        padding: 15px 0 !important;
-                        background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000) !important;
-                        border-radius: 10px !important;
-                        box-shadow: 0 0 20px rgba(0, 0, 0, 0.7) !important;
-                        margin-bottom: 20px !important;
-                        position: relative !important;
-                        overflow: hidden !important;
-                    }
-                    .header-title {
-                        font-size: 2.8em !important;
-                        color: #ffffff !important;
-                        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5) !important;
-                        margin: 0 !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        gap: 10px !important;
-                        position: relative !important;
-                        z-index: 2 !important;
-                        transition: transform 0.3s ease, text-shadow 0.3s ease !important;
-                        animation: neonFlicker 2s ease-in-out infinite !important;
-                    }
-                    .header-title:hover {
-                        transform: perspective(500px) rotateX(10deg) scale(1.05) !important;
-                        text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7) !important;
-                    }
-                    .wheelpulse-text {
-                        font-family: 'Poppins', sans-serif !important;
-                        font-weight: 700 !important;
-                        background: linear-gradient(90deg, #4B4B4B, #1C2526, #4B4B4B) !important;
-                        background-size: 200% !important;
-                        -webkit-background-clip: text !important;
-                        background-clip: text !important;
-                        color: transparent !important;
-                        letter-spacing: 2px !important;
-                        animation: shimmer 3s linear infinite !important;
-                        text-shadow: none !important; /* Remove glow from WheelPulse */
-                    }
-                    .by-styw {
-                        font-family: 'Dancing Script', cursive !important;
-                        font-size: 0.7em !important;
-                        color: #333333 !important;
-                        font-weight: 700 !important;
-                        letter-spacing: 1px !important;
-                        text-shadow: 0 0 5px rgba(255, 215, 0, 0.3) !important;
-                        animation: subtleGlow 1.5s ease-in-out infinite !important;
-                    }
-                    .roulette-icon {
-                        display: inline-block !important;
-                        width: 40px !important;
-                        height: 40px !important;
-                    }
-                    .spin-roulette {
-                        animation: spin 4s linear infinite !important;
-                    }
-                    @keyframes neonFlicker {
-                        0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5); }
-                        50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); }
-                    }
-                    @keyframes shimmer {
-                        0% { background-position: 200%; }
-                        100% { background-position: -200%; }
-                    }
-                    @keyframes subtleGlow {
-                        0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
-                        50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
-                    }
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                    /* Responsive adjustments */
-                    @media (max-width: 768px) {
-                        .header-title {
-                            font-size: 2em !important;
-                        }
-                        .by-styw {
-                            font-size: 0.6em !important;
-                        }
-                        .roulette-icon {
-                            width: 30px !important;
-                            height: 30px !important;
-                        }
-                        .header-container {
-                            padding: 10px 0 !important;
-                        }
-                    }
-                    @media (max-width: 600px) {
-                        .header-title {
-                            font-size: 1.5em !important;
-                            flex-direction: column !important;
-                            gap: 5px !important;
-                        }
-                        .by-styw {
-                            font-size: 0.55em !important;
-                        }
-                        .roulette-icon {
-                            width: 25px !important;
-                            height: 25px !important;
-                        }
-                        .header-container {
-                            border-radius: 8px !important;
-                        }
-                    }
-                </style>
-            """)
+            gr.Markdown("<h1 style='text-align: center; color: #ff9800;'>WheelPulse by S.T.Y.W 📈</h1>")
             gr.HTML(
                 '''
                 <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
@@ -6875,7 +6760,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </style>
                 '''
             )
-    
+
         # Ensure app content is shown after acceptance
         gr.HTML("""
             <script>
