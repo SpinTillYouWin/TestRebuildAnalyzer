@@ -328,7 +328,7 @@ class RouletteState:
                 self.message,
                 f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
             )
-    
+
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 2
@@ -349,68 +349,15 @@ class RouletteState:
         elif self.progression == "Triple Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 3
-            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"       
-        elif self.progression == "Oscar’s Grind":            
-            self.current_bet = self.next_bet
-            profit = self.bankroll - self.initial_bankroll
-            if won and profit > 0:
-                self.next_bet = self.base_unit
-                self.message = f"Win! Profit achieved, reset to {self.next_bet}"
-            elif won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
-            else:
-                self.next_bet = self.current_bet
-                self.message = f"Loss! Keep bet at {self.next_bet}"
-        elif self.progression == "Labouchere":
-            if self.progression_state is None:
-                try:
-                    if self.labouchere_sequence and self.labouchere_sequence.strip():
-                        sequence = [int(x.strip()) for x in self.labouchere_sequence.split(",")]
-                        if not sequence or not all(isinstance(x, int) and x > 0 for x in sequence):
-                            sequence = [1] * self.target_profit
-                    else:
-                        sequence = [1] * self.target_profit
-                except (ValueError, AttributeError):
-                    sequence = [1] * self.target_profit
-                self.progression_state = sequence
-
-            self.current_bet = self.next_bet
-
-            try:
-                if not self.progression_state:
-                    self.progression_state = [1] * self.target_profit
-                    self.next_bet = self.base_unit
-                    self.message = f"Sequence cleared! Reset to {self.next_bet}"
-                elif len(self.progression_state) == 1:
-                    self.next_bet = self.progression_state[0] * self.base_unit
-                    if won:
-                        self.progression_state = []
-                        self.message = f"Win! Sequence completed, next bet: {self.next_bet}"
-                    else:
-                        self.message = f"Loss! Next bet: {self.next_bet}"
-                else:
-                    if won:
-                        self.progression_state = self.progression_state[1:-1] if len(self.progression_state) > 2 else []
-                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit if self.progression_state else self.base_unit
-                        self.message = f"Win! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-                    else:
-                        lost_bet = max(1, self.current_bet // self.base_unit)
-                        self.progression_state.append(lost_bet)
-                        self.next_bet = (self.progression_state[0] + self.progression_state[-1]) * self.base_unit
-                        self.message = f"Loss! Sequence: {self.progression_state}, next bet: {self.next_bet}"
-            except Exception as e:
-                self.progression_state = [1] * self.target_profit
-                self.next_bet = self.base_unit
-                self.message = f"Error in Labouchere progression: {str(e)}. Resetting sequence to {self.progression_state}, next bet: {self.next_bet}"
+            self.message = f"{'Win' if won else 'Loss'}! Next bet: {self.next_bet}"
         elif self.progression == "Ladder":
             self.current_bet = self.next_bet
             if won:
-                self.next_bet = self.current_bet + self.base_unit
-                self.message = f"Win! Increase to {self.next_bet}"
-            else:
                 self.next_bet = self.base_unit
-                self.message = f"Loss! Reset to {self.next_bet}"
+                self.message = f"Win! Reset to {self.next_bet}"
+            else:
+                self.next_bet = self.current_bet + self.base_unit
+                self.message = f"Loss! Increase to {self.next_bet}"
         elif self.progression == "D’Alembert":
             self.current_bet = self.next_bet
             if won:
@@ -458,7 +405,7 @@ class RouletteState:
                 self.consecutive_wins = 0
                 self.next_bet = round(self.current_bet * 2, 2)
                 self.message = f"Loss! Doubling bet to {self.next_bet}."
-        
+
         # Check stop conditions
         profit = self.bankroll - self.initial_bankroll
         if profit <= self.stop_loss:
@@ -471,7 +418,7 @@ class RouletteState:
             self.status = "Stopped: Stop Win Reached"
             self.status_color = "green"
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
-        
+
         return (
             self.bankroll,
             self.current_bet,
@@ -8434,7 +8381,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     .betting-progression .gr-textbox {
                         font-size: 12px !important;
                         padding: 6px !important;
-                    Facetune App - DIY Photography & Videography Tools
                     }
                 }
             </style>
@@ -8453,13 +8399,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Oscar’s Grind", "Labouchere", "Ladder", "D’Alembert", "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", "Double Loss / +50% Win"],
+                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Ladder", "D’Alembert", 
+                             "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", 
+                             "Double Loss / +50% Win"],
                     value="Martingale"
-                )
-                labouchere_sequence = gr.Textbox(
-                    label="Labouchere Sequence (comma-separated)",
-                    value="",
-                    visible=False
                 )
             with gr.Row():
                 win_button = gr.Button("Win")
@@ -12749,7 +12692,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         return gr.update(visible=progression == "Labouchere")
     
     # Betting progression event handlers
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, sequence, target_profit):
+    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, target_profit):
         state.bankroll = bankroll
         state.initial_bankroll = bankroll
         state.base_unit = base_unit
@@ -12757,38 +12700,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         state.stop_win = stop_win
         state.bet_type = bet_type
         state.progression = progression
-        # Line 1: Enforce minimum value and reset labouchere_sequence
-        target_profit = int(target_profit) if target_profit is not None else 10  # Ensure integer, default to 10
-        state.target_profit = max(1, target_profit)  # Enforce minimum value of 1
-        if progression == "Labouchere":
-            try:
-                # Only use the sequence if it's non-empty and valid; otherwise, auto-generate
-                if sequence and sequence.strip():
-                    parsed_sequence = [int(x.strip()) for x in sequence.split(",")]
-                    if all(isinstance(x, int) and x > 0 for x in parsed_sequence):
-                        state.progression_state = parsed_sequence
-                        state.labouchere_sequence = sequence  # Keep the user-provided sequence
-                    else:
-                        state.progression_state = [1] * state.target_profit
-                        state.labouchere_sequence = ""  # Clear the sequence to use auto-generated
-                        return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
-                else:
-                    state.progression_state = [1] * state.target_profit
-                    state.labouchere_sequence = ""  # Ensure auto-generated sequence is used
-            except ValueError:
-                state.progression_state = [1] * state.target_profit
-                state.labouchere_sequence = ""  # Clear the sequence on error
-                return bankroll, base_unit, base_unit, f"Invalid sequence, using default {[1] * state.target_profit}", '<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>', ""
-        else:
-            state.labouchere_sequence = ""  # Clear the sequence if not using Labouchere
+        # Enforce minimum value for target_profit
+        target_profit = int(target_profit) if target_profit is not None else 10
+        state.target_profit = max(1, target_profit)
         state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>', state.labouchere_sequence
+        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
     
     try:
         bankroll_input.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
     except Exception as e:
         print(f"Error in bankroll_input.change handler: {str(e)}")
@@ -12796,8 +12718,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         base_unit_input.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
     except Exception as e:
         print(f"Error in base_unit_input.change handler: {str(e)}")
@@ -12805,8 +12727,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         stop_loss_input.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
     except Exception as e:
         print(f"Error in stop_loss_input.change handler: {str(e)}")
@@ -12814,8 +12736,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         stop_win_input.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
     except Exception as e:
         print(f"Error in stop_win_input.change handler: {str(e)}")
@@ -12823,8 +12745,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         bet_type_dropdown.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
     except Exception as e:
         print(f"Error in bet_type_dropdown.change handler: {str(e)}")
@@ -12832,26 +12754,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         progression_dropdown.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
-        ).then(
-            fn=toggle_labouchere,
-            inputs=[progression_dropdown],
-            outputs=[labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
-
-
     except Exception as e:
         print(f"Error in progression_dropdown.change handler: {str(e)}")
     
     try:
-        labouchere_sequence.change(
+        target_profit_input.change(
             fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
+            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
     except Exception as e:
-        print(f"Error in labouchere_sequence.change handler: {str(e)}")
+        print(f"Error in target_profit_input.change handler: {str(e)}")
     
     try:
         win_button.click(
@@ -12877,18 +12793,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[],
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
         )
-        reset_bankroll_button.click(  # Line 1
+    except Exception as e:
+        print(f"Error in reset_progression_button.click handler: {str(e)}")
+    
+    try:
+        reset_bankroll_button.click(
             fn=lambda: state.reset_bankroll(),
             inputs=[],
             outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
-        )  # Line 3
-        bankroll_input.change(
-            fn=update_config,
-            inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, labouchere_sequence, target_profit_input],
-            outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output, labouchere_sequence]
         )
     except Exception as e:
-        print(f"Error in reset_progression_button.click handler: {str(e)}")
+        print(f"Error in reset_bankroll_button.click handler: {str(e)}")
     
     # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
