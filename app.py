@@ -124,9 +124,9 @@ import time
 
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state with user-friendly error messages."""
-    start_time = time.time()  # UNCHANGED: Performance logging
+    start_time = time.time()  # Performance logging
     
-    print(f"validate_spins_input: Processing spins_input='{spins_input}'")  # UNCHANGED: Logging
+    print(f"validate_spins_input: Processing spins_input='{spins_input}'")  # Logging
     
     # Handle empty input with clear message
     if not spins_input or not spins_input.strip():
@@ -176,7 +176,7 @@ def validate_spins_input(spins_input):
     
     # Generate output
     spins_display_value = ", ".join(valid_spins)
-    spins_html = format_spins_as_html(spins_display_value, 36)  # UNCHANGED: Default to all spins
+    spins_html = format_spins_as_html(spins_display_value, 36)  # Default to all spins
     
     # Log success
     print(f"validate_spins_input: Processed {len(valid_spins)} valid spins, spins_display_value='{spins_display_value}', time={time.time() - start_time:.3f}s")
@@ -188,8 +188,8 @@ def validate_spins_input(spins_input):
         warning_msg = f"Added {len(valid_spins)} valid spin{'s' if len(valid_spins) != 1 else ''}. Ignored invalid inputs:\n- " + "\n- ".join(errors) + "\nPlease use numbers between 0 and 36."
         gr.Warning(warning_msg)
         print(f"validate_spins_input: Warning - {warning_msg}")
-        error_list = "".join(f"<li>{error}</li>" for error in errors)  # FIXED: Moved list generation outside f-string
-        formatted_html = f"<h4>Last Spins</h4><p style='color: green; font-weight: bold;'>✓ Added {len(valid_spins)} spin{'s' if len(valid_spins) != 1 else ''}.</p><p style='color: red; font-weight: bold;'>⚠ Ignored invalid inputs:</p><ul style='color: #555; margin: 5px 0; padding-left: 20px;'>{error_list}</ul><p style='color: #555;'>{spins_html}</p>"  # FIXED: Used spins_html instead of formatted_html
+        error_list = "".join(f"<li>{error}</li>" for error in errors)  # Generate list outside f-string
+        formatted_html = f"<h4>Last Spins</h4><p style='color: green; font-weight: bold;'>✓ Added {len(valid_spins)} spin{'s' if len(valid_spins) != 1 else ''}.</p><p style='color: red; font-weight: bold;'>⚠ Ignored invalid inputs:</p><ul style='color: #555; margin: 5px 0; padding-left: 20px;'>{error_list}</ul><p style='color: #555;'>{spins_html}</p>"
     else:
         formatted_html = spins_html  # Use spins_html directly if no errors
     
