@@ -9267,8 +9267,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
+    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css"> <!-- Line 1 -->
+    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script> <!-- Line 2 -->
     <script>
       function loadShepherdFallback() {
         console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
@@ -9280,7 +9280,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         };
         document.head.appendChild(script);
     
-        const link = document.createElement('link');
+        const link = document.createElement('link'); <!-- Line 3 -->
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
         document.head.appendChild(link);
@@ -10871,8 +10871,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         }
     
         // Force accordion open with direct DOM manipulation and Promise
-        function forceAccordionOpen(accordionId) {
-            console.log(`Checking accordion: ${accordionId}`);
+        function forceAccordionOpen(accordionId) { // Updated Line 1
+            console.log(`Attempting to open accordion: ${accordionId}`);
             return new Promise(resolve => {
                 const accordion = document.querySelector(accordionId);
                 if (!accordion) {
@@ -10880,39 +10880,47 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     resolve();
                     return;
                 }
-                const content = accordion.querySelector('.gr-box') || accordion.nextElementSibling;
-                if (content && window.getComputedStyle(content).display === 'none') {
-                    console.log(`Forcing ${accordionId} open`);
-                    content.style.display = 'block';
-                    accordion.setAttribute('open', '');
+                const summary = accordion.querySelector('summary');
+                const content = accordion.querySelector('.gr-box') || accordion.querySelector('div');
+                if (summary && content && window.getComputedStyle(content).display === 'none') {
+                    console.log(`Opening ${accordionId}`);
+                    summary.click();
                     setTimeout(() => {
                         if (window.getComputedStyle(content).display === 'none') {
                             console.warn(`Fallback: Forcing visibility for ${accordionId}`);
                             content.style.display = 'block';
+                            accordion.setAttribute('open', '');
                         }
                         resolve();
-                    }, 500);
+                    }, 300);
                 } else {
                     console.log(`${accordionId} already open or no content found`);
                     resolve();
                 }
             });
-        }
+        } // Updated Line 3
     
-        // Force Gradio refresh for spin_traits_display
-        document.addEventListener('DOMContentLoaded', function() {
-            const spinTraitsDisplay = document.querySelector('#spin_traits_display');
-            if (spinTraitsDisplay) {
-                // Force re-render by triggering a DOM update
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach(() => {
-                        spinTraitsDisplay.style.display = 'block'; // Ensure visibility
-                    });
-                });
-                observer.observe(spinTraitsDisplay, { childList: true, subtree: true });
+        const tour = new Shepherd.Tour({
+            defaultStepOptions: {
+                cancelIcon: { enabled: true },
+                scrollTo: { behavior: 'smooth', block: 'center' },
+                classes: 'shepherd-theme-arrows',
             }
-        });
-      }
+        
+            // Force Gradio refresh for spin_traits_display
+            document.addEventListener('DOMContentLoaded', function() {
+                const spinTraitsDisplay = document.querySelector('#spin_traits_display');
+                if (spinTraitsDisplay) {
+                    // Force re-render by triggering a DOM update
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach(() => {
+                            spinTraitsDisplay.style.display = 'block'; // Ensure visibility
+                        });
+                    });
+                    observer.observe(spinTraitsDisplay, { childList: true, subtree: true });
+                }
+            });
+    </script>
     
       // Step 1: Header
       tour.addStep({
@@ -11272,57 +11280,71 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
           { text: 'Finish', action: () => { console.log('Tour completed'); tour.complete(); } }
         ]
       });
-    
-      function startTour() {
-        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
-        if (typeof Shepherd === 'undefined') {
-          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
-          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
-          return;
-        }
-        setTimeout(() => {
-          console.log('Checking DOM elements for tour...');
-          const criticalElements = [
-            '#header-row',
-            '.roulette-table',
-            '#selected-spins',
-            '#undo-spins-btn',
-            '.last-spins-container',
-            '.green-btn',
-            '#dynamic-table-heading',
-            '.betting-progression',
-            '#color-code-key',
-            '#spin-analysis',
-            '#save-load-session',
-            '#select-category',
-            '#casino-data-insights',
-            '#hot-cold-numbers',  // Added for Hot and Cold Numbers
-            '#sides-of-zero-accordion',
-            '#dozen-tracker',
-            '#top-strategies',
-            '#feedback-section'
-          ];
-          const missingElements = criticalElements.filter(el => !document.querySelector(el));
-          if (missingElements.length > 0) {
-            console.error(`Cannot start tour: Missing elements: ${missingElements.join(', ')}`);
-            alert(`Tour unavailable: Missing components (${missingElements.join(', ')}). Please refresh the page or contact support.`);
-            return;
-          }
-          console.log('All critical elements found. Starting tour.');
-          try {
-            tour.start();
-            console.log('Tour started successfully.');
-          } catch (error) {
-            console.error('Error starting tour:', error);
-            alert('Tour failed to start due to an unexpected error. Please check the console for details.');
-          }
-        }, 2000);
+    function waitForElements(selectors, maxAttempts = 20, interval = 500) {
+        return new Promise((resolve, reject) => {
+          let attempts = 0;
+          const checkElements = () => {
+            const allExist = selectors.every(sel => document.querySelector(sel));
+            if (allExist) {
+              resolve(true);
+            } else if (attempts < maxAttempts) {
+              attempts++;
+              setTimeout(checkElements, interval);
+            } else {
+              reject(new Error(`Elements not found: ${selectors.filter(sel => !document.querySelector(sel)).join(', ')}`));
+            }
+          };
+          checkElements();
+        });
       }
     
-      document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM Loaded, #header-row exists:", !!document.querySelector("#header-row"));
-        console.log("Shepherd.js available:", typeof Shepherd !== 'undefined');
-      });
+      function startTour() {
+        console.log('Tour starting...');
+        if (typeof Shepherd === 'undefined') {
+          console.error('Shepherd.js not loaded.');
+          alert('Tour unavailable: Shepherd.js failed to load.');
+          return;
+        }
+        const criticalElements = [
+          '#header-row',
+          '.roulette-table',
+          '#selected-spins',
+          '#undo-spins-btn',
+          '.last-spins-container',
+          '.green-btn',
+          '#dynamic-table-heading',
+          '.betting-progression',
+          '#color-code-key',
+          '#spin-analysis',
+          '#save-load-session',
+          '#select-category',
+          '#casino-data-insights',
+          '#hot-cold-numbers',
+          '#sides-of-zero-accordion',
+          '#dozen-tracker',
+          '#top-strategies',
+          '#feedback-section'
+        ];
+        waitForElements(criticalElements)
+          .then(() => {
+            console.log('All critical elements found. Starting tour.');
+            try {
+              if (Shepherd.activeTour) {
+                Shepherd.activeTour.cancel();
+                console.log('Cancelled existing tour.');
+              }
+              tour.start();
+              console.log('Tour started successfully.');
+            } catch (error) {
+              console.error('Error starting tour:', error);
+              alert('Tour failed to start. Please refresh the page.');
+            }
+          })
+          .catch(error => {
+            console.error('Tour unavailable:', error.message);
+            alert(`Tour unavailable: ${error.message}. Please refresh or contact support.`);
+          });
+      }
     </script>
     """)
     
