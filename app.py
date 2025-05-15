@@ -2437,11 +2437,16 @@ def reset_casino_data():
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     try:
         print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
-        print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}")
+        print(f"Using casino winners: {state.use_casino_winners}, Hot Numbers: {state.casino_data['hot_numbers']}, Cold Numbers: {state.casino_data['cold_numbers']}, Top Pick Numbers: {top_pick_numbers.value}")
         
         print("create_dynamic_table: Calculating trending sections")
         sorted_sections = calculate_trending_sections()
         print(f"create_dynamic_table: sorted_sections={sorted_sections}")
+        
+        # Get top pick numbers and validate
+        top_picks = top_pick_numbers.value if top_pick_numbers.value else []
+        top_picks = [str(num) for num in top_picks if str(num).isdigit() and 0 <= int(num) <= 36]
+        print(f"create_dynamic_table: Top pick numbers={top_picks}")
         
         # If no spins yet, initialize with default even money focus
         if sorted_sections is None and strategy_name == "Best Even Money Bets":
@@ -2470,18 +2475,34 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
             print(f"create_dynamic_table: Hot numbers={hot_numbers}, Scores={dict(state.scores)}")
         
         # If still no highlights and no sorted_sections, provide a default message
-        if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights]):
-            print("create_dynamic_table: No spins and no highlights, returning default message")
-            return "<p>No spins yet. Select a strategy to see default highlights.</p>"
+        if sorted_sections is None and not any([trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_picks]):
+            print("create_dynamic_table: No spins, no highlights, and no top picks, returning default message")
+            return "<p>No spins yet. Select a strategy or adjust the top pick slider to see highlights.</p>"
         
-        print("create_dynamic_table: Rendering dynamic table HTML")
-        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, scores=state.scores)
+        print("create_dynamic_table: Rendering dynamic table HTML with top picks")
+        html = render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions, hot_numbers, scores=state.scores, top_picks=top_picks)
         print("create_dynamic_table: Table generated successfully")
         return html
     
     except Exception as e:
         print(f"create_dynamic_table: Error: {str(e)}")
-        raise  # Re-raise for debugging
+        return "<p>Error generating dynamic table. Please try again.</p>"
+
+# New helper function
+def parse_top_pick_numbers(top_pick_html):
+    """Extract top pick numbers from select_next_spin_top_pick HTML output."""
+    try:
+        import re
+        # Handle HTML like "<p>Top Pick: 5, 12, 23</p>" or variations
+        match = re.search(r"Top Pick: ([\d,\s]+)", top_pick_html, re.IGNORECASE)
+        if match:
+            numbers = [num.strip() for num in match.group(1).split(",") if num.strip().isdigit()]
+            return [num for num in numbers if 0 <= int(num) <= 36]
+        print("parse_top_pick_numbers: No valid numbers found in HTML")
+        return []
+    except Exception as e:
+        print(f"parse_top_pick_numbers: Error: {str(e)}")
+        return []
     
 # Function to get strongest numbers with neighbors
 def get_strongest_numbers_with_neighbors(num_count):
@@ -7142,16 +7163,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
-
-    show_trends_state = gr.State(value=False)  # Default to hiding trends
-    toggle_trends_label = gr.State(value="Show Trends")  # Default label when trends are hidden
-    analysis_cache = gr.State(value={})  # New: Cache for analysis results
+    show_trends_state = gr.State(value=False)
+    toggle_trends_label = gr.State(value="Show Trends")
+    analysis_cache = gr.State(value={})
+    top_pick_numbers = gr.State(value=[])  # New state to store top pick numbers
     spins_textbox = gr.Textbox(
         label="🎰 Selected Spins (Enter numbers like 5, 12, 0)",
         value="",
         interactive=True,
         elem_id="selected-spins"
     )
+
     
     gr.HTML("""
     <style>
@@ -9721,11 +9743,61 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             transform: scale(1.1) !important;
             transition: all 0.3s ease !important;
         }
-        
-        /* NEW: Enhanced Hot Number Corner Flash Effect */
+    
+        /* Existing dynamic table styles (partial, for context) */
         .dynamic-roulette-table td.hot-number {
             position: relative !important;
             overflow: visible !important;
+        }
+        .dynamic-roulette-table td.hot-number::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -3px !important;
+            left: -3px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #ffd700 !important;
+            border: 1px solid #ffffff !important;
+            animation: flashCorner 1.5s ease-in-out infinite !important;
+            z-index: 5 !important;
+        }
+        .dynamic-roulette-table td.hot-number::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -3px !important;
+            right: -3px !important;
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #ffd700 !important;
+            border: 1px solid #ffffff !important;
+            animation: flashCorner 1.5s ease-in-out infinite !important;
+            z-index: 5 !important;
+        }
+        /* New top-pick styling */
+        .dynamic-roulette-table td.top-pick {
+            background-color: rgba(255, 255, 224, 0.5) !important; /* Light yellow background */
+            border: 2px solid #ffd700 !important; /* Yellow border */
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important; /* Subtle glow */
+            position: relative !important;
+            transition: all 0.3s ease !important;
+        }
+        .dynamic-roulette-table td.top-pick:hover {
+            background-color: rgba(255, 255, 224, 0.7) !important;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8) !important;
+            transform: scale(1.05) !important;
+        }
+        .dynamic-roulette-table td.top-pick::after {
+            content: '🎯' !important; /* Target icon for top pick */
+            position: absolute !important;
+            top: -10px !important;
+            right: -10px !important;
+            font-size: 12px !important;
+            z-index: 6 !important;
+            animation: pulse 1.5s ease-in-out infinite !important;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
         }
         
         /* Top-left corner highlight */
@@ -12840,20 +12912,58 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
-
-# Add the top pick slider change handler (was previously missing in your code)
+    
+    # Target block
     try:
         top_pick_spin_count.change(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
-            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
+            fn=parse_top_pick_numbers,
+            inputs=[top_pick_display],
+            outputs=[top_pick_numbers],
+            _js="() => { return { msg: 'Parsing top pick numbers...' }; }"
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[
+                strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker
+            ],
+            outputs=[dynamic_table_output],
+            _js="() => { return { msg: 'Updating dynamic table with top picks...' }; }"
+        ).then(
+            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}, top_pick_numbers = {top_pick_numbers.value}"),
             inputs=[],
-            outputs=[]
+            outputs=[],
+            _js="() => { return { msg: 'Logged top pick update' }; }"
+        ).error(
+            fn=lambda error: gr.Warning(f"Error updating top pick highlights: {str(error)}"),
+            inputs=[gr.State(value="Unknown error")],
+            outputs=[],
+            _js="error => { return { msg: `Error: ${error.message}`, type: 'error' }; }"
         )
     except Exception as e:
         print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+        gr.Warning(f"Failed to initialize top pick slider: {str(e)}")
+    
+    try:
+        spins_textbox.change(
+            fn=validate_spins_input,
+            inputs=[spins_textbox],
+            outputs=[spins_display, last_spin_display]
+        ).then(
+            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
+            inputs=[spins_display, last_spin_count, show_trends_state],
+            outputs=[last_spin_display]
+        ).then(
+            # ... rest of the handler ...
+        )
+    except Exception as e:
+        print(f"Error in spins_textbox.change handler: {str(e)}")
+
 
 # Launch the interface
 print("Starting Gradio launch...")
