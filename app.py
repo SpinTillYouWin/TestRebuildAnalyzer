@@ -203,6 +203,10 @@ class RouletteState:
         self.alerted_patterns = set()
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
+        self.precomputed_top_picks = {
+            "36": ["15", "23", "4", "31", "8", "27", "11", "33", "2", "19"]
+        }
+        self.top_picks = []
 
     def reset(self):
         use_casino_winners = self.use_casino_winners
@@ -429,6 +433,10 @@ class RouletteState:
 
 # Lines before (context, unchanged)
 state = RouletteState()
+import random
+state.last_spins = [str(random.randint(0, 36)) for _ in range(36)]  # Replace with real spin data
+select_next_spin_top_pick(36)
+print(f"Top 10 picks: {[str(score[0]) for score in state.top_picks[:10]]}")
 state.last_spins = []
 state.scores = {i: 0 for i in range(37)}
 state.casino_data = {"hot_numbers": [], "cold_numbers": []}
@@ -2226,7 +2234,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                     tooltip = f"Hit {hit_count} times"
                     if is_top_pick:
                         tooltip += ", Top Pick"
-                    html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center; position: relative;" class="{cell_class}" data-tooltip="{tooltip}">{num}{"<span class=\"top-pick-icon\">★</span>" if is_top_pick else ""}</td>'
+                    top_pick_icon = '<span class="top-pick-icon">★</span>' if is_top_pick else ''
+                    html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center; position: relative;" class="{cell_class}" data-tooltip="{tooltip}">{num}{top_pick_icon}</td>'
             if row_idx == 0:
                 bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
                 border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
@@ -2512,7 +2521,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         
         # Precomputed top picks lookup table (top 10 numbers for 36 spins)
         PRECOMPUTED_TOP_PICKS = {
-            "36": ["7", "14", "3", "22", "18", "29", "12", "35", "26", "0"]
+            "36": ["15", "23", "4", "31", "8", "27", "11", "33", "2", "19"]
         }
         # Use fixed spin count of 36
         spin_count = "36"
