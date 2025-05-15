@@ -2138,29 +2138,33 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
 
         # Define casino winners if highlighting is enabled, only for non-zero data
         casino_winners = {"hot_numbers": set(), "cold_numbers": set(), "even_money": set(), "dozens": set(), "columns": set()}
-        if state.use_casino_winners:
-            casino_winners["hot_numbers"] = set(state.casino_data["hot_numbers"].keys())
-            casino_winners["cold_numbers"] = set(state.casino_data["cold_numbers"].keys())
-            if any(state.casino_data["even_odd"].values()):
-                casino_winners["even_money"].add(max(state.casino_data["even_odd"], key=state.casino_data["even_odd"].get))
-            if any(state.casino_data["red_black"].values()):
-                casino_winners["even_money"].add(max(state.casino_data["red_black"], key=state.casino_data["red_black"].get))
-            if any(state.casino_data["low_high"].values()):
-                casino_winners["even_money"].add(max(state.casino_data["low_high"], key=state.casino_data["low_high"].get))
-            if any(state.casino_data["dozens"].values()):
-                casino_winners["dozens"] = {max(state.casino_data["dozens"], key=state.casino_data["dozens"].get)}
-            if any(state.casino_data["columns"].values()):
-                casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get)}
+        if hasattr(state, 'use_casino_winners') and state.use_casino_winners and hasattr(state, 'casino_data'):
+            print("render_dynamic_table_html: Processing casino winners")
+            if isinstance(state.casino_data, dict):
+                casino_winners["hot_numbers"] = set(state.casino_data.get("hot_numbers", {}).keys())
+                casino_winners["cold_numbers"] = set(state.casino_data.get("cold_numbers", {}).keys())
+                if state.casino_data.get("even_odd") and any(state.casino_data["even_odd"].values()):
+                    casino_winners["even_money"].add(max(state.casino_data["even_odd"], key=state.casino_data["even_odd"].get, default=None))
+                if state.casino_data.get("red_black") and any(state.casino_data["red_black"].values()):
+                    casino_winners["even_money"].add(max(state.casino_data["red_black"], key=state.casino_data["red_black"].get, default=None))
+                if state.casino_data.get("low_high") and any(state.casino_data["low_high"].values()):
+                    casino_winners["even_money"].add(max(state.casino_data["low_high"], key=state.casino_data["low_high"].get, default=None))
+                if state.casino_data.get("dozens") and any(state.casino_data["dozens"].values()):
+                    casino_winners["dozens"] = {max(state.casino_data["dozens"], key=state.casino_data["dozens"].get, default=None)}
+                if state.casino_data.get("columns") and any(state.casino_data["columns"].values()):
+                    casino_winners["columns"] = {max(state.casino_data["columns"], key=state.casino_data["columns"].get, default=None)}
             print(f"render_dynamic_table_html: Casino Winners Set: Hot={casino_winners['hot_numbers']}, Cold={casino_winners['cold_numbers']}, Even Money={casino_winners['even_money']}, Dozens={casino_winners['dozens']}, Columns={casino_winners['columns']}")
+        else:
+            print("render_dynamic_table_html: Casino winners disabled or state.casino_data missing")
 
-        # Initialize highlights for outside bets using suggestions (for Neighbours of Strong Number strategy)
+        # Initialize highlights for outside bets using suggestions
         suggestion_highlights = {}
-        if suggestions:
+        if suggestions and isinstance(suggestions, dict):
+            print("render_dynamic_table_html: Processing suggestions")
             best_even_money = None
             best_bet = None
             play_two_first = None
             play_two_second = None
-
             for key, value in suggestions.items():
                 if key == "best_even_money" and "(Tied with" not in value:
                     best_even_money = value.split(":")[0].strip()
@@ -2168,9 +2172,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                     best_bet = value.split(":")[0].strip()
                 elif key == "play_two" and "(Tied with" not in value:
                     parts = value.split(":", 1)[1].split(" and ")
-                    play_two_first = parts[0].split("(")[0].strip()
-                    play_two_second = parts[1].split("(")[0].strip()
-
+                    play_two_first = parts[0].split("(")[0].strip() if len(parts) > 0 else None
+                    play_two_second = parts[1].split("(")[0].strip() if len(parts) > 1 else None
             if best_even_money:
                 suggestion_highlights[best_even_money] = top_color
             if best_bet:
@@ -2181,6 +2184,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     suggestion_highlights[play_two_first] = top_color
                 suggestion_highlights[play_two_second] = lower_color
+            print(f"render_dynamic_table_html: Suggestion highlights={suggestion_highlights}")
 
         table_layout = [
             ["", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
@@ -2217,10 +2221,10 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
             </colgroup>
         '''
         
-        # Ensure hot_numbers and top_picks are sets for consistent comparison
-        hot_numbers = set(hot_numbers) if hot_numbers else set()
-        top_picks = set(top_picks) if top_picks else set()
-        scores = scores if scores is not None else {}
+        # Ensure hot_numbers and top_picks are sets
+        hot_numbers = set(str(num) for num in hot_numbers) if hot_numbers and isinstance(hot_numbers, (list, set)) else set()
+        top_picks = set(str(num) for num in top_picks) if top_picks and isinstance(top_picks, (list, set)) else set()
+        scores = scores if scores and isinstance(scores, dict) else {}
         print(f"render_dynamic_table_html: Hot numbers={hot_numbers}, Top picks={top_picks}, Scores={dict(scores)}")
 
         for row_idx, row in enumerate(table_layout):
@@ -2230,7 +2234,7 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                     html += '<td style="height: 40px; border-color: black; box-sizing: border-box;"></td>'
                 else:
                     base_color = colors.get(num, "black")
-                    highlight_color = number_highlights.get(num, base_color)
+                    highlight_color = number_highlights.get(num, base_color) if isinstance(number_highlights, dict) else base_color
                     is_top_pick = num in top_picks
                     is_hot = num in hot_numbers
                     cell_class = "has-tooltip"
@@ -2238,14 +2242,13 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                         cell_class += " top-pick"
                     if is_hot:
                         cell_class += " hot-number"
+                    border_style = "1px solid black"
                     if num in casino_winners["hot_numbers"]:
                         border_style = "3px solid #FFD700"
                     elif num in casino_winners["cold_numbers"]:
                         border_style = "3px solid #C0C0C0"
-                    else:
-                        border_style = "1px solid black"
                     text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                    hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
+                    hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0) if scores else 0
                     tooltip = f"Hit {hit_count} times"
                     if is_hot:
                         tooltip += ", Hot Number"
@@ -2265,9 +2268,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 bg_color = suggestion_highlights.get("3rd Column", top_color if trending_column == "3rd Column" else (middle_color if second_column == "3rd Column" else "white"))
                 border_style = "3px dashed #FFD700" if "3rd Column" in casino_winners["columns"] else "1px solid black"
                 tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-                col_score = state.column_scores.get("3rd Column", 0)
-                max_col_score = max(state.column_scores.values(), default=1) or 1
-                fill_percentage = (col_score / max_col_score) * 100
+                col_score = state.column_scores.get("3rd Column", 0) if hasattr(state, 'column_scores') and isinstance(state.column_scores, dict) else 0
+                max_col_score = max(state.column_scores.values(), default=1) if hasattr(state, 'column_scores') and state.column_scores else 1
+                fill_percentage = (col_score / max_col_score * 100) if max_col_score > 0 else 0
                 html += f'''
                 <td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
                     <span>3rd Column</span>
@@ -2278,9 +2281,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 bg_color = suggestion_highlights.get("2nd Column", top_color if trending_column == "2nd Column" else (middle_color if second_column == "2nd Column" else "white"))
                 border_style = "3px dashed #FFD700" if "2nd Column" in casino_winners["columns"] else "1px solid black"
                 tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-                col_score = state.column_scores.get("2nd Column", 0)
-                max_col_score = max(state.column_scores.values(), default=1) or 1
-                fill_percentage = (col_score / max_col_score) * 100
+                col_score = state.column_scores.get("2nd Column", 0) if hasattr(state, 'column_scores') and isinstance(state.column_scores, dict) else 0
+                max_col_score = max(state.column_scores.values(), default=1) if hasattr(state, 'column_scores') and state.column_scores else 1
+                fill_percentage = (col_score / max_col_score * 100) if max_col_score > 0 else 0
                 html += f'''
                 <td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
                     <span>2nd Column</span>
@@ -2291,9 +2294,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 bg_color = suggestion_highlights.get("1st Column", top_color if trending_column == "1st Column" else (middle_color if second_column == "1st Column" else "white"))
                 border_style = "3px dashed #FFD700" if "1st Column" in casino_winners["columns"] else "1px solid black"
                 tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-                col_score = state.column_scores.get("1st Column", 0)
-                max_col_score = max(state.column_scores.values(), default=1) or 1
-                fill_percentage = (col_score / max_col_score) * 100
+                col_score = state.column_scores.get("1st Column", 0) if hasattr(state, 'column_scores') and isinstance(state.column_scores, dict) else 0
+                max_col_score = max(state.column_scores.values(), default=1) if hasattr(state, 'column_scores') and state.column_scores else 1
+                fill_percentage = (col_score / max_col_score * 100) if max_col_score > 0 else 0
                 html += f'''
                 <td style="background-color: {bg_color}; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
                     <span>1st Column</span>
@@ -2307,9 +2310,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("Low", top_color if trending_even_money == "Low" else (middle_color if second_even_money == "Low" else (lower_color if third_even_money == "Low" else "white")))
         border_style = "3px dashed #FFD700" if "Low" in casino_winners["even_money"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        low_score = state.even_money_scores.get("Low", 0)
-        max_even_money_score = max(state.even_money_scores.values(), default=1) or 1
-        fill_percentage = (low_score / max_even_money_score) * 100
+        low_score = state.even_money_scores.get("Low", 0) if hasattr(state, 'even_money_scores') and isinstance(state.even_money_scores, dict) else 0
+        max_even_money_score = max(state.even_money_scores.values(), default=1) if hasattr(state, 'even_money_scores') and state.even_money_scores else 1
+        fill_percentage = (low_score / max_even_money_score * 100) if max_even_money_score > 0 else 0
         html += f'''
         <td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>Low (1 to 18)</span>
@@ -2319,8 +2322,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("High", top_color if trending_even_money == "High" else (middle_color if second_even_money == "High" else (lower_color if third_even_money == "High" else "white")))
         border_style = "3px dashed #FFD700" if "High" in casino_winners["even_money"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        high_score = state.even_money_scores.get("High", 0)
-        fill_percentage = (high_score / max_even_money_score) * 100
+        high_score = state.even_money_scores.get("High", 0) if hasattr(state, 'even_money_scores') and isinstance(state.even_money_scores, dict) else 0
+        fill_percentage = (high_score / max_even_money_score * 100) if max_even_money_score > 0 else 0
         html += f'''
         <td colspan="6" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>High (19 to 36)</span>
@@ -2335,9 +2338,9 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("1st Dozen", top_color if trending_dozen == "1st Dozen" else (middle_color if second_dozen == "1st Dozen" else "white"))
         border_style = "3px dashed #FFD700" if "1st Dozen" in casino_winners["dozens"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        dozen_score = state.dozen_scores.get("1st Dozen", 0)
-        max_dozen_score = max(state.dozen_scores.values(), default=1) or 1
-        fill_percentage = (dozen_score / max_dozen_score) * 100
+        dozen_score = state.dozen_scores.get("1st Dozen", 0) if hasattr(state, 'dozen_scores') and isinstance(state.dozen_scores, dict) else 0
+        max_dozen_score = max(state.dozen_scores.values(), default=1) if hasattr(state, 'dozen_scores') and state.dozen_scores else 1
+        fill_percentage = (dozen_score / max_dozen_score * 100) if max_dozen_score > 0 else 0
         html += f'''
         <td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>1st Dozen</span>
@@ -2347,8 +2350,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("2nd Dozen", top_color if trending_dozen == "2nd Dozen" else (middle_color if second_dozen == "2nd Dozen" else "white"))
         border_style = "3px dashed #FFD700" if "2nd Dozen" in casino_winners["dozens"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        dozen_score = state.dozen_scores.get("2nd Dozen", 0)
-        fill_percentage = (dozen_score / max_dozen_score) * 100
+        dozen_score = state.dozen_scores.get("2nd Dozen", 0) if hasattr(state, 'dozen_scores') and isinstance(state.dozen_scores, dict) else 0
+        fill_percentage = (dozen_score / max_dozen_score * 100) if max_dozen_score > 0 else 0
         html += f'''
         <td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>2nd Dozen</span>
@@ -2358,8 +2361,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("3rd Dozen", top_color if trending_dozen == "3rd Dozen" else (middle_color if second_dozen == "3rd Dozen" else "white"))
         border_style = "3px dashed #FFD700" if "3rd Dozen" in casino_winners["dozens"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        dozen_score = state.dozen_scores.get("3rd Dozen", 0)
-        fill_percentage = (dozen_score / max_dozen_score) * 100
+        dozen_score = state.dozen_scores.get("3rd Dozen", 0) if hasattr(state, 'dozen_scores') and isinstance(state.dozen_scores, dict) else 0
+        fill_percentage = (dozen_score / max_dozen_score * 100) if max_dozen_score > 0 else 0
         html += f'''
         <td colspan="4" style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>3rd Dozen</span>
@@ -2375,9 +2378,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("Odd", top_color if trending_even_money == "Odd" else (middle_color if second_even_money == "Odd" else (lower_color if third_even_money == "Odd" else "white")))
         border_style = "3px dashed #FFD700" if "Odd" in casino_winners["even_money"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        odd_score = state.even_money_scores.get("Odd", 0)
-        max_even_money_score = max(state.even_money_scores.values(), default=1) or 1
-        fill_percentage = (odd_score / max_even_money_score) * 100
+        odd_score = state.even_money_scores.get("Odd", 0) if hasattr(state, 'even_money_scores') and isinstance(state.even_money_scores, dict) else 0
+        fill_percentage = (odd_score / max_even_money_score * 100) if max_even_money_score > 0 else 0
         html += f'''
         <td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>ODD</span>
@@ -2387,8 +2389,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("Red", top_color if trending_even_money == "Red" else (middle_color if second_even_money == "Red" else (lower_color if third_even_money == "Red" else "white")))
         border_style = "3px dashed #FFD700" if "Red" in casino_winners["even_money"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        red_score = state.even_money_scores.get("Red", 0)
-        fill_percentage = (red_score / max_even_money_score) * 100
+        red_score = state.even_money_scores.get("Red", 0) if hasattr(state, 'even_money_scores') and isinstance(state.even_money_scores, dict) else 0
+        fill_percentage = (red_score / max_even_money_score * 100) if max_even_money_score > 0 else 0
         html += f'''
         <td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>RED</span>
@@ -2398,8 +2400,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("Black", top_color if trending_even_money == "Black" else (middle_color if second_even_money == "Black" else (lower_color if third_even_money == "Black" else "white")))
         border_style = "3px dashed #FFD700" if "Black" in casino_winners["even_money"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        black_score = state.even_money_scores.get("Black", 0)
-        fill_percentage = (black_score / max_even_money_score) * 100
+        black_score = state.even_money_scores.get("Black", 0) if hasattr(state, 'even_money_scores') and isinstance(state.even_money_scores, dict) else 0
+        fill_percentage = (black_score / max_even_money_score * 100) if max_even_money_score > 0 else 0
         html += f'''
         <td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>BLACK</span>
@@ -2409,8 +2411,8 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         bg_color = suggestion_highlights.get("Even", top_color if trending_even_money == "Even" else (middle_color if second_even_money == "Even" else (lower_color if third_even_money == "Even" else "white")))
         border_style = "3px dashed #FFD700" if "Even" in casino_winners["even_money"] else "1px solid black"
         tier_class = "top-tier" if bg_color == top_color else "middle-tier" if bg_color == middle_color else "lower-tier" if bg_color == lower_color else ""
-        even_score = state.even_money_scores.get("Even", 0)
-        fill_percentage = (even_score / max_even_money_score) * 100
+        even_score = state.even_money_scores.get("Even", 0) if hasattr(state, 'even_money_scores') and isinstance(state.even_money_scores, dict) else 0
+        fill_percentage = (even_score / max_even_money_score * 100) if max_even_money_score > 0 else 0
         html += f'''
         <td style="background-color: {bg_color}; color: black; border: {border_style}; padding: 0; font-size: 10px; vertical-align: middle; box-sizing: border-box; height: 40px; text-align: center;" class="{tier_class}">
             <span>EVEN</span>
@@ -2479,14 +2481,14 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 50% { box-shadow: 0 0 20px #ffd700; }
             }
         </style>
-        ''' % (top_color, middle_color, lower_color)
+        ''' % (top_color or "rgba(255, 255, 0, 0.5)", middle_color or "rgba(0, 255, 255, 0.5)", lower_color or "rgba(0, 255, 0, 0.5)")
         
+        print)
         print("render_dynamic_table_html: Table HTML rendered successfully")
         return html
     except Exception as e:
         print(f"render_dynamic_table_html: Error: {str(e)}")
         return "<p>Error rendering table HTML.</p>"
-
 
 def update_casino_data(spins_count, even_percent, odd_percent, red_percent, black_percent, low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent, col1_percent, col2_percent, col3_percent, use_winners):
     """Parse casino data inputs, update state, and generate HTML output."""
