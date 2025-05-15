@@ -5427,7 +5427,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-def select_next_spin_top_pick(last_spin_count, trait_filter=None):
+def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_weight=100, secondary_match_weight=10, wheel_side_weight=5, section_weight=10, recency_weight=1, hit_bonus_weight=5, neighbor_weight=2):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
@@ -5504,7 +5504,6 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None):
         hottest_traits = []
         seen_categories = set()
         for trait, percentage in sorted_traits:
-            # Skip if this trait conflicts with a higher-percentage trait in the same category
             if trait in ["Red", "Black"]:
                 if "Red-Black" in seen_categories:
                     continue
@@ -5623,12 +5622,12 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None):
             wheel_side_score = 0
             if "Wheel Sections" in trait_filter:
                 if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                    wheel_side_score = 5
-            section_score = 10 if top_section and num in betting_sections.get(top_section, []) else 0
-            recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
+                    wheel_side_score = 1  # Will be scaled by weight
+            section_score = 1 if top_section and num in betting_sections.get(top_section, []) else 0
+            recency_score = (last_spin_count - (last_positions[num] + 1)) if last_positions[num] >= 0 else 0
             if last_positions[num] == last_spin_count - 1:
                 recency_score = max(recency_score, 10)
-            hit_bonus = 5 if hit_counts[num] > 0 else 0
+            hit_bonus = 1 if hit_counts[num] > 0 else 0
             neighbor_score = neighbor_boost[num] if "Neighbors" in trait_filter else 0
             tiebreaker_score = 0
             if num == 0:
@@ -5656,7 +5655,16 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None):
                     if num in nums:
                         tiebreaker_score += column_counts[name]
                         break
-            total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
+            # Apply configurable weights
+            total_score = (
+                matching_traits * trait_match_weight +
+                secondary_matches * secondary_match_weight +
+                wheel_side_score * wheel_side_weight +
+                section_score * section_weight +
+                recency_score * recency_weight +
+                hit_bonus * hit_bonus_weight +
+                neighbor_score * neighbor_weight
+            )
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
         scores.sort(key=lambda x: (-x[2], -x[3], -x[9], -x[6], -x[0]))
@@ -5709,22 +5717,23 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None):
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick in COLU
+MNS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
-            reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
+            reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)} (weight: {trait_match_weight})")
         if section_score > 0 and "Wheel Sections" in trait_filter:
-            reasons.append(f"Located in the hottest wheel section: {top_section}")
+            reasons.append(f"Located in the hottest wheel section: {top_section} (weight: {section_weight})")
         if recency_score > 0:
             last_pos = last_positions[top_pick]
-            reasons.append(f"Recently appeared in the spin history (position {last_pos})")
+            reasons.append(f"Recently appeared in the spin history (position {last_pos}) (weight: {recency_weight})")
         if hit_bonus > 0:
-            reasons.append(f"Has appeared in the spin history")
+            reasons.append(f"Has appeared in the spin history (weight: {hit_bonus_weight})")
         if wheel_side_score > 0 and "Wheel Sections" in trait_filter:
-            reasons.append(f"On the most hit side of the wheel: {most_hit_side}")
+            reasons.append(f"On the most hit side of the wheel: {most_hit_side} (weight: {wheel_side_weight})")
         if neighbor_score > 0 and "Neighbors" in trait_filter:
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
-            reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
+            reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)} (weight: {neighbor_weight})")
         if tiebreaker_score > 0:
             reasons.append(f"Boosted by aggregated trait scores (tiebreaker: {tiebreaker_score})")
         reasons_html = "<ul>" + "".join(f"<li>{reason}</li>" for reason in reasons) + "</ul>" if reasons else "<p>No specific reasons available.</p>"
@@ -6029,7 +6038,7 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None):
             text-align: center;
           }}
           .secondary-picks h5 {{
-            margin: 0 0 10px 0; 
+            margin: 0 0 10px 0;
             color: #FFD700;
             font-family: 'Montserrat', sans-serif;
             font-size: 16px;
@@ -7844,13 +7853,77 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 gr.Markdown("### 🎯 Select Your Top Pick")
                 gr.Markdown("Adjust the slider to analyze the last X spins and find the top pick for your next spin. Add spins using the roulette table below or enter them manually.")
-                # NEW: Add CheckboxGroup for trait filtering
                 trait_filter = gr.CheckboxGroup(
                     label="Include in Analysis",
                     choices=["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"],
-                    value=["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"],  # Default: all selected
+                    value=["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"],
                     interactive=True,
                     elem_id="trait-filter"
+                )
+                # NEW: Number inputs for scoring weights
+                gr.Markdown("#### Adjust Scoring Weights")
+                trait_match_weight = gr.Number(
+                    label="Trait Match Weight",
+                    value=100,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="trait-match-weight"
+                )
+                secondary_match_weight = gr.Number(
+                    label="Secondary Match Weight",
+                    value=10,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="secondary-match-weight"
+                )
+                wheel_side_weight = gr.Number(
+                    label="Wheel Side Weight",
+                    value=5,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="wheel-side-weight"
+                )
+                section_weight = gr.Number(
+                    label="Wheel Section Weight",
+                    value=10,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="section-weight"
+                )
+                recency_weight = gr.Number(
+                    label="Recency Weight",
+                    value=1,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="recency-weight"
+                )
+                hit_bonus_weight = gr.Number(
+                    label="Hit Bonus Weight",
+                    value=5,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="hit-bonus-weight"
+                )
+                neighbor_weight = gr.Number(
+                    label="Neighbor Boost Weight",
+                    value=2,
+                    minimum=0,
+                    maximum=1000,
+                    step=1,
+                    interactive=True,
+                    elem_id="neighbor-weight"
                 )
                 top_pick_spin_count = gr.Slider(
                     label="Number of Spins to Analyze",
@@ -7863,7 +7936,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 top_pick_display = gr.HTML(
                     label="Top Pick",
-                    value=select_next_spin_top_pick(18),  # Will be updated to include trait_filter
+                    value=select_next_spin_top_pick(18, ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"]),
                     elem_classes=["top-pick-container"]
                 )
         gr.HTML("""
@@ -7895,6 +7968,20 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     flex-wrap: wrap !important;
                     gap: 10px !important;
                 }
+                .gr-number {
+                    margin-bottom: 8px !important;
+                }
+                .gr-number label {
+                    font-size: 14px !important;
+                    color: #333 !important;
+                    font-weight: bold !important;
+                }
+                .gr-number input {
+                    border: 1px solid #2196f3 !important;
+                    border-radius: 4px !important;
+                    padding: 5px !important;
+                    width: 100px !important;
+                }
             </style>
         """)
     
@@ -7904,7 +7991,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-    
+  
     # Last Spins Display and Slider (Row 3)
     with gr.Row():
         with gr.Column():
@@ -13058,29 +13145,84 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 # Add the top pick slider change handler (was previously missing in your code)
     try:
         top_pick_spin_count.change(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count, trait_filter],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+try:
+    top_pick_spin_count.change(
+        fn=select_next_spin_top_pick,
+        inputs=[
+            top_pick_spin_count,
+            trait_filter,
+            trait_match_weight,
+            secondary_match_weight,
+            wheel_side_weight,
+            section_weight,
+            recency_weight,
+            hit_bonus_weight,
+            neighbor_weight
+        ],
+        outputs=[top_pick_display]
+    ).then(
+        fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
+        inputs=[],
+        outputs=[]
+    )
+except Exception as e:
+    print(f"Error in top_pick_spin_count.change handler: {str(e)}")
 
+try:
+    trait_filter.change(
+        fn=select_next_spin_top_pick,
+        inputs=[
+            top_pick_spin_count,
+            trait_filter,
+            trait_match_weight,
+            secondary_match_weight,
+            wheel_side_weight,
+            section_weight,
+            recency_weight,
+            hit_bonus_weight,
+            neighbor_weight
+        ],
+        outputs=[top_pick_display]
+    ).then(
+        fn=lambda: print(f"After trait_filter change: state.last_spins = {state.last_spins}"),
+        inputs=[],
+        outputs=[]
+    )
+except Exception as e:
+    print(f"Error in trait_filter.change handler: {str(e)}")
+
+# NEW: Handlers for weight changes
+for weight_input in [
+    trait_match_weight,
+    secondary_match_weight,
+    wheel_side_weight,
+    section_weight,
+    recency_weight,
+    hit_bonus_weight,
+    neighbor_weight
+]:
     try:
-        trait_filter.change(
+        weight_input.change(
             fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count, trait_filter],
+            inputs=[
+                top_pick_spin_count,
+                trait_filter,
+                trait_match_weight,
+                secondary_match_weight,
+                wheel_side_weight,
+                section_weight,
+                recency_weight,
+                hit_bonus_weight,
+                neighbor_weight
+            ],
             outputs=[top_pick_display]
         ).then(
-            fn=lambda: print(f"After trait_filter change: state.last_spins = {state.last_spins}"),
+            fn=lambda: print(f"After weight change: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
         )
     except Exception as e:
-        print(f"Error in trait_filter.change handler: {str(e)}")
+        print(f"Error in weight_input.change handler: {str(e)}")
 
 # Launch the interface
 print("Starting Gradio launch...")
