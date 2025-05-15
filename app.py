@@ -12785,15 +12785,23 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
 
+    # Target block: spins_textbox.change (after update)
     try:
         spins_textbox.change(
             fn=validate_spins_input,
             inputs=[spins_textbox],
             outputs=[spins_display, last_spin_display]
         ).then(
+            fn=sync_spins_display,
+            inputs=[spins_display],
+            outputs=[spins_display],
+            _js="() => { return { msg: 'Synchronizing spins...' }; }",
+            api_name="sync_spins"
+        ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
+            outputs=[last_spin_display],
+            _js="() => { return { msg: 'Formatting spins display...' }; }"
         ).then(
             fn=analyze_spins,
             inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
@@ -12802,15 +12810,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
                 dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
+            ],
+            _js="() => { return { msg: 'Analyzing spins...' }; }"
         ).then(
             fn=update_spin_counter,
             inputs=[],
-            outputs=[spin_counter]
+            outputs=[spin_counter],
+            _js="() => { return { msg: 'Updating spin counter...' }; }"
         ).then(
             fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+            inputs=[
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, 
+                dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, 
+                dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output],
+            _js="() => { return { msg: 'Running dozen tracker...' }; }"
         ).then(
             fn=even_money_tracker,
             inputs=[
@@ -12818,27 +12833,70 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_hits_dropdown,
                 even_money_tracker_alert_checkbox,
                 even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
                 even_money_tracker_identical_traits_checkbox,
                 even_money_tracker_consecutive_identical_dropdown
             ],
-            outputs=[gr.State(), even_money_tracker_output]
+            outputs=[gr.State(), even_money_tracker_output],
+            _js="() => { return { msg: 'Running even money tracker...' }; }"
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display],
+            _js="() => { return { msg: 'Summarizing spin traits...' }; }"
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display],
+            _js="() => { return { msg: 'Calculating hit percentages...' }; }"
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions],
+            _js="() => { return { msg: 'Suggesting hot/cold numbers...' }; }"
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display],
+            _js="() => { return { msg: 'Selecting next spin top pick...' }; }"
         ).then(
             fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
             inputs=[],
-            outputs=[]
+            outputs=[],
+            _js="() => { return { msg: 'Logging state...' }; }"
+        ).success(
+            fn=lambda: None,
+            _js="() => { return { msg: 'Spin analysis completed successfully.', type: 'success' }; }"
+        ).error(
+            fn=lambda error: gr.Warning(f"Error in spin analysis: {str(error)}"),
+            inputs=[gr.State(value="Unknown error")],
+            outputs=[],
+            _js="error => { return { msg: `Error: ${error.message}`, type: 'error' }; }"
         )
     except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
+        print(f"Error setting up spins_textbox.change handler: {str(e)}")
+        gr.Warning(f"Failed to initialize spin analysis: {str(e)}")
+
+    # Helper function to synchronize spins_display and state.last_spins (unchanged)
+    def sync_spins_display(spins_display):
+        """
+        Ensure state.last_spins matches spins_display.
+        
+        Args:
+            spins_display (str): The current spins_display value.
+        
+        Returns:
+            str: The synchronized spins_display value.
+        """
+        # Parse spins_display into state.last_spins
+        if spins_display and spins_display.strip():
+            state.last_spins = [num.strip() for num in spins_display.split(",") if num.strip()]
+        else:
+            state.last_spins = []
+        # Return the synchronized spins_display
+        return ", ".join(state.last_spins) if state.last_spins else ""
     
 
     def toggle_labouchere(progression):
