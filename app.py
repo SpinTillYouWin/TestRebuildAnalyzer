@@ -5426,7 +5426,6 @@ def cache_analysis(spins, last_spin_count):
         print(f"cache_analysis: Cached result for key {cache_key}")
     return result
 
-
 def select_next_spin_top_pick(last_spin_count):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
@@ -5633,8 +5632,18 @@ def select_next_spin_top_pick(last_spin_count):
             top_picks = [x for x in scores if x[2] >= min_traits][:10]
         else:
             top_picks = scores[:10]
-        state.current_top_pick = top_picks[0][0]
-        top_pick = top_picks[0][0]
+        if top_picks:
+            state.current_top_pick = top_picks[0][0]
+            state.top_picks = [pick[0] for pick in top_picks[:10]]  # Store up to 10 picks
+            print(f"select_next_spin_top_pick: Primary Top Pick set to {state.current_top_pick}")
+            print(f"select_next_spin_top_pick: All Top Picks: {state.top_picks}")
+        else:
+            state.current_top_pick = None
+            state.top_picks = []
+            print(f"select_next_spin_top_pick: No Top Picks selected, spins may be empty")
+        top_pick = top_picks[0][0] if top_picks else None
+        if not top_pick:
+            return "<p>No top pick selected.</p>"
         # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
@@ -5670,25 +5679,25 @@ def select_next_spin_top_pick(last_spin_count):
         reasons = []
         matched_traits = []
         for trait in hottest_traits:
-            if trait in EVEN_MONEY and top_pick in EVEN_MONEY[trait]:
+            if trait in EVEN_MONEY and top_pick_int in EVEN_MONEY[trait]:
                 matched_traits.append(trait)
-            elif trait in DOZENS and top_pick in DOZENS[trait]:
+            elif trait in DOZENS and top_pick_int in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
+            elif trait in COLUMNS and top_pick_int in COLUMNS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
         if section_score > 0:
             reasons.append(f"Located in the hottest wheel section: {top_section}")
         if recency_score > 0:
-            last_pos = last_positions[top_pick]
+            last_pos = last_positions[top_pick_int]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
         if hit_bonus > 0:
             reasons.append(f"Has appeared in the spin history")
         if wheel_side_score > 0:
             reasons.append(f"On the most hit side of the wheel: {most_hit_side}")
         if neighbor_score > 0:
-            neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
+            neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick_int, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         if tiebreaker_score > 0:
             reasons.append(f"Boosted by aggregated trait scores (tiebreaker: {tiebreaker_score})")
@@ -5715,7 +5724,7 @@ def select_next_spin_top_pick(last_spin_count):
                     num_characteristics.append("Odd")
                 if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"]:
                     num_characteristics.append("High")
             for name, nums in DOZENS.items():
                 if num in nums:
@@ -6109,7 +6118,87 @@ def select_next_spin_top_pick(last_spin_count):
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
         return "<p>Error selecting top pick.</p>"
-
+def render_top_picks_display():
+    try:
+        if not hasattr(state, 'top_picks') or not state.top_picks:
+            print("render_top_picks_display: No Top Picks available")
+            return "<p>No Top Picks available.</p>"
+        
+        html = '''
+        <div class="top-picks-display">
+          <h4>Top 10 Picks</h4>
+          <div class="top-picks-container">
+        '''
+        for i, num in enumerate(state.top_picks[:10], 1):
+            color = colors.get(str(num), "black")
+            html += f'''
+            <span class="top-pick-badge {color}" data-number="{num}">{i}. {num}</span>
+            '''
+        html += '''
+          </div>
+        </div>
+        <style>
+          .top-picks-display {
+            background: linear-gradient(135deg, #2E8B57, #FFD700);
+            border: 2px solid #FFD700;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+          .top-picks-display h4 {
+            margin: 0 0 10px 0;
+            color: #FFD700;
+            font-size: 20px;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+          }
+          .top-picks-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+          }
+          .top-pick-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff !important;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+          .top-pick-badge.red { background-color: red; }
+          .top-pick-badge.black { background-color: black; }
+          .top-pick-badge.green { background-color: green; }
+          .top-pick-badge:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+          }
+          @media (max-width: 600px) {
+            .top-pick-badge {
+              width: 40px;
+              height: 40px;
+              font-size: 14px;
+            }
+            .top-picks-display h4 {
+              font-size: 18px;
+            }
+          }
+        </style>
+        '''
+        print(f"render_top_picks_display: Generated HTML for Top Picks: {state.top_picks}")
+        return html
+    except Exception as e:
+        print(f"render_top_picks_display: Error: {str(e)}")
+        return "<p>Error displaying Top Picks.</p>"
+        
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # T&C and Privacy Policy Modal (Fixed Positioning)
@@ -8292,16 +8381,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         value=show_strategy_recommendations("Best Even Money Bets", 2, 1),
                         elem_classes=["strategy-box"]
                     )
-    
+        
         # Column for Dynamic Roulette Table (Right Side)
         with gr.Column(scale=4, min_width=700, elem_classes="dynamic-table-container"):
+            top_picks_display = gr.HTML(
+                label="Top 10 Picks",
+                value=render_top_picks_display,
+                elem_classes=["top-picks-display"]
+            )
             gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
             dynamic_table_output = gr.HTML(
                 label="Dynamic Table",
                 value=create_dynamic_table(strategy_name="Best Even Money Bets"),
                 elem_classes=["scrollable-table", "large-table"]
             )
-            
+
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
