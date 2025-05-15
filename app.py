@@ -2216,8 +2216,17 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                     cell_class = "hot-number has-tooltip"
                 else:
                     cell_class = "has-tooltip"
-                if hasattr(state, 'current_top_pick') and state.current_top_pick is not None and int(num) == state.current_top_pick:
-                    cell_class += " top-pick-number"
+                if hasattr(state, 'current_top_pick') and state.current_top_pick is not None:
+                    try:
+                        if int(num) == int(state.current_top_pick):
+                            cell_class += " top-pick-number"
+                            print(f"render_dynamic_table_html: Added top-pick-number for num={num}, current_top_pick={state.current_top_pick}")
+                        else:
+                            print(f"render_dynamic_table_html: Skipped top-pick-number for num={num}, current_top_pick={state.current_top_pick}")
+                    except (ValueError, TypeError) as e:
+                        print(f"render_dynamic_table_html: Error comparing num={num} with current_top_pick={state.current_top_pick}: {str(e)}")
+                else:
+                    print(f"render_dynamic_table_html: Skipped top-pick-number for num={num}, current_top_pick not set")
                 hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
