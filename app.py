@@ -5427,7 +5427,7 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-def select_next_spin_top_pick(last_spin_count):
+def select_next_spin_top_pick(last_spin_count, trait_filter=None):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
@@ -5446,35 +5446,58 @@ def select_next_spin_top_pick(last_spin_count):
                 last_positions[num] = i
             except ValueError:
                 continue
+        # Default to all traits if none specified or empty
+        if trait_filter is None or not trait_filter:
+            trait_filter = ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"]
         even_money_counts = {"Red": 0, "Black": 0, "Even": 0, "Odd": 0, "Low": 0, "High": 0}
         column_counts = {"1st Column": 0, "2nd Column": 0, "3rd Column": 0}
         dozen_counts = {"1st Dozen": 0, "2nd Dozen": 0, "3rd Dozen": 0}
         for spin in last_spins:
             try:
                 num = int(spin)
-                for name, nums in EVEN_MONEY.items():
-                    if num in nums:
-                        even_money_counts[name] += 1
-                for name, nums in COLUMNS.items():
-                    if num in nums:
-                        column_counts[name] += 1
-                for name, nums in DOZENS.items():
-                    if num in nums:
-                        dozen_counts[name] += 1
+                if "Red/Black" in trait_filter:
+                    if num in EVEN_MONEY["Red"]:
+                        even_money_counts["Red"] += 1
+                    elif num in EVEN_MONEY["Black"]:
+                        even_money_counts["Black"] += 1
+                if "Even/Odd" in trait_filter:
+                    if num in EVEN_MONEY["Even"]:
+                        even_money_counts["Even"] += 1
+                    elif num in EVEN_MONEY["Odd"]:
+                        even_money_counts["Odd"] += 1
+                if "Low/High" in trait_filter:
+                    if num in EVEN_MONEY["Low"]:
+                        even_money_counts["Low"] += 1
+                    elif num in EVEN_MONEY["High"]:
+                        even_money_counts["High"] += 1
+                if "Dozens" in trait_filter:
+                    for name, nums in DOZENS.items():
+                        if num in nums:
+                            dozen_counts[name] += 1
+                if "Columns" in trait_filter:
+                    for name, nums in COLUMNS.items():
+                        if num in nums:
+                            column_counts[name] += 1
             except ValueError:
                 continue
-        # Calculate percentages for all traits
+        # Calculate percentages for included traits
         total_spins = len(last_spins)
         trait_percentages = {}
-        # Even Money
-        for trait, count in even_money_counts.items():
-            trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Dozens
-        for trait, count in dozen_counts.items():
-            trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
-        # Columns
-        for trait, count in column_counts.items():
-            trait_percentages[trait] = (count / total_spins) * 100 if total_spins > 0 else 0
+        if "Red/Black" in trait_filter:
+            for trait in ["Red", "Black"]:
+                trait_percentages[trait] = (even_money_counts[trait] / total_spins) * 100 if total_spins > 0 else 0
+        if "Even/Odd" in trait_filter:
+            for trait in ["Even", "Odd"]:
+                trait_percentages[trait] = (even_money_counts[trait] / total_spins) * 100 if total_spins > 0 else 0
+        if "Low/High" in trait_filter:
+            for trait in ["Low", "High"]:
+                trait_percentages[trait] = (even_money_counts[trait] / total_spins) * 100 if total_spins > 0 else 0
+        if "Dozens" in trait_filter:
+            for trait in dozen_counts:
+                trait_percentages[trait] = (dozen_counts[trait] / total_spins) * 100 if total_spins > 0 else 0
+        if "Columns" in trait_filter:
+            for trait in column_counts:
+                trait_percentages[trait] = (column_counts[trait] / total_spins) * 100 if total_spins > 0 else 0
         # Sort traits by percentage (highest to lowest)
         sorted_traits = sorted(trait_percentages.items(), key=lambda x: (-x[1], x[0]))
         # Determine hottest traits (top non-conflicting traits)
@@ -5538,34 +5561,41 @@ def select_next_spin_top_pick(last_spin_count):
                     continue
                 second_best_traits.append(trait)
                 seen_categories.add("Columns")
+        # Wheel side analysis (only if included)
         left_side = set(LEFT_OF_ZERO_EUROPEAN)
         right_side = set(RIGHT_OF_ZERO_EUROPEAN)
-        left_hits = sum(hit_counts[num] for num in left_side)
-        right_hits = sum(hit_counts[num] for num in right_side)
+        left_hits = 0
+        right_hits = 0
+        if "Wheel Sections" in trait_filter:
+            left_hits = sum(hit_counts[num] for num in left_side)
+            right_hits = sum(hit_counts[num] for num in right_side)
         most_hit_side = "Left" if left_hits > right_hits else "Right" if right_hits > left_hits else "Both"
         betting_sections = {
             "Voisins du Zero": [22, 18, 29, 7, 28, 12, 35, 3, 26, 0, 32, 15, 19, 4, 21, 2, 25],
             "Orphelins": [17, 34, 6, 1, 20, 14, 31, 9],
             "Tiers du Cylindre": [27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33]
         }
-        section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
+        section_hits = {name: 0 for name in betting_sections}
         section_last_pos = {name: -1 for name in betting_sections}
-        for name, nums in betting_sections.items():
-            for num in nums:
-                if last_positions[num] > section_last_pos[name]:
-                    section_last_pos[name] = last_positions[num]
+        if "Wheel Sections" in trait_filter:
+            section_hits = {name: sum(hit_counts[num] for num in nums) for name, nums in betting_sections.items()}
+            for name, nums in betting_sections.items():
+                for num in nums:
+                    if last_positions[num] > section_last_pos[name]:
+                        section_last_pos[name] = last_positions[num]
         sorted_sections = sorted(section_hits.items(), key=lambda x: (-x[1], -section_last_pos[x[0]]))
-        top_section = sorted_sections[0][0] if sorted_sections else None
+        top_section = sorted_sections[0][0] if sorted_sections and "Wheel Sections" in trait_filter else None
         neighbor_boost = {num: 0 for num in range(37)}
-        last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
-        last_five_set = set(last_five)
-        for num in range(37):
-            if num in NEIGHBORS_EUROPEAN:
-                left, right = NEIGHBORS_EUROPEAN[num]
-                if left is not None and str(left) in last_five_set:
-                    neighbor_boost[num] += 2
-                if right is not None and str(right) in last_five_set:
-                    neighbor_boost[num] += 2
+        if "Neighbors" in trait_filter:
+            last_five = last_spins[-5:] if len(last_spins) >= 5 else last_spins
+            last_five_set = set(last_five)
+            for num in range(37):
+                if num in NEIGHBORS_EUROPEAN:
+                    left, right = NEIGHBORS_EUROPEAN[num]
+                    if left is not None and str(left) in last_five_set:
+                        neighbor_boost[num] += 2
+                    if right is not None and str(right) in last_five_set:
+                        neighbor_boost[num] += 2
         # Score numbers based on the number of matching traits in order
         scores = []
         for num in range(37):
@@ -5591,38 +5621,41 @@ def select_next_spin_top_pick(last_spin_count):
                     secondary_matches += 1
             # Additional scoring factors
             wheel_side_score = 0
-            if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
-                wheel_side_score = 5
-            section_score = 10 if top_section and num in betting_sections[top_section] else 0
+            if "Wheel Sections" in trait_filter:
+                if most_hit_side == "Both" or (most_hit_side == "Left" and num in left_side) or (most_hit_side == "Right" and num in right_side):
+                    wheel_side_score = 5
+            section_score = 10 if top_section and num in betting_sections.get(top_section, []) else 0
             recency_score = (last_spin_count - (last_positions[num] + 1)) * 1.0 if last_positions[num] >= 0 else 0
             if last_positions[num] == last_spin_count - 1:
                 recency_score = max(recency_score, 10)
             hit_bonus = 5 if hit_counts[num] > 0 else 0
-            neighbor_score = neighbor_boost[num]
+            neighbor_score = neighbor_boost[num] if "Neighbors" in trait_filter else 0
             tiebreaker_score = 0
             if num == 0:
                 pass
             else:
-                if num in EVEN_MONEY["Red"]:
+                if num in EVEN_MONEY["Red"] and "Red/Black" in trait_filter:
                     tiebreaker_score += even_money_counts["Red"]
-                elif num in EVEN_MONEY["Black"]:
+                elif num in EVEN_MONEY["Black"] and "Red/Black" in trait_filter:
                     tiebreaker_score += even_money_counts["Black"]
-                if num in EVEN_MONEY["Even"]:
+                if num in EVEN_MONEY["Even"] and "Even/Odd" in trait_filter:
                     tiebreaker_score += even_money_counts["Even"]
-                elif num in EVEN_MONEY["Odd"]:
+                elif num in EVEN_MONEY["Odd"] and "Even/Odd" in trait_filter:
                     tiebreaker_score += even_money_counts["Odd"]
-                if num in EVEN_MONEY["Low"]:
+                if num in EVEN_MONEY["Low"] and "Low/High" in trait_filter:
                     tiebreaker_score += even_money_counts["Low"]
-                elif num in EVEN_MONEY["High"]:
+                elif num in EVEN_MONEY["High"] and "Low/High" in trait_filter:
                     tiebreaker_score += even_money_counts["High"]
-            for name, nums in DOZENS.items():
-                if num in nums:
-                    tiebreaker_score += dozen_counts[name]
-                    break
-            for name, nums in COLUMNS.items():
-                if num in nums:
-                    tiebreaker_score += column_counts[name]
-                    break
+            if "Dozens" in trait_filter:
+                for name, nums in DOZENS.items():
+                    if num in nums:
+                        tiebreaker_score += dozen_counts[name]
+                        break
+            if "Columns" in trait_filter:
+                for name, nums in COLUMNS.items():
+                    if num in nums:
+                        tiebreaker_score += column_counts[name]
+                        break
             total_score = matching_traits * 100 + secondary_matches * 10 + wheel_side_score + section_score + recency_score + hit_bonus + neighbor_score
             scores.append((num, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score))
         # Sort by number of matching traits, then secondary matches, then tiebreaker, then recency
@@ -5638,32 +5671,34 @@ def select_next_spin_top_pick(last_spin_count):
         # Calculate confidence based on matching traits
         max_possible_traits = len(hottest_traits)
         top_traits_matched = top_picks[0][2]
-        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100)))
+        confidence = max(0, min(100, int((top_traits_matched / max_possible_traits) * 100))) if max_possible_traits > 0 else 0
         characteristics = []
         top_pick_int = int(top_pick)
         if top_pick_int == 0:
             characteristics.append("Green")
-        elif "Red" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Red"]:
+        elif "Red" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Red"] and "Red/Black" in trait_filter:
             characteristics.append("Red")
-        elif "Black" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Black"]:
+        elif "Black" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Black"] and "Red/Black" in trait_filter:
             characteristics.append("Black")
         if top_pick_int != 0:
-            if "Even" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Even"]:
+            if "Even" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Even"] and "Even/Odd" in trait_filter:
                 characteristics.append("Even")
-            elif "Odd" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Odd"]:
+            elif "Odd" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Odd"] and "Even/Odd" in trait_filter:
                 characteristics.append("Odd")
-            if "Low" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Low"]:
+            if "Low" in EVEN_MONEY and top_pick_int in EVEN_MONEY["Low"] and "Low/High" in trait_filter:
                 characteristics.append("Low")
-            elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+            elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"] and "Low/High" in trait_filter:
                 characteristics.append("High")
-        for name, nums in DOZENS.items():
-            if top_pick_int in nums:
-                characteristics.append(name)
-                break
-        for name, nums in COLUMNS.items():
-            if top_pick_int in nums:
-                characteristics.append(name)
-                break
+        if "Dozens" in trait_filter:
+            for name, nums in DOZENS.items():
+                if top_pick_int in nums:
+                    characteristics.append(name)
+                    break
+        if "Columns" in trait_filter:
+            for name, nums in COLUMNS.items():
+                if top_pick_int in nums:
+                    characteristics.append(name)
+                    break
         characteristics_str = ", ".join(characteristics) if characteristics else "No notable characteristics"
         color = colors.get(str(top_pick), "black")
         _, total_score, matching_traits, secondary_matches, wheel_side_score, section_score, recency_score, hit_bonus, neighbor_score, tiebreaker_score = top_picks[0]
@@ -5678,16 +5713,16 @@ def select_next_spin_top_pick(last_spin_count):
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)}")
-        if section_score > 0:
+        if section_score > 0 and "Wheel Sections" in trait_filter:
             reasons.append(f"Located in the hottest wheel section: {top_section}")
         if recency_score > 0:
             last_pos = last_positions[top_pick]
             reasons.append(f"Recently appeared in the spin history (position {last_pos})")
         if hit_bonus > 0:
             reasons.append(f"Has appeared in the spin history")
-        if wheel_side_score > 0:
+        if wheel_side_score > 0 and "Wheel Sections" in trait_filter:
             reasons.append(f"On the most hit side of the wheel: {most_hit_side}")
-        if neighbor_score > 0:
+        if neighbor_score > 0 and "Neighbors" in trait_filter:
             neighbors_hit = [str(n) for n in NEIGHBORS_EUROPEAN.get(top_pick, (None, None)) if str(n) in last_five_set]
             reasons.append(f"Has recent neighbors in the last 5 spins: {', '.join(neighbors_hit)}")
         if tiebreaker_score > 0:
@@ -5704,27 +5739,29 @@ def select_next_spin_top_pick(last_spin_count):
             num_characteristics = []
             if num == 0:
                 num_characteristics.append("Green")
-            elif "Red" in EVEN_MONEY and num in EVEN_MONEY["Red"]:
+            elif "Red" in EVEN_MONEY and num in EVEN_MONEY["Red"] and "Red/Black" in trait_filter:
                 num_characteristics.append("Red")
-            elif "Black" in EVEN_MONEY and num in EVEN_MONEY["Black"]:
+            elif "Black" in EVEN_MONEY and num in EVEN_MONEY["Black"] and "Red/Black" in trait_filter:
                 num_characteristics.append("Black")
             if num != 0:
-                if "Even" in EVEN_MONEY and num in EVEN_MONEY["Even"]:
+                if "Even" in EVEN_MONEY and num in EVEN_MONEY["Even"] and "Even/Odd" in trait_filter:
                     num_characteristics.append("Even")
-                elif "Odd" in EVEN_MONEY and num in EVEN_MONEY["Odd"]:
+                elif "Odd" in EVEN_MONEY and num in EVEN_MONEY["Odd"] and "Even/Odd" in trait_filter:
                     num_characteristics.append("Odd")
-                if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"]:
+                if "Low" in EVEN_MONEY and num in EVEN_MONEY["Low"] and "Low/High" in trait_filter:
                     num_characteristics.append("Low")
-                elif "High" in EVEN_MONEY and top_pick_int in EVEN_MONEY["High"]:
+                elif "High" in EVEN_MONEY and num in EVEN_MONEY["High"] and "Low/High" in trait_filter:
                     num_characteristics.append("High")
-            for name, nums in DOZENS.items():
-                if num in nums:
-                    num_characteristics.append(name)
-                    break
-            for name, nums in COLUMNS.items():
-                if num in nums:
-                    num_characteristics.append(name)
-                    break
+            if "Dozens" in trait_filter:
+                for name, nums in DOZENS.items():
+                    if num in nums:
+                        num_characteristics.append(name)
+                        break
+            if "Columns" in trait_filter:
+                for name, nums in COLUMNS.items():
+                    if num in nums:
+                        num_characteristics.append(name)
+                        break
             num_characteristics_str = ", ".join(num_characteristics) if num_characteristics else "No notable characteristics"
             num_reasons = []
             num_matched_traits = []
@@ -5737,10 +5774,11 @@ def select_next_spin_top_pick(last_spin_count):
                     num_matched_traits.append(trait)
             if num_matched_traits:
                 num_reasons.append(f"Matches: {', '.join(num_matched_traits)}")
-            for section_name, nums in betting_sections.items():
-                if num in nums:
-                    num_reasons.append(f"In {section_name}")
-                    break
+            if "Wheel Sections" in trait_filter:
+                for section_name, nums in betting_sections.items():
+                    if num in nums:
+                        num_reasons.append(f"In {section_name}")
+                        break
             if tiebreaker_score > 0:
                 num_reasons.append(f"Tiebreaker: {tiebreaker_score}")
             num_reasons_str = ", ".join(num_reasons) if num_reasons else "No notable reasons"
@@ -5991,7 +6029,7 @@ def select_next_spin_top_pick(last_spin_count):
             text-align: center;
           }}
           .secondary-picks h5 {{
-            margin: 0 0 10px 0;
+            margin: 0 0 10px 0; 
             color: #FFD700;
             font-family: 'Montserrat', sans-serif;
             font-size: 16px;
@@ -6109,6 +6147,7 @@ def select_next_spin_top_pick(last_spin_count):
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
         return "<p>Error selecting top pick.</p>"
+
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -7805,6 +7844,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             with gr.Column(scale=1):
                 gr.Markdown("### 🎯 Select Your Top Pick")
                 gr.Markdown("Adjust the slider to analyze the last X spins and find the top pick for your next spin. Add spins using the roulette table below or enter them manually.")
+                # NEW: Add CheckboxGroup for trait filtering
+                trait_filter = gr.CheckboxGroup(
+                    label="Include in Analysis",
+                    choices=["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"],
+                    value=["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"],  # Default: all selected
+                    interactive=True,
+                    elem_id="trait-filter"
+                )
                 top_pick_spin_count = gr.Slider(
                     label="Number of Spins to Analyze",
                     minimum=1,
@@ -7816,7 +7863,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 top_pick_display = gr.HTML(
                     label="Top Pick",
-                    value=select_next_spin_top_pick(18),
+                    value=select_next_spin_top_pick(18),  # Will be updated to include trait_filter
                     elem_classes=["top-pick-container"]
                 )
         gr.HTML("""
@@ -7834,6 +7881,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 #next-spin-top-pick .top-pick-container h4 {
                     margin: 10px 0;
                     color: #333;
+                }
+                #trait-filter {
+                    margin-bottom: 10px !important;
+                }
+                #trait-filter label {
+                    font-size: 14px !important;
+                    color: #333 !important;
+                    font-weight: bold !important;
+                }
+                #trait-filter .gr-checkbox-group {
+                    display: flex !important;
+                    flex-wrap: wrap !important;
+                    gap: 10px !important;
                 }
             </style>
         """)
@@ -12999,7 +13059,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     try:
         top_pick_spin_count.change(
             fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
+            inputs=[top_pick_spin_count, trait_filter],
             outputs=[top_pick_display]
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
@@ -13008,6 +13068,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+
+    try:
+        trait_filter.change(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count, trait_filter],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After trait_filter change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
+        )
+    except Exception as e:
+        print(f"Error in trait_filter.change handler: {str(e)}")
 
 # Launch the interface
 print("Starting Gradio launch...")
