@@ -5717,8 +5717,7 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
                 matched_traits.append(trait)
             elif trait in DOZENS and top_pick in DOZENS[trait]:
                 matched_traits.append(trait)
-            elif trait in COLUMNS and top_pick in COLU
-MNS[trait]:
+            elif trait in COLUMNS and top_pick in COLUMNS[trait]:
                 matched_traits.append(trait)
         if matched_traits:
             reasons.append(f"Matches the hottest traits: {', '.join(matched_traits)} (weight: {trait_match_weight})")
