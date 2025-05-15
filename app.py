@@ -9328,7 +9328,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
-
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
@@ -9347,6 +9346,99 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
         document.head.appendChild(link);
       }
+    
+      const rouletteTips = [
+        "Bet on neighbors of hot numbers for better odds!",
+        "Red and black have equal chances, but zero is green!",
+        "Try the Martingale strategy for even-money bets.",
+        "Dozens cover 12 numbers for a balanced risk.",
+        "Watch for dealer biases in the Spin Tracker!",
+        "Fibonacci betting can manage your bankroll.",
+        "Columns offer a 2:1 payout—worth a try!",
+        "Zero’s neighbors are hot in European roulette."
+      ];
+    
+      function setRandomTip() {
+        const counter = document.querySelector('.spin-counter');
+        if (counter) {
+          const randomTip = rouletteTips[Math.floor(Math.random() * rouletteTips.length)];
+          counter.setAttribute('data-tip', randomTip);
+        }
+      }
+    
+      function playChipSound() {
+        const audio = new Audio('https://example.com/chip_clink.mp3'); // Replace with your sound file URL
+        audio.play().catch(error => console.log('Audio play failed:', error));
+      }
+    
+      function updateSpinCounter() {
+        const counter = document.querySelector('.spin-counter');
+        if (counter) {
+          const currentCount = parseInt(counter.textContent.match(/\d+/)[0]) || 0;
+          counter.textContent = `Total Spins: ${currentCount}`;
+          counter.classList.add('glow');
+          playChipSound();
+          if (currentCount === 10 || currentCount === 50 || currentCount === 100) {
+            counter.classList.add('milestone');
+            setTimeout(() => counter.classList.remove('milestone'), 1000);
+          }
+        }
+      }
+    
+      // Debouncing JavaScript for Last Spins Display
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+    
+      const updateLastSpinsDisplay = debounce(function() {
+        const container = document.querySelector('#last-spins-display');
+        if (!container) return;
+    
+        requestAnimationFrame(() => {
+          container.querySelectorAll('.new-spin').forEach(el => {
+            el.classList.remove('new-spin', 'spin-red', 'spin-black', 'spin-green');
+          });
+    
+          const newBadges = container.querySelectorAll('.number-badge:not(.animated)');
+          newBadges.forEach((badge, index) => {
+            if (index < 5) {
+              badge.classList.add('new-spin', `spin-${badge.classList.contains('red') ? 'red' : badge.classList.contains('black') ? 'black' : 'green'}`);
+              badge.classList.add('animated');
+            }
+          });
+    
+          container.style.transition = 'none';
+          setTimeout(() => {
+            container.style.transition = 'opacity 0.3s ease';
+          }, 100);
+        });
+      }, 300);
+    
+      document.addEventListener('DOMContentLoaded', () => {
+        const counter = document.querySelector('.spin-counter');
+        if (counter) {
+          const observer = new MutationObserver(() => updateSpinCounter());
+          observer.observe(counter, { childList: true, characterData: true, subtree: true });
+          counter.addEventListener('mouseenter', setRandomTip);
+          setRandomTip();
+        }
+    
+        const container = document.querySelector('#last-spins-display');
+        if (container) {
+          const observer = new MutationObserver(() => {
+            updateLastSpinsDisplay();
+          });
+          observer.observe(container, { childList: true, subtree: true, characterData: true });
+        }
+      });
     </script>
     <style>
         /* General Layout */
@@ -10083,6 +10175,81 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             border-radius: 5px !important;
             margin-top: 10px !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+            min-height: 150px !important; /* Fixed minimum height */
+            max-height: 200px !important; /* Maximum height with scrolling */
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            transition: none !important; /* Disable container transitions */
+            display: flex !important;
+            flex-direction: column !important;
+            position: relative !important;
+        }
+        
+        .last-spins-container h4 {
+            margin: 0 0 10px 0 !important;
+            font-size: 16px !important;
+            color: #333 !important;
+            position: sticky !important;
+            top: 0 !important;
+            background: #f5f5f5 !important;
+            z-index: 1 !important;
+        }
+        
+        .last-spins-container p {
+            margin: 5px 0 !important;
+            font-size: 14px !important;
+            color: #555 !important;
+            transition: opacity 0.3s ease !important;
+        }
+        
+        .last-spins-container .number-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 15px !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            color: #fff !important;
+            border: 1px solid #fff !important;
+            margin: 2px !important;
+            transition: transform 0.2s ease, opacity 0.3s ease !important;
+        }
+        
+        .last-spins-container .new-spin {
+            animation: pop-in 0.3s ease-in-out !important; /* New pop-in animation */
+        }
+        
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .last-spins-container .spin-red {
+            --highlight-color: rgba(255, 0, 0, 0.8) !important;
+            background-color: #ff0000 !important;
+        }
+        
+        .last-spins-container .spin-black {
+            --highlight-color: rgba(255, 255, 255, 0.8) !important;
+            background-color: #000000 !important;
+        }
+        
+        .last-spins-container .spin-green {
+            --highlight-color: rgba(0, 255, 0, 0.8) !important;
+            background-color: #008000 !important;
+        }
+        
+        /* Prevent accordion jitter */
+        .gr-accordion .last-spins-container {
+            transition: none !important;
+        }
+        
+        /* Optimize for performance */
+        .last-spins-container * {
+            box-sizing: border-box !important;
+            will-change: opacity, transform !important;
         }
         
         /* Fade-in animation for Last Spins */
