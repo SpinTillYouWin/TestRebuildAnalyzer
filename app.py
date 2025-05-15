@@ -8129,6 +8129,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 min_width=40,
                                 elem_classes=btn_classes
                             )
+                            # Line 1: Start of the event handler
                             btn.click(
                                 fn=add_spin,
                                 inputs=[gr.State(value=num), spins_display, last_spin_count],
@@ -8150,10 +8151,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                                 inputs=[top_pick_spin_count],
                                 outputs=[top_pick_display]
                             ).then(
+                                fn=render_top_picks_display,
+                                inputs=[],
+                                outputs=[top_picks_display]
+                            ).then(
+                                # Line 3: End of the event handler
                                 fn=lambda: print(f"After add_spin: state.last_spins = {state.last_spins}"),
                                 inputs=[],
                                 outputs=[]
                             )
+                            
     
     # New: Total Spins Section (Placed right after European Roulette Table)
     with gr.Row():
@@ -11773,6 +11780,113 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in generate_spins_button.click handler: {str(e)}")
+    
+    # Line 1: Start of analyze_button.click
+    try:
+        analyze_button.click(
+            fn=analyze_spins,
+            inputs=[
+                spins_display, strategy_dropdown, neighbours_count_slider,
+                strong_numbers_count_slider,
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
+                even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown, even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox, even_money_tracker_low_checkbox,
+                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=lambda: ("", ""),
+            inputs=[],
+            outputs=[dynamic_table_output, strategy_output]
+        ).then(
+            fn=update_casino_data,
+            inputs=[
+                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
+                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
+                col1_percent, col2_percent, col3_percent, use_winners_checkbox
+            ],
+            outputs=[casino_data_output]
+        ).then(
+            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
+                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
+            ),
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
+            outputs=[dynamic_table_output]
+        ).then(
+            fn=create_color_code_table,
+            inputs=[],
+            outputs=[color_code_output]
+        ).then(
+            fn=dozen_tracker,
+            inputs=[
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox
+            ],
+            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
+        ).then(
+            fn=even_money_tracker,
+            inputs=[
+                even_money_tracker_spins_dropdown,
+                even_money_tracker_consecutive_hits_dropdown,
+                even_money_tracker_alert_checkbox,
+                even_money_tracker_combination_mode_dropdown,
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
+            ],
+            outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
+        ).then(
+            fn=select_next_spin_top_pick,
+            inputs=[top_pick_spin_count],
+            outputs=[top_pick_display]
+        ).then(
+            fn=render_top_picks_display,
+            inputs=[],
+            outputs=[top_picks_display]
+        ).then(
+            fn=show_strategy_recommendations,
+            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[strategy_output]
+        ).then(
+            fn=suggest_hot_cold_numbers,
+            inputs=[],
+            outputs=[hot_suggestions, cold_suggestions]
+        ).then(
+            # Line 3: End of analyze_button.click
+            fn=lambda: print(f"After analyze_button click: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
+        )
+    except Exception as e:
+        print(f"Error in analyze_button.click handler: {str(e)}")
+        gr.Warning(f"Error during analysis: {str(e)}")
+    
+    try:
+        save_button.click(
+            fn=save_session,
+            inputs=None,
+            outputs=save_output
+        )
+        
+    except Exception as e:
+        print(f"Error in save_button.click handler: {str(e)}")
+
 
 # Line 1: Slider change handler (updated)
     try:
@@ -11884,108 +11998,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in strategy_dropdown.change handler: {str(e)}")
-
-    try:
-        analyze_button.click(
-            fn=analyze_spins,
-            inputs=[
-                spins_display, strategy_dropdown, neighbours_count_slider,
-                strong_numbers_count_slider,
-                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
-                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
-                even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown, even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox, even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox, even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
-        ).then(
-            # Clear outputs to reset error state
-            fn=lambda: ("", ""),
-            inputs=[],
-            outputs=[dynamic_table_output, strategy_output]
-        ).then(
-            fn=update_casino_data,
-            inputs=[
-                spins_count_dropdown, even_percent, odd_percent, red_percent, black_percent,
-                low_percent, high_percent, dozen1_percent, dozen2_percent, dozen3_percent,
-                col1_percent, col2_percent, col3_percent, use_winners_checkbox
-            ],
-            outputs=[casino_data_output]
-        ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
-                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
-            ),
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
-            outputs=[dynamic_table_output]
-        ).then(
-            fn=create_color_code_table,
-            inputs=[],
-            outputs=[color_code_output]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[
-                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
-                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox
-            ],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        ).then(
-            fn=summarize_spin_traits,
-            inputs=[last_spin_count],
-            outputs=[traits_display]
-        ).then(
-            fn=calculate_hit_percentages,
-            inputs=[last_spin_count],
-            outputs=[hit_percentage_display]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            # Fast workaround: Re-run show_strategy_recommendations to repopulate strategy_output
-            fn=show_strategy_recommendations,
-            inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[strategy_output]
-        ).then(
-            fn=suggest_hot_cold_numbers,
-            inputs=[],
-            outputs=[hot_suggestions, cold_suggestions]
-        ).then(
-            fn=lambda: print(f"After analyze_button click: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in analyze_button.click handler: {str(e)}")
-        gr.Warning(f"Error during analysis: {str(e)}")
-    
-    try:
-        save_button.click(
-            fn=save_session,
-            inputs=None,
-            outputs=save_output
-        )
-        
-    except Exception as e:
-        print(f"Error in save_button.click handler: {str(e)}")
     
     try:
         load_input.change(
@@ -12878,62 +12890,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
-
-    try:
-        spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
-        ).then(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
-    
 
     def toggle_labouchere(progression):
         """Show/hide Labouchere sequence input based on selected progression."""
