@@ -13187,7 +13187,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in trait_filter.change handler: {str(e)}")
     
-    # NEW: Handlers for weight changes
+    # Handlers for weight changes
     for weight_input in [
         trait_match_weight,
         secondary_match_weight,
