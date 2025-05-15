@@ -13143,64 +13143,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 # Add the top pick slider change handler (was previously missing in your code)
     try:
         top_pick_spin_count.change(
-try:
-    top_pick_spin_count.change(
-        fn=select_next_spin_top_pick,
-        inputs=[
-            top_pick_spin_count,
-            trait_filter,
-            trait_match_weight,
-            secondary_match_weight,
-            wheel_side_weight,
-            section_weight,
-            recency_weight,
-            hit_bonus_weight,
-            neighbor_weight
-        ],
-        outputs=[top_pick_display]
-    ).then(
-        fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
-        inputs=[],
-        outputs=[]
-    )
-except Exception as e:
-    print(f"Error in top_pick_spin_count.change handler: {str(e)}")
-
-try:
-    trait_filter.change(
-        fn=select_next_spin_top_pick,
-        inputs=[
-            top_pick_spin_count,
-            trait_filter,
-            trait_match_weight,
-            secondary_match_weight,
-            wheel_side_weight,
-            section_weight,
-            recency_weight,
-            hit_bonus_weight,
-            neighbor_weight
-        ],
-        outputs=[top_pick_display]
-    ).then(
-        fn=lambda: print(f"After trait_filter change: state.last_spins = {state.last_spins}"),
-        inputs=[],
-        outputs=[]
-    )
-except Exception as e:
-    print(f"Error in trait_filter.change handler: {str(e)}")
-
-# NEW: Handlers for weight changes
-for weight_input in [
-    trait_match_weight,
-    secondary_match_weight,
-    wheel_side_weight,
-    section_weight,
-    recency_weight,
-    hit_bonus_weight,
-    neighbor_weight
-]:
-    try:
-        weight_input.change(
             fn=select_next_spin_top_pick,
             inputs=[
                 top_pick_spin_count,
@@ -13215,12 +13157,68 @@ for weight_input in [
             ],
             outputs=[top_pick_display]
         ).then(
-            fn=lambda: print(f"After weight change: state.last_spins = {state.last_spins}"),
+            fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
             outputs=[]
         )
     except Exception as e:
-        print(f"Error in weight_input.change handler: {str(e)}")
+        print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+    
+    try:
+        trait_filter.change(
+            fn=select_next_spin_top_pick,
+            inputs=[
+                top_pick_spin_count,
+                trait_filter,
+                trait_match_weight,
+                secondary_match_weight,
+                wheel_side_weight,
+                section_weight,
+                recency_weight,
+                hit_bonus_weight,
+                neighbor_weight
+            ],
+            outputs=[top_pick_display]
+        ).then(
+            fn=lambda: print(f"After trait_filter change: state.last_spins = {state.last_spins}"),
+            inputs=[],
+            outputs=[]
+        )
+    except Exception as e:
+        print(f"Error in trait_filter.change handler: {str(e)}")
+    
+    # NEW: Handlers for weight changes
+    for weight_input in [
+        trait_match_weight,
+        secondary_match_weight,
+        wheel_side_weight,
+        section_weight,
+        recency_weight,
+        hit_bonus_weight,
+        neighbor_weight
+    ]:
+        try:
+            weight_input.change(
+                fn=select_next_spin_top_pick,
+                inputs=[
+                    top_pick_spin_count,
+                    trait_filter,
+                    trait_match_weight,
+                    secondary_match_weight,
+                    wheel_side_weight,
+                    section_weight,
+                    recency_weight,
+                    hit_bonus_weight,
+                    neighbor_weight
+                ],
+                outputs=[top_pick_display]
+            ).then(
+                fn=lambda: print(f"After weight change: state.last_spins = {state.last_spins}"),
+                inputs=[],
+                outputs=[]
+            )
+        except Exception as e:
+            print(f"Error in weight_input.change handler: {str(e)}")
 
 # Launch the interface
 print("Starting Gradio launch...")
