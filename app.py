@@ -7734,7 +7734,7 @@ with gr.Group(visible=False, elem_id="appContent"):
             </style>
         """)
     
-    # Define spin_counter before the roulette table to avoid NameError
+    # Total Spins Counter (Row 2)
     spin_counter = gr.HTML(
         label="Total Spins",
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
