@@ -2483,7 +2483,6 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
         </style>
         ''' % (top_color or "rgba(255, 255, 0, 0.5)", middle_color or "rgba(0, 255, 255, 0.5)", lower_color or "rgba(0, 255, 0, 0.5)")
         
-        print)
         print("render_dynamic_table_html: Table HTML rendered successfully")
         return html
     except Exception as e:
