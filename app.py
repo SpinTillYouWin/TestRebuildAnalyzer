@@ -6374,6 +6374,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 align-items: center;
                 z-index: 1000;
                 visibility: visible;
+                opacity: 1; /* Ensure immediate visibility */
+                transition: none; /* Prevent unwanted animations */
             }
             .modal-overlay[style*="display: none"] {
                 visibility: hidden;
@@ -6662,7 +6664,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     document.getElementById('termsModal').style.visibility = 'visible';
                     document.getElementById('appContent').style.display = 'none';
                     document.body.classList.add('modal-open');
-                    window.scrollTo(0, 0);
                 }
             };
         </script>
