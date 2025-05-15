@@ -6369,16 +6369,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.8);
-                display: flex !important;
-                justify-content: center;
-                align-items: center;
                 z-index: 1000;
                 visibility: visible;
                 opacity: 1; /* Ensure immediate visibility */
-                transition: none; /* Prevent unwanted animations */
-            }
-            .modal-overlay[style*="display: none"] {
-                visibility: hidden;
+                overflow: auto; /* Allow scrolling if content overflows */
             }
             .modal-content {
                 background: #fff;
@@ -6387,10 +6381,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 max-width: 600px;
                 width: 90%;
                 max-height: 70vh;
-                display: flex;
-                flex-direction: column;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%); /* Center horizontally and vertically */
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
                 font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
             }
             .tabs {
                 display: flex;
