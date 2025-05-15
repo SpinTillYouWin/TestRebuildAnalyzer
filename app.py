@@ -2120,7 +2120,6 @@ def apply_strategy_highlights(strategy_name, neighbours_count, strong_numbers_co
 
     return trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions
 
-# Line 1: Start of render_dynamic_table_html function (updated)
 def render_dynamic_table_html(trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column, number_highlights, top_color, middle_color, lower_color, suggestions=None, hot_numbers=None, scores=None):
     """Generate HTML for the dynamic roulette table with improved visual clarity, using suggestions for highlighting outside bets."""
     if all(v is None for v in [trending_even_money, second_even_money, third_even_money, trending_dozen, second_dozen, trending_column, second_column]) and not number_highlights and not suggestions:
@@ -2213,7 +2212,12 @@ def render_dynamic_table_html(trending_even_money, second_even_money, third_even
                 else:
                     border_style = "3px solid black"
                 text_style = "color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"
-                cell_class = "hot-number has-tooltip" if num in hot_numbers else "has-tooltip"
+                if num in hot_numbers:
+                    cell_class = "hot-number has-tooltip"
+                else:
+                    cell_class = "has-tooltip"
+                if hasattr(state, 'current_top_pick') and state.current_top_pick is not None and int(num) == state.current_top_pick:
+                    cell_class += " top-pick-number"
                 hit_count = scores.get(num, scores.get(int(num), 0) if num.isdigit() else 0)
                 tooltip = f"Hit {hit_count} times"
                 html += f'<td style="height: 40px; background-color: {highlight_color}; {text_style} border: {border_style}; padding: 0; vertical-align: middle; box-sizing: border-box; text-align: center;" class="{cell_class}" data-tooltip="{tooltip}">{num}</td>'
