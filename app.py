@@ -7741,7 +7741,9 @@ with gr.Group(visible=False, elem_id="appContent"):
         elem_classes=["spin-counter"]
     )
     
-    # Last Spins Display and Slider (positioned before the roulette table, adjust if needed)
+    # Last Spins Display and Slider (Row 3)
+    with gr.Row():
+        with gr.Column():
             last_spin_display = gr.HTML(
                 label="Last Spins",
                 value='<h4>Last Spins</h4><p>No spins yet.</p>',
