@@ -7858,71 +7858,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     interactive=True,
                     elem_id="trait-filter"
                 )
-                # NEW: Number inputs for scoring weights
-                gr.Markdown("#### Adjust Scoring Weights")
-                trait_match_weight = gr.Number(
-                    label="Trait Match Weight",
-                    value=100,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="trait-match-weight"
-                )
-                secondary_match_weight = gr.Number(
-                    label="Secondary Match Weight",
-                    value=10,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="secondary-match-weight"
-                )
-                wheel_side_weight = gr.Number(
-                    label="Wheel Side Weight",
-                    value=5,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="wheel-side-weight"
-                )
-                section_weight = gr.Number(
-                    label="Wheel Section Weight",
-                    value=10,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="section-weight"
-                )
-                recency_weight = gr.Number(
-                    label="Recency Weight",
-                    value=1,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="recency-weight"
-                )
-                hit_bonus_weight = gr.Number(
-                    label="Hit Bonus Weight",
-                    value=5,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="hit-bonus-weight"
-                )
-                neighbor_weight = gr.Number(
-                    label="Neighbor Boost Weight",
-                    value=2,
-                    minimum=0,
-                    maximum=1000,
-                    step=1,
-                    interactive=True,
-                    elem_id="neighbor-weight"
-                )
                 top_pick_spin_count = gr.Slider(
                     label="Number of Spins to Analyze",
                     minimum=1,
@@ -7932,6 +7867,73 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     interactive=True,
                     elem_classes="long-slider"
                 )
+                # NEW: Nested accordion for weight inputs
+                with gr.Accordion("Adjust Scoring Weights", open=False, elem_id="scoring-weights"):
+                    gr.Markdown("#### Customize Scoring Weights")
+                    gr.Markdown("Fine-tune how much each factor contributes to the top pick score.")
+                    trait_match_weight = gr.Number(
+                        label="Trait Match Weight",
+                        value=100,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="trait-match-weight"
+                    )
+                    secondary_match_weight = gr.Number(
+                        label="Secondary Match Weight",
+                        value=10,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="secondary-match-weight"
+                    )
+                    wheel_side_weight = gr.Number(
+                        label="Wheel Side Weight",
+                        value=5,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="wheel-side-weight"
+                    )
+                    section_weight = gr.Number(
+                        label="Wheel Section Weight",
+                        value=10,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="section-weight"
+                    )
+                    recency_weight = gr.Number(
+                        label="Recency Weight",
+                        value=1,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="recency-weight"
+                    )
+                    hit_bonus_weight = gr.Number(
+                        label="Hit Bonus Weight",
+                        value=5,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="hit-bonus-weight"
+                    )
+                    neighbor_weight = gr.Number(
+                        label="Neighbor Boost Weight",
+                        value=2,
+                        minimum=0,
+                        maximum=1000,
+                        step=1,
+                        interactive=True,
+                        elem_id="neighbor-weight"
+                    )
                 top_pick_display = gr.HTML(
                     label="Top Pick",
                     value=select_next_spin_top_pick(18, ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"]),
@@ -7966,15 +7968,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     flex-wrap: wrap !important;
                     gap: 10px !important;
                 }
-                .gr-number {
+                #scoring-weights {
+                    background-color: #f5faff !important;
+                    border: 1px solid #2196f3 !important;
+                    border-radius: 5px !important;
+                    padding: 8px !important;
+                    margin-bottom: 10px !important;
+                }
+                #scoring-weights .gr-number {
                     margin-bottom: 8px !important;
                 }
-                .gr-number label {
+                #scoring-weights .gr-number label {
                     font-size: 14px !important;
                     color: #333 !important;
                     font-weight: bold !important;
                 }
-                .gr-number input {
+                #scoring-weights .gr-number input {
                     border: 1px solid #2196f3 !important;
                     border-radius: 4px !important;
                     padding: 5px !important;
