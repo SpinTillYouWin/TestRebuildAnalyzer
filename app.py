@@ -6668,296 +6668,192 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
     
-    # App Content (Header Section - Updated)
-    with gr.Group(visible=False, elem_id="appContent"):
-        # Buttons Row (Moved Above Header)
-        with gr.Row(elem_id="buttons-row"):
-            gr.HTML(
-                '''
-                <div style="display: flex; gap: 10px; justify-content: center; align-items: center; padding: 10px;">
-                    <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                    <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
-                </div>
-                <style>
-                    #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
-                        transform: scale(1.05);
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                    }
-                    #buttons-row {
-                        display: flex;
-                        justify-content: center;
-                        width: 100%;
-                        margin-bottom: 10px;
-                    }
-                </style>
-                '''
-            )
-    
-        # Header Row (Now Below Buttons)
-        with gr.Row(elem_id="header-row"):
-            gr.HTML("""
-                <div class="header-container">
-                    <h1 class="header-title">
-                        <span class="wheelpulse-text">WheelPulse</span>
-                        <span class="by-styw">by S.T.Y.W</span>
-                        <span class="roulette-icon">
-                            <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <!-- Outer rim -->
-                                <circle cx="50" cy="50" r="45" fill="#8a0707" stroke="#339e45" stroke-width="5"/>
-                                <!-- Inner circle (green felt) -->
-                                <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
-                                <!-- Alternating sections -->
-                                <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
-                                <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
-                                <!-- Zero slot -->
-                                <circle cx="50" cy="20" r="5" fill="#e4f2e4"/>
-                                <!-- Center dot -->
-                                <circle cx="50" cy="50" r="5" fill="#000000"/>
-                            </svg>
-                        </span>
-                    </h1>
-                </div>
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
-                    .header-container {
-                        display: flex !important;
-                        justify-content: center !important;
-                        align-items: center !important;
-                        width: 100% !important;
-                        padding: 15px 0 !important;
-                        background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000) !important;
-                        border-radius: 10px !important;
-                        box-shadow: 0 0 20px rgba(0, 0, 0, 0.7) !important;
-                        margin-bottom: 20px !important;
-                        position: relative !important;
-                        overflow: hidden !important;
-                    }
+# App Content (Header Section with Teal Buttons)
+with gr.Group(visible=False, elem_id="appContent"):
+    # Buttons Row
+    with gr.Row(elem_id="buttons-row"):
+        gr.HTML(
+            '''
+            <div style="display: flex; gap: 10px; justify-content: center; align-items: center; padding: 10px;">
+                <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
+                <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
+            </div>
+            <style>
+                #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+                #buttons-row {
+                    display: flex;
+                    justify-content: center;
+                    width: 100%;
+                    margin-bottom: 10px;
+                }
+            </style>
+            '''
+        )
+
+    # Header Row
+    with gr.Row(elem_id="header-row"):
+        gr.HTML("""
+            <div class="header-container">
+                <h1 class="header-title">
+                    <span class="wheelpulse-text">WheelPulse</span>
+                    <span class="by-styw">by S.T.Y.W</span>
+                    <span class="roulette-icon">
+                        <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
+                            <!-- Outer rim -->
+                            <circle cx="50" cy="50" r="45" fill="#8a0707" stroke="#339e45" stroke-width="5"/>
+                            <!-- Inner circle (green felt) -->
+                            <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
+                            <!-- Alternating sections -->
+                            <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
+                            <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
+                            <!-- Zero slot -->
+                            <circle cx="50" cy="20" r="5" fill="#e4f2e4"/>
+                            <!-- Center dot -->
+                            <circle cx="50" cy="50" r="5" fill="#000000"/>
+                        </svg>
+                    </span>
+                </h1>
+            </div>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
+                .header-container {
+                    display: flex !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    width: 100% !important;
+                    padding: 15px 0 !important;
+                    background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000) !important;
+                    border-radius: 10px !important;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7) !important;
+                    margin-bottom: 20px !important;
+                    position: relative !important;
+                    overflow: hidden !important;
+                }
+                .header-title {
+                    font-size: 2.8em !important;
+                    color: #ffffff !important;
+                    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5) !important;
+                    margin: 0 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 10px !important;
+                    position: relative !important;
+                    z-index: 2 !important;
+                    transition: transform 0.3s ease, text-shadow 0.3s ease !important;
+                    animation: neonFlicker 2s ease-in-out infinite !important;
+                }
+                .header-title:hover {
+                    transform: perspective(500px) rotateX(10deg) scale(1.05) !important;
+                    text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7) !important;
+                }
+                .wheelpulse-text {
+                    font-family: 'Poppins', sans-serif !important;
+                    font-weight: 700 !important;
+                    background: linear-gradient(90deg, #4B4B4B, #1C2526, #4B4B4B) !important;
+                    background-size: 200% !important;
+                    -webkit-background-clip: text !important;
+                    background-clip: text !important;
+                    color: transparent !important;
+                    letter-spacing: 2px !important;
+                    animation: shimmer 3s linear infinite !important;
+                    text-shadow: none !important;
+                }
+                .by-styw {
+                    font-family: 'Dancing Script', cursive !important;
+                    font-size: 0.7em !important;
+                    color: #333333 !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 1px !important;
+                    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3) !important;
+                    animation: subtleGlow 1.5s ease-in-out infinite !important;
+                }
+                .roulette-icon {
+                    display: inline-block !important;
+                    width: 40px !important;
+                    height: 40px !important;
+                }
+                .spin-roulette {
+                    animation: spin 4s linear infinite !important;
+                }
+                @keyframes neonFlicker {
+                    0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5); }
+                    50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); }
+                }
+                @keyframes shimmer {
+                    0% { background-position: 200%; }
+                    100% { background-position: -200%; }
+                }
+                @keyframes subtleGlow {
+                    0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+                    50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                @media (max-width: 768px) {
                     .header-title {
-                        font-size: 2.8em !important;
-                        color: #ffffff !important;
-                        text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5) !important;
-                        margin: 0 !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        gap: 10px !important;
-                        position: relative !important;
-                        z-index: 2 !important;
-                        transition: transform 0.3s ease, text-shadow 0.3s ease !important;
-                        animation: neonFlicker 2s ease-in-out infinite !important;
-                    }
-                    .header-title:hover {
-                        transform: perspective(500px) rotateX(10deg) scale(1.05) !important;
-                        text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7) !important;
-                    }
-                    .wheelpulse-text {
-                        font-family: 'Poppins', sans-serif !important;
-                        font-weight: 700 !important;
-                        background: linear-gradient(90deg, #4B4B4B, #1C2526, #4B4B4B) !important;
-                        background-size: 200% !important;
-                        -webkit-background-clip: text !important;
-                        background-clip: text !important;
-                        color: transparent !important;
-                        letter-spacing: 2px !important;
-                        animation: shimmer 3s linear infinite !important;
-                        text-shadow: none !important; /* Remove glow from WheelPulse */
+                        font-size: 2em !important;
                     }
                     .by-styw {
-                        font-family: 'Dancing Script', cursive !important;
-                        font-size: 0.7em !important;
-                        color: #333333 !important;
-                        font-weight: 700 !important;
-                        letter-spacing: 1px !important;
-                        text-shadow: 0 0 5px rgba(255, 215, 0, 0.3) !important;
-                        animation: subtleGlow 1.5s ease-in-out infinite !important;
+                        font-size: 0.6em !important;
                     }
                     .roulette-icon {
-                        display: inline-block !important;
-                        width: 40px !important;
-                        height: 40px !important;
+                        width: 30px !important;
+                        height: 30px !important;
                     }
-                    .spin-roulette {
-                        animation: spin 4s linear infinite !important;
+                    .header-container {
+                        padding: 10px 0 !important;
                     }
-                    @keyframes neonFlicker {
-                        0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5); }
-                        50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); }
-                    }
-                    @keyframes shimmer {
-                        0% { background-position: 200%; }
-                        100% { background-position: -200%; }
-                    }
-                    @keyframes subtleGlow {
-                        0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
-                        50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
-                    }
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                    /* Responsive adjustments */
-                    @media (max-width: 768px) {
-                        .header-title {
-                            font-size: 2em !important;
-                        }
-                        .by-styw {
-                            font-size: 0.6em !important;
-                        }
-                        .roulette-icon {
-                            width: 30px !important;
-                            height: 30px !important;
-                        }
-                        .header-container {
-                            padding: 10px 0 !important;
-                        }
-                    }
-                    @media (max-width: 600px) {
-                        .header-title {
-                            font-size: 1.5em !important;
-                            flex-direction: column !important;
-                            gap: 5px !important;
-                        }
-                        .by-styw {
-                            font-size: 0.55em !important;
-                        }
-                        .roulette-icon {
-                            width: 25px !important;
-                            height: 25px !important;
-                        }
-                        .header-container {
-                            border-radius: 8px !important;
-                        }
-                    }
-                    /* Reduced motion for accessibility */
-                    @media (prefers-reduced-motion: reduce) {
-                        .roulette-button, .action-button, .spin-counter, .number-badge, 
-                        .hot-number, .trait-badge, .pattern-badge, .new-spin, 
-                        .switch-alert, .dozen-badge {
-                            animation: none !important;
-                            transition: none !important;
-                        }
-                    }
-                </style>
-            """)
-    
-        # Ensure app content is shown after acceptance
-        gr.HTML("""
-            <script>
-                window.onload = function() {
-                    if (localStorage.getItem('termsAccepted') === 'true') {
-                        document.getElementById('appContent').style.display = 'block';
-                    }
-                };
-            </script>
-            <style>
-                #appContent {
-                    display: none;
                 }
-                #appContent[style*="display: block"] {
-                    display: block !important;
+                @media (max-width: 600px) {
+                    .header-title {
+                        font-size: 1.5em !important;
+                        flex-direction: column !important;
+                        gap: 5px !important;
+                    }
+                    .by-styw {
+                        font-size: 0.55em !important;
+                    }
+                    .roulette-icon {
+                        width: 25px !important;
+                        height: 25px !important;
+                    }
+                    .header-container {
+                        border-radius: 8px !important;
+                    }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .roulette-button, .action-button, .spin-counter, .number-badge, 
+                    .hot-number, .trait-badge, .pattern-badge, .new-spin, 
+                    .switch-alert, .dozen-badge {
+                        animation: none !important;
+                        transition: none !important;
+                    }
                 }
             </style>
         """)
-    
-    # Updated Selected Spins Accordion Styling
+
+    # Ensure app content is shown after acceptance
     gr.HTML("""
-    <style>
-        #selected-spins label {
-            background: linear-gradient(135deg, #008080, #00CED1) !important;
-            color: #fff !important;
-            padding: 8px 12px !important;
-            border-radius: 5px !important;
-            font-size: 16px !important;
-            font-weight: bold !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-            transition: transform 0.2s ease, box-shadow 0.3s ease !important;
-            display: inline-block !important;
-            margin-bottom: 5px !important;
-        }
-        #selected-spins label:hover {
-            transform: scale(1.02) !important;
-            box-shadow: 0 0 10px rgba(0, 128, 128, 0.5) !important;
-        }
-        #selected-spins input {
-            background-color: #fff3e0 !important;
-            border: 2px solid #008080 !important;
-            border-radius: 8px !important;
-            padding: 10px !important;
-            font-size: 16px !important;
-            color: #333 !important;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-            position: relative !important;
-        }
-        #selected-spins input:focus {
-            border-color: #00CED1 !important;
-            box-shadow: 0 0 8px rgba(0, 128, 128, 0.5) !important;
-            outline: none !important;
-        }
-        #selected-spins input.typing {
-            animation: pulse 1s infinite ease-in-out;
-        }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 8px rgba(0, 128, 128, 0.5); }
-            50% { box-shadow: 0 0 12px rgba(0, 128, 128, 0.8); }
-        }
-        #selected-spins-display {
-            margin-top: 10px !important;
-            display: flex !important;
-            gap: 8px !important;
-            flex-wrap: wrap !important;
-        }
-        .number-badge {
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 30px !important;
-            height: 30px !important;
-            border-radius: 15px !important;
-            font-size: 14px !important;
-            font-weight: bold !important;
-            color: #fff !important;
-            border: 1px solid #fff !important;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
-            transition: transform 0.2s ease !important;
-            animation: popIn 0.3s ease-in-out;
-        }
-        .number-badge:hover {
-            transform: scale(1.1) !important;
-        }
-        .number-badge.red {
-            background-color: #ff0000 !important;
-        }
-        .number-badge.black {
-            background-color: #000000 !important;
-        }
-        .number-badge.green {
-            background-color: #008000 !important;
-        }
-        #selected-spins-validation {
-            margin-top: 5px !important;
-            font-size: 12px !important;
-            color: #666 !important;
-            display: none !important;
-        }
-        #selected-spins-validation.valid {
-            color: #008000 !important;
-            display: block !important;
-        }
-        #selected-spins-validation.invalid {
-            color: #ff0000 !important;
-            display: block !important;
-            animation: shake 0.3s ease-in-out;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-    </style>
+        <script>
+            window.onload = function() {
+                if (localStorage.getItem('termsAccepted') === 'true') {
+                    document.getElementById('appContent').style.display = 'block';
+                }
+            };
+        </script>
+        <style>
+            #appContent {
+                display: none;
+            }
+            #appContent[style*="display: block"] {
+                display: block !important;
+            }
+        </style>
     """)
 
     # Start of the app layout (next section after the header)
@@ -8012,7 +7908,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         });
     </script>
     """)
-    # 2. Row 2: European Roulette Table (unchanged)
+    
+    # 4. Row 4: European Roulette Table
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
