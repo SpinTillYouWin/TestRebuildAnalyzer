@@ -2600,40 +2600,6 @@ def reset_casino_data():
         "<p>Casino data reset to defaults.</p>"  # casino_data_output
     )
 
-# Line 1: Start of create_dynamic_table function (updated)
-I understand you want to fully update and align the create_dynamic_table function to incorporate the simplified approach for marking top pick numbers on the dynamic table, ensuring it integrates seamlessly with your existing WheelPulse by S.T.Y.W roulette analysis application. The goal is to highlight top pick numbers (from select_next_spin_top_pick) distinctly on the dynamic table while maintaining compatibility with the existing strategy-based highlighting, casino data, and debugging logs. I'll provide an updated version of create_dynamic_table and the necessary supporting functions, aligning with your codebase's structure and style.
-
-Objectives
-Incorporate Top Pick Highlighting:
-Use state.current_top_pick and optionally the top 5 picks from select_next_spin_top_pick to mark top pick numbers.
-Apply a distinct visual style (e.g., glowing yellow border, star icon) using a top-pick CSS class.
-Preserve Existing Functionality:
-Retain strategy-based highlighting (e.g., trending even money, dozens, columns).
-Maintain casino data integration (state.use_casino_winners, state.casino_data).
-Keep debug logging and error handling.
-Simplify and Align:
-Streamline the logic where possible without breaking existing features.
-Ensure consistency with your code's conventions (e.g., function signatures, variable names).
-Artifact Format:
-Provide the updated code wrapped in <xaiArtifact> tags with a unique UUID.
-Include only the necessary functions to avoid redundancy.
-Approach
-Update create_dynamic_table:
-Fetch top picks from select_next_spin_top_pick and store them in a list.
-Pass top picks to render_dynamic_table_html for highlighting.
-Retain existing logic for strategy highlights, casino data, and default cases.
-Update render_dynamic_table_html:
-Add a top-pick class to cells for top pick numbers.
-Include CSS for glowing borders and a star icon.
-Supporting Functions:
-Ensure apply_strategy_highlights and calculate_trending_sections are compatible.
-Provide stubs or minimal updates for these functions to focus on top pick integration.
-Updated Code
-Below is the updated create_dynamic_table function, along with render_dynamic_table_html and minimal stubs for apply_strategy_highlights and calculate_trending_sections. I've aligned the code with your existing style, preserved debug logs, and added top pick highlighting.
-
-python
-
-Copy
 def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_count=1, dozen_tracker_spins=5, top_color=None, middle_color=None, lower_color=None):
     try:
         print(f"create_dynamic_table called with strategy: {strategy_name}, neighbours_count: {neighbours_count}, strong_numbers_count: {strong_numbers_count}, dozen_tracker_spins: {dozen_tracker_spins}, top_color: {top_color}, middle_color: {middle_color}, lower_color: {lower_color}")
