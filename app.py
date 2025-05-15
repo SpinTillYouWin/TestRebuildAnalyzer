@@ -2609,12 +2609,7 @@ def create_dynamic_table(strategy_name=None, neighbours_count=2, strong_numbers_
         print("create_dynamic_table: Fetching top picks")
         top_pick_html = select_next_spin_top_pick(18)  # Use default spin count or make configurable
         top_picks = [str(state.current_top_pick)] if hasattr(state, 'current_top_pick') and state.current_top_pick is not None else []
-        if strong_numbers_count > 1 and hasattr(state, 'top_picks'):
-            top_picks.extend([str(score[0]) for score in state.top_picks[:min(strong_numbers_count, 5)] if score[0] != state.current_top_pick])
-        html = render_dynamic_table_html(..., top_picks, ...)
-        # Optionally include top 5 picks
-        if strong_numbers_count > 1:
-            # Extract top picks from select_next_spin_top_pick output (assuming it sets state.top_picks)
+        if strong_numbers_count > 1 and hasattr(state, 'top_picks') and state.top_picks:
             top_picks.extend([str(score[0]) for score in state.top_picks[:min(strong_numbers_count, 5)] if score[0] != state.current_top_pick])
         print(f"create_dynamic_table: Top picks={top_picks}")
         
