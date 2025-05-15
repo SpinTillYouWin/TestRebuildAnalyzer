@@ -6156,7 +6156,6 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
         print(f"select_next_spin_top_pick: Error: {str(e)}")
         return "<p>Error selecting top pick.</p>"
 
-
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     # T&C and Privacy Policy Modal (Fixed Positioning)
