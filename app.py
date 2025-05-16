@@ -7867,7 +7867,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     interactive=True,
                     elem_classes="long-slider"
                 )
-                # NEW: Nested accordion for weight inputs
                 with gr.Accordion("Adjust Scoring Weights", open=False, elem_id="scoring-weights"):
                     gr.Markdown("#### Customize Scoring Weights")
                     gr.Markdown("Fine-tune how much each factor contributes to the top pick score.")
@@ -7934,6 +7933,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         interactive=True,
                         elem_id="neighbor-weight"
                     )
+                    # NEW: Reset button
+                    reset_weights_button = gr.Button("Reset Weights to Default", elem_id="reset-weights")
                 top_pick_display = gr.HTML(
                     label="Top Pick",
                     value=select_next_spin_top_pick(18, ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"]),
@@ -7989,6 +7990,17 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     padding: 5px !important;
                     width: 100px !important;
                 }
+                #reset-weights {
+                    background-color: #2196f3 !important;
+                    color: #ffffff !important;
+                    border-radius: 4px !important;
+                    padding: 8px 16px !important;
+                    margin-top: 10px !important;
+                    cursor: pointer !important;
+                }
+                #reset-weights:hover {
+                    background-color: #1976d2 !important;
+                }
             </style>
         """)
     
@@ -7998,7 +8010,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-  
+
     # Last Spins Display and Slider (Row 3)
     with gr.Row():
         with gr.Column():
@@ -13172,6 +13184,40 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+    try:
+        reset_weights_button.click(
+            fn=lambda: (
+                100,  # trait_match_weight
+                10,   # secondary_match_weight
+                5,    # wheel_side_weight
+                10,   # section_weight
+                1,    # recency_weight
+                5,    # hit_bonus_weight
+                2,    # neighbor_weight
+                select_next_spin_top_pick(
+                    top_pick_spin_count,
+                    trait_filter,
+                    100, 10, 5, 10, 1, 5, 2
+                )
+            ),
+            inputs=[],
+            outputs=[
+                trait_match_weight,
+                secondary_match_weight,
+                wheel_side_weight,
+                section_weight,
+                recency_weight,
+                hit_bonus_weight,
+                neighbor_weight,
+                top_pick_display
+            ]
+        ).then(
+            fn=lambda: print("Weights reset to default"),
+            inputs=[],
+            outputs=[]
+        )
+    except Exception as e:
+        print(f"Error in reset_weights_button.click handler: {str(e)}")
     
     try:
         trait_filter.change(
