@@ -6744,7 +6744,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML("""
             <div id="masterclass-video-section">
                 <div class="video-accordion">
-                    <input type="checkbox" id="video-toggle" class="accordion-toggle" checked>
+                    <input type="checkbox" id="video-toggle" class="accordion-toggle">
                     <label for="video-toggle" class="accordion-title">
                         <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
                         <span class="by-styw">by S.T.Y.W</span>
@@ -6770,14 +6770,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </div>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
-    
                     #masterclass-video-section {
                         margin: 15px auto;
                         max-width: 1200px;
                         padding: 0 10px;
                         animation: neonFlicker 2s ease-in-out infinite;
                     }
-    
                     .video-accordion {
                         background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000);
                         border: 2px solid #008080;
@@ -6786,11 +6784,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         overflow: hidden;
                         position: relative;
                     }
-    
                     .accordion-toggle {
                         display: none;
                     }
-    
                     .accordion-title {
                         display: flex;
                         align-items: center;
@@ -6805,17 +6801,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         cursor: pointer;
                         transition: transform 0.3s ease, box-shadow 0.3s ease;
                     }
-    
                     .accordion-title:hover {
                         transform: scale(1.02);
                         box-shadow: 0 0 15px rgba(0, 128, 128, 0.7);
                     }
-    
                     .roulette-icon {
                         font-size: 24px;
                         animation: spin 4s linear infinite;
                     }
-    
                     .by-styw {
                         font-family: 'Dancing Script', cursive;
                         font-size: 0.7em;
@@ -6823,25 +6816,21 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
                         animation: subtleGlow 1.5s ease-in-out infinite;
                     }
-    
                     .accordion-content {
                         padding: 15px;
                         background: #ffffff;
                         border-top: 1px solid #008080;
                         display: none;
                     }
-    
                     #video-toggle:checked ~ .accordion-content {
                         display: block;
                     }
-    
                     .video-container {
                         display: flex;
                         flex-wrap: wrap;
                         gap: 20px;
                         align-items: center;
                     }
-    
                     .video-thumbnail {
                         flex: 1;
                         min-width: 280px;
@@ -6850,89 +6839,73 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         overflow: hidden;
                         box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
                     }
-    
                     .video-info {
                         flex: 2;
                         min-width: 300px;
                         color: #333;
                     }
-    
                     .video-info h3 {
                         margin: 0 0 10px;
                         font-family: 'Poppins', sans-serif;
                         font-size: 20px;
                         color: #008080;
                     }
-    
                     .video-info p {
                         margin: 5px 0;
                         font-size: 14px;
                         line-height: 1.5;
                         font-family: Arial, sans-serif;
                     }
-    
                     .video-info ul {
                         list-style: none;
                         padding: 0;
                         margin: 10px 0;
                     }
-    
                     .video-info li {
                         font-size: 14px;
                         margin: 5px 0;
                         color: #555;
                         font-family: Arial, sans-serif;
                     }
-    
                     @keyframes neonFlicker {
                         0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5); }
                         50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); }
                     }
-    
                     @keyframes spin {
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
-    
                     @keyframes subtleGlow {
                         0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
                         50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
                     }
-    
                     @media (max-width: 768px) {
                         .video-container {
                             flex-direction: column;
                         }
-    
                         .video-thumbnail {
                             max-width: 100%;
                         }
-    
                         .video-info {
                             min-width: 100%;
                         }
-    
                         .accordion-title {
                             font-size: 16px;
                         }
-    
                         .by-styw {
                             font-size: 0.6em;
                         }
                     }
-    
                     @media (max-width: 600px) {
                         .accordion-title {
                             font-size: 14px;
                             flex-wrap: wrap;
                             gap: 5px;
                         }
-    
                         .video-thumbnail {
                             height: 150px;
                         }
                     }
-    
                     @media (prefers-reduced-motion: reduce) {
                         .roulette-icon, .accordion-title, .by-styw {
                             animation: none !important;
@@ -6955,8 +6928,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         });
                     });
                 </script>
-        """)
-    
+            """)
+
         # Header Row (Now Below Buttons and Video)
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
