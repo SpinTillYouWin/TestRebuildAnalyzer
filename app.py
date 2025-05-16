@@ -7025,6 +7025,44 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"suggest_hot_cold_numbers: Error: {str(e)}")
             return "", "<p>Error generating suggestions.</p>"
+import plotly.express as px
+import pandas as pd
+
+def plot_spin_frequencies(spins_display):
+    """Generate a bar chart showing the frequency of each roulette number."""
+    if not spins_display or not spins_display.strip():
+        return "<p>No spins available for plotting.</p>"
+    
+    # Parse spins
+    spins = [num.strip() for num in spins_display.split(",") if num.strip()]
+    if not spins:
+        return "<p>No valid spins to display.</p>"
+    
+    # Count frequencies
+    freq = pd.Series(spins).value_counts().reset_index()
+    freq.columns = ["Number", "Frequency"]
+    
+    # Create bar chart
+    fig = px.bar(
+        freq,
+        x="Number",
+        y="Frequency",
+        title="Spin Frequency Distribution",
+        labels={"Number": "Roulette Number", "Frequency": "Number of Occurrences"},
+        color="Frequency",
+        color_continuous_scale="Viridis"
+    )
+    fig.update_layout(
+        xaxis_title="Roulette Number",
+        yaxis_title="Frequency",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(size=12)
+    )
+    
+    # Return the plot as HTML
+    return fig.to_html(include_plotlyjs="cdn")
+
 
     STRATEGIES = {
         "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -9063,12 +9101,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                 animation: fadeInAccordion 0.5s ease-in-out !important;
             }
-    
             @keyframes fadeInAccordion {
                 0% { opacity: 0; transform: translateY(5px); }
                 100% { opacity: 1; transform: translateY(0); }
             }
-    
             #spin-analysis summary {
                 background-color: #00bcd4 !important;
                 color: white !important;
@@ -9079,15 +9115,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 cursor: pointer !important;
                 transition: background-color 0.3s ease !important;
             }
-    
             #spin-analysis summary:hover {
                 background-color: #0097a7 !important;
             }
-    
             #spin-analysis summary::after {
                 filter: invert(100%) !important;
             }
-    
             .spin-analysis-row {
                 background-color: #e0f7fa !important;
                 padding: 10px !important;
@@ -9103,7 +9136,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 height: auto !important;
                 box-sizing: border-box !important;
             }
-    
             .spin-analysis-row .gr-textbox {
                 background: transparent !important;
                 border: 1px solid #00bcd4 !important;
@@ -9114,7 +9146,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100% !important;
                 box-sizing: border-box !important;
             }
-    
             @media (max-width: 768px) {
                 #spin-analysis {
                     padding: 8px !important;
@@ -9133,12 +9164,38 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             }
         </style>
         """)
+        gr.HTML("""
+        <style>
+            .spin-frequency-container {
+                background-color: #f5f5f5 !important;
+                border: 1px solid #d3d3d3 !important;
+                padding: 10px !important;
+                border-radius: 5px !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                width: 100% !important;
+                max-height: 400px !important;
+                overflow-y: auto !important;
+            }
+            @media (max-width: 768px) {
+                .spin-frequency-container {
+                    max-height: 300px !important;
+                    padding: 8px !important;
+                }
+            }
+        </style>
+        """)
         with gr.Row(elem_classes=["spin-analysis-row"]):
             spin_analysis_output = gr.Textbox(
                 label="",
                 value="",
                 interactive=False,
                 lines=5
+            )
+            spin_frequency_plot = gr.HTML(
+                label="Spin Frequency Chart",
+                value="<p>Enter spins to see the frequency chart.</p>",
+                elem_classes=["spin-frequency-container"]
             )
 
     with gr.Accordion("Strongest Numbers Tables", open=False, elem_id="strongest-numbers-table"):
@@ -11652,6 +11709,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
+            fn=plot_spin_frequencies,
+            inputs=[spins_display],
+            outputs=[spin_frequency_plot]
+        ).then(
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
@@ -11677,9 +11738,13 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             ],
             outputs=[gr.State(), even_money_tracker_output]
         ).then(
-            fn=summarize_spin_traits,  # Use summarize_spin_traits directly for now
+            fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
@@ -12950,62 +13015,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
-
-    try:
-        spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
-        ).then(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
-    
 
     def toggle_labouchere(progression):
         """Show/hide Labouchere sequence input based on selected progression."""
