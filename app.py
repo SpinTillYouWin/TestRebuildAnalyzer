@@ -5427,13 +5427,22 @@ def cache_analysis(spins, last_spin_count):
     return result
 
 
-def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_weight=100, secondary_match_weight=10, wheel_side_weight=5, section_weight=10, recency_weight=1, hit_bonus_weight=5, neighbor_weight=2):
+def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_weight=100, secondary_match_weight=10, wheel_side_weight=5, section_weight=10, recency_weight=1, hit_bonus_weight=5, neighbor_weight=2, is_win=False):
     try:
         last_spin_count = int(last_spin_count) if last_spin_count is not None else 18
         last_spin_count = max(1, min(last_spin_count, 36))
         last_spins = state.last_spins[-last_spin_count:] if state.last_spins else []
         if not last_spins:
-            return "<p>No spins available for analysis.</p>"
+            return '''
+            <div class="modal warning" id="modal-no-spins">
+                <div class="modal-content">
+                    <h3>No Spins Available</h3>
+                    <p>Please add spins using the roulette table or textbox.</p>
+                    <button onclick="closeModal('modal-no-spins')">Close</button>
+                </div>
+            </div>
+            <script>showModal('modal-no-spins');</script>
+            '''
         # Log the spins being analyzed
         print(f"Analyzing last {last_spin_count} spins: {last_spins}")
         numbers = set(range(37))
@@ -5653,8 +5662,7 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
             if "Columns" in trait_filter:
                 for name, nums in COLUMNS.items():
                     if num in nums:
-                        tiebreaker_score += column_counts[name]
-                        break
+                        column_counts[name] += 1
             # Apply configurable weights
             total_score = (
                 matching_traits * trait_match_weight +
@@ -5801,7 +5809,28 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
               </div>
             </div>
             '''
+        # Add recent-spin class if top pick is the last spin
+        is_recent = last_positions[top_pick] == len(last_spins) - 1
+        badge_class = f"top-pick-badge {color} {'recent-spin' if is_recent else ''}"
+        # Add win notification if is_win
+        win_html = ''
+        if is_win:
+            win_html = '''
+            <div class="modal success" id="modal-win">
+                <div class="modal-content">
+                    <h3>Winner!</h3>
+                    <p>Your top pick {top_pick} hit!</p>
+                    <button onclick="closeModal('modal-win')">Close</button>
+                </div>
+            </div>
+            <script>
+              showModal('modal-win');
+              triggerEnhancedConfetti();
+              document.getElementById('win-sound').play();
+            </script>
+            '''
         html = f'''
+        {win_html}
         <div class="first-spins">
           <h5>Last 5 Spins</h5>
           <div class="first-spins-container">{last_five_spins_html}</div>
@@ -5810,7 +5839,7 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
           <h4>Top Pick for Next Spin</h4>
           <div class="top-pick-wrapper">
             <div class="badge-wrapper">
-              <span class="top-pick-badge {color}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
+              <span class="{badge_class}" data-number="{top_pick}" onclick="copyToClipboard('{top_pick}')">{top_pick}</span>
             </div>
             <div class="top-pick-characteristics">
               {''.join(f'<span class="char-badge {char.lower()}">{char}</span>' for char in characteristics_str.split(", "))}
@@ -5837,6 +5866,7 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
             </div>
           </div>
         </div>
+        <audio id="win-sound" src="https://freesound.org/data/previews/511/511484_5121236-lq.mp3" preload="auto"></audio>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
           @keyframes fadeIn {{
@@ -5846,6 +5876,69 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
           @keyframes confetti {{
             0% {{ transform: translateY(0) rotate(0deg); opacity: 1; }}
             100% {{ transform: translateY(100vh) rotate(720deg); opacity: 0; }}
+          }}
+          @keyframes recentPulse {{
+            0%, 100% {{ box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }}
+            50% {{ box-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }}
+          }}
+          @keyframes fillConfidence {{
+            from {{ width: 0; }}
+            to {{ width: {confidence}%; }}
+          }}
+          @keyframes modalFadeIn {{
+            from {{ opacity: 0; transform: translateY(-20px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+          }}
+          .modal {{
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            display: none;
+            animation: modalFadeIn 0.3s ease;
+          }}
+          .modal.warning .modal-content {{
+            background-color: #fff3f3;
+            border: 2px solid #FF0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+          }}
+          .modal.success .modal-content {{
+            background-color: #e6ffed;
+            border: 2px solid #32CD32;
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.3);
+          }}
+          .modal-content {{
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+          }}
+          .modal-content h3 {{
+            margin: 0 0 10px;
+            color: #2196f3;
+            font-size: 20px;
+            font-weight: bold;
+          }}
+          .modal-content p {{
+            margin: 0 0 15px;
+            color: #333;
+            font-size: 16px;
+          }}
+          .modal-content button {{
+            background-color: #2196f3;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+          }}
+          .modal-content button:hover {{
+            background-color: #1976d2;
           }}
           .first-spins {{
             margin-bottom: 10px;
@@ -5970,6 +6063,9 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
           .top-pick-badge.red {{ background-color: red; }}
           .top-pick-badge.black {{ background-color: black; }}
           .top-pick-badge.green {{ background-color: green; }}
+          .recent-spin {{
+            animation: recentPulse 1.5s ease-in-out infinite;
+          }}
           .top-pick-characteristics {{
             display: flex;
             gap: 5px;
@@ -6002,7 +6098,8 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
           .confidence-fill {{
             height: 100%;
             background-color: #FFD700;
-            transition: width 1s ease;
+            width: 0;
+            animation: fillConfidence 1s ease forwards;
           }}
           .confidence-bar span {{
             position: absolute;
@@ -6128,9 +6225,31 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
             .accordion-header {{
               font-size: 16px;
             }}
+            .modal-content {{
+              max-width: 300px;
+              padding: 15px;
+            }}
+            .modal-content h3 {{
+              font-size: 18px;
+            }}
+            .modal-content p {{
+              font-size: 14px;
+            }}
           }}
         </style>
         <script>
+          function showModal(id) {{
+            const modal = document.getElementById(id);
+            if (modal) {{
+              modal.style.display = 'block';
+            }}
+          }}
+          function closeModal(id) {{
+            const modal = document.getElementById(id);
+            if (modal) {{
+              modal.style.display = 'none';
+            }}
+          }}
           function triggerConfetti() {{
             const celebration = document.querySelector('.celebration');
             for (let i = 0; i < 50; i++) {{
@@ -6142,10 +6261,52 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
               celebration.appendChild(confetti);
             }}
           }}
+          function triggerEnhancedConfetti() {{
+            const celebration = document.querySelector('.celebration');
+            for (let i = 0; i < 100; i++) {{
+              const confetti = document.createElement('div');
+              confetti.className = 'confetti';
+              confetti.style.left = Math.random() * 100 + 'vw';
+              confetti.style.backgroundColor = ['#FFD700', '#FF0000', '#2E8B57', '#FFFFFF'][Math.floor(Math.random() * 4)];
+              confetti.style.animationDelay = Math.random() * 3 + 's';
+              confetti.style.width = Math.random() * 10 + 5 + 'px';
+              confetti.style.height = Math.random() * 10 + 5 + 'px';
+              celebration.appendChild(confetti);
+            }}
+            setTimeout(() => {{
+              const confettis = document.querySelectorAll('.confetti');
+              confettis.forEach(c => c.remove());
+            }}, 4000);
+          }}
           function copyToClipboard(text) {{
             navigator.clipboard.writeText(text).then(() => {{
-              alert('Number ' + text + ' copied to clipboard!');
+              const modal = document.createElement('div');
+              modal.className = 'modal success';
+              modal.id = 'modal-clipboard';
+              modal.innerHTML = `
+                <div class="modal-content">
+                  <h3>Success</h3>
+                  <p>Number ${text} copied to clipboard!</p>
+                  <button onclick="closeModal('modal-clipboard')">Close</button>
+                </div>
+              `;
+              document.body.appendChild(modal);
+              showModal('modal-clipboard');
+              setTimeout(() => closeModal('modal-clipboard'), 5000);
             }}).catch(err => {{
+              const modal = document.createElement('div');
+              modal.className = 'modal warning';
+              modal.id = 'modal-clipboard-error';
+              modal.innerHTML = `
+                <div class="modal-content">
+                  <h3>Error</h3>
+                  <p>Failed to copy number to clipboard.</p>
+                  <button onclick="closeModal('modal-clipboard-error')">Close</button>
+                </div>
+              `;
+              document.body.appendChild(modal);
+              showModal('modal-clipboard-error');
+              setTimeout(() => closeModal('modal-clipboard-error'), 5000);
               console.error('Failed to copy: ', err);
             }});
           }}
@@ -6154,7 +6315,16 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
         return html
     except Exception as e:
         print(f"select_next_spin_top_pick: Error: {str(e)}")
-        return "<p>Error selecting top pick.</p>"
+        return '''
+        <div class="modal warning" id="modal-error">
+            <div class="modal-content">
+                <h3>Error</h3>
+                <p>Failed to select top pick. Please try again.</p>
+                <button onclick="closeModal('modal-error')">Close</button>
+            </div>
+        </div>
+        <script>showModal('modal-error');</script>
+        '''
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
@@ -7025,6 +7195,39 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"suggest_hot_cold_numbers: Error: {str(e)}")
             return "", "<p>Error generating suggestions.</p>"
+    def handle_spin_input(spin, spin_count, traits, w1, w2, w3, w4, w5, w6, w7):
+        # Validate and append spin
+        try:
+            spin = int(spin)
+            if 0 <= spin <= 36:
+                state.last_spins.append(str(spin))
+            else:
+                return '''
+                <div class="modal warning" id="modal-invalid-spin">
+                    <div class="modal-content">
+                        <h3>Invalid Spin</h3>
+                        <p>Please enter a number between 0 and 36.</p>
+                        <button onclick="closeModal('modal-invalid-spin')">Close</button>
+                    </div>
+                </div>
+                <script>showModal('modal-invalid-spin');</script>
+                '''
+        except (ValueError, TypeError):
+            return '''
+            <div class="modal warning" id="modal-invalid-spin">
+                <div class="modal-content">
+                    <h3>Invalid Spin</h3>
+                    <p>Please enter a valid number between 0 and 36.</p>
+                    <button onclick="closeModal('modal-invalid-spin')">Close</button>
+                </div>
+            </div>
+            <script>showModal('modal-invalid-spin');</script>
+            '''
+        # Check for win
+        is_win = (state.current_top_pick == spin)
+        # Calculate new top pick
+        top_pick = select_next_spin_top_pick(spin_count, traits, w1, w2, w3, w4, w5, w6, w7, is_win=is_win)
+        return top_pick
 
     STRATEGIES = {
         "Hot Bet Strategy": {"function": hot_bet_strategy, "categories": ["even_money", "dozens", "columns", "streets", "corners", "six_lines", "splits", "sides", "numbers"]},
@@ -10638,8 +10841,56 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 border-color: #ffffff;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             }
+        /* Modal Styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
         }
-
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .modal.warning .modal-content {
+            border: 2px solid #ff4444;
+        }
+        .modal.success .modal-content {
+            border: 2px solid #28a745;
+        }
+        .modal-content h3 {
+            margin: 0 0 10px;
+            color: #333;
+        }
+        .modal-content p {
+            margin: 0 0 15px;
+            color: #555;
+        }
+        .modal-content button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-content button:hover {
+            background: #218838;
+        }
         </style>
         <script>
         const rouletteTips = [
@@ -13195,7 +13446,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             if not state.last_spins:
                 return (
                     100, 10, 5, 10, 1, 5, 2,
-                    "<p>No spins available for analysis. Weights reset to default.</p>"
+                    '''
+                    <div class="modal warning" id="modal-no-spins-reset">
+                        <div class="modal-content">
+                            <h3>No Spins Available</h3>
+                            <p>Weights reset to default, but no spins available for analysis.</p>
+                            <button onclick="closeModal('modal-no-spins-reset')">Close</button>
+                        </div>
+                    </div>
+                    <script>showModal('modal-no-spins-reset');</script>
+                    '''
                 )
             # Calculate top pick with default weights
             top_pick = select_next_spin_top_pick(
@@ -13211,7 +13471,16 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 1,    # recency_weight
                 5,    # hit_bonus_weight
                 2,    # neighbor_weight
-                top_pick
+                '''
+                <div class="modal success" id="modal-reset-success">
+                    <div class="modal-content">
+                        <h3>Success</h3>
+                        <p>Weights reset to default!</p>
+                        <button onclick="closeModal('modal-reset-success')">Close</button>
+                    </div>
+                </div>
+                <script>showModal('modal-reset-success');</script>
+                ''' + top_pick
             )
     
         reset_weights_button.click(
