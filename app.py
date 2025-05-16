@@ -13184,9 +13184,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in top_pick_spin_count.change handler: {str(e)}")
+
     try:
-        reset_weights_button.click(
-            fn=lambda: (
+        def reset_weights(spin_count, traits):
+            # Fallback to defaults if inputs are invalid
+            spin_count = int(spin_count) if spin_count is not None else 18
+            spin_count = max(1, min(spin_count, 36))
+            traits = traits if traits else ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"]
+            # Check if spins are available
+            if not state.last_spins:
+                return (
+                    100, 10, 5, 10, 1, 5, 2,
+                    "<p>No spins available for analysis. Weights reset to default.</p>"
+                )
+            # Calculate top pick with default weights
+            top_pick = select_next_spin_top_pick(
+                spin_count,
+                traits,
+                100, 10, 5, 10, 1, 5, 2
+            )
+            return (
                 100,  # trait_match_weight
                 10,   # secondary_match_weight
                 5,    # wheel_side_weight
@@ -13194,13 +13211,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 1,    # recency_weight
                 5,    # hit_bonus_weight
                 2,    # neighbor_weight
-                select_next_spin_top_pick(
-                    top_pick_spin_count,
-                    trait_filter,
-                    100, 10, 5, 10, 1, 5, 2
-                )
-            ),
-            inputs=[],
+                top_pick
+            )
+    
+        reset_weights_button.click(
+            fn=reset_weights,
+            inputs=[top_pick_spin_count, trait_filter],
             outputs=[
                 trait_match_weight,
                 secondary_match_weight,
