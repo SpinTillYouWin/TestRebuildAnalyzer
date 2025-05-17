@@ -203,6 +203,7 @@ class RouletteState:
         self.alerted_patterns = set()
         self.last_alerted_spins = None
         self.labouchere_sequence = ""
+        self.victory_vortex_sequence = [1, 8, 11, 16, 24, 35, 52, 78, 116, 174, 260, 390, 584, 876, 1313, 1969]
 
     def reset(self):
         use_casino_winners = self.use_casino_winners
@@ -346,6 +347,18 @@ class RouletteState:
                 self.progression_state = min(len(fib) - 1, self.progression_state + 1)
                 self.next_bet = fib[self.progression_state] * self.base_unit
                 self.message = f"Loss! Next Fibonacci bet: {self.next_bet}"
+        elif self.progression == "Victory Vortex V.2":
+            if self.progression_state is None:
+                self.progression_state = 0
+            self.current_bet = self.next_bet
+            if won:
+                self.progression_state = 0
+                self.next_bet = self.victory_vortex_sequence[0] * self.base_unit
+                self.message = f"Win! Reset to {self.next_bet} (Victory Vortex V.2, Step 1)"
+            else:
+                self.progression_state = min(len(self.victory_vortex_sequence) - 1, self.progression_state + 1)
+                self.next_bet = self.victory_vortex_sequence[self.progression_state] * self.base_unit
+                self.message = f"Loss! Next bet: {self.next_bet} (Victory Vortex V.2, Step {self.progression_state + 1})"
         elif self.progression == "Triple Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 3
@@ -8800,108 +8813,109 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             pass
     
     # 8. Row 8: Betting Progression Tracker
-    with gr.Row():
-        with gr.Accordion("Betting Progression Tracker", open=False, elem_id="betting-progression", elem_classes=["betting-progression"]):
-            gr.HTML("""
-            <style>
+    with gr.Accordion("Betting Progression Tracker", open=False, elem_id="betting-progression", elem_classes=["betting-progression"]):
+        gr.HTML("""
+        <style>
+            .betting-progression {
+                background-color: #fffde7 !important;
+                border: 2px solid #ffca28 !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
+            }
+            
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+            
+            .betting-progression summary {
+                background-color: #ffca28 !important;
+                color: white !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
+            }
+            
+            .betting-progression summary:hover {
+                background-color: #ffb300 !important;
+            }
+            
+            .betting-progression summary::after {
+                filter: invert(100%) !important;
+            }
+            
+            .betting-progression .gr-row {
+                background-color: #fffde7 !important;
+                padding: 5px !important;
+                border-radius: 6px !important;
+                margin: 5px 0 !important;
+            }
+            
+            .betting-progression .gr-textbox {
+                background: transparent !important;
+                border: 1px solid #ffca28 !important;
+                border-radius: 6px !important;
+                padding: 8px !important;
+                color: #333 !important;
+                font-size: 14px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            @media (max-width: 768px) {
                 .betting-progression {
-                    background-color: #fffde7 !important;
-                    border: 2px solid #ffca28 !important;
-                    border-radius: 8px !important;
-                    padding: 12px !important;
-                    margin-bottom: 15px !important;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
-                    animation: fadeInAccordion 0.5s ease-in-out !important;
-                }
-        
-                @keyframes fadeInAccordion {
-                    0% { opacity: 0; transform: translateY(5px); }
-                    100% { opacity: 1; transform: translateY(0); }
-                }
-        
-                .betting-progression summary {
-                    background-color: #ffca28 !important;
-                    color: white !important;
-                    padding: 12px !important;
-                    border-radius: 6px !important;
-                    font-weight: bold !important;
-                    font-size: 18px !important;
-                    cursor: pointer !important;
-                    transition: background-color 0.3s ease !important;
-                }
-        
-                .betting-progression summary:hover {
-                    background-color: #ffb300 !important;
-                }
-        
-                .betting-progression summary::after {
-                    filter: invert(100%) !important;
-                }
-        
-                .betting-progression .gr-row {
-                    background-color: #fffde7 !important;
-                    padding: 5px !important;
-                    border-radius: 6px !important;
-                    margin: 5px 0 !important;
-                }
-        
-                .betting-progression .gr-textbox {
-                    background: transparent !important;
-                    border: 1px solid #ffca28 !important;
-                    border-radius: 6px !important;
                     padding: 8px !important;
-                    color: #333 !important;
-                    font-size: 14px !important;
-                    width: 100% !important;
-                    box-sizing: border-box !important;
                 }
-        
-                @media (max-width: 768px) {
-                    .betting-progression {
-                        padding: 8px !important;
-                    }
-                    .betting-progression summary {
-                        font-size: 16px !important;
-                    }
-                    .betting-progression .gr-textbox {
-                        font-size: 12px !important;
-                        padding: 6px !important;
-                    }
+                .betting-progression summary {
+                    font-size: 16px !important;
                 }
-            </style>
-            """)
-            with gr.Row():
-                bankroll_input = gr.Number(label="Bankroll", value=1000)
-                base_unit_input = gr.Number(label="Base Unit", value=10)
-                stop_loss_input = gr.Number(label="Stop Loss", value=-500)
-                stop_win_input = gr.Number(label="Stop Win", value=200)
-                target_profit_input = gr.Number(label="Target Profit (Units)", value=10, step=1)
-            with gr.Row():
-                bet_type_dropdown = gr.Dropdown(
-                    label="Bet Type",
-                    choices=["Even Money", "Dozens", "Columns", "Streets", "Straight Bets"],
-                    value="Even Money"
-                )
-                progression_dropdown = gr.Dropdown(
-                    label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Ladder", "D’Alembert", 
-                             "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", 
-                             "Double Loss / +50% Win"],
-                    value="Martingale"
-                )
-            with gr.Row():
-                win_button = gr.Button("Win")
-                lose_button = gr.Button("Lose")
-                reset_progression_button = gr.Button("Reset Progression")
-                reset_bankroll_button = gr.Button("Reset Bankroll")
-            with gr.Row():
-                bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
-                current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
-                next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
-            with gr.Row():
-                message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
-                status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
-    
+                .betting-progression .gr-textbox {
+                    font-size: 12px !important;
+                    padding: 6px !important;
+                }
+            }
+        </style>
+        """)
+        with gr.Row():
+            bankroll_input = gr.Number(label="Bankroll", value=1000)
+            base_unit_input = gr.Number(label="Base Unit", value=10)
+            stop_loss_input = gr.Number(label="Stop Loss", value=-500)
+            stop_win_input = gr.Number(label="Stop Win", value=200)
+            target_profit_input = gr.Number(label="Target Profit (Units)", value=10, step=1)
+        with gr.Row():
+            bet_type_dropdown = gr.Dropdown(
+                label="Bet Type",
+                choices=["Even Money", "Dozens", "Columns", "Streets", "Straight Bets"],
+                value="Even Money"
+            )
+            progression_dropdown = gr.Dropdown(
+                label="Progression",
+                choices=[
+                    "Martingale", "Fibonacci", "Triple Martingale", "Ladder", "D’Alembert",
+                    "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss",
+                    "Double Loss / +50% Win", "Victory Vortex V.2"
+                ],
+                value="Martingale"
+            )
+        with gr.Row():
+            win_button = gr.Button("Win")
+            lose_button = gr.Button("Lose")
+            reset_progression_button = gr.Button("Reset Progression")
+            reset_bankroll_button = gr.Button("Reset Bankroll")
+        with gr.Row():
+            bankroll_output = gr.Textbox(label="Current Bankroll", value="1000", interactive=False)
+            current_bet_output = gr.Textbox(label="Current Bet", value="10", interactive=False)
+            next_bet_output = gr.Textbox(label="Next Bet", value="10", interactive=False)
+        with gr.Row():
+            message_output = gr.Textbox(label="Message", value="Start with base bet of 10 on Even Money (Martingale)", interactive=False)
+            status_output = gr.HTML(label="Status", value='<div style="background-color: white; padding: 5px; border-radius: 3px;">Active</div>')
+
     # 8.1. Row 8.1: Casino Data Insights
     with gr.Row():
         with gr.Accordion("Casino Data Insights", open=False, elem_classes=["betting-progression"], elem_id="casino-data-insights"):
@@ -13185,11 +13199,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         state.stop_win = stop_win
         state.bet_type = bet_type
         state.progression = progression
-        # Enforce minimum value for target_profit
         target_profit = int(target_profit) if target_profit is not None else 10
         state.target_profit = max(1, target_profit)
-        state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
+        return state.reset_progression()
     
     try:
         bankroll_input.change(
