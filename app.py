@@ -306,7 +306,8 @@ class RouletteState:
         else:
             self.status_color = "white"
 
-    def update_progression(self, won):
+    def update_progression(self, won: bool) -> Tuple[float, float, float, str, str]:
+        """Update progression based on win or loss, including Victory Vortex."""
         if self.is_stopped:
             return (
                 self.bankroll,
@@ -328,7 +329,7 @@ class RouletteState:
                 self.message,
                 f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
             )
-
+    
         if self.progression == "Martingale":
             self.current_bet = self.next_bet
             self.next_bet = self.base_unit if won else self.current_bet * 2
@@ -405,7 +406,25 @@ class RouletteState:
                 self.consecutive_wins = 0
                 self.next_bet = round(self.current_bet * 2, 2)
                 self.message = f"Loss! Doubling bet to {self.next_bet}."
-
+        elif self.progression == "Victory Vortex":
+            self.current_bet = self.next_bet
+            if self.progression_state is None:
+                self.progression_state = [1]  # Start with single unit
+            if won:
+                # Dozen win: Reset to base unit
+                self.progression_state = [1]
+                self.next_bet = self.base_unit
+                self.consecutive_wins += 1
+                self.message = f"Win! Reset to base bet of {self.next_bet}. Consecutive wins: {self.consecutive_wins}"
+            else:
+                # Loss: Double the last unit, cap at 3 units
+                self.consecutive_wins = 0
+                last_unit = self.progression_state[-1]
+                new_unit = min(last_unit * 2, 3)  # Cap at 3 units
+                self.progression_state.append(new_unit)
+                self.next_bet = self.base_unit * new_unit
+                self.message = f"Loss! Next bet: {self.next_bet} (Sequence: {self.progression_state})"
+    
         # Check stop conditions
         profit = self.bankroll - self.initial_bankroll
         if profit <= self.stop_loss:
@@ -418,7 +437,12 @@ class RouletteState:
             self.status = "Stopped: Stop Win Reached"
             self.status_color = "green"
             self.message = f"Stop Win reached at {profit}. Current bankroll: {self.bankroll}"
-
+        elif profit >= self.target_profit * self.base_unit:
+            self.is_stopped = True
+            self.status = "Stopped: Target Profit Reached"
+            self.status_color = "green"
+            self.message = f"Target profit of {self.target_profit} units reached. Current bankroll: {self.bankroll}"
+    
         return (
             self.bankroll,
             self.current_bet,
@@ -426,6 +450,11 @@ class RouletteState:
             self.message,
             f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
         )
+    
+    # Monkey-patch the RouletteState class with updated methods
+    RouletteState.update_config = update_config
+    RouletteState.update_progression = update_progression
+
 
 # Lines before (context, unchanged)
 state = RouletteState()
@@ -8813,12 +8842,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                     animation: fadeInAccordion 0.5s ease-in-out !important;
                 }
-        
+    
                 @keyframes fadeInAccordion {
                     0% { opacity: 0; transform: translateY(5px); }
                     100% { opacity: 1; transform: translateY(0); }
                 }
-        
+    
                 .betting-progression summary {
                     background-color: #ffca28 !important;
                     color: white !important;
@@ -8829,22 +8858,22 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     cursor: pointer !important;
                     transition: background-color 0.3s ease !important;
                 }
-        
+    
                 .betting-progression summary:hover {
                     background-color: #ffb300 !important;
                 }
-        
+    
                 .betting-progression summary::after {
                     filter: invert(100%) !important;
                 }
-        
+    
                 .betting-progression .gr-row {
                     background-color: #fffde7 !important;
                     padding: 5px !important;
                     border-radius: 6px !important;
                     margin: 5px 0 !important;
                 }
-        
+    
                 .betting-progression .gr-textbox {
                     background: transparent !important;
                     border: 1px solid #ffca28 !important;
@@ -8855,7 +8884,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     width: 100% !important;
                     box-sizing: border-box !important;
                 }
-        
+    
                 @media (max-width: 768px) {
                     .betting-progression {
                         padding: 8px !important;
@@ -8884,9 +8913,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 )
                 progression_dropdown = gr.Dropdown(
                     label="Progression",
-                    choices=["Martingale", "Fibonacci", "Triple Martingale", "Ladder", "D’Alembert", 
-                             "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss", 
-                             "Double Loss / +50% Win"],
+                    choices=[
+                        "Martingale", "Fibonacci", "Triple Martingale", "Ladder", "D’Alembert",
+                        "Double After a Win", "+1 Win / -1 Loss", "+2 Win / -1 Loss",
+                        "Double Loss / +50% Win", "Victory Vortex"
+                    ],
                     value="Martingale"
                 )
             with gr.Row():
@@ -13177,19 +13208,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         return gr.update(visible=progression == "Labouchere")
     
     # Betting progression event handlers
-    def update_config(bankroll, base_unit, stop_loss, stop_win, bet_type, progression, target_profit):
-        state.bankroll = bankroll
-        state.initial_bankroll = bankroll
-        state.base_unit = base_unit
-        state.stop_loss = stop_loss
-        state.stop_win = stop_win
-        state.bet_type = bet_type
-        state.progression = progression
-        # Enforce minimum value for target_profit
-        target_profit = int(target_profit) if target_profit is not None else 10
-        state.target_profit = max(1, target_profit)
-        state.reset_progression()
-        return state.bankroll, state.current_bet, state.next_bet, state.message, f'<div style="background-color: {state.status_color}; padding: 5px; border-radius: 3px;">{state.status}</div>'
+    def update_config(self, bankroll: float, base_unit: float, stop_loss: float, stop_win: float, bet_type: str, progression: str, target_profit: int) -> Tuple[float, float, float, str, str]:
+        """Update configuration and reset progression."""
+        self.bankroll = bankroll
+        self.initial_bankroll = bankroll
+        self.base_unit = base_unit
+        self.stop_loss = stop_loss
+        self.stop_win = stop_win
+        self.bet_type = bet_type
+        self.progression = progression
+        self.target_profit = max(1, int(target_profit)) if target_profit is not None else 10
+        self.reset_progression()
+        return self.bankroll, self.current_bet, self.next_bet, self.message, f'<div style="background-color: {self.status_color}; padding: 5px; border-radius: 3px;">{self.status}</div>'
     
     try:
         bankroll_input.change(
@@ -13253,6 +13283,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in target_profit_input.change handler: {str(e)}")
+
+        # Event handlers for Betting Progression Tracker
+        for input_component in [bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input]:
+            input_component.change(
+                fn=state.update_config,
+                inputs=[bankroll_input, base_unit_input, stop_loss_input, stop_win_input, bet_type_dropdown, progression_dropdown, target_profit_input],
+                outputs=[bankroll_output, current_bet_output, next_bet_output, message_output, status_output]
+            )
     
     try:
         win_button.click(
