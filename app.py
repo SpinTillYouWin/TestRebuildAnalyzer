@@ -11442,339 +11442,344 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
    
     # Shepherd.js Tour Script
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
       function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
+        console.warn('Primary CDN failed. Attempting to load from fallback...');
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/shepherd.js/10.0.1/shepherd.min.js';
         script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
+          console.error('Fallback CDN also failed. Tour unavailable.');
           alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
         };
         document.head.appendChild(script);
-    
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/shepherd.js/10.0.1/shepherd.min.css';
         document.head.appendChild(link);
       }
     
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
+      function initTour() {
+        if (typeof Shepherd === 'undefined') {
+          console.warn('Shepherd.js not loaded yet, retrying in 500ms...');
+          setTimeout(initTour, 500);
+          return;
+        }
+        console.log('Shepherd.js loaded, initializing tour.');
+    
+        const tour = new Shepherd.Tour({
+          defaultStepOptions: {
+            cancelIcon: { enabled: true },
+            scrollTo: { behavior: 'smooth', block: 'center' },
+            classes: 'shepherd-theme-arrows',
+            buttons: [
+              { text: 'Back', action: function() { return this.back(); } },
+              { text: 'Next', action: function() { return this.next(); } },
+              { text: 'Skip', action: function() { return this.cancel(); } }
+            ]
+          },
+          useModalOverlay: true
+        });
+    
+        function logStep(stepId, nextStepId) {
+          return () => {
+            console.log(`Moving from ${stepId} to ${nextStepId}`);
+            tour.next();
+          };
+        }
+    
+        function forceAccordionOpen(accordionSelector) {
+          console.log(`Attempting to open accordion: ${accordionSelector}`);
+          return new Promise(resolve => {
+            const accordion = document.querySelector(accordionSelector);
+            if (!accordion) {
+              console.warn(`Accordion ${accordionSelector} not found`);
+              resolve();
+              return;
+            }
+            console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200));
+            const toggle = accordion.querySelector('input.accordion-toggle');
+            const content = accordion.querySelector('.accordion-content');
+            if (toggle && content && window.getComputedStyle(content).display === 'none') {
+              console.log(`Opening ${accordionSelector} via toggle`);
+              toggle.checked = true;
+              content.style.display = 'block !important';
+              accordion.setAttribute('open', '');
+              setTimeout(() => {
+                if (window.getComputedStyle(content).display === 'none') {
+                  console.warn(`Fallback: Forcing visibility for ${accordionSelector}`);
+                  content.style.display = 'block !important';
+                }
+                resolve();
+              }, 500);
+            } else {
+              console.log(`${accordionSelector} already open or no toggle/content found`);
+              resolve();
+            }
+          });
+        }
+    
+        tour.addStep({
+          id: 'part1',
+          title: 'Your Roulette Adventure Begins!',
+          text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#header-row', on: 'bottom' },
           buttons: [
-            { text: 'Back', action: function() { return this.back(); } },
-            { text: 'Next', action: function() { return this.next(); } },
-            { text: 'Skip', action: function() { return this.cancel(); } }
+            { text: 'Next', action: logStep('Part 1', 'Part 2') },
+            { text: 'Skip', action: tour.cancel }
           ]
-        },
-        useModalOverlay: true
-      });
+        });
     
-      function logStep(stepId, nextStepId) {
-        return () => {
-          console.log(`Moving from ${stepId} to ${nextStepId}`);
-          tour.next();
-        };
-      }
+        tour.addStep({
+          id: 'part2',
+          title: 'Spin the Wheel, Start the Thrill!',
+          text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '.roulette-table', on: 'right' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 2', 'Part 3') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
     
-      function forceAccordionOpen(accordionSelector) {
-        console.log(`Attempting to open accordion: ${accordionSelector}`);
-        return new Promise(resolve => {
-          const accordion = document.querySelector(accordionSelector);
-          if (!accordion) {
-            console.warn(`Accordion ${accordionSelector} not found`);
-            resolve();
+        tour.addStep({
+          id: 'part3',
+          title: 'Peek at Your Spin Streak!',
+          text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '.last-spins-container', on: 'bottom' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 3', 'Part 4') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part4',
+          title: 'Master Your Spin Moves!',
+          text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#undo-spins-btn', on: 'bottom' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 4', 'Part 5') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part5',
+          title: 'Jot Spins, Count Wins!',
+          text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#selected-spins', on: 'bottom' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 5', 'Part 6') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part6',
+          title: 'Analyze and Reset Like a Pro!',
+          text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '.green-btn', on: 'bottom' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 6', 'Part 7') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part7',
+          title: 'Light Up Your Lucky Spots!',
+          text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 7', 'Part 8') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part8',
+          title: 'Bet Smart, Track the Art!',
+          text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '.betting-progression', on: 'top' },
+          beforeShowPromise: function() {
+            return forceAccordionOpen('.betting-progression');
+          },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 8', 'Part 9') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part9',
+          title: 'Paint Your Winning Hue!',
+          text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#color-code-key', on: 'top' },
+          beforeShowPromise: function() {
+            return forceAccordionOpen('#color-code-key');
+          },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 9', 'Part 10') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part10',
+          title: 'Decode the Color Clue!',
+          text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#color-code-key', on: 'top' },
+          beforeShowPromise: function() {
+            return forceAccordionOpen('#color-code-key');
+          },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 10', 'Part 11') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part11',
+          title: 'Unleash the Spin Secrets!',
+          text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#spin-analysis', on: 'top' },
+          beforeShowPromise: function() {
+            return forceAccordionOpen('#spin-analysis');
+          },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 11', 'Part 12') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part12',
+          title: 'Save Your Spin Glory!',
+          text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#save-load-session', on: 'top' },
+          beforeShowPromise: function() {
+            return forceAccordionOpen('#save-load-session');
+          },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 12', 'Part 13') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part13',
+          title: 'Pick Your Strategy Groove!',
+          text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#select-category', on: 'left' },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Next', action: logStep('Part 13', 'Part 14') },
+            { text: 'Skip', action: tour.cancel }
+          ]
+        });
+    
+        tour.addStep({
+          id: 'part14',
+          title: 'Boost Wins with Casino Intel!',
+          text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+          attachTo: { element: '#casino-data-insights', on: 'bottom' },
+          beforeShowPromise: function() {
+            console.log('Starting Step 14: Casino Data Insights');
+            return forceAccordionOpen('#casino-data-insights');
+          },
+          buttons: [
+            { text: 'Back', action: tour.back },
+            { text: 'Finish', action: function() {
+              console.log('Tour completed at Step 14');
+              tour.complete();
+              document.querySelector('.shepherd-modal-overlay-container')?.classList.remove('shepherd-modal-is-visible');
+            } }
+          ]
+        });
+    
+        function tryStartTour(attempts = 3, delay = 2000) {
+          if (attempts <= 0) {
+            console.error('Max attempts reached. Tour failed.');
+            alert('Tour unavailable: Components not loaded after multiple attempts. Please refresh.');
             return;
           }
-          console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200));
-          const toggle = accordion.querySelector('input.accordion-toggle');
-          const content = accordion.querySelector('.accordion-content');
-          if (toggle && content && window.getComputedStyle(content).display === 'none') {
-            console.log(`Opening ${accordionSelector} via toggle`);
-            toggle.checked = true;
-            content.style.display = 'block !important';
-            accordion.setAttribute('open', '');
-            setTimeout(() => {
-              if (window.getComputedStyle(content).display === 'none') {
-                console.warn(`Fallback: Forcing visibility for ${accordionSelector}`);
-                content.style.display = 'block !important';
+          setTimeout(() => {
+            console.log(`Checking DOM elements for tour (attempt ${4 - attempts}/3)...`);
+            const criticalElements = [
+              '#header-row',
+              '.roulette-table',
+              '#selected-spins',
+              '#undo-spins-btn',
+              '.last-spins-container',
+              '.green-btn',
+              '#dynamic-table-heading',
+              '.betting-progression',
+              '#color-code-key',
+              '#spin-analysis',
+              '#save-load-session',
+              '#select-category',
+              '#casino-data-insights'
+            ];
+            const missingElements = criticalElements.filter(el => !document.querySelector(el));
+            if (missingElements.length > 0) {
+              console.warn(`Retrying (${attempts} attempts left)... Missing: ${missingElements.join(', ')}`);
+              tryStartTour(attempts - 1, delay);
+            } else {
+              console.log('All critical elements found. Starting tour.');
+              try {
+                tour.start();
+                console.log('Tour started successfully.');
+              } catch (error) {
+                console.error('Error starting tour:', error);
+                alert('Tour failed to start due to an unexpected error. Please check the console for details.');
               }
-              resolve();
-            }, 500);
+            }
+          }, delay);
+        }
+    
+        function startTour() {
+          console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
+          const btn = document.querySelector('#start-tour-btn');
+          if (btn) {
+            btn.innerHTML = 'Loading Tour...';
+          }
+          tryStartTour(3, 5000);
+          setTimeout(() => {
+            if (btn) btn.innerHTML = '🚀 Take the Tour!';
+          }, 10000);
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+          console.log('DOM Loaded, #header-row exists:', !!document.querySelector('#header-row'));
+          console.log('DOM Loaded, .betting-progression exists:', !!document.querySelector('.betting-progression'));
+          console.log('DOM Loaded, #casino-data-insights exists:', !!document.querySelector('#casino-data-insights'));
+          console.log('Shepherd.js available:', typeof Shepherd !== 'undefined');
+          const tourButton = document.querySelector('#start-tour-btn');
+          if (tourButton) {
+            tourButton.addEventListener('click', (e) => {
+              console.log('Tour button clicked');
+              startTour();
+            });
           } else {
-            console.log(`${accordionSelector} already open or no toggle/content found`);
-            resolve();
+            console.error('Tour button (#start-tour-btn) not found');
           }
         });
       }
     
-      tour.addStep({
-        id: 'part1',
-        title: 'Your Roulette Adventure Begins!',
-        text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#header-row', on: 'bottom' },
-        buttons: [
-          { text: 'Next', action: logStep('Part 1', 'Part 2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part2',
-        title: 'Spin the Wheel, Start the Thrill!',
-        text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.roulette-table', on: 'right' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 2', 'Part 3') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part3',
-        title: 'Peek at Your Spin Streak!',
-        text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.last-spins-container', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 3', 'Part 4') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part4',
-        title: 'Master Your Spin Moves!',
-        text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#undo-spins-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 4', 'Part 5') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part5',
-        title: 'Jot Spins, Count Wins!',
-        text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#selected-spins', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 5', 'Part 6') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part6',
-        title: 'Analyze and Reset Like a Pro!',
-        text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.green-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 6', 'Part 7') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part7',
-        title: 'Light Up Your Lucky Spots!',
-        text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 7', 'Part 8') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part8',
-        title: 'Bet Smart, Track the Art!',
-        text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.betting-progression', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('.betting-progression');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 8', 'Part 9') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part9',
-        title: 'Paint Your Winning Hue!',
-        text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#color-code-key', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#color-code-key');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 9', 'Part 10') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part10',
-        title: 'Decode the Color Clue!',
-        text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#color-code-key', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#color-code-key');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 10', 'Part 11') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part11',
-        title: 'Unleash the Spin Secrets!',
-        text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#spin-analysis', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#spin-analysis');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 11', 'Part 12') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part12',
-        title: 'Save Your Spin Glory!',
-        text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#save-load-session', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#save-load-session');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 12', 'Part 13') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part13',
-        title: 'Pick Your Strategy Groove!',
-        text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#select-category', on: 'left' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 13', 'Part 14') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part14',
-        title: 'Boost Wins with Casino Intel!',
-        text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#casino-data-insights', on: 'bottom' },
-        beforeShowPromise: function() {
-          console.log('Starting Step 14: Casino Data Insights');
-          return forceAccordionOpen('#casino-data-insights');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Finish', action: function() {
-            console.log('Tour completed at Step 14');
-            tour.complete();
-            document.querySelector('.shepherd-modal-overlay-container')?.classList.remove('shepherd-modal-is-visible');
-          } }
-        ]
-      });
-    
-      function tryStartTour(attempts = 3, delay = 2000) {
-        if (attempts <= 0) {
-          console.error('Max attempts reached. Tour failed.');
-          alert('Tour unavailable: Components not loaded after multiple attempts. Please refresh.');
-          return;
-        }
-        setTimeout(() => {
-          console.log(`Checking DOM elements for tour (attempt ${4 - attempts}/3)...`);
-          const criticalElements = [
-            '#header-row',
-            '.roulette-table',
-            '#selected-spins',
-            '#undo-spins-btn',
-            '.last-spins-container',
-            '.green-btn',
-            '#dynamic-table-heading',
-            '.betting-progression',
-            '#color-code-key',
-            '#spin-analysis',
-            '#save-load-session',
-            '#select-category',
-            '#casino-data-insights'
-          ];
-          const missingElements = criticalElements.filter(el => !document.querySelector(el));
-          if (missingElements.length > 0) {
-            console.warn(`Retrying (${attempts} attempts left)... Missing: ${missingElements.join(', ')}`);
-            tryStartTour(attempts - 1, delay);
-          } else {
-            console.log('All critical elements found. Starting tour.');
-            try {
-              tour.start();
-              console.log('Tour started successfully.');
-            } catch (error) {
-              console.error('Error starting tour:', error);
-              alert('Tour failed to start due to an unexpected error. Please check the console for details.');
-            }
-          }
-        }, delay);
-      }
-    
-      function startTour() {
-        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
-        const btn = document.querySelector('#start-tour-btn');
-        if (btn) {
-          btn.innerHTML = 'Loading Tour...';
-        }
-        if (typeof Shepherd === 'undefined') {
-          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
-          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
-          if (btn) btn.innerHTML = '🚀 Take the Tour!';
-          return;
-        }
-        tryStartTour(3, 5000);
-        setTimeout(() => {
-          if (btn) btn.innerHTML = '🚀 Take the Tour!';
-        }, 10000);
-      }
-    
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM Loaded, #header-row exists:', !!document.querySelector('#header-row'));
-        console.log('DOM Loaded, .betting-progression exists:', !!document.querySelector('.betting-progression'));
-        console.log('DOM Loaded, #casino-data-insights exists:', !!document.querySelector('#casino-data-insights'));
-        console.log('Shepherd.js available:', typeof Shepherd !== 'undefined');
-        const tourButton = document.querySelector('#start-tour-btn');
-        if (tourButton) {
-          tourButton.addEventListener('click', (e) => {
-            console.log('Tour button clicked');
-            startTour();
-          });
-        } else {
-          console.error('Tour button (#start-tour-btn) not found');
-        }
-      });
+      // Initialize tour on DOM load
+      document.addEventListener('DOMContentLoaded', initTour);
     </script>
     """)
     
