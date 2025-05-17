@@ -690,6 +690,23 @@ def render_sides_of_zero_display():
     else:
         hot_cold_html += '<p style="color: #666; font-size: 12px;">No spins yet to analyze.</p>'
     hot_cold_html += '</div>'
+
+def render_neighbor_bet_visualizer(spin):
+    if not spin:
+        return "<div class='neighbor-visualizer'><h4>Neighbor Bet Visualizer</h4><p>No spins yet.</p></div>"
+    try:
+        spin_value = int(spin)
+        left, right = NEIGHBORS_EUROPEAN.get(spin_value, (None, None))
+        neighbors = [str(n) for n in [left, spin_value, right] if n is not None]
+        colors_map = colors  # From your Part 1
+        html = "<div class='neighbor-visualizer'><h4>Neighbor Bet Visualizer</h4><div style='display: flex; gap: 5px;'>"
+        for num in neighbors:
+            color = colors_map.get(num, "black")
+            html += f"<span style='background-color: {color}; color: white; padding: 5px; border-radius: 3px;'>{num}</span>"
+        html += "</div></div>"
+        return html
+    except ValueError:
+        return "<div class='neighbor-visualizer'><h4>Neighbor Bet Visualizer</h4><p>Invalid spin.</p></div>"
     
     # Generate HTML for the number list
     def generate_number_list(numbers):
@@ -7518,205 +7535,20 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
 
     # Define state and components used across sections
     spins_display = gr.State(value="")
-
+    
     show_trends_state = gr.State(value=False)  # Default to hiding trends
     toggle_trends_label = gr.State(value="Show Trends")  # Default label when trends are hidden
     analysis_cache = gr.State(value={})  # New: Cache for analysis results
-    spins_textbox = gr.Textbox(
-        label="🎰 Selected Spins (Enter numbers like 5, 12, 0)",
-        value="",
-        interactive=True,
-        elem_id="selected-spins"
-    )
     
-    gr.HTML("""
-    <style>
-        #selected-spins label {
-            background: linear-gradient(135deg, #ff6f61, #ffd700) !important;
-            color: #fff !important;
-            padding: 8px 12px !important;
-            border-radius: 5px !important;
-            font-size: 16px !important;
-            font-weight: bold !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-            transition: transform 0.2s ease, box-shadow 0.3s ease !important;
-            display: inline-block !important;
-            margin-bottom: 5px !important;
-        }
+    # Moved spins_textbox to Last Spins Accordion (Row 7) to avoid duplicate
     
-        #selected-spins label:hover {
-            transform: scale(1.02) !important;
-            box-shadow: 0 0 10px rgba(255, 111, 97, 0.5) !important;
-        }
-    
-        #selected-spins input {
-            background-color: #fff3e0 !important;
-            border: 2px solid #ff6f61 !important;
-            border-radius: 8px !important;
-            padding: 10px !important;
-            font-size: 16px !important;
-            color: #333 !important;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-            position: relative !important;
-        }
-    
-        #selected-spins input:focus {
-            border-color: #ffd700 !important;
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
-            outline: none !important;
-        }
-    
-        #selected-spins input.typing {
-            animation: pulse 1s infinite ease-in-out;
-        }
-    
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 8px rgba(255, 111, 97, 0.5); }
-            50% { box-shadow: 0 0 12px rgba(255, 111, 97, 0.8); }
-        }
-    
-        #selected-spins-display {
-            margin-top: 10px !important;
-            display: flex !important;
-            gap: 8px !important;
-            flex-wrap: wrap !important;
-        }
-    
-        .number-badge {
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 30px !important;
-            height: 30px !important;
-            border-radius: 15px !important;
-            font-size: 14px !important;
-            font-weight: bold !important;
-            color: #fff !important;
-            border: 1px solid #fff !important;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
-            transition: transform 0.2s ease !important;
-            animation: popIn 0.3s ease-in-out;
-        }
-    
-        .number-badge:hover {
-            transform: scale(1.1) !important;
-        }
-    
-        .number-badge.red {
-            background-color: #ff0000 !important;
-        }
-    
-        .number-badge.black {
-            background-color: #000000 !important;
-        }
-    
-        .number-badge.green {
-            background-color: #008000 !important;
-        }
-    
-        #selected-spins-validation {
-            margin-top: 5px !important;
-            font-size: 12px !important;
-            color: #666 !important;
-            display: none !important;
-        }
-    
-        #selected-spins-validation.valid {
-            color: #008000 !important;
-            display: block !important;
-        }
-    
-        #selected-spins-validation.invalid {
-            color: #ff0000 !important;
-            display: block !important;
-            animation: shake 0.3s ease-in-out;
-        }
-    
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-    
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-    </style>
-    
-    <div id="selected-spins-display"></div>
-    <div id="selected-spins-validation"></div>
-    
-    <script>
-    const rouletteColors = {
-        "0": "green",
-        "1": "red", "2": "black", "3": "red", "4": "black", "5": "red", "6": "black",
-        "7": "red", "8": "black", "9": "red", "10": "black", "11": "black", "12": "red",
-        "13": "black", "14": "red", "15": "black", "16": "red", "17": "black", "18": "red",
-        "19": "red", "20": "black", "21": "red", "22": "black", "23": "red", "24": "black",
-        "25": "red", "26": "black", "27": "red", "28": "black", "29": "black", "30": "red",
-        "31": "black", "32": "red", "33": "black", "34": "red", "35": "black", "36": "red"
-    };
-    
-    function updateSelectedSpinsDisplay() {
-        const input = document.querySelector("#selected-spins input");
-        const display = document.querySelector("#selected-spins-display");
-        const validation = document.querySelector("#selected-spins-validation");
-        
-        display.innerHTML = "";
-        
-        const numbers = input.value.split(",").map(num => num.trim()).filter(num => num !== "");
-        let isValid = true;
-        
-        numbers.forEach(num => {
-            const numInt = parseInt(num);
-            if (isNaN(numInt) || numInt < 0 || numInt > 36) {
-                isValid = false;
-                return;
-            }
-            const color = rouletteColors[num] || "black";
-            const badge = document.createElement("span");
-            badge.className = `number-badge ${color}`;
-            badge.textContent = num;
-            display.appendChild(badge);
-        });
-        
-        if (numbers.length === 0) {
-            validation.style.display = "none";
-        } else if (isValid) {
-            validation.className = "valid";
-            validation.textContent = "✓ Valid spins!";
-            validation.style.display = "block";
-        } else {
-            validation.className = "invalid";
-            validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
-            validation.style.display = "block";
-        }
-    }
-    
-    document.addEventListener("DOMContentLoaded", () => {
-        const input = document.querySelector("#selected-spins input");
-        if (input) {
-            input.addEventListener("input", () => {
-                input.classList.add("typing");
-                updateSelectedSpinsDisplay();
-            });
-            updateSelectedSpinsDisplay();
-        } else {
-            console.error("Selected Spins input not found in DOM");
-        }
-    });
-    </script>
-    """)
     with gr.Accordion("Dealer’s Spin Tracker (Can you spot Bias???) 🕵️", open=False, elem_id="sides-of-zero-accordion"):
         sides_of_zero_display = gr.HTML(
             label="Sides of Zero",
             value=render_sides_of_zero_display(),
             elem_classes=["sides-of-zero-container"]
         )
-
-    # Start of updated section
+    
     with gr.Accordion("Hit Percentage Overview 📊", open=False, elem_id="hit-percentage-overview"):
         gr.HTML("""
         <style>
@@ -7729,12 +7561,10 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                 animation: fadeInAccordion 0.5s ease-in-out !important;
             }
-    
             @keyframes fadeInAccordion {
                 0% { opacity: 0; transform: translateY(5px); }
                 100% { opacity: 1; transform: translateY(0); }
             }
-    
             #hit-percentage-overview summary {
                 background-color: #8e24aa !important;
                 color: white !important;
@@ -7745,15 +7575,12 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 cursor: pointer !important;
                 transition: background-color 0.3s ease !important;
             }
-    
             #hit-percentage-overview summary:hover {
                 background-color: #6a1b9a !important;
             }
-    
             #hit-percentage-overview summary::after {
                 filter: invert(100%) !important;
             }
-    
             .hit-percentage-row {
                 background-color: #f3e5f5 !important;
                 padding: 10px !important;
@@ -7763,20 +7590,18 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 gap: 15px !important;
                 align-items: stretch !important;
                 margin-top: 10px !important;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
                 width: 100% !important;
                 min-height: fit-content !important;
                 height: auto !important;
                 box-sizing: border-box !important;
             }
-    
             .hit-percentage-row .gr-column {
                 flex: 1 !important;
                 min-width: 300px !important;
                 background-color: transparent !important;
                 padding: 10px !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container {
                 background: transparent !important;
                 border: none !important;
@@ -7790,7 +7615,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 box-shadow: none !important;
                 animation: none !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container::before {
                 content: '';
                 position: absolute;
@@ -7802,7 +7626,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 opacity: 0.4;
                 pointer-events: none;
             }
-    
             #hit-percentage-overview .hit-percentage-container .hit-percentage-overview {
                 display: flex !important;
                 flex-wrap: wrap !important;
@@ -7813,7 +7636,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 border: none !important;
                 padding: 0 !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-wrapper {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -7823,7 +7645,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 border: none !important;
                 padding: 0 !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-group {
                 margin: 10px 0 !important;
                 padding-top: 15px !important;
@@ -7836,7 +7657,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 box-shadow: none !important;
                 overflow: visible !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-group h4 {
                 margin: 5px 0 !important;
                 color: #ab47bc !important;
@@ -7844,7 +7664,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 font-size: 18px !important;
                 font-weight: bold !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-badges {
                 display: flex !important;
                 flex-wrap: wrap !important;
@@ -7856,7 +7675,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 border: none !important;
                 overflow-x: hidden !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-item {
                 flex: 0 1 auto !important;
                 min-width: 100px !important;
@@ -7878,30 +7696,25 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 font-weight: bold !important;
                 display: inline-block !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-item:hover {
                 transform: scale(1.15) !important;
                 filter: brightness(1.4) !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-item.even-money {
                 background: rgba(255, 99, 71, 0.2) !important;
                 border-color: #ff6347 !important;
                 box-shadow: 0 0 12px rgba(255, 99, 71, 0.5) !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-item.column {
                 background: rgba(100, 149, 237, 0.2) !important;
                 border-color: #6495ed !important;
                 box-shadow: 0 0 12px rgba(100, 149, 237, 0.5) !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-item.dozen {
                 background: rgba(50, 205, 50, 0.2) !important;
                 border-color: #32cd32 !important;
                 box-shadow: 0 0 12px rgba(50, 205, 50, 0.5) !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-item.winner {
                 font-weight: bold !important;
                 color: #333 !important;
@@ -7910,14 +7723,12 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 background: rgba(255, 204, 0, 0.4) !important;
                 transform: scale(1.15) !important;
             }
-    
             #hit-percentage-overview .hit-percentage-container .percentage-with-bar {
                 display: inline-block !important;
                 text-align: center !important;
                 margin: 0 3px !important;
                 margin-bottom: 8px !important;
             }
-    
             @media (max-width: 768px) {
                 .hit-percentage-row {
                     flex-direction: column !important;
@@ -7943,7 +7754,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                     padding: 4px 8px !important;
                 }
             }
-    
             @media (max-width: 600px) {
                 #hit-percentage-overview .hit-percentage-container .percentage-badges {
                     flex-wrap: wrap !important;
@@ -7959,6 +7769,7 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                     value=calculate_hit_percentages(36),
                     elem_classes=["hit-percentage-container"]
                 )
+    
     with gr.Accordion("SpinTrend Radar 🌀", open=False, elem_id="spin-trend-radar"):
         gr.HTML("""
         <style>
@@ -7971,12 +7782,10 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                 animation: fadeInAccordion 0.5s ease-in-out !important;
             }
-    
             @keyframes fadeInAccordion {
                 0% { opacity: 0; transform: translateY(5px); }
                 100% { opacity: 1; transform: translateY(0); }
             }
-    
             #spin-trend-radar summary {
                 background-color: #8e24aa !important;
                 color: white !important;
@@ -7987,15 +7796,12 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 cursor: pointer !important;
                 transition: background-color 0.3s ease !important;
             }
-    
             #spin-trend-radar summary:hover {
                 background-color: #6a1b9a !important;
             }
-    
             #spin-trend-radar summary::after {
                 filter: invert(100%) !important;
             }
-    
             .spin-trend-row {
                 background-color: #f3e5f5 !important;
                 padding: 10px !important;
@@ -8005,20 +7811,18 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 gap: 15px !important;
                 align-items: stretch !important;
                 margin-top: 10px !important;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
                 width: 100% !important;
                 min-height: fit-content !important;
                 height: auto !important;
                 box-sizing: border-box !important;
             }
-    
             .spin-trend-row .gr-column {
                 flex: 1 !important;
                 min-width: 300px !important;
                 background-color: transparent !important;
                 padding: 10px !important;
             }
-    
             #spin-trend-radar .traits-container {
                 background: transparent !important;
                 border: none !important;
@@ -8032,7 +7836,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 box-shadow: none !important;
                 animation: none !important;
             }
-    
             #spin-trend-radar .traits-container::before {
                 content: '';
                 position: absolute;
@@ -8044,7 +7847,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 opacity: 0.3;
                 pointer-events: none;
             }
-    
             #spin-trend-radar .traits-container .traits-wrapper {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -8054,7 +7856,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 gap: 15px !important;
                 padding-top: 10px !important;
             }
-    
             #spin-trend-radar .traits-container .traits-overview > h4 {
                 color: #ab47bc !important;
                 text-shadow: 0 0 8px rgba(142, 36, 170, 0.7) !important;
@@ -8062,7 +7863,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 font-weight: bold !important;
                 margin: 0 0 10px 0 !important;
             }
-    
             #spin-trend-radar .traits-container .badge-group {
                 margin: 10px 0 !important;
                 padding-top: 10px !important;
@@ -8071,12 +7871,10 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 max-width: 100% !important;
                 overflow: visible !important;
             }
-    
             #spin-trend-radar .traits-container .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(4) h4 { color: #ffd700 !important; }
-    
             #spin-trend-radar .traits-container .percentage-badges {
                 display: flex !important;
                 flex-wrap: wrap !important;
@@ -8086,7 +7884,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 width: 100% !important;
                 overflow-x: hidden !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge {
                 background: transparent !important;
                 color: #333 !important;
@@ -8101,36 +7898,30 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 font-weight: bold !important;
                 display: inline-block !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge:hover {
                 transform: scale(1.1) !important;
                 filter: brightness(1.3) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.even-money {
                 background: rgba(255, 77, 77, 0.2) !important;
                 border-color: #ff4d4d !important;
                 box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.column {
                 background: rgba(77, 121, 255, 0.2) !important;
                 border-color: #4d79ff !important;
                 box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.dozen {
                 background: rgba(77, 255, 77, 0.2) !important;
                 border-color: #4dff4d !important;
                 box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.repeat {
                 background: rgba(204, 51, 255, 0.2) !important;
                 border-color: #ab47bc !important;
                 box-shadow: 0 0 10px rgba(142, 36, 170, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.winner {
                 font-weight: bold !important;
                 color: #333 !important;
@@ -8139,7 +7930,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 background: rgba(255, 215, 0, 0.3) !important;
                 transform: scale(1.1) !important;
             }
-    
             @media (max-width: 768px) {
                 .spin-trend-row {
                     flex-direction: column !important;
@@ -8174,7 +7964,7 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
-                
+    
     # Line 1: Updated Next Spin Top Pick accordion
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
         with gr.Row():
@@ -8263,7 +8053,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                         interactive=True,
                         elem_id="neighbor-weight"
                     )
-                    # NEW: Reset button
                     reset_weights_button = gr.Button("Reset Weights to Default", elem_id="reset-weights")
                 top_pick_display = gr.HTML(
                     label="Top Pick",
@@ -8340,7 +8129,7 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
         value='<span class="spin-counter" style="font-size: 14px; padding: 4px 8px;">Total Spins: 0</span>',
         elem_classes=["spin-counter"]
     )
-
+    
     # Last Spins Display and Slider (Row 3)
     with gr.Row():
         with gr.Column():
@@ -8369,9 +8158,9 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
             border-radius: 5px !important;
             margin-top: 10px !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-            min-height: 100px !important; /* Fixed minimum height to prevent jitter */
-            max-height: 150px !important; /* Maximum height with scrollbar */
-            overflow-y: auto !important; /* Scrollable content */
+            min-height: 100px !important;
+            max-height: 150px !important;
+            overflow-y: auto !important;
             display: flex !important;
             flex-direction: column !important;
             gap: 5px !important;
@@ -8430,14 +8219,14 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
             padding: 8px !important;
             background: rgba(255, 255, 255, 0.3) !important;
             border-radius: 6px !important;
-            visibility: hidden !important; /* Hidden but reserves space */
+            visibility: hidden !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            min-height: 40px !important; /* Fixed height for trends */
+            min-height: 40px !important;
         }
         .last-spins-container .switch-alert.visible, .last-spins-container .dozen-shift-indicator.visible {
-            visibility: visible !important; /* Show when trends are toggled */
+            visibility: visible !important;
         }
         .last-spins-container .switch-dot {
             width: 14px !important;
@@ -8473,7 +8262,6 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
         }
     </style>
     <script>
-        // Debounce function to smooth out rapid updates
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -8485,20 +8273,15 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                 timeout = setTimeout(later, wait);
             };
         }
-    
-        // Update spins display with debouncing
         const updateSpinsDisplay = debounce(function() {
             const container = document.querySelector('.last-spins-container');
             if (container) {
-                // Trigger reflow only after content is stable
                 container.style.display = 'none';
                 setTimeout(() => {
                     container.style.display = 'flex';
                 }, 0);
             }
         }, 100);
-    
-        // Observe changes to last-spins-container
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.querySelector('.last-spins-container');
             if (container) {
@@ -8510,8 +8293,8 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
         });
     </script>
     """)
-
-        # 2. Row 2: European Roulette Table (unchanged)
+    
+    # Row 2: European Roulette Table (unchanged)
     with gr.Group():
         gr.Markdown("### European Roulette Table")
         table_layout = [
@@ -8562,19 +8345,18 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                                 outputs=[]
                             )
     
-    # New: Total Spins Section (Placed right after European Roulette Table)
+    # New: Total Spins Section
     with gr.Row():
         with gr.Column(scale=1, min_width=200):
-            # Reference the already-defined spin_counter
             spin_counter
     
-    # 3. Row 3: Last Spins Display and Show Last Spins Slider
+    # Row 3: Last Spins Display and Show Last Spins Slider
     with gr.Row():
         with gr.Column():
             last_spin_display
             last_spin_count
     
-    # 4. Row 4: Spin Controls (unchanged)
+    # Row 4: Spin Controls
     with gr.Row():
         with gr.Column(scale=1):
             undo_button = gr.Button("Undo Spins", elem_classes=["action-button"], elem_id="undo-spins-btn")
@@ -8582,16 +8364,14 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
             generate_spins_button = gr.Button("Generate Random Spins", elem_classes=["action-button"])
         with gr.Column(scale=1):
             toggle_trends_button = gr.Button(
-                value="Hide Trends",  # Initial string value
+                value="Hide Trends",
                 elem_classes=["action-button"],
                 elem_id="toggle-trends-btn"
             )
     
-    # 5. Row 5: Selected Spins Textbox (Updated to exclude spin_counter)
-    with gr.Row(elem_id="selected-spins-row"):
-        with gr.Column(scale=1, min_width=600):
-            spins_textbox
-       
+    # Row 5: Selected Spins Textbox (now in Last Spins Accordion)
+    # Row 5 is empty as spins_textbox is moved to Row 7
+    
     # Define strategy categories and choices
     strategy_categories = {
         "Trends": ["Cold Bet Strategy", "Hot Bet Strategy", "Best Dozens + Best Even Money Bets + Top Pick 18 Numbers", "Best Columns + Best Even Money Bets + Top Pick 18 Numbers"],
@@ -8606,131 +8386,56 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
         "Neighbours Strategies": ["Neighbours of Strong Number"]
     }
     category_choices = ["None"] + sorted(strategy_categories.keys())
-
+    
     # Define video categories matching strategy categories
     video_categories = {
         "Trends": [],
         "Even Money Strategies": [
-            {
-                "title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy",
-                "link": "https://youtu.be/I_F9Wys3Ww0"
-            },
-            {
-                "title": "S.T.Y.W: Fibonacci to Fortune (My Top Strategy) - Follow The Winner",
-                "link": "https://youtu.be/bwa0FUk6Yps"
-            },
-            {
-                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
-                "link": "https://youtu.be/64aq0GEPww0"
-            }
+            {"title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy", "link": "https://youtu.be/I_F9Wys3Ww0"},
+            {"title": "S.T.Y.W: Fibonacci to Fortune (My Top Strategy) - Follow The Winner", "link": "https://youtu.be/bwa0FUk6Yps"},
+            {"title": "S.T.Y.W: Triple Entry Max Climax Strategy", "link": "https://youtu.be/64aq0GEPww0"}
         ],
         "Dozen Strategies": [
-            {
-                "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
-                "link": "https://youtu.be/8aMHrvuzBGU"
-            },
-            {
-                "title": "S.T.Y.W: Romanowsky Missing Dozen Strategy",
-                "link": "https://youtu.be/YbBtum5WVCk"
-            },
-            {
-                "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
-                "link": "https://youtu.be/aKGA_csI9lY"
-            },
-            {
-                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
-                "link": "https://youtu.be/rTqdMQk4_I4"
-            },
-            {
-                "title": "S.T.Y.W: Fibonacci to Fortune (My Top Strategy) - Follow The Winner",
-                "link": "https://youtu.be/bwa0FUk6Yps"
-            },
-            {
-                "title": "S.T.Y.W: Double Up: Dozen & Street Strategy",
-                "link": "https://youtu.be/Hod5gxusAVE"
-            },
-            {
-                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
-                "link": "https://youtu.be/64aq0GEPww0"
-            }
+            {"title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?", "link": "https://youtu.be/8aMHrvuzBGU"},
+            {"title": "S.T.Y.W: Romanowsky Missing Dozen Strategy", "link": "https://youtu.be/YbBtum5WVCk"},
+            {"title": "S.T.Y.W: Victory Vortex (Dozen Domination)", "link": "https://youtu.be/aKGA_csI9lY"},
+            {"title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy", "link": "https://youtu.be/rTqdMQk4_I4"},
+            {"title": "S.T.Y.W: Fibonacci to Fortune (My Top Strategy) - Follow The Winner", "link": "https://youtu.be/bwa0FUk6Yps"},
+            {"title": "S.T.Y.W: Double Up: Dozen & Street Strategy", "link": "https://youtu.be/Hod5gxusAVE"},
+            {"title": "S.T.Y.W: Triple Entry Max Climax Strategy", "link": "https://youtu.be/64aq0GEPww0"}
         ],
         "Column Strategies": [
-            {
-                "title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy",
-                "link": "https://youtu.be/I_F9Wys3Ww0"
-            },
-            {
-                "title": "S.T.Y.W: Victory Vortex (Dozen Domination)",
-                "link": "https://youtu.be/aKGA_csI9lY"
-            },
-            {
-                "title": "S.T.Y.W: Fibonacci to Fortune (My Top Strategy) - Follow The Winner",
-                "link": "https://youtu.be/bwa0FUk6Yps"
-            }
+            {"title": "S.T.Y.W: Zero Jack 2-2-3 Roulette Strategy", "link": "https://youtu.be/I_F9Wys3Ww0"},
+            {"title": "S.T.Y.W: Victory Vortex (Dozen Domination)", "link": "https://youtu.be/aKGA_csI9lY"},
+            {"title": "S.T.Y.W: Fibonacci to Fortune (My Top Strategy) - Follow The Winner", "link": "https://youtu.be/bwa0FUk6Yps"}
         ],
         "Street Strategies": [
-            {
-                "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
-                "link": "https://youtu.be/8aMHrvuzBGU"
-            },
-            {
-                "title": "S.T.Y.W: 3-8-6 Rising Martingale",
-                "link": "https://youtu.be/-ZcEUOTHMzA"
-            },
-            {
-                "title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy",
-                "link": "https://youtu.be/rTqdMQk4_I4"
-            },
-            {
-                "title": "S.T.Y.W: Double Up: Dozen & Street Strategy",
-                "link": "https://youtu.be/Hod5gxusAVE"
-            }
+            {"title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?", "link": "https://youtu.be/8aMHrvuzBGU"},
+            {"title": "S.T.Y.W: 3-8-6 Rising Martingale", "link": "https://youtu.be/-ZcEUOTHMzA"},
+            {"title": "S.T.Y.W: The Overlap Jackpot (4 Streets + 2 Dozens) Strategy", "link": "https://youtu.be/rTqdMQk4_I4"},
+            {"title": "S.T.Y.W: Double Up: Dozen & Street Strategy", "link": "https://youtu.be/Hod5gxusAVE"}
         ],
         "Double Street Strategies": [
-            {
-                "title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?",
-                "link": "https://youtu.be/8aMHrvuzBGU"
-            },
-            {
-                "title": "S.T.Y.W: The Classic Five Double Street",
-                "link": "https://youtu.be/XX7lSDElwWI"
-            }
+            {"title": "S.T.Y.W: Dynamic Play: 1 Dozen with 4 Streets or 2 Double Streets?", "link": "https://youtu.be/8aMHrvuzBGU"},
+            {"title": "S.T.Y.W: The Classic Five Double Street", "link": "https://youtu.be/XX7lSDElwWI"}
         ],
         "Corner Strategies": [
-            {
-                "title": "S.T.Y.W: 4-Corners Strategy (Seq:1,1,2,5,8,17,28,50)",
-                "link": "https://youtu.be/zw7eUllTDbg"
-            }
+            {"title": "S.T.Y.W: 4-Corners Strategy (Seq:1,1,2,5,8,17,28,50)", "link": "https://youtu.be/zw7eUllTDbg"}
         ],
-       "Split Strategies": [
-            {
-                "title": "S.T.Y.W: Triple Entry Max Climax Strategy",
-                "link": "https://youtu.be/64aq0GEPww0"
-            }
+        "Split Strategies": [
+            {"title": "S.T.Y.W: Triple Entry Max Climax Strategy", "link": "https://youtu.be/64aq0GEPww0"}
         ],
         "Number Strategies": [
-            {
-                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
-                "link": "https://youtu.be/UBajAwUXWS0"
-            },
-            {
-                "title": "Eighteen Strong Numbers with No Neighbours Strategy",
-                "link": "https://youtu.be/8Nmbi8KmY9c"
-            }
+            {"title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)", "link": "https://youtu.be/UBajAwUXWS0"},
+            {"title": "Eighteen Strong Numbers with No Neighbours Strategy", "link": "https://youtu.be/8Nmbi8KmY9c"}
         ],
         "Neighbours Strategies": [
-            {
-                "title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)",
-                "link": "https://youtu.be/UBajAwUXWS0"
-            },
-            {
-                "title": "Triad Spin Strategy: 87.53% (Modified Makarov-Biarritz)",
-                "link": "https://youtu.be/ADhCvxNiWVc"
-            }
+            {"title": "The Pulse Wheel Strategy (6 Numbers +1 Neighbours)", "link": "https://youtu.be/UBajAwUXWS0"},
+            {"title": "Triad Spin Strategy: 87.53% (Modified Makarov-Biarritz)", "link": "https://youtu.be/ADhCvxNiWVc"}
         ]
     }
     
-    # 6. Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
+    # Row 6: Analyze Spins, Clear Spins, and Clear All Buttons
     with gr.Row():
         with gr.Column(scale=2):
             analyze_button = gr.Button("Analyze Spins", elem_classes=["action-button", "green-btn"], interactive=True)
@@ -8739,14 +8444,13 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
         with gr.Column(scale=1):
             clear_all_button = gr.Button("Clear All", elem_classes=["clear-spins-btn", "small-btn"])
     
-    # 7. Row 7: Dynamic Roulette Table and Strategy Recommendations
+    # Row 7: Dynamic Roulette Table and Strategy Recommendations
     with gr.Row(elem_classes="dynamic-table-strategy-row"):
         # Column for Strategy Recommendations (Left Side)
         with gr.Column(scale=2, min_width=450, elem_classes="strategy-recommendations-container"):
             gr.Markdown("### Strategy Recommendations")
-            # Wrap the entire section in a div with class "strategy-card"
             with gr.Row(elem_classes="strategy-card"):
-                with gr.Column(scale=1):  # Use a single column to stack elements vertically
+                with gr.Column(scale=1):
                     with gr.Row():
                         category_dropdown = gr.Dropdown(
                             label="Select Category",
@@ -8789,15 +8493,235 @@ def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
                         elem_classes=["strategy-box"]
                     )
     
-        # Column for Dynamic Roulette Table (Right Side)
+        # Column for Last Spins Accordion (Right Side)
         with gr.Column(scale=4, min_width=700, elem_classes="dynamic-table-container"):
-            gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
-            dynamic_table_output = gr.HTML(
-                label="Dynamic Table",
-                value=create_dynamic_table(strategy_name="Best Even Money Bets"),
-                elem_classes=["scrollable-table", "large-table"]
-            )
-            
+            with gr.Accordion("Last Spins", open=True, elem_id="last-spins"):
+                gr.HTML("""
+                <style>
+                    #last-spins {
+                        background-color: #f3e5f5 !important;
+                        border: 2px solid #8e24aa !important;
+                        border-radius: 8px !important;
+                        padding: 12px !important;
+                        margin-bottom: 15px !important;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+                    }
+                    .last-spins-container {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                    .neighbor-visualizer {
+                        border: 1px solid #d3d3d3;
+                        border-radius: 5px;
+                        padding: 10px;
+                        background-color: #fff;
+                    }
+                    #selected-spins label {
+                        background: linear-gradient(135deg, #ff6f61, #ffd700) !important;
+                        color: #fff !important;
+                        padding: 8px 12px !important;
+                        border-radius: 5px !important;
+                        font-size: 16px !important;
+                        font-weight: bold !important;
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+                        transition: transform 0.2s ease, box-shadow 0.3s ease !important;
+                        display: inline-block !important;
+                        margin-bottom: 5px !important;
+                    }
+                    #selected-spins label:hover {
+                        transform: scale(1.02) !important;
+                        box-shadow: 0 0 10px rgba(255, 111, 97, 0.5) !important;
+                    }
+                    #selected-spins input {
+                        background-color: #fff3e0 !important;
+                        border: 2px solid #ff6f61 !important;
+                        border-radius: 8px !important;
+                        padding: 10px !important;
+                        font-size: 16px !important;
+                        color: #333 !important;
+                        transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+                        position: relative !important;
+                    }
+                    #selected-spins input:focus {
+                        border-color: #ffd700 !important;
+                        box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
+                        outline: none !important;
+                    }
+                    #selected-spins input.typing {
+                        animation: pulse 1s infinite ease-in-out;
+                    }
+                    @keyframes pulse {
+                        0%, 100% { box-shadow: 0 0 8px rgba(255, 111, 97, 0.5); }
+                        50% { box-shadow: 0 0 12px rgba(255, 111, 97, 0.8); }
+                    }
+                    #selected-spins-display {
+                        margin-top: 10px !important;
+                        display: flex !important;
+                        gap: 8px !important;
+                        flex-wrap: wrap !important;
+                    }
+                    .number-badge {
+                        display: inline-flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        width: 30px !important;
+                        height: 30px !important;
+                        border-radius: 15px !important;
+                        font-size: 14px !important;
+                        font-weight: bold !important;
+                        color: #fff !important;
+                        border: 1px solid #fff !important;
+                        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
+                        transition: transform 0.2s ease !important;
+                        animation: popIn 0.3s ease-in-out;
+                    }
+                    .number-badge:hover {
+                        transform: scale(1.1) !important;
+                    }
+                    .number-badge.red {
+                        background-color: #ff0000 !important;
+                    }
+                    .number-badge.black {
+                        background-color: #000000 !important;
+                    }
+                    .number-badge.green {
+                        background-color: #008000 !important;
+                    }
+                    #selected-spins-validation {
+                        margin-top: 5px !important;
+                        font-size: 12px !important;
+                        color: #666 !important;
+                        display: none !important;
+                    }
+                    #selected-spins-validation.valid {
+                        color: #008000 !important;
+                        display: block !important;
+                    }
+                    #selected-spins-validation.invalid {
+                        color: #ff0000 !important;
+                        display: block !important;
+                        animation: shake 0.3s ease-in-out;
+                    }
+                    @keyframes popIn {
+                        0% { transform: scale(0); opacity: 0; }
+                        100% { transform: scale(1); opacity: 1; }
+                    }
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        25% { transform: translateX(-5px); }
+                        75% { transform: translateX(5px); }
+                    }
+                </style>
+                <div id="selected-spins-display"></div>
+                <div id="selected-spins-validation"></div>
+                <script>
+                    const rouletteColors = {
+                        "0": "green",
+                        "1": "red", "2": "black", "3": "red", "4": "black", "5": "red", "6": "black",
+                        "7": "red", "8": "black", "9": "red", "10": "black", "11": "black", "12": "red",
+                        "13": "black", "14": "red", "15": "black", "16": "red", "17": "black", "18": "red",
+                        "19": "red", "20": "black", "21": "red", "22": "black", "23": "red", "24": "black",
+                        "25": "red", "26": "black", "27": "red", "28": "black", "29": "black", "30": "red",
+                        "31": "black", "32": "red", "33": "black", "34": "red", "35": "black", "36": "red"
+                    };
+                    function updateSelectedSpinsDisplay() {
+                        const input = document.querySelector("#selected-spins input");
+                        const display = document.querySelector("#selected-spins-display");
+                        const validation = document.querySelector("#selected-spins-validation");
+                        display.innerHTML = "";
+                        const numbers = input.value.split(",").map(num => num.trim()).filter(num => num !== "");
+                        let isValid = true;
+                        numbers.forEach(num => {
+                            const numInt = parseInt(num);
+                            if (isNaN(numInt) || numInt < 0 || numInt > 36) {
+                                isValid = false;
+                                return;
+                            }
+                            const color = rouletteColors[num] || "black";
+                            const badge = document.createElement("span");
+                            badge.className = `number-badge ${color}`;
+                            badge.textContent = num;
+                            display.appendChild(badge);
+                        });
+                        if (numbers.length === 0) {
+                            validation.style.display = "none";
+                        } else if (isValid) {
+                            validation.className = "valid";
+                            validation.textContent = "✓ Valid spins!";
+                            validation.style.display = "block";
+                        } else {
+                            validation.className = "invalid";
+                            validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
+                            validation.style.display = "block";
+                        }
+                    }
+                    document.addEventListener("DOMContentLoaded", () => {
+                        const input = document.querySelector("#selected-spins input");
+                        if (input) {
+                            input.addEventListener("input", () => {
+                                input.classList.add("typing");
+                                updateSelectedSpinsDisplay();
+                            });
+                            updateSelectedSpinsDisplay();
+                        } else {
+                            console.error("Selected Spins input not found in DOM");
+                        }
+                    });
+                </script>
+                """)
+                with gr.Column(elem_classes="last-spins-container"):
+                    gr.Markdown("### Last Spins Input", elem_id="last-spins-heading")
+                    spins_textbox = gr.Textbox(
+                        label="🎰 Selected Spins (Enter numbers like 5, 12, 0)",
+                        value="",
+                        interactive=True,
+                        elem_id="selected-spins",
+                        lines=2
+                    )
+                    # Event Handlers for spins_textbox
+                    spins_textbox.submit(
+                        fn=lambda spins: (
+                            validate_spins_input(spins)[0],  # spins_textbox
+                            validate_spins_input(spins)[1],  # last_spin_display
+                            create_dynamic_table(state.strategy_name if hasattr(state, 'strategy_name') else "Best Even Money Bets"),  # dynamic_table_output
+                            render_neighbor_bet_visualizer(spins.split(",")[-1].strip() if spins and "," in spins else spins),  # neighbor_visualizer_output
+                            render_sides_of_zero_display(),  # sides_of_zero_display
+                            calculate_hit_percentages(36),  # hit_percentage_display
+                            summarize_spin_traits(36),  # traits_display
+                            select_next_spin_top_pick(18, ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections", "Neighbors"])  # top_pick_display
+                        ),
+                        inputs=[spins_textbox],
+                        outputs=[
+                            spins_textbox,
+                            last_spin_display,
+                            dynamic_table_output,
+                            neighbor_visualizer_output,
+                            sides_of_zero_display,
+                            hit_percentage_display,
+                            traits_display,
+                            top_pick_display
+                        ]
+                    )
+                    spins_textbox.change(
+                        fn=render_neighbor_bet_visualizer,
+                        inputs=[spins_textbox],
+                        outputs=[neighbor_visualizer_output]
+                    )
+                    gr.Markdown("### Dynamic Roulette Table", elem_id="dynamic-table-heading")
+                    dynamic_table_output = gr.HTML(
+                        label="Dynamic Table",
+                        value=create_dynamic_table(strategy_name="Best Even Money Bets"),
+                        elem_classes=["scrollable-table", "large-table"]
+                    )
+                    with gr.Accordion("Neighbor Bet Visualizer", open=False, elem_id="neighbor-visualizer"):
+                        neighbor_visualizer_output = gr.HTML(
+                            label="Neighbor Bet Visualizer",
+                            value=render_neighbor_bet_visualizer(state.last_spins[-1] if state.last_spins else None),
+                            elem_classes=["neighbor-visualizer"]
+                        )
+
     # 7.1. Row 7.1: Dozen Tracker
     with gr.Row():
         with gr.Column(scale=3):
