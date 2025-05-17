@@ -6746,10 +6746,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 .welcome-container {
-                    background: linear-gradient(135deg, #333333, #1C1C1C);
-                    border: 2px solid #4B0082;
+                    background: linear-gradient(135deg, #1A1A1A, #000000);
+                    border: 2px solid #3F000F;
                     border-radius: 8px;
-                    box-shadow: 0 0 15px rgba(75, 0, 130, 0.5);
+                    box-shadow: 0 0 15px rgba(107, 0, 27, 0.5);
                     overflow: hidden;
                     position: relative;
                     padding: 12px;
@@ -6760,7 +6760,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
-                    background: linear-gradient(90deg, #4B0082, #800080);
+                    background: linear-gradient(90deg, #3F000F, #6B001B);
                     padding: 8px 12px;
                     font-family: 'Poppins', sans-serif;
                     font-size: 16px;
@@ -6774,7 +6774,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
                 .welcome-title:hover {
                     transform: scale(1.02);
-                    box-shadow: 0 0 10px rgba(75, 0, 130, 0.7);
+                    box-shadow: 0 0 10px rgba(107, 0, 27, 0.7);
                 }
     
                 .welcome-icon {
@@ -6807,11 +6807,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 .video-link {
-                    background: linear-gradient(90deg, #2F004F, #4B0082);
+                    background: linear-gradient(90deg, #2A000A, #3F000F);
                 }
     
                 .tour-button {
-                    background: linear-gradient(90deg, #2F004F, #4B0082) !important;
+                    background: linear-gradient(90deg, #2A000A, #3F000F) !important;
                     border: none;
                     cursor: pointer;
                     font-family: 'Poppins', sans-serif !important;
@@ -6822,12 +6822,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 .guide-link {
-                    background: linear-gradient(90deg, #2F004F, #4B0082);
+                    background: linear-gradient(90deg, #2A000A, #3F000F);
                 }
     
                 .option-link:hover, .option-button:hover {
                     transform: scale(1.02);
-                    box-shadow: 0 0 8px rgba(75, 0, 130, 0.7);
+                    box-shadow: 0 0 8px rgba(107, 0, 27, 0.7);
                 }
     
                 .roulette-icon, .tour-icon, .guide-icon {
@@ -7067,6 +7067,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             </style>
         """)
     
+
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
     <style>
