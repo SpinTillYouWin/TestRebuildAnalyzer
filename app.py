@@ -6713,7 +6713,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             };
         </script>
     """)
-    
+
+    import gradio as gr
+
     # App Content (Header Section - Updated)
     with gr.Group(visible=False, elem_id="appContent"):
         # Buttons Row (Moved Above Header)
@@ -6743,29 +6745,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML("""
             <div id="masterclass-video-section">
                 <div class="video-accordion">
-                    <button id="video-toggle-btn" class="accordion-title">
-                        <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
-                        <span class="by-styw">by S.T.Y.W</span>
-                        <span class="toggle-text">Show Video</span>
-                    </button>
-                    <div class="accordion-content">
-                        <div class="video-container">
-                            <div class="video-thumbnail">
-                                <iframe width="100%" height="200" src="https://www.youtube.com/embed/Wn0xJTiVcdg" frameborder="0" allowfullscreen></iframe>
-                            </div>
-                            <div class="video-info">
-                                <h3>Roulette Tracking Masterclass: Outsmart the Wheel Every Time</h3>
-                                <p>Unlock expert strategies to track roulette patterns, spot hot sections, and switch tactics with precision. Perfect for beginners and pros!</p>
-                                <ul>
-                                    <li>🔍 Track wheel sections & neighbors</li>
-                                    <li>📊 Master hit percentage analysis</li>
-                                    <li>🎯 Time your strategy switches</li>
-                                    <li>🧠 Decode casino patterns</li>
-                                </ul>
-                                <p><strong>Elevate your game—watch now!</strong></p>
+                    <details>
+                        <summary class="accordion-title">
+                            <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
+                            <span class="by-styw">by S.T.Y.W</span>
+                        </summary>
+                        <div class="accordion-content">
+                            <div class="video-container">
+                                <div class="video-thumbnail">
+                                    <iframe width="100%" height="200" src="https://www.youtube.com/embed/Wn0xJTiVcdg" frameborder="0" allowfullscreen></iframe>
+                                </div>
+                                <div class="video-info">
+                                    <h3>Roulette Tracking Masterclass: Outsmart the Wheel Every Time</h3>
+                                    <p>Unlock expert strategies to track roulette patterns, spot hot sections, and switch tactics with precision. Perfect for beginners and pros!</p>
+                                    <ul>
+                                        <li>🔍 Track wheel sections & neighbors</li>
+                                        <li>📊 Master hit percentage analysis</li>
+                                        <li>🎯 Time your strategy switches</li>
+                                        <li>🧠 Decode casino patterns</li>
+                                    </ul>
+                                    <p><strong>Elevate your game—watch now!</strong></p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </details>
                 </div>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
@@ -6786,6 +6789,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         position: relative;
                     }
     
+                    details {
+                        width: 100%;
+                    }
+    
                     .accordion-title {
                         display: flex;
                         align-items: center;
@@ -6798,9 +6805,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         color: #ffffff;
                         text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
                         cursor: pointer;
-                        border: none;
-                        width: 100%;
-                        text-align: left;
                         transition: transform 0.3s ease, box-shadow 0.3s ease;
                     }
     
@@ -6822,21 +6826,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         animation: subtleGlow 1.5s ease-in-out infinite;
                     }
     
-                    .toggle-text {
-                        margin-left: auto;
-                        font-size: 14px;
-                        font-weight: normal;
-                    }
-    
                     .accordion-content {
                         padding: 15px;
                         background: #ffffff;
                         border-top: 1px solid #008080;
-                        display: none;
-                    }
-    
-                    .accordion-content.open {
-                        display: block;
                     }
     
                     .video-container {
@@ -6939,54 +6932,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         }
                     }
                 </style>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        function initAccordion() {
-                            const toggleBtn = document.getElementById('video-toggle-btn');
-                            const content = document.querySelector('#masterclass-video-section .accordion-content');
-                            const toggleText = document.querySelector('#video-toggle-btn .toggle-text');
-                            
-                            if (!toggleBtn || !content || !toggleText) {
-                                console.error('Accordion elements not found:', { toggleBtn, content, toggleText });
-                                return;
-                            }
-    
-                            console.log('Accordion initialized. Button found:', !!toggleBtn, 'Content found:', !!content);
-    
-                            // Set initial state: closed unless explicitly opened
-                            const isDismissed = localStorage.getItem('videoSectionDismissed') === 'true';
-                            content.classList.toggle('open', !isDismissed);
-                            toggleText.textContent = isDismissed ? 'Show Video' : 'Hide Video';
-                            console.log('Initial state - Dismissed:', isDismissed, 'Content open:', content.classList.contains('open'), 'Toggle text:', toggleText.textContent);
-    
-                            // Remove existing listeners to prevent duplicates
-                            const newToggleBtn = toggleBtn.cloneNode(true);
-                            toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-    
-                            // Handle button clicks
-                            newToggleBtn.addEventListener('click', () => {
-                                const isOpen = !content.classList.contains('open');
-                                content.classList.toggle('open', isOpen);
-                                toggleText.textContent = isOpen ? 'Hide Video' : 'Show Video';
-                                localStorage.setItem('videoSectionDismissed', !isOpen);
-                                console.log('Button clicked - Content open:', isOpen, 'Toggle text:', toggleText.textContent, 'Dismissed:', !isOpen);
-                            });
-                        }
-    
-                        // Initialize accordion
-                        initAccordion();
-    
-                        // Monitor DOM changes in the Selected Spins area to reinitialize accordion
-                        const spinsArea = document.querySelector('#selected-spins-container') || document.body;
-                        const observer = new MutationObserver((mutations) => {
-                            mutations.forEach(() => {
-                                console.log('DOM changed in spins area, reinitializing accordion');
-                                initAccordion();
-                            });
-                        });
-                        observer.observe(spinsArea, { childList: true, subtree: true });
-                    });
-                </script>
         """)
     
         # Header Row (Now Below Buttons and Video)
@@ -7153,6 +7098,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
             </style>
         """)
+    
     
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
