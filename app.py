@@ -7334,6 +7334,329 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             raise  # Re-raise for debugging
+    def track_streaks_and_choppings(spins, lookback=10, min_length=3, traits=None):
+        """Detect streaks and choppings for specified traits in recent spins."""
+        try:
+            if not spins or not isinstance(spins, list):
+                return "<p>No spins available to analyze.</p>"
+
+            # Default traits if none provided
+            if traits is None:
+                traits = ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections"]
+
+            # Limit spins to lookback window
+            spins = spins[-lookback:] if len(spins) > lookback else spins
+            if len(spins) < min_length:
+                return "<p>Not enough spins for analysis. Add more spins.</p>"
+
+            # Define trait mappings
+            roulette_traits = {
+                "Red/Black": {
+                    "0": "Green",
+                    "1": "Red", "2": "Black", "3": "Red", "4": "Black", "5": "Red", "6": "Black",
+                    "7": "Red", "8": "Black", "9": "Red", "10": "Black", "11": "Black", "12": "Red",
+                    "13": "Black", "14": "Red", "15": "Black", "16": "Red", "17": "Black", "18": "Red",
+                    "19": "Red", "20": "Black", "21": "Red", "22": "Black", "23": "Red", "24": "Black",
+                    "25": "Red", "26": "Black", "27": "Red", "28": "Black", "29": "Black", "30": "Red",
+                    "31": "Black", "32": "Red", "33": "Black", "34": "Red", "35": "Black", "36": "Red"
+                },
+                "Even/Odd": lambda n: "Zero" if n == "0" else "Even" if int(n) % 2 == 0 else "Odd",
+                "Low/High": lambda n: "Zero" if n == "0" else "Low" if 1 <= int(n) <= 18 else "High",
+                "Dozens": lambda n: "Zero" if n == "0" else "1st Dozen" if 1 <= int(n) <= 12 else "2nd Dozen" if 13 <= int(n) <= 24 else "3rd Dozen",
+                "Columns": lambda n: "Zero" if n == "0" else "Column 1" if int(n) % 3 == 1 else "Column 2" if int(n) % 3 == 2 else "Column 3",
+                "Wheel Sections": lambda n: (
+                    "Voisins du Zero" if int(n) in [0, 2, 3, 4, 7, 12, 15, 18, 19, 21, 22, 25, 26, 28, 29, 32, 35]
+                    else "Tiers du Cylindre" if int(n) in [5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36]
+                    else "Orphelins" if int(n) in [1, 6, 9, 14, 17, 20, 31, 34]
+                    else "Zero Section"
+                )
+            }
+
+            streaks = {}
+            choppings = {}
+            html_output = '<div class="streaks-choppings-monitor">'
+
+            # Tabs
+            html_output += '''
+                <div class="tabs">
+                    <div class="tab active" onclick="showView('streaks')">Streaks</div>
+                    <div class="tab" onclick="showView('choppings')">Choppings</div>
+                    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+                </div>
+            '''
+
+            # Settings panel
+            html_output += '''
+                <div class="settings-panel" style="display: none;">
+                    <label>Lookback Window</label>
+                    <input type="range" min="3" max="20" value="10" onchange="updateStreaksChoppings()">
+                    <label>Minimum Length</label>
+                    <select onchange="updateStreaksChoppings()">
+                        <option>2</option>
+                        <option selected>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>
+                    <label>Traits</label>
+            '''
+            for trait in roulette_traits.keys():
+                checked = "checked" if trait in traits else ""
+                html_output += f'<input type="checkbox" value="{trait}" {checked} onchange="updateStreaksChoppings()"> {trait}<br>'
+            html_output += '''
+                    <button onclick="savePreset()">Save Preset</button>
+                </div>
+            '''
+
+            # Process each trait
+            for trait in traits:
+                if trait not in roulette_traits:
+                    continue
+
+                # Map spins to trait values
+                trait_values = []
+                for spin in spins:
+                    if spin not in roulette_traits["Red/Black"]:
+                        continue
+                    value = roulette_traits[trait](spin) if callable(roulette_traits[trait]) else roulette_traits[trait][spin]
+                    trait_values.append(value)
+
+                # Detect streaks
+                if trait_values:
+                    current_value = trait_values[-1]
+                    streak_count = 1
+                    for i in range(len(trait_values)-2, -1, -1):
+                        if trait_values[i] == current_value and trait_values[i] != "Zero":
+                            streak_count += 1
+                        else:
+                            break
+                    if streak_count >= min_length and current_value != "Zero":
+                        streaks[trait] = f"{streak_count} {current_value} Streak"
+                        mini_chart = "".join(f'<span class="dot {current_value.lower().replace(" ", "-")}"></span>' for _ in range(streak_count))
+                    else:
+                        streaks[trait] = None
+                        mini_chart = ""
+
+                    # Detect choppings
+                    chopping_sequence = []
+                    chopping_length = 0
+                    for i in range(len(trait_values)-1, -1, -1):
+                        if i == 0 or trait_values[i] == "Zero":
+                            break
+                        if not chopping_sequence or trait_values[i] != chopping_sequence[-1]:
+                            chopping_sequence.append(trait_values[i])
+                            chopping_length += 1
+                        else:
+                            break
+                        if chopping_length >= min_length:
+                            break
+                    if chopping_length >= min_length:
+                        chopping_text = "-".join(chopping_sequence[::-1])
+                        choppings[trait] = f"{chopping_text} ({chopping_length} spins)"
+                        chopping_chart = "".join(f'<span class="dot {val.lower().replace(" ", "-")}"></span>' for val in chopping_sequence[::-1])
+                    else:
+                        choppings[trait] = None
+                        chopping_chart = ""
+
+                    # Generate HTML for streak
+                    if streaks[trait]:
+                        html_output += f'''
+                            <div class="trait-card {trait.lower().replace("/", "-")} streaks">
+                                <span class="icon">🔥</span>
+                                <span class="text">{streaks[trait]}</span>
+                                <div class="mini-chart">{mini_chart}</div>
+                                <span class="suggestion">Bet {current_value} to follow?</span>
+                            </div>
+                        '''
+                    # Generate HTML for chopping
+                    if choppings[trait]:
+                        next_bet = chopping_sequence[-1] if chopping_length % 2 == 0 else chopping_sequence[-2]
+                        html_output += f'''
+                            <div class="trait-card {trait.lower().replace("/", "-")} choppings" style="display: none;">
+                                <span class="icon">🔄</span>
+                                <span class="text">{choppings[trait]}</span>
+                                <div class="mini-chart">{chopping_chart}</div>
+                                <span class="suggestion">Bet {next_bet} next?</span>
+                            </div>
+                        '''
+
+            html_output += '</div>'
+            html_output += '''
+                <script>
+                    function showView(view) {
+                        document.querySelectorAll('.trait-cards').forEach(card => card.style.display = 'none');
+                        document.querySelectorAll('.trait-card').forEach(card => card.style.display = 'none');
+                        document.querySelectorAll('.trait-card.' + view).forEach(card => card.style.display = 'flex');
+                        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                        document.querySelector(`.tab[onclick="showView('${view}')"]`).classList.add('active');
+                    }
+                    function toggleSettings() {
+                        const panel = document.querySelector('.settings-panel');
+                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    }
+                    function savePreset() {
+                        const settings = {
+                            lookback: document.querySelector('input[type="range"]').value,
+                            minLength: document.querySelector('select').value,
+                            traits: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value)
+                        };
+                        localStorage.setItem('streaksChoppingsSettings', JSON.stringify(settings));
+                        alert('Preset saved!');
+                    }
+                    function updateStreaksChoppings() {
+                        // Placeholder for dynamic updates (requires server-side integration)
+                        console.log('Settings changed, update streaks/choppings');
+                    }
+                </script>
+                <style>
+                    .streaks-choppings-monitor {
+                        background: linear-gradient(135deg, #f3e5f5, #e0f7fa);
+                        border: 2px solid #8e24aa;
+                        border-radius: 8px;
+                        padding: 10px;
+                        margin-top: 10px;
+                    }
+                    .tabs {
+                        display: flex;
+                        gap: 5px;
+                        margin-bottom: 10px;
+                    }
+                    .tab {
+                        flex: 1;
+                        padding: 8px;
+                        text-align: center;
+                        background: #f5f5f5;
+                        cursor: pointer;
+                        border-radius: 5px;
+                        font-size: 14px;
+                        font-weight: bold;
+                    }
+                    .tab.active {
+                        background: #8e24aa;
+                        color: white;
+                    }
+                    .settings-btn {
+                        background: #4682b4;
+                        color: white;
+                        border: none;
+                        padding: 5px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    }
+                    .settings-panel {
+                        background: #fff;
+                        border: 1px solid #8e24aa;
+                        padding: 10px;
+                        border-radius: 5px;
+                        margin-bottom: 10px;
+                    }
+                    .settings-panel label {
+                        font-weight: bold;
+                        margin-right: 10px;
+                    }
+                    .settings-panel input[type="range"] {
+                        width: 100%;
+                    }
+                    .settings-panel select {
+                        padding: 5px;
+                        border-radius: 5px;
+                    }
+                    .settings-panel button {
+                        background: #4682b4;
+                        color: white;
+                        border: none;
+                        padding: 5px 10px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    }
+                    .trait-cards {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                    }
+                    .trait-card {
+                        flex: 1 1 200px;
+                        background: white;
+                        border: 1px solid #8e24aa;
+                        border-radius: 5px;
+                        padding: 10px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        animation: fadeIn 0.5s ease-in;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    .trait-card.red-black .dot.red { background: #ff4444; }
+                    .trait-card.red-black .dot.black { background: #000000; }
+                    .trait-card.red-black .dot.green { background: #388e3c; }
+                    .trait-card.even-odd .dot.even { background: #4682b4; }
+                    .trait-card.even-odd .dot.odd { background: #ff9800; }
+                    .trait-card.low-high .dot.low { background: #32cd32; }
+                    .trait-card.low-high .dot.high { background: #ab47bc; }
+                    .trait-card.dozens .dot.1st-dozen { background: #388e3c; }
+                    .trait-card.dozens .dot.2nd-dozen { background: #ff9800; }
+                    .trait-card.dozens .dot.3rd-dozen { background: #8e24aa; }
+                    .trait-card.columns .dot.column-1 { background: #4682b4; }
+                    .trait-card.columns .dot.column-2 { background: #ff4500; }
+                    .trait-card.columns .dot.column-3 { background: #32cd32; }
+                    .trait-card.wheel-sections .dot.voisins-du-zero { background: #ff6347; }
+                    .trait-card.wheel-sections .dot.tiers-du-cylindre { background: #4682b4; }
+                    .trait-card.wheel-sections .dot.orphelins { background: #32cd32; }
+                    .trait-card .icon {
+                        font-size: 20px;
+                        animation: pulse 1s infinite;
+                    }
+                    .trait-card .text {
+                        font-weight: bold;
+                        color: #333;
+                        font-size: 14px;
+                    }
+                    .trait-card .mini-chart {
+                        display: flex;
+                        gap: 5px;
+                        margin: 5px 0;
+                    }
+                    .trait-card .dot {
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 50%;
+                        border: 1px solid #fff;
+                    }
+                    .trait-card .suggestion {
+                        font-size: 12px;
+                        color: #4682b4;
+                        font-style: italic;
+                    }
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.2); }
+                    }
+                    @keyframes fadeIn {
+                        0% { opacity: 0; transform: translateY(5px); }
+                        100% { opacity: 1; transform: translateY(0); }
+                    }
+                    @media (max-width: 600px) {
+                        .trait-card {
+                            flex: 1 1 100%;
+                            padding: 8px;
+                        }
+                        .tab {
+                            font-size: 12px;
+                            padding: 6px;
+                        }
+                        .trait-card .text {
+                            font-size: 12px;
+                        }
+                        .trait-card .suggestion {
+                            font-size: 11px;
+                        }
+                    }
+                </style>
+            '''
+            return html_output
+        except Exception as e:
+            print(f"track_streaks_and_choppings: Error: {str(e)}")
+            return "<p>Error analyzing streaks and choppings.</p>"
 
     # Line 3: Start of clear_outputs function (unchanged)
     def clear_outputs():
@@ -7806,12 +8129,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                 animation: fadeInAccordion 0.5s ease-in-out !important;
             }
-    
             @keyframes fadeInAccordion {
                 0% { opacity: 0; transform: translateY(5px); }
                 100% { opacity: 1; transform: translateY(0); }
             }
-    
             #spin-trend-radar summary {
                 background-color: #8e24aa !important;
                 color: white !important;
@@ -7822,15 +8143,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 cursor: pointer !important;
                 transition: background-color 0.3s ease !important;
             }
-    
             #spin-trend-radar summary:hover {
                 background-color: #6a1b9a !important;
             }
-    
             #spin-trend-radar summary::after {
                 filter: invert(100%) !important;
             }
-    
             .spin-trend-row {
                 background-color: #f3e5f5 !important;
                 padding: 10px !important;
@@ -7846,14 +8164,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 height: auto !important;
                 box-sizing: border-box !important;
             }
-    
             .spin-trend-row .gr-column {
                 flex: 1 !important;
                 min-width: 300px !important;
                 background-color: transparent !important;
                 padding: 10px !important;
             }
-    
             #spin-trend-radar .traits-container {
                 background: transparent !important;
                 border: none !important;
@@ -7867,7 +8183,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 box-shadow: none !important;
                 animation: none !important;
             }
-    
             #spin-trend-radar .traits-container::before {
                 content: '';
                 position: absolute;
@@ -7879,7 +8194,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 opacity: 0.3;
                 pointer-events: none;
             }
-    
             #spin-trend-radar .traits-container .traits-wrapper {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -7889,7 +8203,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 gap: 15px !important;
                 padding-top: 10px !important;
             }
-    
             #spin-trend-radar .traits-container .traits-overview > h4 {
                 color: #ab47bc !important;
                 text-shadow: 0 0 8px rgba(142, 36, 170, 0.7) !important;
@@ -7897,7 +8210,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-weight: bold !important;
                 margin: 0 0 10px 0 !important;
             }
-    
             #spin-trend-radar .traits-container .badge-group {
                 margin: 10px 0 !important;
                 padding-top: 10px !important;
@@ -7906,12 +8218,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 max-width: 100% !important;
                 overflow: visible !important;
             }
-    
             #spin-trend-radar .traits-container .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(4) h4 { color: #ffd700 !important; }
-    
             #spin-trend-radar .traits-container .percentage-badges {
                 display: flex !important;
                 flex-wrap: wrap !important;
@@ -7921,7 +8231,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100% !important;
                 overflow-x: hidden !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge {
                 background: transparent !important;
                 color: #333 !important;
@@ -7936,36 +8245,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-weight: bold !important;
                 display: inline-block !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge:hover {
                 transform: scale(1.1) !important;
                 filter: brightness(1.3) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.even-money {
                 background: rgba(255, 77, 77, 0.2) !important;
                 border-color: #ff4d4d !important;
                 box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.column {
                 background: rgba(77, 121, 255, 0.2) !important;
                 border-color: #4d79ff !important;
                 box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.dozen {
                 background: rgba(77, 255, 77, 0.2) !important;
                 border-color: #4dff4d !important;
                 box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.repeat {
                 background: rgba(204, 51, 255, 0.2) !important;
                 border-color: #ab47bc !important;
                 box-shadow: 0 0 10px rgba(142, 36, 170, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.winner {
                 font-weight: bold !important;
                 color: #333 !important;
@@ -7974,7 +8277,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 background: rgba(255, 215, 0, 0.3) !important;
                 transform: scale(1.1) !important;
             }
-    
             @media (max-width: 768px) {
                 .spin-trend-row {
                     flex-direction: column !important;
@@ -8000,6 +8302,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     padding: 4px 8px !important;
                 }
             }
+            .streaks-choppings-row {
+                background-color: #f3e5f5 !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+                width: 100% !important;
+                min-height: fit-content !important;
+                height: auto !important;
+                box-sizing: border-box !important;
+            }
+            .streaks-choppings-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important;
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
         </style>
         """)
         with gr.Row(elem_classes=["spin-trend-row"]):
@@ -8009,6 +8332,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
+        with gr.Row(elem_classes=["streaks-choppings-row"]):
+            with gr.Column(scale=1):
+                streaks_choppings_display = gr.HTML(
+                    label="Streaks & Choppings Monitor",
+                    value=track_streaks_and_choppings(state.last_spins, 10, 3, ["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections"]),
+                    elem_classes=["streaks-choppings-monitor"]
+                )
+
                 
     # Line 1: Updated Next Spin Top Pick accordion
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
@@ -11876,6 +12207,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
         ).then(
+            fn=track_streaks_and_choppings,
+            inputs=[spins_display, gr.State(value=10), gr.State(value=3), gr.State(value=["Red/Black", "Even/Odd", "Low/High", "Dozens", "Columns", "Wheel Sections"])],
+            outputs=[streaks_choppings_display]
+        ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
@@ -11886,6 +12221,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
+
     
     try:
         clear_spins_button.click(
