@@ -6714,36 +6714,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
 
-    import gradio as gr
-    
-    # Compact CSS-Only Video Accordion (Above Buttons)
+    # Hyperlinked Video Title (Above Buttons)
     gr.HTML("""
         <div id="masterclass-video-section">
-            <div class="video-accordion">
-                <input type="checkbox" id="video-toggle" class="accordion-toggle">
-                <label for="video-toggle" class="accordion-title">
+            <div class="video-container">
+                <a href="https://youtu.be/Wn0xJTiVcdg" target="_blank" class="video-title">
                     <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
                     <span class="by-styw">by S.T.Y.W</span>
-                    <span class="toggle-text">Show</span>
-                </label>
-                <div class="accordion-content">
-                    <div class="video-container">
-                        <div class="video-thumbnail">
-                            <iframe width="100%" height="200" src="https://www.youtube.com/embed/Wn0xJTiVcdg" frameborder="0" allowfullscreen></iframe>
-                        </div>
-                        <div class="video-info">
-                            <h3>Roulette Tracking Masterclass: Outsmart the Wheel Every Time</h3>
-                            <p>Unlock expert strategies to track roulette patterns, spot hot sections, and switch tactics with precision. Perfect for beginners and pros!</p>
-                            <ul>
-                                <li>🔍 Track wheel sections & neighbors</li>
-                                <li>📊 Master hit percentage analysis</li>
-                                <li>🎯 Time your strategy switches</li>
-                                <li>🧠 Decode casino patterns</li>
-                            </ul>
-                            <p><strong>Elevate your game—watch now!</strong></p>
-                        </div>
-                    </div>
-                </div>
+                </a>
             </div>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
@@ -6755,7 +6733,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     animation: neonFlicker 2s ease-in-out infinite;
                 }
     
-                .video-accordion {
+                .video-container {
                     background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000);
                     border: 2px solid #008080;
                     border-radius: 8px;
@@ -6764,11 +6742,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     position: relative;
                 }
     
-                .accordion-toggle {
-                    display: none;
-                }
-    
-                .accordion-title {
+                .video-title {
                     display: flex;
                     align-items: center;
                     gap: 8px;
@@ -6779,11 +6753,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     font-weight: 700;
                     color: #ffffff;
                     text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.5);
-                    cursor: pointer;
+                    text-decoration: none;
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                 }
     
-                .accordion-title:hover {
+                .video-title:hover {
                     transform: scale(1.02);
                     box-shadow: 0 0 10px rgba(0, 128, 128, 0.7);
                 }
@@ -6799,76 +6773,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     color: #ffffff;
                     text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
                     animation: subtleGlow 1.5s ease-in-out infinite;
-                }
-    
-                .toggle-text {
-                    margin-left: auto;
-                    font-size: 12px;
-                    font-weight: normal;
-                }
-    
-                .accordion-content {
-                    display: none;
-                    padding: 12px;
-                    background: #ffffff;
-                    border-top: 1px solid #008080;
-                }
-    
-                #video-toggle:checked ~ .accordion-content {
-                    display: block;
-                }
-    
-                #video-toggle:checked + .accordion-title .toggle-text {
-                    content: 'Hide';
-                }
-    
-                .video-container {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 15px;
-                    align-items: center;
-                }
-    
-                .video-thumbnail {
-                    flex: 1;
-                    min-width: 250px;
-                    max-width: 350px;
-                    border-radius: 6px;
-                    overflow: hidden;
-                    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-                }
-    
-                .video-info {
-                    flex: 2;
-                    min-width: 250px;
-                    color: #333;
-                }
-    
-                .video-info h3 {
-                    margin: 0 0 8px;
-                    font-family: 'Poppins', sans-serif;
-                    font-size: 18px;
-                    color: #008080;
-                }
-    
-                .video-info p {
-                    margin: 5px 0;
-                    font-size: 13px;
-                    line-height: 1.4;
-                    font-family: Arial, sans-serif;
-                }
-    
-                .video-info ul {
-                    list-style: none;
-                    padding: 0;
-                    margin: 8px 0;
-                }
-    
-                .video-info li {
-                    font-size: 13px;
-                    margin: 4px 0;
-                    color: #555;
-                    font-family: Arial, sans-serif;
                 }
     
                 @keyframes neonFlicker {
@@ -6887,45 +6791,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 @media (max-width: 768px) {
-                    .video-container {
-                        flex-direction: column;
-                    }
-                    .video-thumbnail {
-                        max-width: 100%;
-                    }
-                    .video-info {
-                        min-width: 100%;
-                    }
-                    .accordion-title {
+                    .video-title {
                         font-size: 14px;
                         padding: 6px 10px;
                     }
                     .by-styw {
                         font-size: 0.55em;
                     }
+                    .roulette-icon {
+                        font-size: 18px;
+                    }
                 }
     
                 @media (max-width: 600px) {
-                    .accordion-title {
+                    .video-title {
                         font-size: 12px;
                         gap: 5px;
                     }
                     .roulette-icon {
-                        font-size: 18px;
-                    }
-                    .video-thumbnail {
-                        height: 150px;
-                    }
-                    .video-info h3 {
                         font-size: 16px;
-                    }
-                    .video-info p, .video-info li {
-                        font-size: 12px;
                     }
                 }
     
                 @media (prefers-reduced-motion: reduce) {
-                    .roulette-icon, .accordion-title, .by-styw {
+                    .roulette-icon, .video-title, .by-styw {
                         animation: none !important;
                         transition: none !important;
                     }
@@ -7043,7 +6932,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     .spin-roulette {
                         animation: spin 4s linear infinite !important;
                     }
-                    @keyframes neonF MOMENTicker {
+                    @keyframes neonFlicker {
                         0%, 100% { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5); }
                         50% { text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); }
                     }
@@ -7122,7 +7011,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
             </style>
         """)
-    
     
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
