@@ -6743,11 +6743,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML("""
             <div id="masterclass-video-section">
                 <div class="video-accordion">
-                    <input type="checkbox" id="video-toggle" class="accordion-toggle">
-                    <label for="video-toggle" class="accordion-title">
+                    <button id="video-toggle-btn" class="accordion-title">
                         <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
                         <span class="by-styw">by S.T.Y.W</span>
-                    </label>
+                        <span class="toggle-text">Show Video</span>
+                    </button>
                     <div class="accordion-content">
                         <div class="video-container">
                             <div class="video-thumbnail">
@@ -6786,10 +6786,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         position: relative;
                     }
     
-                    .accordion-toggle {
-                        display: none;
-                    }
-    
                     .accordion-title {
                         display: flex;
                         align-items: center;
@@ -6802,6 +6798,9 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         color: #ffffff;
                         text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
                         cursor: pointer;
+                        border: none;
+                        width: 100%;
+                        text-align: left;
                         transition: transform 0.3s ease, box-shadow 0.3s ease;
                     }
     
@@ -6821,6 +6820,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         color: #ffffff;
                         text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
                         animation: subtleGlow 1.5s ease-in-out infinite;
+                    }
+    
+                    .toggle-text {
+                        margin-left: auto;
+                        font-size: 14px;
+                        font-weight: normal;
                     }
     
                     .accordion-content {
@@ -6937,28 +6942,34 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
                         function initAccordion() {
-                            const toggle = document.getElementById('video-toggle');
+                            const toggleBtn = document.getElementById('video-toggle-btn');
                             const content = document.querySelector('#masterclass-video-section .accordion-content');
+                            const toggleText = document.querySelector('#video-toggle-btn .toggle-text');
                             
-                            if (!toggle || !content) {
-                                console.error('Accordion elements not found:', { toggle, content });
+                            if (!toggleBtn || !content || !toggleText) {
+                                console.error('Accordion elements not found:', { toggleBtn, content, toggleText });
                                 return;
                             }
     
-                            console.log('Accordion initialized. Toggle found:', !!toggle, 'Content found:', !!content);
+                            console.log('Accordion initialized. Button found:', !!toggleBtn, 'Content found:', !!content);
     
                             // Set initial state: closed unless explicitly opened
                             const isDismissed = localStorage.getItem('videoSectionDismissed') === 'true';
-                            toggle.checked = !isDismissed;
                             content.classList.toggle('open', !isDismissed);
-                            console.log('Initial state - Dismissed:', isDismissed, 'Toggle checked:', toggle.checked, 'Content open:', content.classList.contains('open'));
+                            toggleText.textContent = isDismissed ? 'Show Video' : 'Hide Video';
+                            console.log('Initial state - Dismissed:', isDismissed, 'Content open:', content.classList.contains('open'), 'Toggle text:', toggleText.textContent);
     
-                            // Handle checkbox changes
-                            toggle.addEventListener('change', () => {
-                                const isOpen = toggle.checked;
+                            // Remove existing listeners to prevent duplicates
+                            const newToggleBtn = toggleBtn.cloneNode(true);
+                            toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+    
+                            // Handle button clicks
+                            newToggleBtn.addEventListener('click', () => {
+                                const isOpen = !content.classList.contains('open');
                                 content.classList.toggle('open', isOpen);
+                                toggleText.textContent = isOpen ? 'Hide Video' : 'Show Video';
                                 localStorage.setItem('videoSectionDismissed', !isOpen);
-                                console.log('Toggle changed - Checked:', isOpen, 'Content open:', content.classList.contains('open'), 'Dismissed:', !isOpen);
+                                console.log('Button clicked - Content open:', isOpen, 'Toggle text:', toggleText.textContent, 'Dismissed:', !isOpen);
                             });
                         }
     
