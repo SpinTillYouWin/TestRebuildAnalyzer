@@ -7337,10 +7337,19 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             raise  # Re-raise for debugging
-    def track_streaks_and_choppings(spins, lookback=10, min_length=3, traits=None):
+        def track_streaks_and_choppings(spins, lookback=10, min_length=3, traits=None):
         """Detect streaks and choppings for specified traits in recent spins."""
         try:
-            if not spins or not isinstance(spins, list):
+            print(f"track_streaks_and_choppings: raw spins={spins}, type={type(spins)}")  # Debug print
+            # Convert spins_display string to list if necessary
+            if isinstance(spins, str):
+                spins = [s.strip() for s in spins.split(",") if s.strip()]
+            elif not isinstance(spins, list):
+                spins = state.last_spins if state.last_spins else []
+            print(f"track_streaks_and_choppings: processed spins={spins}, type={type(spins)}")  # Debug print
+
+            if not spins:
+                print("No spins available after processing")  # Debug print
                 return "<p>No spins available to analyze.</p>"
 
             # Default traits if none provided
@@ -7350,6 +7359,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             # Limit spins to lookback window
             spins = spins[-lookback:] if len(spins) > lookback else spins
             if len(spins) < min_length:
+                print(f"Not enough spins: {len(spins)} < {min_length}")  # Debug print
                 return "<p>Not enough spins for analysis. Add more spins.</p>"
 
             # Define trait mappings
@@ -7419,6 +7429,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 trait_values = []
                 for spin in spins:
                     if spin not in roulette_traits["Red/Black"]:
+                        print(f"Invalid spin: {spin}")  # Debug print
                         continue
                     value = roulette_traits[trait](spin) if callable(roulette_traits[trait]) else roulette_traits[trait][spin]
                     trait_values.append(value)
@@ -12192,6 +12203,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         print(f"Error in spins_textbox.change handler: {str(e)}")
         gr.Warning(f"Error during spin analysis: {str(e)}")
     
+
     try:
         spins_display.change(
             fn=update_spin_counter,
@@ -12224,7 +12236,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_display.change handler: {str(e)}")
-
     
     try:
         clear_spins_button.click(
