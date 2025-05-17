@@ -7337,7 +7337,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             raise  # Re-raise for debugging
-        def track_streaks_and_choppings(spins, lookback=10, min_length=3, traits=None):
+    def track_streaks_and_choppings(spins, lookback=10, min_length=3, traits=None):
         """Detect streaks and choppings for specified traits in recent spins."""
         try:
             print(f"track_streaks_and_choppings: raw spins={spins}, type={type(spins)}")  # Debug print
