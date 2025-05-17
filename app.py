@@ -6714,6 +6714,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
 
+
     # Static Centered Options Section (Above Header)
     gr.HTML("""
         <div id="welcome-section">
@@ -6760,7 +6761,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
-                    background: linear-gradient(90deg, #3F000F, #6B001B);
+                    background: linear-gradient(90deg, #6B001B, #8B0024);
                     padding: 8px 12px;
                     font-family: 'Poppins', sans-serif;
                     font-size: 16px;
@@ -6774,7 +6775,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
                 .welcome-title:hover {
                     transform: scale(1.02);
-                    box-shadow: 0 0 10px rgba(107, 0, 27, 0.7);
+                    box-shadow: 0 0 10px rgba(139, 0, 36, 0.7);
                 }
     
                 .welcome-icon {
@@ -7066,7 +7067,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
             </style>
         """)
-    
+
 
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
