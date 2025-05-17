@@ -6714,7 +6714,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
 
-
     # Static Centered Options Section (Above Header)
     gr.HTML("""
         <div id="welcome-section">
@@ -6747,10 +6746,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 .welcome-container {
-                    background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000);
-                    border: 2px solid #008080;
+                    background: linear-gradient(135deg, #333333, #1C1C1C);
+                    border: 2px solid #4B0082;
                     border-radius: 8px;
-                    box-shadow: 0 0 15px rgba(0, 128, 128, 0.5);
+                    box-shadow: 0 0 15px rgba(75, 0, 130, 0.5);
                     overflow: hidden;
                     position: relative;
                     padding: 12px;
@@ -6761,12 +6760,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
-                    background: linear-gradient(90deg, #008080, #00CED1);
+                    background: linear-gradient(90deg, #4B0082, #800080);
                     padding: 8px 12px;
                     font-family: 'Poppins', sans-serif;
                     font-size: 16px;
                     font-weight: 700;
-                    color: #ffffff;
+                    color: #FFD700;
                     text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.5);
                     border-radius: 6px;
                     margin-bottom: 10px;
@@ -6775,7 +6774,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
                 .welcome-title:hover {
                     transform: scale(1.02);
-                    box-shadow: 0 0 10px rgba(0, 128, 128, 0.7);
+                    box-shadow: 0 0 10px rgba(75, 0, 130, 0.7);
                 }
     
                 .welcome-icon {
@@ -6799,7 +6798,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     font-family: 'Poppins', sans-serif;
                     font-size: 14px;
                     font-weight: 600;
-                    color: #ffffff;
+                    color: #FFD700;
                     text-decoration: none;
                     border-radius: 6px;
                     width: 100%;
@@ -6808,23 +6807,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 .video-link {
-                    background: linear-gradient(90deg, #006666, #009999);
+                    background: linear-gradient(90deg, #2F004F, #4B0082);
                 }
     
                 .tour-button {
-                    background: linear-gradient(90deg, #006666, #009999) !important;
+                    background: linear-gradient(90deg, #2F004F, #4B0082) !important;
                     border: none;
                     cursor: pointer;
+                    font-family: 'Poppins', sans-serif !important;
+                    font-size: 14px !important;
+                    font-weight: 600 !important;
+                    color: #FFD700 !important;
                     text-align: center;
                 }
     
                 .guide-link {
-                    background: linear-gradient(90deg, #006666, #009999);
+                    background: linear-gradient(90deg, #2F004F, #4B0082);
                 }
     
                 .option-link:hover, .option-button:hover {
                     transform: scale(1.02);
-                    box-shadow: 0 0 8px rgba(0, 128, 128, 0.7);
+                    box-shadow: 0 0 8px rgba(75, 0, 130, 0.7);
                 }
     
                 .roulette-icon, .tour-icon, .guide-icon {
@@ -6834,7 +6837,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 .by-styw {
                     font-family: 'Dancing Script', cursive;
                     font-size: 0.6em;
-                    color: #ffffff;
+                    color: #FFD700;
                     text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
                     animation: subtleGlow 1.5s ease-in-out infinite;
                 }
