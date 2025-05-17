@@ -1449,6 +1449,7 @@ def render_sides_of_zero_display():
     """
 
 # Line 1: Start of updated validate_spins_input function
+# Line 1: Start of updated validate_spins_input function
 def validate_spins_input(spins_input):
     """Validate manually entered spins and update state."""
     import gradio as gr
@@ -1522,6 +1523,7 @@ def validate_spins_input(spins_input):
     
     return spins_display_value, formatted_html
 
+
 # Line 1: Start of updated add_spin function
 def add_spin(number, current_spins, num_to_show):
     import gradio as gr
@@ -1576,6 +1578,7 @@ def clear_spins():
     state.side_scores = {"Left Side of Zero": 0, "Right Side of Zero": 0}  # Reset side scores
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
+
 
 # Lines after (context, unchanged)
 # Function to save the session
@@ -7334,6 +7337,168 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         except Exception as e:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             raise  # Re-raise for debugging
+from roulette_data import WHEEL_EUROPEAN, colors, EVEN_MONEY, DOZENS, COLUMNS
+
+def generate_neighbor_visualizer(spins, neighbor_count=2, show_bet=True):
+    """Generate SVG for a neighbor bet visualizer based on the top pick number."""
+    try:
+        if not spins or not isinstance(spins, list):
+            return "<p>No spins available for visualizer.</p>"
+
+        # Get top pick number (highest score from state.scores)
+        if not state.scores or not any(state.scores.values()):
+            return "<p>No top pick available. Add more spins.</p>"
+        top_pick = max(state.scores.items(), key=lambda x: x[1])[0]
+        top_pick = str(top_pick)
+
+        # Get neighbors using WHEEL_EUROPEAN
+        neighbor_count = min(max(int(neighbor_count), 1), 4)  # Clamp 1-4
+        idx = WHEEL_EUROPEAN.index(int(top_pick))
+        segment = []
+        for i in range(-neighbor_count, neighbor_count + 1):
+            segment.append(str(WHEEL_EUROPEAN[(idx + i) % len(WHEEL_EUROPEAN)]))
+        segment_numbers = segment
+
+        # Generate traits for tooltips
+        def get_traits(num):
+            num = int(num)
+            color = colors.get(str(num), "unknown")
+            even_odd = "Even" if num % 2 == 0 and num != 0 else "Odd" if num % 2 == 1 else "Zero"
+            low_high = "Low" if 1 <= num <= 18 else "High" if 19 <= num <= 36 else "Zero"
+            dozen = next((k for k, v in DOZENS.items() if num in v), "Zero")
+            column = next((k for k, v in COLUMNS.items() if num in v), "Zero")
+            return f"{num}: {color.capitalize()}, {even_odd}, {low_high}, {dozen}, {column}"
+
+        # Generate SVG
+        html_output = '<div class="neighbor-visualizer-container">'
+        html_output += '''
+            <div class="visualizer-controls">
+                <label>Neighbors: </label>
+                <input type="range" min="1" max="4" value="{}" onchange="updateVisualizer(this.value)">
+                <label style="margin-left: 15px;">Show Bet Suggestion: </label>
+                <input type="checkbox" {} onchange="toggleBetSuggestion(this.checked)">
+            </div>
+        '''.format(neighbor_count, 'checked' if show_bet else '')
+
+        # SVG for wheel segment (0 at top, linear layout for simplicity)
+        html_output += '<svg width="300" height="100" class="wheel-segment">'
+        segment_width = 300 / len(segment_numbers)
+        for i, num in enumerate(segment_numbers):
+            x = i * segment_width
+            fill_color = '#ff4444' if colors.get(num, '') == 'red' else '#000000' if colors.get(num, '') == 'black' else '#388e3c'
+            class_name = 'top-pick' if num == top_pick else 'neighbor'
+            tooltip = get_traits(num)
+            html_output += f'''
+                <rect x="{x}" y="10" width="{segment_width - 2}" height="60" fill="{fill_color}" class="{class_name}" rx="5"
+                      onclick="showTooltip('{tooltip}', {x + segment_width/2}, 10)" />
+                <text x="{x + segment_width/2}" y="45" text-anchor="middle" fill="#fff" font-size="14">{num}</text>
+            '''
+        html_output += '</svg>'
+
+        # Bet suggestion
+        if show_bet:
+            html_output += f'<p class="bet-suggestion">Bet on {top_pick} + {neighbor_count} neighbors ({", ".join(segment_numbers)})</p>'
+
+        html_output += '</div>'
+
+        # JavaScript and CSS
+        html_output += '''
+            <script>
+                function showTooltip(text, x, y) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.innerText = text;
+                    tooltip.style.left = x + 'px';
+                    tooltip.style.top = y + 'px';
+                    document.querySelector('.neighbor-visualizer-container').appendChild(tooltip);
+                    setTimeout(() => tooltip.remove(), 2000);
+                }
+                function updateVisualizer(neighborCount) {
+                    localStorage.setItem('neighborCount', neighborCount);
+                    console.log('Neighbor count: ' + neighborCount);
+                }
+                function toggleBetSuggestion(show) {
+                    localStorage.setItem('showBetSuggestion', show);
+                    console.log('Show bet suggestion: ' + show);
+                }
+            </script>
+            <style>
+                .neighbor-visualizer-container {
+                    background: linear-gradient(135deg, #f3e5f5, #e0f7fa);
+                    border: 2px solid #8e24aa;
+                    border-radius: 8px;
+                    padding: 10px;
+                    margin-top: 10px;
+                    text-align: center;
+                }
+                .visualizer-controls {
+                    margin-bottom: 10px;
+                }
+                .visualizer-controls label {
+                    font-weight: bold;
+                    color: #333;
+                    margin-right: 10px;
+                }
+                .visualizer-controls input[type="range"] {
+                    width: 100px;
+                }
+                .visualizer-controls input[type="checkbox"] {
+                    margin-left: 5px;
+                }
+                .wheel-segment {
+                    display: block;
+                    margin: 0 auto;
+                }
+                .wheel-segment rect.top-pick {
+                    stroke: #ffd700;
+                    stroke-width: 3;
+                    animation: pulse 1.5s infinite;
+                }
+                .wheel-segment rect.neighbor {
+                    stroke: #8e24aa;
+                    stroke-width: 1;
+                }
+                .wheel-segment rect:hover {
+                    filter: brightness(1.2);
+                    cursor: pointer;
+                }
+                .bet-suggestion {
+                    font-style: italic;
+                    color: #4682b4;
+                    margin-top: 10px;
+                }
+                .tooltip {
+                    position: absolute;
+                    background: #333;
+                    color: #fff;
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    transform: translate(-50%, -100%);
+                    pointer-events: none;
+                }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+                @media (max-width: 600px) {
+                    .wheel-segment {
+                        width: 200px;
+                        height: 80px;
+                    }
+                    .wheel-segment text {
+                        font-size: 12px;
+                    }
+                    .visualizer-controls input[type="range"] {
+                        width: 80px;
+                    }
+                }
+            </style>
+        '''
+        return html_output
+    except Exception as e:
+        print(f"generate_neighbor_visualizer: Error: {str(e)}")
+        return "<p>Error generating visualizer.</p>"
 
     # Line 3: Start of clear_outputs function (unchanged)
     def clear_outputs():
