@@ -9813,26 +9813,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
-
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
-    <script>
-      function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
-        script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
-        };
-        document.head.appendChild(script);
     
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        document.head.appendChild(link);
-      }
-    </script>
     <style>
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
