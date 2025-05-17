@@ -6714,26 +6714,40 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         </script>
     """)
 
-    # Hyperlinked Video Title (Above Buttons)
+    # Consolidated CSS-Only Accordion (Above Buttons)
     gr.HTML("""
-        <div id="masterclass-video-section">
-            <div class="video-container">
-                <a href="https://youtu.be/Wn0xJTiVcdg" target="_blank" class="video-title">
-                    <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
-                    <span class="by-styw">by S.T.Y.W</span>
-                </a>
+        <div id="welcome-section">
+            <div class="welcome-accordion">
+                <input type="checkbox" id="welcome-toggle" class="accordion-toggle">
+                <label for="welcome-toggle" class="accordion-title">
+                    <span class="welcome-icon">🌟</span> Discover WheelPulse: Your Guide to Mastering the App
+                </label>
+                <div class="accordion-content">
+                    <div class="options-container">
+                        <a href="https://youtu.be/Wn0xJTiVcdg" target="_blank" class="option-link video-link">
+                            <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
+                            <span class="by-styw">by S.T.Y.W</span>
+                        </a>
+                        <button id="start-tour-btn" onclick="startTour()" class="option-button tour-button">
+                            <span class="tour-icon">🚀</span> Take the Tour!
+                        </button>
+                        <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" class="option-link guide-link">
+                            <span class="guide-icon">📖</span> View Guide
+                        </a>
+                    </div>
+                </div>
             </div>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
     
-                #masterclass-video-section {
+                #welcome-section {
                     margin: 10px auto;
                     max-width: 1200px;
                     padding: 0 10px;
                     animation: neonFlicker 2s ease-in-out infinite;
                 }
     
-                .video-container {
+                .welcome-accordion {
                     background: linear-gradient(135deg, #D3D3D3, #A9A9A9, #000000);
                     border: 2px solid #008080;
                     border-radius: 8px;
@@ -6742,7 +6756,11 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     position: relative;
                 }
     
-                .video-title {
+                .accordion-toggle {
+                    display: none;
+                }
+    
+                .accordion-title {
                     display: flex;
                     align-items: center;
                     gap: 8px;
@@ -6753,18 +6771,74 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     font-weight: 700;
                     color: #ffffff;
                     text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.5);
-                    text-decoration: none;
+                    cursor: pointer;
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                 }
     
-                .video-title:hover {
+                .accordion-title:hover {
                     transform: scale(1.02);
                     box-shadow: 0 0 10px rgba(0, 128, 128, 0.7);
                 }
     
-                .roulette-icon {
+                .welcome-icon {
                     font-size: 20px;
-                    animation: spin 4s linear infinite;
+                    animation: subtleGlow 1.5s ease-in-out infinite;
+                }
+    
+                .accordion-content {
+                    display: none;
+                    padding: 12px;
+                    background: #ffffff;
+                    border-top: 1px solid #008080;
+                }
+    
+                #welcome-toggle:checked ~ .accordion-content {
+                    display: block;
+                }
+    
+                .options-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+    
+                .option-link, .option-button {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px 12px;
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+    
+                .video-link {
+                    background: linear-gradient(90deg, #006666, #009999);
+                }
+    
+                .tour-button {
+                    background: linear-gradient(90deg, #006666, #009999);
+                    border: none;
+                    cursor: pointer;
+                    width: 100%;
+                    text-align: left;
+                }
+    
+                .guide-link {
+                    background: linear-gradient(90deg, #006666, #009999);
+                }
+    
+                .option-link:hover, .option-button:hover {
+                    transform: scale(1.02);
+                    box-shadow: 0 0 8px rgba(0, 128, 128, 0.7);
+                }
+    
+                .roulette-icon, .tour-icon, .guide-icon {
+                    font-size: 18px;
                 }
     
                 .by-styw {
@@ -6780,41 +6854,50 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     50% { text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 6px rgba(0, 0, 0, 0.7); }
                 }
     
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-    
                 @keyframes subtleGlow {
                     0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
                     50% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
                 }
     
                 @media (max-width: 768px) {
-                    .video-title {
+                    .accordion-title {
                         font-size: 14px;
                         padding: 6px 10px;
+                    }
+                    .welcome-icon {
+                        font-size: 18px;
+                    }
+                    .option-link, .option-button {
+                        font-size: 13px;
+                        padding: 6px 10px;
+                    }
+                    .roulette-icon, .tour-icon, .guide-icon {
+                        font-size: 16px;
                     }
                     .by-styw {
                         font-size: 0.55em;
                     }
-                    .roulette-icon {
-                        font-size: 18px;
-                    }
                 }
     
                 @media (max-width: 600px) {
-                    .video-title {
+                    .accordion-title {
                         font-size: 12px;
                         gap: 5px;
                     }
-                    .roulette-icon {
+                    .welcome-icon {
                         font-size: 16px;
+                    }
+                    .option-link, .option-button {
+                        font-size: 12px;
+                    }
+                    .roulette-icon, .tour-icon, .guide-icon {
+                        font-size: 14px;
                     }
                 }
     
                 @media (prefers-reduced-motion: reduce) {
-                    .roulette-icon, .video-title, .by-styw {
+                    .welcome-icon, .roulette-icon, .tour-icon, .guide-icon, 
+                    .accordion-title, .by-styw, .option-link, .option-button {
                         animation: none !important;
                         transition: none !important;
                     }
@@ -6824,30 +6907,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # App Content (Header Section - Updated)
     with gr.Group(visible=False, elem_id="appContent"):
-        # Buttons Row (Moved Above Header)
-        with gr.Row(elem_id="buttons-row"):
-            gr.HTML(
-                '''
-                <div style="display: flex; gap: 10px; justify-content: center; align-items: center; padding: 10px;">
-                    <button id="start-tour-btn" onclick="startTour()" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box;">🚀 Take the Tour!</button>
-                    <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" style="width: 150px; height: 40px; padding: 8px 15px; background-color: #008080; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; line-height: 1; transition: transform 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box; display: inline-block; text-align: center;">📖 View Guide</a>
-                </div>
-                <style>
-                    #start-tour-btn:hover, a[href*="drive.google.com"]:hover {
-                        transform: scale(1.05);
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                    }
-                    #buttons-row {
-                        display: flex;
-                        justify-content: center;
-                        width: 100%;
-                        margin-bottom: 10px;
-                    }
-                </style>
-                '''
-            )
-    
-        # Header Row (Now Below Buttons)
+        # Header Row (No Buttons Row)
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
                 <div class="header-container">
@@ -7012,6 +7072,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             </style>
         """)
     
+    # Updated Selected Spins Accordion Styling
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
     <style>
