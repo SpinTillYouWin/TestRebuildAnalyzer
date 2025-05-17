@@ -1524,6 +1524,9 @@ def validate_spins_input(spins_input):
 
 # Line 1: Start of updated add_spin function
 def add_spin(number, current_spins, num_to_show):
+    state.last_spins.append(number)
+    print(f"Added spin: {number}, state.last_spins: {state.last_spins}")  # Debug print
+
     import gradio as gr
     import time
     start_time = time.time()  # CHANGED: Added for performance logging
