@@ -7335,6 +7335,175 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             print(f"show_strategy_recommendations: Error: {str(e)}")
             raise  # Re-raise for debugging
 
+    def generate_spin_timeline(spins, lookback=10, trait="Red/Black"):
+        """Generate HTML for an interactive spin sequence timeline."""
+        try:
+            if not spins or not isinstance(spins, list):
+                return "<p>No spins available for timeline.</p>"
+    
+            # Limit spins to lookback window
+            spins = spins[-lookback:] if len(spins) > lookback else spins
+            if not spins:
+                return "<p>No spins available for timeline.</p>"
+    
+            # Define trait mappings
+            trait_mappings = {
+                "Red/Black": {
+                    "0": "Green",
+                    "1": "Red", "2": "Black", "3": "Red", "4": "Black", "5": "Red", "6": "Black",
+                    "7": "Red", "8": "Black", "9": "Red", "10": "Black", "11": "Black", "12": "Red",
+                    "13": "Black", "14": "Red", "15": "Black", "16": "Red", "17": "Black", "18": "Red",
+                    "19": "Red", "20": "Black", "21": "Red", "22": "Black", "23": "Red", "24": "Black",
+                    "25": "Red", "26": "Black", "27": "Red", "28": "Black", "29": "Black", "30": "Red",
+                    "31": "Black", "32": "Red", "33": "Black", "34": "Red", "35": "Black", "36": "Red"
+                },
+                "Even/Odd": lambda n: "Zero" if n == "0" else "Even" if int(n) % 2 == 0 else "Odd",
+                "Low/High": lambda n: "Zero" if n == "0" else "Low" if 1 <= int(n) <= 18 else "High",
+                "Dozens": lambda n: "Zero" if n == "0" else "1st Dozen" if 1 <= int(n) <= 12 else "2nd Dozen" if 13 <= int(n) <= 24 else "3rd Dozen",
+                "Columns": lambda n: "Zero" if n == "0" else "Column 1" if int(n) % 3 == 1 else "Column 2" if int(n) % 3 == 2 else "Column 3"
+            }
+    
+            # Validate trait
+            if trait not in trait_mappings:
+                trait = "Red/Black"
+    
+            # Map spins to trait values
+            timeline_data = []
+            for idx, spin in enumerate(spins):
+                if spin not in trait_mappings["Red/Black"]:
+                    continue
+                value = trait_mappings[trait](spin) if callable(trait_mappings[trait]) else trait_mappings[trait][spin]
+                # Get additional traits for tooltip
+                tooltip_traits = {
+                    "Red/Black": trait_mappings["Red/Black"].get(spin, "Unknown"),
+                    "Even/Odd": trait_mappings["Even/Odd"](spin),
+                    "Low/High": trait_mappings["Low/High"](spin),
+                    "Dozens": trait_mappings["Dozens"](spin),
+                    "Columns": trait_mappings["Columns"](spin)
+                }
+                tooltip = f"Spin #{len(spins)-idx}: {spin}, {', '.join([f'{k}: {v}' for k, v in tooltip_traits.items()])}"
+                timeline_data.append({"spin": spin, "value": value, "tooltip": tooltip})
+    
+            # Generate HTML
+            html_output = '<div class="spin-timeline-container">'
+            html_output += '''
+                <div class="timeline-controls">
+                    <label>Trait: </label>
+                    <select onchange="updateTimelineTrait(this.value)">
+                        <option value="Red/Black" {}>Red/Black</option>
+                        <option value="Even/Odd" {}>Even/Odd</option>
+                        <option value="Low/High" {}>Low/High</option>
+                        <option value="Dozens" {}>Dozens</option>
+                        <option value="Columns" {}>Columns</option>
+                    </select>
+                </div>
+            '''.format(
+                'selected' if trait == "Red/Black" else '',
+                'selected' if trait == "Even/Odd" else '',
+                'selected' if trait == "Low/High" else '',
+                'selected' if trait == "Dozens" else '',
+                'selected' if trait == "Columns" else ''
+            )
+    
+            html_output += '<div class="timeline-strip">'
+            for data in timeline_data:
+                value_class = data["value"].lower().replace(" ", "-")
+                html_output += f'''
+                    <div class="timeline-rect {value_class}" title="{data['tooltip']}" onclick="highlightTrait('{data['value']}')">
+                    </div>
+                '''
+            html_output += '</div></div>'
+    
+            # Add JavaScript and CSS
+            html_output += '''
+                <script>
+                    function updateTimelineTrait(trait) {
+                        // Placeholder for dynamic updates (requires server-side integration)
+                        console.log('Selected trait: ' + trait);
+                    }
+                    function highlightTrait(value) {
+                        document.querySelectorAll('.timeline-rect').forEach(rect => {
+                            rect.classList.remove('highlighted');
+                            if (rect.classList.contains(value.toLowerCase().replace(' ', '-'))) {
+                                rect.classList.add('highlighted');
+                            }
+                        });
+                    }
+                </script>
+                <style>
+                    .spin-timeline-container {
+                        background: linear-gradient(135deg, #f3e5f5, #e0f7fa);
+                        border: 2px solid #8e24aa;
+                        border-radius: 8px;
+                        padding: 10px;
+                        margin-top: 10px;
+                    }
+                    .timeline-controls {
+                        margin-bottom: 10px;
+                    }
+                    .timeline-controls label {
+                        font-weight: bold;
+                        color: #333;
+                        margin-right: 10px;
+                    }
+                    .timeline-controls select {
+                        padding: 5px;
+                        border-radius: 5px;
+                        border: 1px solid #8e24aa;
+                        background: #fff;
+                    }
+                    .timeline-strip {
+                        display: flex;
+                        overflow-x: auto;
+                        gap: 5px;
+                        padding: 5px;
+                    }
+                    .timeline-rect {
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 3px;
+                        cursor: pointer;
+                        transition: transform 0.2s, box-shadow 0.3s;
+                        border: 1px solid #fff;
+                    }
+                    .timeline-rect:hover {
+                        transform: scale(1.2);
+                        box-shadow: 0 0 8px #ffd700;
+                    }
+                    .timeline-rect.highlighted {
+                        border: 2px solid #ffd700;
+                        box-shadow: 0 0 10px #ffd700;
+                    }
+                    .timeline-rect.red { background: #ff4444; }
+                    .timeline-rect.black { background: #000000; }
+                    .timeline-rect.green { background: #388e3c; }
+                    .timeline-rect.even { background: #4682b4; }
+                    .timeline-rect.odd { background: #ff9800; }
+                    .timeline-rect.zero { background: #888888; }
+                    .timeline-rect.low { background: #32cd32; }
+                    .timeline-rect.high { background: #ab47bc; }
+                    .timeline-rect.1st-dozen { background: #388e3c; }
+                    .timeline-rect.2nd-dozen { background: #ff9800; }
+                    .timeline-rect.3rd-dozen { background: #8e24aa; }
+                    .timeline-rect.column-1 { background: #4682b4; }
+                    .timeline-rect.column-2 { background: #ff4500; }
+                    .timeline-rect.column-3 { background: #32cd32; }
+                    @media (max-width: 600px) {
+                        .timeline-rect {
+                            width: 15px;
+                            height: 15px;
+                        }
+                        .timeline-controls select {
+                            font-size: 12px;
+                        }
+                    }
+                </style>
+            '''
+            return html_output
+        except Exception as e:
+            print(f"generate_spin_timeline: Error: {str(e)}")
+            return "<p>Error generating timeline.</p>"
+
     # Line 3: Start of clear_outputs function (unchanged)
     def clear_outputs():
         return "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -7806,12 +7975,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                 animation: fadeInAccordion 0.5s ease-in-out !important;
             }
-    
             @keyframes fadeInAccordion {
                 0% { opacity: 0; transform: translateY(5px); }
                 100% { opacity: 1; transform: translateY(0); }
             }
-    
             #spin-trend-radar summary {
                 background-color: #8e24aa !important;
                 color: white !important;
@@ -7822,15 +7989,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 cursor: pointer !important;
                 transition: background-color 0.3s ease !important;
             }
-    
             #spin-trend-radar summary:hover {
                 background-color: #6a1b9a !important;
             }
-    
             #spin-trend-radar summary::after {
                 filter: invert(100%) !important;
             }
-    
             .spin-trend-row {
                 background-color: #f3e5f5 !important;
                 padding: 10px !important;
@@ -7846,14 +8010,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 height: auto !important;
                 box-sizing: border-box !important;
             }
-    
             .spin-trend-row .gr-column {
                 flex: 1 !important;
                 min-width: 300px !important;
                 background-color: transparent !important;
                 padding: 10px !important;
             }
-    
             #spin-trend-radar .traits-container {
                 background: transparent !important;
                 border: none !important;
@@ -7867,7 +8029,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 box-shadow: none !important;
                 animation: none !important;
             }
-    
             #spin-trend-radar .traits-container::before {
                 content: '';
                 position: absolute;
@@ -7879,7 +8040,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 opacity: 0.3;
                 pointer-events: none;
             }
-    
             #spin-trend-radar .traits-container .traits-wrapper {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -7889,7 +8049,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 gap: 15px !important;
                 padding-top: 10px !important;
             }
-    
             #spin-trend-radar .traits-container .traits-overview > h4 {
                 color: #ab47bc !important;
                 text-shadow: 0 0 8px rgba(142, 36, 170, 0.7) !important;
@@ -7897,7 +8056,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-weight: bold !important;
                 margin: 0 0 10px 0 !important;
             }
-    
             #spin-trend-radar .traits-container .badge-group {
                 margin: 10px 0 !important;
                 padding-top: 10px !important;
@@ -7906,12 +8064,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 max-width: 100% !important;
                 overflow: visible !important;
             }
-    
             #spin-trend-radar .traits-container .badge-group:nth-child(1) h4 { color: #ff4d4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(2) h4 { color: #4d79ff !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(3) h4 { color: #4dff4d !important; }
             #spin-trend-radar .traits-container .badge-group:nth-child(4) h4 { color: #ffd700 !important; }
-    
             #spin-trend-radar .traits-container .percentage-badges {
                 display: flex !important;
                 flex-wrap: wrap !important;
@@ -7921,7 +8077,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 width: 100% !important;
                 overflow-x: hidden !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge {
                 background: transparent !important;
                 color: #333 !important;
@@ -7936,36 +8091,30 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 font-weight: bold !important;
                 display: inline-block !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge:hover {
                 transform: scale(1.1) !important;
                 filter: brightness(1.3) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.even-money {
                 background: rgba(255, 77, 77, 0.2) !important;
                 border-color: #ff4d4d !important;
                 box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.column {
                 background: rgba(77, 121, 255, 0.2) !important;
                 border-color: #4d79ff !important;
                 box-shadow: 0 0 10px rgba(77, 121, 255, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.dozen {
                 background: rgba(77, 255, 77, 0.2) !important;
                 border-color: #4dff4d !important;
                 box-shadow: 0 0 10px rgba(77, 255, 77, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.repeat {
                 background: rgba(204, 51, 255, 0.2) !important;
                 border-color: #ab47bc !important;
                 box-shadow: 0 0 10px rgba(142, 36, 170, 0.5) !important;
             }
-    
             #spin-trend-radar .traits-container .trait-badge.winner {
                 font-weight: bold !important;
                 color: #333 !important;
@@ -7974,7 +8123,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 background: rgba(255, 215, 0, 0.3) !important;
                 transform: scale(1.1) !important;
             }
-    
             @media (max-width: 768px) {
                 .spin-trend-row {
                     flex-direction: column !important;
@@ -8000,6 +8148,27 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     padding: 4px 8px !important;
                 }
             }
+            .timeline-row {
+                background-color: #f3e5f5 !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                align-items: stretch !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+                width: 100% !important;
+                min-height: fit-content !important;
+                height: auto !important;
+                box-sizing: border-box !important;
+            }
+            .timeline-row .gr-column {
+                flex: 1 !important;
+                min-width: 300px !important;
+                background-color: transparent !important;
+                padding: 10px !important;
+            }
         </style>
         """)
         with gr.Row(elem_classes=["spin-trend-row"]):
@@ -8009,6 +8178,14 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                     value=summarize_spin_traits(36),
                     elem_classes=["traits-container"]
                 )
+        with gr.Row(elem_classes=["timeline-row"]):
+            with gr.Column(scale=1):
+                timeline_display = gr.HTML(
+                    label="Spin Sequence Timeline",
+                    value=generate_spin_timeline(state.last_spins, 10, "Red/Black"),
+                    elem_classes=["spin-timeline-container"]
+                )
+
                 
     # Line 1: Updated Next Spin Top Pick accordion
     with gr.Accordion("Next Spin Top Pick 🎯", open=False, elem_id="next-spin-top-pick"):
@@ -11875,6 +12052,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=calculate_hit_percentages,
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
+        ).then(
+            fn=generate_spin_timeline,
+            inputs=[spins_display, gr.State(value=10), gr.State(value="Red/Black")],
+            outputs=[timeline_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
