@@ -6830,7 +6830,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                         display: none;
                     }
     
-                    #video-toggle:checked ~ .accordion-content {
+                    .accordion-content.open {
                         display: block;
                     }
     
@@ -6936,14 +6936,44 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 </style>
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
-                        const toggle = document.getElementById('video-toggle');
-                        // Set initial state: closed unless explicitly opened (no videoSectionDismissed)
-                        const isDismissed = localStorage.getItem('videoSectionDismissed') === 'true';
-                        toggle.checked = !isDismissed;
-                        // Update localStorage on toggle
-                        toggle.addEventListener('change', () => {
-                            localStorage.setItem('videoSectionDismissed', !toggle.checked);
+                        function initAccordion() {
+                            const toggle = document.getElementById('video-toggle');
+                            const content = document.querySelector('#masterclass-video-section .accordion-content');
+                            
+                            if (!toggle || !content) {
+                                console.error('Accordion elements not found:', { toggle, content });
+                                return;
+                            }
+    
+                            console.log('Accordion initialized. Toggle found:', !!toggle, 'Content found:', !!content);
+    
+                            // Set initial state: closed unless explicitly opened
+                            const isDismissed = localStorage.getItem('videoSectionDismissed') === 'true';
+                            toggle.checked = !isDismissed;
+                            content.classList.toggle('open', !isDismissed);
+                            console.log('Initial state - Dismissed:', isDismissed, 'Toggle checked:', toggle.checked, 'Content open:', content.classList.contains('open'));
+    
+                            // Handle checkbox changes
+                            toggle.addEventListener('change', () => {
+                                const isOpen = toggle.checked;
+                                content.classList.toggle('open', isOpen);
+                                localStorage.setItem('videoSectionDismissed', !isOpen);
+                                console.log('Toggle changed - Checked:', isOpen, 'Content open:', content.classList.contains('open'), 'Dismissed:', !isOpen);
+                            });
+                        }
+    
+                        // Initialize accordion
+                        initAccordion();
+    
+                        // Monitor DOM changes in the Selected Spins area to reinitialize accordion
+                        const spinsArea = document.querySelector('#selected-spins-container') || document.body;
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach(() => {
+                                console.log('DOM changed in spins area, reinitializing accordion');
+                                initAccordion();
+                            });
                         });
+                        observer.observe(spinsArea, { childList: true, subtree: true });
                     });
                 </script>
         """)
