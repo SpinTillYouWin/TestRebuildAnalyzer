@@ -6743,7 +6743,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         gr.HTML("""
             <div id="masterclass-video-section">
                 <div class="video-accordion">
-                    <input type="checkbox" id="video-toggle" class="accordion-toggle" checked>
+                    <input type="checkbox" id="video-toggle" class="accordion-toggle">
                     <label for="video-toggle" class="accordion-title">
                         <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
                         <span class="by-styw">by S.T.Y.W</span>
@@ -6937,15 +6937,12 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
                         const toggle = document.getElementById('video-toggle');
-                        if (localStorage.getItem('videoSectionDismissed') === 'true') {
-                            toggle.checked = false;
-                        }
+                        // Set initial state: closed unless explicitly opened (no videoSectionDismissed)
+                        const isDismissed = localStorage.getItem('videoSectionDismissed') === 'true';
+                        toggle.checked = !isDismissed;
+                        // Update localStorage on toggle
                         toggle.addEventListener('change', () => {
-                            if (!toggle.checked) {
-                                localStorage.setItem('videoSectionDismissed', 'true');
-                            } else {
-                                localStorage.removeItem('videoSectionDismissed');
-                            }
+                            localStorage.setItem('videoSectionDismissed', !toggle.checked);
                         });
                     });
                 </script>
