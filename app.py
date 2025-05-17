@@ -6812,7 +6812,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 }
     
                 .tour-button {
-                    background: linear-gradient(90deg, #006666, #009999);
+                    background: linear-gradient(90deg, #006666, #009999) !important;
                     border: none;
                     cursor: pointer;
                     text-align: center;
@@ -7064,7 +7064,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             </style>
         """)
     
-
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
     <style>
