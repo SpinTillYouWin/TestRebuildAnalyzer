@@ -13363,7 +13363,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 gr.update(choices=[], value=None),
                 gr.update(value="<p>Error loading videos.</p>")
             )
-
+    
     def update_video_display(video_title, category):
         """Return HTML for a YouTube video, lazy loading the iframe."""
         try:
