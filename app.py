@@ -9845,25 +9845,26 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
         document.head.appendChild(link);
       }
-    
-      function debounce(func, wait) {
-          let timeout;
-          return function executedFunction(...args) {
-              const later = () => {
-                  clearTimeout(timeout);
-                  func(...args);
-              };
-              clearTimeout(timeout);
-              timeout = setTimeout(later, wait);
-          };
-      }
     </script>
     <style>
         /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+        .gr-rowcompanions { margin: 0 !important; padding: 5px 0 !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
         .gr-box { border-radius: 5px !important; }
-        
+        /* Add your existing styles here */
+        .lazy-video {
+            width: 100%;
+            max-width: 560px;
+            height: 315px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+    """)
 
         /* Style for Dealer’s Spin Tracker accordion */
         #sides-of-zero-accordion {
@@ -13315,21 +13316,69 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # Video Category and Video Selection Event Handlers
     def update_video_dropdown(category):
-        videos = video_categories.get(category, [])
-        choices = [video["title"] for video in videos]
-        default_value = choices[0] if choices else None
-        return (
-            gr.update(choices=choices, value=default_value),
-            gr.update(value=f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{videos[0]["link"].split("/")[-1]}" frameborder="0" allowfullscreen></iframe>' if videos else "<p>No videos available in this category.</p>")
-        )
-    
+        """Update video dropdown and return a placeholder for the default video."""
+        try:
+            videos = video_categories.get(category, [])
+            choices = [video["title"] for video in videos]
+            default_value = choices[0] if choices else None
+            if videos:
+                video_id = videos[0]["link"].split("/")[-1]
+                return (
+                    gr.update(choices=choices, value=default_value),
+                    gr.update(value=f"""
+                        <div class="lazy-video" data-video-id="{video_id}">
+                            <p>Video ready to load...</p>
+                        </div>
+                    """)
+                )
+            return (
+                gr.update(choices=choices, value=default_value),
+                gr.update(value="<p>No videos available in this category.</p>")
+            )
+        except Exception as e:
+            print(f"update_video_dropdown: Error: {str(e)}")
+            return (
+                gr.update(choices=[], value=None),
+                gr.update(value="<p>Error loading videos.</p>")
+            )
+
     def update_video_display(video_title, category):
-        videos = video_categories.get(category, [])
-        selected_video = next((video for video in videos if video["title"] == video_title), None)
-        if selected_video:
-            video_id = selected_video["link"].split("/")[-1]
-            return f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
-        return "<p>Please select a video to watch.</p>"
+        """Return HTML for a YouTube video, lazy loading the iframe."""
+        try:
+            if not video_title or video_title == "Select a video" or video_title == "None":
+                return "<div>No video selected.</div>"
+            
+            videos = video_categories.get(category, [])
+            selected_video = next((video for video in videos if video["title"] == video_title), None)
+            if selected_video:
+                video_id = selected_video["link"].split("/")[-1]
+                return f"""
+                <div class="lazy-video" data-video-id="{video_id}">
+                    <p>Loading video...</p>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {{
+                        const lazyVideos = document.querySelectorAll('.lazy-video');
+                        lazyVideos.forEach(div => {{
+                            const videoId = div.getAttribute('data-video-id');
+                            if (videoId) {{
+                                const iframe = document.createElement('iframe');
+                                iframe.width = '100%';
+                                iframe.height = '315';
+                                iframe.src = `https://www.youtube.com/embed/${{videoId}}`;
+                                iframe.frameBorder = '0';
+                                iframe.allowFullscreen = true;
+                                div.innerHTML = '';
+                                div.appendChild(iframe);
+                            }}
+                        }});
+                    }});
+                </script>
+                """
+            return "<p>Please select a video to watch.</p>"
+        except Exception as e:
+            print(f"update_video_display: Error: {str(e)}")
+            return "<div>Error loading video.</div>"
     
     try:
         video_category_dropdown.change(
