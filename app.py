@@ -9827,7 +9827,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
-
     <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
     <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
@@ -9845,6 +9844,18 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
         document.head.appendChild(link);
+      }
+    
+      function debounce(func, wait) {
+          let timeout;
+          return function executedFunction(...args) {
+              const later = () => {
+                  clearTimeout(timeout);
+                  func(...args);
+              };
+              clearTimeout(timeout);
+              timeout = setTimeout(later, wait);
+          };
       }
     </script>
     <style>
@@ -13341,7 +13352,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
 # Add the top pick slider change handler (was previously missing in your code)
     try:
         top_pick_spin_count.change(
-            fn=select_next_spin_top_pick,
+            fn="debounce(select_next_spin_top_pick, 300)",  # Wait 300ms before updating
             inputs=[
                 top_pick_spin_count,
                 trait_filter,
@@ -13353,7 +13364,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 hit_bonus_weight,
                 neighbor_weight
             ],
-            outputs=[top_pick_display]
+            outputs=[top_pick_display],
+            _js="function(select_next_spin_top_pick) { return debounce(select_next_spin_top_pick, 300); }"
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
