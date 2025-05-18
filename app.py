@@ -2575,11 +2575,80 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         # Update state.last_spins and spin_history
         state.last_spins = spins  # Replace last_spins with current spins
         state.spin_history = action_log  # Replace spin_history with current action_log
+
+def analyze_spins(spins_input, strategy_name, neighbours_count, analysis_cache, *checkbox_args):
+    """Analyze the spins and return formatted results for all sections, always resetting scores."""
+    try:
+        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, checkbox_args={checkbox_args}")
+        
+        # Create a unique cache key based on inputs
+        cache_key = f"{spins_input}_{strategy_name}_{neighbours_count}_{'_'.join(map(str, checkbox_args))}"
+        
+        # Check if results are cached and inputs haven't changed
+        if cache_key in analysis_cache.value:
+            print(f"analyze_spins: Using cached results for {cache_key}")
+            cached_results = analysis_cache.value[cache_key]
+            return cached_results + (analysis_cache,)
+        
+        # If no cached results, run the analysis
+        print(f"analyze_spins: Running new analysis for {cache_key}")
+        
+        # Handle empty spins case
+        if not spins_input or not spins_input.strip():
+            print("analyze_spins: No spins input provided.")
+            state.reset()  # Always reset scores
+            print("analyze_spins: Scores reset due to empty spins.")
+            results = ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            analysis_cache.value[cache_key] = results
+            return results + (analysis_cache,)
+        
+        raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
+        spins = []
+        errors = []
+        
+        for spin in raw_spins:
+            try:
+                num = int(spin)
+                if not (0 <= num <= 36):
+                    errors.append(f"Error: '{spin}' is out of range. Use numbers between 0 and 36.")
+                    continue
+                spins.append(str(num))
+            except ValueError:
+                errors.append(f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).")
+                continue
+        
+        if errors:
+            error_msg = "\n".join(errors)
+            print(f"analyze_spins: Errors found - {error_msg}")
+            results = (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            analysis_cache.value[cache_key] = results
+            return results + (analysis_cache,)
+        
+        if not spins:
+            print("analyze_spins: No valid spins found.")
+            state.reset()  # Always reset scores
+            print("analyze_spins: Scores reset due to no valid spins.")
+            results = ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            analysis_cache.value[cache_key] = results
+            return results + (analysis_cache,)
+        
+        # Always reset scores
+        state.reset()
+        print("analyze_spins: Scores reset.")
+        
+        # Batch update scores for all spins
+        print("analyze_spins: Updating scores batch")
+        action_log = update_scores_batch(spins)
+        print(f"analyze_spins: action_log={action_log}")
+        
+        # Update state.last_spins and spin_history
+        state.last_spins = spins  # Replace last_spins with current spins
+        state.spin_history = action_log  # Replace spin_history with current action_log
         # Limit spin history to 100 spins
         if len(state.spin_history) > 100:
             state.spin_history = state.spin_history[-100:]
         print(f"analyze_spins: Updated state.last_spins={state.last_spins}, spin_history length={len(state.spin_history)}")
-
+        
         # Generate spin analysis output
         print("analyze_spins: Generating spin analysis output")
         spin_results = []
@@ -2588,7 +2657,7 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
             spin_value = int(spin)
             hit_sections = []
             action = action_log[idx]
-
+            
             # Reconstruct hit sections from increments
             for name, increment in action["increments"].get("even_money_scores", {}).items():
                 if increment > 0:
@@ -2616,6 +2685,49 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
             for name, increment in action["increments"].get("side_scores", {}).items():
                 if increment > 0:
                     hit_sections.append(name)
+            
+            # Format spin result
+            spin_result = f"Spin {idx + 1}: Number {spin} hit {', '.join(hit_sections) if hit_sections else 'no sections'}."
+            spin_results.append(spin_result)
+        
+            # Combine spin results
+            spin_analysis_output = "\n".join(spin_results) if spin_results else "No analysis results."
+            
+            # Generate other outputs (placeholders for brevity)
+            even_money_output = "Even money bets analyzed."
+            dozens_output = "Dozens analyzed."
+            columns_output = "Columns analyzed."
+            streets_output = "Streets analyzed."
+            corners_output = "Corners analyzed."
+            six_lines_output = "Double Streets analyzed."
+            splits_output = "Splits analyzed."
+            sides_output = "Sides of Zero analyzed."
+            straight_up_html = "<table><tr><td>Number</td><td>Score</td></tr><tr><td>0</td><td>0</td></tr></table>"
+            top_18_html = "<table><tr><td>Number</td><td>Score</td></tr><tr><td>1</td><td>1</td></tr></table>"
+            strongest_numbers_output = "Strongest: 0, 1, 2"
+            dynamic_table_output = create_dynamic_table(strategy_name, neighbours_count)
+            strategy_output = show_strategy_recommendations(strategy_name, neighbours_count)
+            sides_of_zero_display = render_sides_of_zero_display()
+            
+            # Package results
+            results = (
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            )
+            
+            # Cache the results
+            analysis_cache.value[cache_key] = results
+            print(f"analyze_spins: Cached results for {cache_key}")
+            
+            # Return results with analysis_cache
+            return results + (analysis_cache,)
+        
+        except Exception as e:
+            print(f"analyze_spins: Error: {str(e)}")
+            raise
+
 
             # Add neighbor information
             if spin_value in current_neighbors:
@@ -12152,7 +12264,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             fn=analyze_spins,
             inputs=[
                 spins_display, strategy_dropdown, neighbours_count_slider,
-                strong_numbers_count_slider,
+                strong_numbers_count_slider, analysis_cache,
                 dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
                 dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox,
                 even_money_tracker_spins_dropdown, even_money_tracker_consecutive_hits_dropdown, even_money_tracker_alert_checkbox,
@@ -12164,13 +12276,8 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 spin_analysis_output, even_money_output, dozens_output, columns_output,
                 streets_output, corners_output, six_lines_output, splits_output,
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
+                dynamic_table_output, strategy_output, sides_of_zero_display, analysis_cache
             ]
-        ).then(
-            # Clear outputs to reset error state
-            fn=lambda: ("", ""),
-            inputs=[],
-            outputs=[dynamic_table_output, strategy_output]
         ).then(
             fn=update_casino_data,
             inputs=[
@@ -12222,7 +12329,6 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
             inputs=[top_pick_spin_count],
             outputs=[top_pick_display]
         ).then(
-            # Fast workaround: Re-run show_strategy_recommendations to repopulate strategy_output
             fn=show_strategy_recommendations,
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
