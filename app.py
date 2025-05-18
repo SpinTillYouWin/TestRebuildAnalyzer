@@ -2525,57 +2525,6 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
-    """Analyze the spins and return formatted results for all sections, always resetting scores."""
-    try:
-        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, checkbox_args={checkbox_args}")
-        
-        # Handle empty spins case
-        if not spins_input or not spins_input.strip():
-            print("analyze_spins: No spins input provided.")
-            state.reset()  # Always reset scores
-            print("analyze_spins: Scores reset due to empty spins.")
-            return ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
-
-        raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
-        spins = []
-        errors = []
-
-        for spin in raw_spins:
-            try:
-                num = int(spin)
-                if not (0 <= num <= 36):
-                    errors.append(f"Error: '{spin}' is out of range. Use numbers between 0 and 36.")
-                    continue
-                spins.append(str(num))
-            except ValueError:
-                errors.append(f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).")
-                continue
-
-        if errors:
-            error_msg = "\n".join(errors)
-            print(f"analyze_spins: Errors found - {error_msg}")
-            return (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
-
-        if not spins:
-            print("analyze_spins: No valid spins found.")
-            state.reset()  # Always reset scores
-            print("analyze_spins: Scores reset due to no valid spins.")
-            return ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
-
-        # Always reset scores
-        state.reset()
-        print("analyze_spins: Scores reset.")
-
-        # Batch update scores for all spins
-        print("analyze_spins: Updating scores batch")
-        action_log = update_scores_batch(spins)
-        print(f"analyze_spins: action_log={action_log}")
-
-        # Update state.last_spins and spin_history
-        state.last_spins = spins  # Replace last_spins with current spins
-        state.spin_history = action_log  # Replace spin_history with current action_log
-
 def analyze_spins(spins_input, strategy_name, neighbours_count, analysis_cache, *checkbox_args):
     """Analyze the spins and return formatted results for all sections, always resetting scores."""
     try:
@@ -2727,7 +2676,6 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, analysis_cache, 
         except Exception as e:
             print(f"analyze_spins: Error: {str(e)}")
             raise
-
 
             # Add neighbor information
             if spin_value in current_neighbors:
