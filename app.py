@@ -2525,120 +2525,120 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
-def analyze_spins(spins_input, strategy_name, neighbours_count, analysis_cache, *checkbox_args):
-    """Analyze the spins and return formatted results for all sections, always resetting scores."""
-    try:
-        print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, checkbox_args={checkbox_args}")
-        
-        # Create a unique cache key based on inputs
-        cache_key = f"{spins_input}_{strategy_name}_{neighbours_count}_{'_'.join(map(str, checkbox_args))}"
-        
-        # Check if results are cached and inputs haven't changed
-        if cache_key in analysis_cache.value:
-            print(f"analyze_spins: Using cached results for {cache_key}")
-            cached_results = analysis_cache.value[cache_key]
-            return cached_results + (analysis_cache,)
-        
-        # If no cached results, run the analysis
-        print(f"analyze_spins: Running new analysis for {cache_key}")
-        
-        # Handle empty spins case
-        if not spins_input or not spins_input.strip():
-            print("analyze_spins: No spins input provided.")
-            state.reset()  # Always reset scores
-            print("analyze_spins: Scores reset due to empty spins.")
-            results = ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
-            analysis_cache.value[cache_key] = results
-            return results + (analysis_cache,)
-        
-        raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
-        spins = []
-        errors = []
-        
-        for spin in raw_spins:
-            try:
-                num = int(spin)
-                if not (0 <= num <= 36):
-                    errors.append(f"Error: '{spin}' is out of range. Use numbers between 0 and 36.")
+    def analyze_spins(spins_input, strategy_name, neighbours_count, analysis_cache, *checkbox_args):
+        """Analyze the spins and return formatted results for all sections, always resetting scores."""
+        try:
+            print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, checkbox_args={checkbox_args}")
+            
+            # Create a unique cache key based on inputs
+            cache_key = f"{spins_input}_{strategy_name}_{neighbours_count}_{'_'.join(map(str, checkbox_args))}"
+            
+            # Check if results are cached and inputs haven't changed
+            if cache_key in analysis_cache.value:
+                print(f"analyze_spins: Using cached results for {cache_key}")
+                cached_results = analysis_cache.value[cache_key]
+                return cached_results + (analysis_cache,)
+            
+            # If no cached results, run the analysis
+            print(f"analyze_spins: Running new analysis for {cache_key}")
+            
+            # Handle empty spins case
+            if not spins_input or not spins_input.strip():
+                print("analyze_spins: No spins input provided.")
+                state.reset()  # Always reset scores
+                print("analyze_spins: Scores reset due to empty spins.")
+                results = ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+                analysis_cache.value[cache_key] = results
+                return results + (analysis_cache,)
+            
+            raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
+            spins = []
+            errors = []
+            
+            for spin in raw_spins:
+                try:
+                    num = int(spin)
+                    if not (0 <= num <= 36):
+                        errors.append(f"Error: '{spin}' is out of range. Use numbers between 0 and 36.")
+                        continue
+                    spins.append(str(num))
+                except ValueError:
+                    errors.append(f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).")
                     continue
-                spins.append(str(num))
-            except ValueError:
-                errors.append(f"Error: '{spin}' is not a valid number. Use whole numbers (e.g., 5, 12, 0).")
-                continue
-        
-        if errors:
-            error_msg = "\n".join(errors)
-            print(f"analyze_spins: Errors found - {error_msg}")
-            results = (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
-            analysis_cache.value[cache_key] = results
-            return results + (analysis_cache,)
-        
-        if not spins:
-            print("analyze_spins: No valid spins found.")
-            state.reset()  # Always reset scores
-            print("analyze_spins: Scores reset due to no valid spins.")
-            results = ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
-            analysis_cache.value[cache_key] = results
-            return results + (analysis_cache,)
-        
-        # Always reset scores
-        state.reset()
-        print("analyze_spins: Scores reset.")
-        
-        # Batch update scores for all spins
-        print("analyze_spins: Updating scores batch")
-        action_log = update_scores_batch(spins)
-        print(f"analyze_spins: action_log={action_log}")
-        
-        # Update state.last_spins and spin_history
-        state.last_spins = spins  # Replace last_spins with current spins
-        state.spin_history = action_log  # Replace spin_history with current action_log
-        # Limit spin history to 100 spins
-        if len(state.spin_history) > 100:
-            state.spin_history = state.spin_history[-100:]
-        print(f"analyze_spins: Updated state.last_spins={state.last_spins}, spin_history length={len(state.spin_history)}")
-        
-        # Generate spin analysis output
-        print("analyze_spins: Generating spin analysis output")
-        spin_results = []
-        state.selected_numbers.clear()  # Clear before rebuilding
-        for idx, spin in enumerate(spins):
-            spin_value = int(spin)
-            hit_sections = []
-            action = action_log[idx]
             
-            # Reconstruct hit sections from increments
-            for name, increment in action["increments"].get("even_money_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            for name, increment in action["increments"].get("dozen_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            for name, increment in action["increments"].get("column_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            for name, increment in action["increments"].get("street_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            for name, increment in action["increments"].get("corner_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            for name, increment in action["increments"].get("six_line_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            for name, increment in action["increments"].get("split_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
-            if spin_value in action["increments"].get("scores", {}):
-                hit_sections.append(f"Straight Up {spin}")
-            for name, increment in action["increments"].get("side_scores", {}).items():
-                if increment > 0:
-                    hit_sections.append(name)
+            if errors:
+                error_msg = "\n".join(errors)
+                print(f"analyze_spins: Errors found - {error_msg}")
+                results = (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+                analysis_cache.value[cache_key] = results
+                return results + (analysis_cache,)
             
-            # Format spin result
-            spin_result = f"Spin {idx + 1}: Number {spin} hit {', '.join(hit_sections) if hit_sections else 'no sections'}."
-            spin_results.append(spin_result)
-        
+            if not spins:
+                print("analyze_spins: No valid spins found.")
+                state.reset()  # Always reset scores
+                print("analyze_spins: Scores reset due to no valid spins.")
+                results = ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+                analysis_cache.value[cache_key] = results
+                return results + (analysis_cache,)
+            
+            # Always reset scores
+            state.reset()
+            print("analyze_spins: Scores reset.")
+            
+            # Batch update scores for all spins
+            print("analyze_spins: Updating scores batch")
+            action_log = update_scores_batch(spins)
+            print(f"analyze_spins: action_log={action_log}")
+            
+            # Update state.last_spins and spin_history
+            state.last_spins = spins  # Replace last_spins with current spins
+            state.spin_history = action_log  # Replace spin_history with current action_log
+            # Limit spin history to 100 spins
+            if len(state.spin_history) > 100:
+                state.spin_history = state.spin_history[-100:]
+            print(f"analyze_spins: Updated state.last_spins={state.last_spins}, spin_history length={len(state.spin_history)}")
+            
+            # Generate spin analysis output
+            print("analyze_spins: Generating spin analysis output")
+            spin_results = []
+            state.selected_numbers.clear()  # Clear before rebuilding
+            for idx, spin in enumerate(spins):
+                spin_value = int(spin)
+                hit_sections = []
+                action = action_log[idx]
+                
+                # Reconstruct hit sections from increments
+                for name, increment in action["increments"].get("even_money_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                for name, increment in action["increments"].get("dozen_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                for name, increment in action["increments"].get("column_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                for name, increment in action["increments"].get("street_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                for name, increment in action["increments"].get("corner_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                for name, increment in action["increments"].get("six_line_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                for name, increment in action["increments"].get("split_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                if spin_value in action["increments"].get("scores", {}):
+                    hit_sections.append(f"Straight Up {spin}")
+                for name, increment in action["increments"].get("side_scores", {}).items():
+                    if increment > 0:
+                        hit_sections.append(name)
+                
+                # Format spin result
+                spin_result = f"Spin {idx + 1}: Number {spin} hit {', '.join(hit_sections) if hit_sections else 'no sections'}."
+                spin_results.append(spin_result)
+            
             # Combine spin results
             spin_analysis_output = "\n".join(spin_results) if spin_results else "No analysis results."
             
