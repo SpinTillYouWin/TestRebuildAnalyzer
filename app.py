@@ -13349,10 +13349,10 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in video_dropdown.change handler: {str(e)}")
 
-# Add the top pick slider change handler (was previously missing in your code)
+# Add the top pick slider change handler
     try:
         top_pick_spin_count.change(
-            fn="debounce(select_next_spin_top_pick, 300)",  # Wait 300ms before updating
+            fn=select_next_spin_top_pick,
             inputs=[
                 top_pick_spin_count,
                 trait_filter,
@@ -13364,8 +13364,7 @@ with gr.Blocks(title="WheelPulse by S.T.Y.W 📈") as demo:
                 hit_bonus_weight,
                 neighbor_weight
             ],
-            outputs=[top_pick_display],
-            _js="function(select_next_spin_top_pick) { return debounce(select_next_spin_top_pick, 300); }"
+            outputs=[top_pick_display]
         ).then(
             fn=lambda: print(f"After top_pick_spin_count change: state.last_spins = {state.last_spins}"),
             inputs=[],
