@@ -6170,7 +6170,7 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
         return "<p>Error selecting top pick.</p>"
 
 # Lines after (context, unchanged from Part 2)
-with gr.Blocks(title="WheelPulse Pro by S.T.Y.W 📈") as demo:
+with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     # T&C and Privacy Policy Modal (Fixed Positioning)
     gr.HTML("""
         <div class="modal-overlay" id="termsModal">
@@ -6921,7 +6921,7 @@ with gr.Blocks(title="WheelPulse Pro by S.T.Y.W 📈") as demo:
             gr.HTML("""
                 <div class="header-container">
                     <h1 class="header-title">
-                        <span class="wheelpulse-text">WheelPulse</span>
+                        <span class="wheelpulse-text">WheelPulse PRO</span>
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
