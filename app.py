@@ -9208,12 +9208,12 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 feedback_form = gr.HTML("""
                 <style>
                     #feedback-section {
-                        background: #1A1A1A !important;
-                        border: 2px solid #3F000F !important;
+                        background-color: #ffecd2 !important;
+                        border: 2px solid #ff8a65 !important;
                         border-radius: 8px !important;
                         padding: 12px !important;
                         margin-bottom: 15px !important;
-                        box-shadow: 0 0 15px rgba(107, 0, 27, 0.5) !important;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
                         animation: fadeInAccordion 0.5s ease-in-out !important;
                         max-width: 800px !important;
                         margin-left: auto !important;
@@ -9226,11 +9226,11 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 
                     #feedback-section summary {
-                        background: #2e7d32 !important;
-                        color: #FFD700 !important;
+                        background-color: #ff8a65 !important;
+                        color: white !important;
                         padding: 12px !important;
                         border-radius: 6px !important;
-                        font-family: 'Poppins', sans-serif !important;
+                        font-family: 'Arial', sans-serif !important;
                         font-weight: bold !important;
                         font-size: 18px !important;
                         cursor: pointer !important;
@@ -9238,7 +9238,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 
                     #feedback-section summary:hover {
-                        background: #3F000F !important;
+                        background-color: #f4511e !important;
                     }
                 
                     #feedback-section summary::after {
@@ -9246,8 +9246,8 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 
                     #feedback-section div[style*="background-color"] {
-                        background: #2A000A !important;
-                        border: 1px solid #3F000F !important;
+                        background-color: #ffecd2 !important;
+                        border: 1px solid #ff8a65 !important;
                         border-radius: 5px !important;
                         padding: 15px !important;
                     }
@@ -9261,8 +9261,8 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 
                     #feedback-form label {
-                        color: #FFD700;
-                        font-family: 'Poppins', sans-serif;
+                        color: #333;
+                        font-family: 'Arial', sans-serif;
                         font-size: 13px;
                         margin-bottom: 5px;
                     }
@@ -9270,11 +9270,11 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     #feedback-form input, #feedback-form textarea {
                         width: 100%;
                         padding: 8px;
-                        border: 1px solid #3F000F;
-                        border-radius: 4px;
-                        background: #2A000A;
-                        color: #FFD700;
-                        font-family: 'Poppins', sans-serif;
+                        border: 1px solid #d3d3d3;
+                        border-radius: 5px;
+                        background: #ffffff;
+                        color: #333;
+                        font-family: 'Arial', sans-serif;
                         font-size: 14px;
                     }
                 
@@ -9284,12 +9284,12 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 
                     #feedback-form button[type="submit"] {
-                        background: #2e7d32 !important;
-                        color: #FFD700 !important;
+                        background-color: #ff8a65 !important;
+                        color: white !important;
                         padding: 10px !important;
                         border: none !important;
                         border-radius: 5px !important;
-                        font-family: 'Poppins', sans-serif !important;
+                        font-family: 'Arial', sans-serif !important;
                         font-weight: 600 !important;
                         font-size: 14px !important;
                         cursor: pointer !important;
@@ -9297,15 +9297,14 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 
                     #feedback-form button[type="submit"]:hover {
-                        background: #3F000F !important;
-                        box-shadow: 0 0 8px rgba(107, 0, 27, 0.7) !important;
+                        background-color: #f4511e !important;
                     }
                 
                     #form-message {
                         margin-top: 10px;
                         text-align: center;
-                        font-family: 'Poppins', sans-serif;
-                        color: #FFD700;
+                        font-family: 'Arial', sans-serif;
+                        color: #333;
                     }
                 
                     @media (max-width: 768px) {
@@ -9321,10 +9320,10 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 </style>
                 <div>
-                    <h4 style="text-align: center; margin: 0 0 10px 0; font-family: 'Poppins', sans-serif; color: #FFD700;">
+                    <h4 style="text-align: center; margin: 0 0 10px 0; font-family: 'Arial', sans-serif; color: #333;">
                         Share Your Feedback or Submit a Strategy
                     </h4>
-                    <p style="text-align: center; font-family: 'Poppins', sans-serif; color: #FFD700; margin-bottom: 15px;">
+                    <p style="text-align: center; font-family: 'Arial', sans-serif; color: #555; margin-bottom: 15px;">
                         We’d love to hear your suggestions, edits, or strategies for the Roulette Spin Analyzer!
                     </p>
                     <form id="feedback-form" action="https://formspree.io/f/mwpozyjq" method="POST">
@@ -9351,10 +9350,11 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 <script>
                     document.getElementById("feedback-form").addEventListener("submit", function(event) {
                         event.preventDefault();
+                        console.log("Form submitting...");
                         const form = event.target;
                         const formData = new FormData(form);
                         const messageDiv = document.getElementById("form-message");
-                        messageDiv.innerHTML = '<p style="color: #FFD700;">Submitting your feedback...</p>';
+                        messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
                         fetch("https://formspree.io/f/mwpozyjq", {
                             method: "POST",
                             body: formData,
@@ -9365,7 +9365,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         .then(response => {
                             console.log("Response status:", response.status);
                             if (response.ok) {
-                                messageDiv.innerHTML = '<p style="color: #2e7d32; font-weight: bold;">Thank you for your feedback!</p>';
+                                messageDiv.innerHTML = '<p style="color: #ff8a65; font-weight: bold;">Thank you for your feedback!</p>';
                                 form.reset();
                             } else {
                                 messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
@@ -9378,8 +9378,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     });
                 </script>
                 """)
-
-
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
