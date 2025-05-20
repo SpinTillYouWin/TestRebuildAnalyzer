@@ -3,6 +3,10 @@ import math
 import pandas as pd
 import json
 from itertools import combinations
+import tempfile
+import os
+from datetime import datetime
+import hashlib
 import random
 from roulette_data import (
     EVEN_MONEY, DOZENS, COLUMNS, STREETS, CORNERS, SIX_LINES, SPLITS,
@@ -2558,17 +2562,36 @@ def get_strongest_numbers_with_neighbors(num_count):
     return f"Strongest {len(sorted_numbers)} Numbers (Sorted Lowest to Highest): {', '.join(map(str, sorted_numbers))}"
 
 # Function to analyze spins
+import hashlib
+import pandas as pd  # Ensure pandas is imported for DataFrame operations
+
 def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
-    """Analyze the spins and return formatted results for all sections, always resetting scores."""
+    """Analyze the spins and return formatted results for all sections, always resetting scores, with caching."""
     try:
         print(f"analyze_spins: Starting with spins_input='{spins_input}', strategy_name='{strategy_name}', neighbours_count={neighbours_count}, checkbox_args={checkbox_args}")
+        
+        # Create a cache key based on inputs
+        cache_key = (
+            spins_input,
+            strategy_name,
+            neighbours_count,
+            tuple(checkbox_args)
+        )
+        cache_key_str = hashlib.md5(str(cache_key).encode()).hexdigest()
+        
+        # Check cache
+        if cache_key_str in analysis_cache.value:
+            print(f"analyze_spins: Cache hit for key {cache_key_str}")
+            return analysis_cache.value[cache_key_str]
         
         # Handle empty spins case
         if not spins_input or not spins_input.strip():
             print("analyze_spins: No spins input provided.")
             state.reset()  # Always reset scores
             print("analyze_spins: Scores reset due to empty spins.")
-            return ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            results = ("Please enter at least one number (e.g., 5, 12, 0).", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            analysis_cache.value[cache_key_str] = results
+            return results
 
         raw_spins = [spin.strip() for spin in spins_input.split(",") if spin.strip()]
         spins = []
@@ -2588,13 +2611,17 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         if errors:
             error_msg = "\n".join(errors)
             print(f"analyze_spins: Errors found - {error_msg}")
-            return (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            results = (error_msg, "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            analysis_cache.value[cache_key_str] = results
+            return results
 
         if not spins:
             print("analyze_spins: No valid spins found.")
             state.reset()  # Always reset scores
             print("analyze_spins: Scores reset due to no valid spins.")
-            return ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            results = ("No valid numbers found. Please enter numbers like '5, 12, 0'.", "", "", "", "", "", "", "", "", "", "", "", "", "", render_sides_of_zero_display())
+            analysis_cache.value[cache_key_str] = results
+            return results
 
         # Always reset scores
         state.reset()
@@ -2667,7 +2694,7 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         print(f"analyze_spins: dozens_output='{dozens_output}'")
         columns_output = "Columns:\n" + "\n".join(f"{name}: {score}" for name, score in state.column_scores.items())
         print(f"analyze_spins: columns_output='{columns_output}'")
-        streets_output = "Streets:\n" + "\n".join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
+        streets_output = "Streets:\n" + "\n". SIMPLE_TWIST_PERFORMANCE.join(f"{name}: {score}" for name, score in state.street_scores.items() if score > 0)
         print(f"analyze_spins: streets_output='{streets_output}'")
         corners_output = "Corners:\n" + "\n".join(f"{name}: {score}" for name, score in state.corner_scores.items() if score > 0)
         print(f"analyze_spins: corners_output='{corners_output}'")
@@ -2715,13 +2742,27 @@ def analyze_spins(spins_input, strategy_name, neighbours_count, *checkbox_args):
         strategy_output = show_strategy_recommendations(strategy_name, neighbours_count, *checkbox_args)
         print(f"analyze_spins: Strategy output = {strategy_output}")
 
+        print("analyze_spins: Compiling results")
+        results = (
+            spin_analysis_output, even_money_output, dozens_output, columns_output,
+            streets_output, corners_output, six_lines_output, splits_output, sides_output,
+            straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html,
+            strategy_output, render_sides_of_zero_display()
+        )
+
+        # Store in cache with size limit
+        if len(analysis_cache.value) > 100:  # Limit to 100 entries
+            analysis_cache.value.pop(next(iter(analysis_cache.value)))
+        analysis_cache.value[cache_key_str] = results
+        print(f"analyze_spins: Cached results for key {cache_key_str}")
+
         print("analyze_spins: Returning results")
-        return (spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output, sides_output,
-                straight_up_html, top_18_html, strongest_numbers_output, dynamic_table_html, strategy_output, render_sides_of_zero_display())
+        return results
+    
     except Exception as e:
         print(f"analyze_spins: Unexpected error: {str(e)}")
         raise  # Re-raise for debugging
+
 
 # Function to reset scores (no longer needed, but kept for compatibility)
 def reset_scores():
@@ -11936,6 +11977,10 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
+            fn=lambda: analysis_cache.value,
+            inputs=[],
+            outputs=[analysis_cache]
+        ).then(
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
@@ -12261,10 +12306,9 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
-            # Clear outputs to reset error state
-            fn=lambda: ("", ""),
+            fn=lambda: analysis_cache.value,  # Update cache state
             inputs=[],
-            outputs=[dynamic_table_output, strategy_output]
+            outputs=[analysis_cache]
         ).then(
             fn=update_casino_data,
             inputs=[
@@ -12274,9 +12318,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
             ],
             outputs=[casino_data_output]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
-                strategy if strategy != "None" else None, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color
-            ),
+            fn=create_dynamic_table,
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider, dozen_tracker_spins_dropdown, top_color_picker, middle_color_picker, lower_color_picker],
             outputs=[dynamic_table_output]
         ).then(
@@ -12312,11 +12354,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
             inputs=[last_spin_count],
             outputs=[hit_percentage_display]
         ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            # Fast workaround: Re-run show_strategy_recommendations to repopulate strategy_output
             fn=show_strategy_recommendations,
             inputs=[strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[strategy_output]
@@ -12421,59 +12458,34 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
             fn=undo_last_spin,
             inputs=[spins_display, gr.State(value=1), strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
             outputs=[
-                spin_analysis_output,
-                even_money_output,
-                dozens_output,
-                columns_output,
-                streets_output,
-                corners_output,
-                six_lines_output,
-                splits_output,
-                sides_output,
-                straight_up_html,
-                top_18_html,
-                strongest_numbers_output,
-                spins_textbox,
-                spins_display,
-                dynamic_table_output,
-                strategy_output,
-                color_code_output,
-                spin_counter,
-                sides_of_zero_display
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                spins_textbox, spins_display, dynamic_table_output, strategy_output,
+                color_code_output, spin_counter, sides_of_zero_display
             ]
         ).then(
             fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
             inputs=[spins_display, last_spin_count, show_trends_state],
             outputs=[last_spin_display]
         ).then(
-            fn=lambda strategy, neighbours_count, strong_numbers_count, dozen_tracker_spins, top_color, middle_color, lower_color: create_dynamic_table(
-                strategy if strategy != "None" else None,
-                neighbours_count,
-                strong_numbers_count,
-                dozen_tracker_spins,
-                top_color,
-                middle_color,
-                lower_color
-            ),
-            inputs=[
-                strategy_dropdown,
-                neighbours_count_slider,
-                strong_numbers_count_slider,
-                dozen_tracker_spins_dropdown,
-                top_color_picker,
-                middle_color_picker,
-                lower_color_picker
-            ],
-            outputs=[dynamic_table_output]
+            fn=analyze_spins,
+            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
+            outputs=[
+                spin_analysis_output, even_money_output, dozens_output, columns_output,
+                streets_output, corners_output, six_lines_output, splits_output,
+                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
+                dynamic_table_output, strategy_output, sides_of_zero_display
+            ]
+        ).then(
+            fn=lambda: analysis_cache.value,  # Update cache state
+            inputs=[],
+            outputs=[analysis_cache]
         ).then(
             fn=dozen_tracker,
             inputs=[
-                dozen_tracker_spins_dropdown,
-                dozen_tracker_consecutive_hits_dropdown,
-                dozen_tracker_alert_checkbox,
-                dozen_tracker_sequence_length_dropdown,
-                dozen_tracker_follow_up_spins_dropdown,
-                dozen_tracker_sequence_alert_checkbox
+                dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox,
+                dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox
             ],
             outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
         ).then(
@@ -13131,6 +13143,10 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
+            fn=lambda: analysis_cache.value,
+            inputs=[],
+            outputs=[analysis_cache]
+        ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
             outputs=[traits_display]
@@ -13177,6 +13193,10 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 sides_output, straight_up_html, top_18_html, strongest_numbers_output,
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
+        ).then(
+            fn=lambda: analysis_cache.value,
+            inputs=[],
+            outputs=[analysis_cache]
         ).then(
             fn=summarize_spin_traits,
             inputs=[last_spin_count],
@@ -13254,6 +13274,14 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 dynamic_table_output, strategy_output, sides_of_zero_display
             ]
         ).then(
+            fn=lambda: analysis_cache.value,
+            inputs=[],
+            outputs=[analysis_cache]
+        ).then(
+            fn=lambda: analysis_cache.value,  # Update cache state
+            inputs=[],
+            outputs=[analysis_cache]
+        ).then(
             fn=update_spin_counter,
             inputs=[],
             outputs=[spin_counter]
@@ -13268,16 +13296,20 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 even_money_tracker_consecutive_hits_dropdown,
                 even_money_tracker_alert_checkbox,
                 even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
+                even_money_tracker_red_checkbox, even_money_tracker_black_checkbox,
+                even_money_tracker_even_checkbox, even_money_tracker_odd_checkbox,
+                even_money_tracker_low_checkbox, even_money_tracker_high_checkbox,
+                even_money_tracker_identical_traits_checkbox, even_money_tracker_consecutive_identical_dropdown
             ],
             outputs=[gr.State(), even_money_tracker_output]
+        ).then(
+            fn=summarize_spin_traits,
+            inputs=[last_spin_count],
+            outputs=[traits_display]
+        ).then(
+            fn=calculate_hit_percentages,
+            inputs=[last_spin_count],
+            outputs=[hit_percentage_display]
         ).then(
             fn=select_next_spin_top_pick,
             inputs=[top_pick_spin_count],
@@ -13289,7 +13321,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
         )
     except Exception as e:
         print(f"Error in spins_textbox.change handler: {str(e)}")
-    
+
 
     def toggle_labouchere(progression):
         """Show/hide Labouchere sequence input based on selected progression."""
