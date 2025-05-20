@@ -9301,11 +9301,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         box-shadow: 0 0 8px rgba(107, 0, 27, 0.7) !important;
                     }
                 
-                    #feedback-form .g-recaptcha {
-                        margin: 15px 0;
-                        text-align: center;
-                    }
-                
                     #form-message {
                         margin-top: 10px;
                         text-align: center;
@@ -9349,17 +9344,10 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                             <label for="strategy">Strategy (Optional)</label>
                             <textarea id="strategy" name="strategy" placeholder="Submit your strategy (e.g., Martingale)"></textarea>
                         </div>
-                        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
                         <button type="submit">Submit Feedback</button>
                     </form>
                     <div id="form-message"></div>
-                    <p style="color: #FFD700; font-size: 12px; text-align: center; margin-top: 10px;">
-                        This site is protected by reCAPTCHA and the Google 
-                        <a href="https://policies.google.com/privacy" style="color: #FFD700;">Privacy Policy</a> and 
-                        <a href="https://policies.google.com/terms" style="color: #FFD700;">Terms of Service</a> apply.
-                    </p>
                 </div>
-                <script src="https://www.google.com/recaptcha/api.js" async defer></script>
                 <script>
                     document.getElementById("feedback-form").addEventListener("submit", function(event) {
                         event.preventDefault();
@@ -9375,6 +9363,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                             }
                         })
                         .then(response => {
+                            console.log("Response status:", response.status);
                             if (response.ok) {
                                 messageDiv.innerHTML = '<p style="color: #2e7d32; font-weight: bold;">Thank you for your feedback!</p>';
                                 form.reset();
@@ -9389,6 +9378,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     });
                 </script>
                 """)
+
 
     
     # CSS (end of the previous section, for context)
