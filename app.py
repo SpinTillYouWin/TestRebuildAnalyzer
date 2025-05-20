@@ -9205,64 +9205,114 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
-                gr.HTML("""
+                feedback_form = gr.HTML("""
                 <style>
                     #feedback-section {
-                        background-color: #ffecd2 !important;
-                        border: 2px solid #ff8a65 !important;
+                        background: #1A1A1A !important;
+                        border: 2px solid #3F000F !important;
                         border-radius: 8px !important;
                         padding: 12px !important;
                         margin-bottom: 15px !important;
-                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                        box-shadow: 0 0 15px rgba(107, 0, 27, 0.5) !important;
                         animation: fadeInAccordion 0.5s ease-in-out !important;
+                        max-width: 800px !important;
+                        margin-left: auto !important;
+                        margin-right: auto !important;
                     }
-    
+                
                     @keyframes fadeInAccordion {
                         0% { opacity: 0; transform: translateY(5px); }
                         100% { opacity: 1; transform: translateY(0); }
                     }
-    
+                
                     #feedback-section summary {
-                        background-color: #ff8a65 !important;
-                        color: white !important;
+                        background: #2e7d32 !important;
+                        color: #FFD700 !important;
                         padding: 12px !important;
                         border-radius: 6px !important;
+                        font-family: 'Poppins', sans-serif !important;
                         font-weight: bold !important;
                         font-size: 18px !important;
                         cursor: pointer !important;
                         transition: background-color 0.3s ease !important;
                     }
-    
+                
                     #feedback-section summary:hover {
-                        background-color: #f4511e !important;
+                        background: #3F000F !important;
                     }
-    
+                
                     #feedback-section summary::after {
                         filter: invert(100%) !important;
                     }
-    
-                    #feedback-section div[style*="background-color: #f5c6cb"] {
-                        background-color: #ffecd2 !important;
-                        border: 1px solid #ff8a65 !important;
+                
+                    #feedback-section div[style*="background-color"] {
+                        background: #2A000A !important;
+                        border: 1px solid #3F000F !important;
                         border-radius: 5px !important;
                         padding: 15px !important;
                     }
-    
-                    #feedback-section button[type="submit"] {
-                        background-color: #ff8a65 !important;
-                        color: white !important;
+                
+                    #feedback-form {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        max-width: 600px;
+                        margin: 0 auto;
+                    }
+                
+                    #feedback-form label {
+                        color: #FFD700;
+                        font-family: 'Poppins', sans-serif;
+                        font-size: 13px;
+                        margin-bottom: 5px;
+                    }
+                
+                    #feedback-form input, #feedback-form textarea {
+                        width: 100%;
+                        padding: 8px;
+                        border: 1px solid #3F000F;
+                        border-radius: 4px;
+                        background: #2A000A;
+                        color: #FFD700;
+                        font-family: 'Poppins', sans-serif;
+                        font-size: 14px;
+                    }
+                
+                    #feedback-form textarea {
+                        min-height: 100px;
+                        resize: vertical;
+                    }
+                
+                    #feedback-form button[type="submit"] {
+                        background: #2e7d32 !important;
+                        color: #FFD700 !important;
                         padding: 10px !important;
                         border: none !important;
                         border-radius: 5px !important;
-                        font-family: Arial, sans-serif !important;
+                        font-family: 'Poppins', sans-serif !important;
+                        font-weight: 600 !important;
+                        font-size: 14px !important;
                         cursor: pointer !important;
                         transition: background-color 0.3s ease !important;
                     }
-    
-                    #feedback-section button[type="submit"]:hover {
-                        background-color: #f4511e !important;
+                
+                    #feedback-form button[type="submit"]:hover {
+                        background: #3F000F !important;
+                        box-shadow: 0 0 8px rgba(107, 0, 27, 0.7) !important;
                     }
-    
+                
+                    #feedback-form .g-recaptcha {
+                        margin: 15px 0;
+                        text-align: center;
+                    }
+                
+                    #form-message {
+                        margin-top: 10px;
+                        text-align: center;
+                        font-family: 'Poppins', sans-serif;
+                        color: #FFD700;
+                    }
+                
                     @media (max-width: 768px) {
                         #feedback-section {
                             padding: 8px !important;
@@ -9270,33 +9320,53 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         #feedback-section summary {
                             font-size: 16px !important;
                         }
+                        #feedback-form {
+                            max-width: 100%;
+                        }
                     }
                 </style>
                 <div>
-                    <h4 style="text-align: center; margin: 0 0 10px 0; font-family: Arial, sans-serif; color: #333;">
+                    <h4 style="text-align: center; margin: 0 0 10px 0; font-family: 'Poppins', sans-serif; color: #FFD700;">
                         Share Your Feedback or Submit a Strategy
                     </h4>
-                    <p style="text-align: center; font-family: Arial, sans-serif; color: #555; margin-bottom: 15px;">
+                    <p style="text-align: center; font-family: 'Poppins', sans-serif; color: #FFD700; margin-bottom: 15px;">
                         We’d love to hear your suggestions, edits, or strategies for the Roulette Spin Analyzer!
                     </p>
-                    <form id="feedback-form" style="display: flex; flex-direction: column; gap: 10px;">
-                        <input type="text" name="name" placeholder="Your Name (Optional)" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
-                        <input type="email" name="_replyto" placeholder="Your Email (Required)" required style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif;">
-                        <textarea name="feedback" placeholder="Your Feedback or Suggestions" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
-                        <textarea name="strategy" placeholder="Submit Your Strategy (Optional)" rows="4" style="padding: 8px; border: 1px solid #d3d3d3; border-radius: 5px; font-family: Arial, sans-serif; resize: vertical;"></textarea>
-                        <button type="submit">
-                            Submit
-                        </button>
+                    <form id="feedback-form" action="https://formspree.io/f/mwpozyjq" method="POST">
+                        <div class="form-group">
+                            <label for="name">Name (Optional)</label>
+                            <input type="text" id="name" name="name" placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email (Required)</label>
+                            <input type="email" id="email" name="_replyto" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="feedback">Feedback (Required)</label>
+                            <textarea id="feedback" name="feedback" placeholder="Your feedback" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="strategy">Strategy (Optional)</label>
+                            <textarea id="strategy" name="strategy" placeholder="Submit your strategy (e.g., Martingale)"></textarea>
+                        </div>
+                        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+                        <button type="submit">Submit Feedback</button>
                     </form>
-                    <div id="form-message" style="margin-top: 10px; text-align: center; font-family: Arial, sans-serif;"></div>
+                    <div id="form-message"></div>
+                    <p style="color: #FFD700; font-size: 12px; text-align: center; margin-top: 10px;">
+                        This site is protected by reCAPTCHA and the Google 
+                        <a href="https://policies.google.com/privacy" style="color: #FFD700;">Privacy Policy</a> and 
+                        <a href="https://policies.google.com/terms" style="color: #FFD700;">Terms of Service</a> apply.
+                    </p>
                 </div>
+                <script src="https://www.google.com/recaptcha/api.js" async defer></script>
                 <script>
                     document.getElementById("feedback-form").addEventListener("submit", function(event) {
                         event.preventDefault();
                         const form = event.target;
                         const formData = new FormData(form);
                         const messageDiv = document.getElementById("form-message");
-                        messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
+                        messageDiv.innerHTML = '<p style="color: #FFD700;">Submitting your feedback...</p>';
                         fetch("https://formspree.io/f/mwpozyjq", {
                             method: "POST",
                             body: formData,
@@ -9306,19 +9376,20 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         })
                         .then(response => {
                             if (response.ok) {
-                                messageDiv.innerHTML = '<p style="color: green; font-weight: bold;">Thank you for your feedback!</p>';
+                                messageDiv.innerHTML = '<p style="color: #2e7d32; font-weight: bold;">Thank you for your feedback!</p>';
                                 form.reset();
                             } else {
-                                messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
+                                messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
                             }
                         })
                         .catch(error => {
                             console.error("Form submission error:", error);
-                            messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
+                            messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
                         });
                     });
                 </script>
                 """)
+
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
