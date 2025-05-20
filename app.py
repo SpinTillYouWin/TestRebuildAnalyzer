@@ -9329,66 +9329,55 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     <form id="feedback-form" action="https://formspree.io/f/mwpozyjq" method="POST">
                         <div class="form-group">
                             <label for="name">Name (Optional)</label>
-                            <input type="text" id="name" name="name" placeholder="Enter your name">
+                            <input type="text" id="name" name="name" placeholder="Your Name (Optional)">
                         </div>
                         <div class="form-group">
                             <label for="email">Email (Required)</label>
-                            <input type="email" id="email" name="_replyto" placeholder="Enter your email" required>
+                            <input type="email" id="email" name="_replyto" placeholder="Your Email (Required)" required>
                         </div>
                         <div class="form-group">
                             <label for="feedback">Feedback (Required)</label>
-                            <textarea id="feedback" name="feedback" placeholder="Your feedback" required></textarea>
+                            <textarea id="feedback" name="feedback" placeholder="Your Feedback or Suggestions" rows="4" required></textarea>
                         </div>
                         <div class="form-group">
                             <label for="strategy">Strategy (Optional)</label>
-                            <textarea id="strategy" name="strategy" placeholder="Submit your strategy (e.g., Martingale)"></textarea>
+                            <textarea id="strategy" name="strategy" placeholder="Submit Your Strategy (Optional)" rows="4"></textarea>
                         </div>
                         <button type="submit">Submit Feedback</button>
                     </form>
                     <div id="form-message"></div>
-                    <script>
-                        // Try binding immediately
-                        function bindFormSubmit() {
-                            const feedbackForm = document.getElementById("feedback-form");
-                            if (feedbackForm) {
-                                feedbackForm.addEventListener("submit", function(event) {
-                                    event.preventDefault();
-                                    event.stopPropagation(); // Stop any other handlers
-                                    console.log("Form submitting...");
-                                    const form = event.target;
-                                    const formData = new FormData(form);
-                                    const messageDiv = document.getElementById("form-message");
-                                    messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
-                                    fetch("https://formspree.io/f/mwpozyjq", {
-                                        method: "POST",
-                                        body: formData,
-                                        headers: {
-                                            "Accept": "application/json"
-                                        }
-                                    })
-                                    .then(response => {
-                                        console.log("Response status:", response.status);
-                                        if (response.ok) {
-                                            messageDiv.innerHTML = '<p style="color: #ff8a65; font-weight: bold;">Thank you for your feedback!</p>';
-                                            form.reset();
-                                        } else {
-                                            messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error("Form submission error:", error);
-                                        messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
-                                    });
-                                });
-                                console.log("Form handler bound successfully");
-                            } else {
-                                console.error("Feedback form not found, retrying...");
-                                setTimeout(bindFormSubmit, 500); // Retry after 500ms
+                </div>
+                <script>
+                    // Simple submit handler, matching original
+                    document.getElementById("feedback-form").addEventListener("submit", function(event) {
+                        event.preventDefault();
+                        console.log("Form submitting...");
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        const messageDiv = document.getElementById("form-message");
+                        messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
+                        fetch("https://formspree.io/f/mwpozyjq", {
+                            method: "POST",
+                            body: formData,
+                            headers: {
+                                "Accept": "application/json"
                             }
-                        }
-                        // Run immediately and retry if needed
-                        bindFormSubmit();
-                    </script>
+                        })
+                        .then(response => {
+                            console.log("Response status:", response.status);
+                            if (response.ok) {
+                                messageDiv.innerHTML = '<p style="color: green; font-weight: bold;">Thank you for your feedback!</p>';
+                                form.reset();
+                            } else {
+                                messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Form submission error:", error);
+                            messageDiv.innerHTML = '<p style="color: red;">There was an error submitting your feedback. Please try again later.</p>';
+                        });
+                    });
+                </script>
                 """)
     
     # CSS (end of the previous section, for context)
