@@ -1593,13 +1593,13 @@ def clear_spins():
 
 # In Part 1, replace save_session and load_session with:
 import json
-import tempfile
 import os
 from datetime import datetime
+import tempfile
 
 def save_session(session_name):
     """
-    Save the current session to a JSON file with a user-specified name.
+    Save the current session to a JSON file with optimized I/O.
     
     Args:
         session_name (str): The desired name for the session file (without extension).
@@ -1608,12 +1608,12 @@ def save_session(session_name):
         str: Path to the saved JSON file, or None if an error occurs.
     """
     try:
-        # Sanitize the session name to avoid invalid characters
+        # Sanitize session name
         session_name = "".join(c for c in (session_name or "") if c.isalnum() or c in ('_', '-', ' ')).strip()
         if not session_name:
             session_name = "WheelPulse_Session"
         
-        # Add timestamp to ensure uniqueness
+        # Add timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{session_name}_{timestamp}.json"
         
@@ -1634,18 +1634,19 @@ def save_session(session_name):
             "use_casino_winners": state.use_casino_winners
         }
         
-        # Create a temporary file
+        # Serialize JSON in memory
+        json_data = json.dumps(session_data, indent=4)
+        
+        # Write directly to final file
         temp_dir = tempfile.gettempdir()
         if not os.access(temp_dir, os.W_OK):
-            raise PermissionError(f"No write permission in temporary directory: {temp_dir}")
+            temp_dir = os.getcwd()
+            if not os.access(temp_dir, os.W_OK):
+                raise PermissionError(f"No write permission in directory: {temp_dir}")
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8', dir=temp_dir) as temp_file:
-            json.dump(session_data, temp_file, indent=4)
-            temp_file_path = temp_file.name
-        
-        # Rename the temporary file to the desired name
         final_path = os.path.join(temp_dir, file_name)
-        os.rename(temp_file_path, final_path)
+        with open(final_path, 'w', encoding='utf-8') as f:
+            f.write(json_data)
         
         print(f"save_session: Generated file at {final_path}")
         return final_path
