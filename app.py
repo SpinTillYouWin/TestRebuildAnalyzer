@@ -1605,11 +1605,11 @@ def save_session(session_name):
         session_name (str): The desired name for the session file (without extension).
     
     Returns:
-        str: Path to the saved JSON file.
+        str: Path to the saved JSON file, or None if an error occurs.
     """
     try:
         # Sanitize the session name to avoid invalid characters
-        session_name = "".join(c for c in session_name if c.isalnum() or c in ('_', '-', ' ')).strip()
+        session_name = "".join(c for c in (session_name or "") if c.isalnum() or c in ('_', '-', ' ')).strip()
         if not session_name:
             session_name = "WheelPulse_Session"
         
@@ -1635,12 +1635,16 @@ def save_session(session_name):
         }
         
         # Create a temporary file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as temp_file:
+        temp_dir = tempfile.gettempdir()
+        if not os.access(temp_dir, os.W_OK):
+            raise PermissionError(f"No write permission in temporary directory: {temp_dir}")
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8', dir=temp_dir) as temp_file:
             json.dump(session_data, temp_file, indent=4)
             temp_file_path = temp_file.name
         
         # Rename the temporary file to the desired name
-        final_path = os.path.join(tempfile.gettempdir(), file_name)
+        final_path = os.path.join(temp_dir, file_name)
         os.rename(temp_file_path, final_path)
         
         print(f"save_session: Generated file at {final_path}")
@@ -9638,7 +9642,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     # In the "Save/Load Session" accordion
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row(elem_classes=["save-load-row"]):
-            # Add a text input for the file name
+            # Text input for the file name
             session_name_input = gr.Textbox(
                 label="Session File Name",
                 placeholder="Enter session name (e.g., MySession)",
