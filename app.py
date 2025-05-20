@@ -1590,12 +1590,34 @@ def clear_spins():
     state.scores = {n: 0 for n in range(37)}  # Reset straight-up scores
     return "", "", "Spins cleared successfully!", "<h4>Last Spins</h4><p>No spins yet.</p>", update_spin_counter(), render_sides_of_zero_display()
 
-# Lines after (context, unchanged)
-# Function to save the session
-# In Part 1, replace save_session and load_session with:
 
-def save_session():
+# In Part 1, replace save_session and load_session with:
+import json
+import tempfile
+import os
+from datetime import datetime
+
+def save_session(session_name):
+    """
+    Save the current session to a JSON file with a user-specified name.
+    
+    Args:
+        session_name (str): The desired name for the session file (without extension).
+    
+    Returns:
+        str: Path to the saved JSON file.
+    """
     try:
+        # Sanitize the session name to avoid invalid characters
+        session_name = "".join(c for c in session_name if c.isalnum() or c in ('_', '-', ' ')).strip()
+        if not session_name:
+            session_name = "WheelPulse_Session"
+        
+        # Add timestamp to ensure uniqueness
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{session_name}_{timestamp}.json"
+        
+        # Collect session data
         session_data = {
             "spins": state.last_spins,
             "spin_history": state.spin_history,
@@ -1611,13 +1633,19 @@ def save_session():
             "casino_data": state.casino_data,
             "use_casino_winners": state.use_casino_winners
         }
-        import json
-        import tempfile
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w") as tmp_file:
-            json.dump(session_data, tmp_file)
-            tmp_file_path = tmp_file.name
-        print(f"save_session: Generated file at {tmp_file_path}")
-        return tmp_file_path
+        
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as temp_file:
+            json.dump(session_data, temp_file, indent=4)
+            temp_file_path = temp_file.name
+        
+        # Rename the temporary file to the desired name
+        final_path = os.path.join(tempfile.gettempdir(), file_name)
+        os.rename(temp_file_path, final_path)
+        
+        print(f"save_session: Generated file at {final_path}")
+        return final_path
+    
     except Exception as e:
         print(f"save_session: Error: {str(e)}")
         return None
@@ -9607,9 +9635,17 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 with gr.Accordion("Sides of Zero", open=False):
                     sides_output = gr.Textbox(label="Sides of Zero", lines=10, max_lines=50)
 
-    # 11. Row 11: Save/Load Session (Collapsible, Renumbered)
+    # In the "Save/Load Session" accordion
     with gr.Accordion("Save/Load Session", open=False, elem_id="save-load-session"):
         with gr.Row(elem_classes=["save-load-row"]):
+            # Add a text input for the file name
+            session_name_input = gr.Textbox(
+                label="Session File Name",
+                placeholder="Enter session name (e.g., MySession)",
+                value="WheelPulse_Session",
+                interactive=True,
+                elem_id="session-name-input"
+            )
             save_button = gr.Button("Save Session", elem_id="save-session-btn")
             load_input = gr.File(label="Upload Session", file_types=[".json"], elem_id="upload-session")
             save_output = gr.File(label="Download Session", elem_id="download-session")
@@ -9640,6 +9676,16 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 #save-session-btn {
                     background-color: #4caf50 !important;
                     color: white !important;
+                }
+                #session-name-input {
+                    width: 100% !important;
+                    max-width: 300px !important;
+                }
+                #session-name-input input {
+                    border: 1px solid #ff9800 !important;
+                    border-radius: 4px !important;
+                    padding: 5px !important;
+                    font-size: 14px !important;
                 }
                 #save-load-session summary::after {
                     filter: invert(100%) !important;
@@ -12273,12 +12319,12 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     try:
         save_button.click(
             fn=save_session,
-            inputs=None,
-            outputs=save_output
+            inputs=[session_name_input],
+            outputs=[save_output]
         )
-        
     except Exception as e:
         print(f"Error in save_button.click handler: {str(e)}")
+
     
     try:
         load_input.change(
