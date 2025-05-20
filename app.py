@@ -9205,7 +9205,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     with gr.Row():
         with gr.Column():
             with gr.Accordion("Feedback & Suggestions 📝", open=False, elem_id="feedback-section"):
-                feedback_form = gr.HTML("""
+                gr.HTML("""
                 <style>
                     #feedback-section {
                         background-color: #ffecd2 !important;
@@ -9219,12 +9219,12 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         margin-left: auto !important;
                         margin-right: auto !important;
                     }
-                
+    
                     @keyframes fadeInAccordion {
                         0% { opacity: 0; transform: translateY(5px); }
                         100% { opacity: 1; transform: translateY(0); }
                     }
-                
+    
                     #feedback-section summary {
                         background-color: #ff8a65 !important;
                         color: white !important;
@@ -9236,22 +9236,22 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         cursor: pointer !important;
                         transition: background-color 0.3s ease !important;
                     }
-                
+    
                     #feedback-section summary:hover {
                         background-color: #f4511e !important;
                     }
-                
+    
                     #feedback-section summary::after {
                         filter: invert(100%) !important;
                     }
-                
+    
                     #feedback-section div[style*="background-color"] {
                         background-color: #ffecd2 !important;
                         border: 1px solid #ff8a65 !important;
                         border-radius: 5px !important;
                         padding: 15px !important;
                     }
-                
+    
                     #feedback-form {
                         display: flex;
                         flex-direction: column;
@@ -9259,14 +9259,14 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         max-width: 600px;
                         margin: 0 auto;
                     }
-                
+    
                     #feedback-form label {
                         color: #333;
                         font-family: 'Arial', sans-serif;
                         font-size: 13px;
                         margin-bottom: 5px;
                     }
-                
+    
                     #feedback-form input, #feedback-form textarea {
                         width: 100%;
                         padding: 8px;
@@ -9277,12 +9277,12 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         font-family: 'Arial', sans-serif;
                         font-size: 14px;
                     }
-                
+    
                     #feedback-form textarea {
                         min-height: 100px;
                         resize: vertical;
                     }
-                
+    
                     #feedback-form button[type="submit"] {
                         background-color: #ff8a65 !important;
                         color: white !important;
@@ -9295,18 +9295,18 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         cursor: pointer !important;
                         transition: background-color 0.3s ease !important;
                     }
-                
+    
                     #feedback-form button[type="submit"]:hover {
                         background-color: #f4511e !important;
                     }
-                
+    
                     #form-message {
                         margin-top: 10px;
                         text-align: center;
                         font-family: 'Arial', sans-serif;
                         color: #333;
                     }
-                
+    
                     @media (max-width: 768px) {
                         #feedback-section {
                             padding: 8px !important;
@@ -9346,45 +9346,49 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         <button type="submit">Submit Feedback</button>
                     </form>
                     <div id="form-message"></div>
-                </div>
-                <script>
-                    // Ensure script runs after DOM is loaded
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const feedbackForm = document.getElementById("feedback-form");
-                        if (feedbackForm) {
-                            feedbackForm.addEventListener("submit", function(event) {
-                                event.preventDefault(); // Prevent default form submission
-                                console.log("Form submitting...");
-                                const form = event.target;
-                                const formData = new FormData(form);
-                                const messageDiv = document.getElementById("form-message");
-                                messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
-                                fetch("https://formspree.io/f/mwpozyjq", {
-                                    method: "POST",
-                                    body: formData,
-                                    headers: {
-                                        "Accept": "application/json"
-                                    }
-                                })
-                                .then(response => {
-                                    console.log("Response status:", response.status);
-                                    if (response.ok) {
-                                        messageDiv.innerHTML = '<p style="color: #ff8a65; font-weight: bold;">Thank you for your feedback!</p>';
-                                        form.reset();
-                                    } else {
+                    <script>
+                        // Try binding immediately
+                        function bindFormSubmit() {
+                            const feedbackForm = document.getElementById("feedback-form");
+                            if (feedbackForm) {
+                                feedbackForm.addEventListener("submit", function(event) {
+                                    event.preventDefault();
+                                    event.stopPropagation(); // Stop any other handlers
+                                    console.log("Form submitting...");
+                                    const form = event.target;
+                                    const formData = new FormData(form);
+                                    const messageDiv = document.getElementById("form-message");
+                                    messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
+                                    fetch("https://formspree.io/f/mwpozyjq", {
+                                        method: "POST",
+                                        body: formData,
+                                        headers: {
+                                            "Accept": "application/json"
+                                        }
+                                    })
+                                    .then(response => {
+                                        console.log("Response status:", response.status);
+                                        if (response.ok) {
+                                            messageDiv.innerHTML = '<p style="color: #ff8a65; font-weight: bold;">Thank you for your feedback!</p>';
+                                            form.reset();
+                                        } else {
+                                            messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error("Form submission error:", error);
                                         messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error("Form submission error:", error);
-                                    messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
+                                    });
                                 });
-                            });
-                        } else {
-                            console.error("Feedback form not found");
+                                console.log("Form handler bound successfully");
+                            } else {
+                                console.error("Feedback form not found, retrying...");
+                                setTimeout(bindFormSubmit, 500); // Retry after 500ms
+                            }
                         }
-                    });
-                </script>
+                        // Run immediately and retry if needed
+                        bindFormSubmit();
+                    </script>
                 """)
     
     # CSS (end of the previous section, for context)
