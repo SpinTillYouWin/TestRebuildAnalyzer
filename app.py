@@ -9348,33 +9348,41 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     <div id="form-message"></div>
                 </div>
                 <script>
-                    document.getElementById("feedback-form").addEventListener("submit", function(event) {
-                        event.preventDefault();
-                        console.log("Form submitting...");
-                        const form = event.target;
-                        const formData = new FormData(form);
-                        const messageDiv = document.getElementById("form-message");
-                        messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
-                        fetch("https://formspree.io/f/mwpozyjq", {
-                            method: "POST",
-                            body: formData,
-                            headers: {
-                                "Accept": "application/json"
-                            }
-                        })
-                        .then(response => {
-                            console.log("Response status:", response.status);
-                            if (response.ok) {
-                                messageDiv.innerHTML = '<p style="color: #ff8a65; font-weight: bold;">Thank you for your feedback!</p>';
-                                form.reset();
-                            } else {
-                                messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Form submission error:", error);
-                            messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
-                        });
+                    // Ensure script runs after DOM is loaded
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const feedbackForm = document.getElementById("feedback-form");
+                        if (feedbackForm) {
+                            feedbackForm.addEventListener("submit", function(event) {
+                                event.preventDefault(); // Prevent default form submission
+                                console.log("Form submitting...");
+                                const form = event.target;
+                                const formData = new FormData(form);
+                                const messageDiv = document.getElementById("form-message");
+                                messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
+                                fetch("https://formspree.io/f/mwpozyjq", {
+                                    method: "POST",
+                                    body: formData,
+                                    headers: {
+                                        "Accept": "application/json"
+                                    }
+                                })
+                                .then(response => {
+                                    console.log("Response status:", response.status);
+                                    if (response.ok) {
+                                        messageDiv.innerHTML = '<p style="color: #ff8a65; font-weight: bold;">Thank you for your feedback!</p>';
+                                        form.reset();
+                                    } else {
+                                        messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error("Form submission error:", error);
+                                    messageDiv.innerHTML = '<p style="color: #FF0000;">There was an error submitting your feedback. Please try again later.</p>';
+                                });
+                            });
+                        } else {
+                            console.error("Feedback form not found");
+                        }
                     });
                 </script>
                 """)
