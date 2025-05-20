@@ -7571,7 +7571,19 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
         "31": "black", "32": "red", "33": "black", "34": "red", "35": "black", "36": "red"
     };
     
-    function updateSelectedSpinsDisplay() {
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    const updateSelectedSpinsDisplay = debounce(function() {
         const input = document.querySelector("#selected-spins input");
         const display = document.querySelector("#selected-spins-display");
         const validation = document.querySelector("#selected-spins-validation");
@@ -7605,7 +7617,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
             validation.textContent = "⚠ Invalid spins! Use numbers between 0 and 36.";
             validation.style.display = "block";
         }
-    }
+    }, 300); // Debounce for 300ms
     
     document.addEventListener("DOMContentLoaded", () => {
         const input = document.querySelector("#selected-spins input");
