@@ -10963,28 +10963,47 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
    
     # Shepherd.js Tour Script
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
+    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css" id="shepherd-css">
+    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()" id="shepherd-js"></script>
     <script>
       function loadShepherdFallback() {
         console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
+        script.id = 'shepherd-js-fallback';
         script.onerror = () => {
           console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
+          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please refresh or check your internet connection.');
+          cleanupOnFailure();
         };
+        script.onload = () => console.log('Shepherd.js loaded from fallback.');
         document.head.appendChild(script);
     
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
+        link.id = 'shepherd-css-fallback';
         document.head.appendChild(link);
+      }
+    
+      function cleanupOnFailure() {
+        const btn = document.querySelector('#start-tour-btn');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '🚀 Take the Tour!';
+        }
+        const overlay = document.querySelector('.shepherd-modal-overlay-container');
+        if (overlay) {
+          overlay.classList.remove('shepherd-modal-is-visible');
+          overlay.style.display = 'none';
+        }
       }
     
       function initializeTour() {
         if (typeof Shepherd === 'undefined') {
           console.error('Shepherd.js not loaded.');
+          alert('Tour unavailable: Shepherd.js not loaded. Please refresh or check your internet connection.');
+          cleanupOnFailure();
           return null;
         }
     
@@ -11255,15 +11274,11 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
         return tour;
       }
     
-      function tryStartTour(attempts = 3, delay = 2000) {
+      function tryStartTour(attempts = 3, delay = 1000) {
         if (attempts <= 0) {
           console.error('Max attempts reached. Tour failed.');
           alert('Tour unavailable: Required components not loaded after multiple attempts. Please refresh the page.');
-          const btn = document.querySelector('#start-tour-btn');
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '🚀 Take the Tour!';
-          }
+          cleanupOnFailure();
           return;
         }
     
@@ -11298,20 +11313,12 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
               } catch (error) {
                 console.error('Error starting tour:', error);
                 alert('Tour failed to start due to an unexpected error. Please check the console for details.');
-                const btn = document.querySelector('#start-tour-btn');
-                if (btn) {
-                  btn.disabled = false;
-                  btn.innerHTML = '🚀 Take the Tour!';
-                }
+                cleanupOnFailure();
               }
             } else {
               console.error('Tour initialization failed.');
               alert('Tour unavailable: Failed to initialize tour. Please refresh the page.');
-              const btn = document.querySelector('#start-tour-btn');
-              if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '🚀 Take the Tour!';
-              }
+              cleanupOnFailure();
             }
           }
         }, delay);
@@ -11325,16 +11332,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
           btn.innerHTML = 'Loading Tour...';
         }
     
-        if (typeof Shepherd === 'undefined') {
-          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
-          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '🚀 Take the Tour!';
-          }
-          return;
-        }
-    
         const appContent = document.querySelector('#appContent');
         if (!appContent || window.getComputedStyle(appContent).display === 'none') {
           console.warn('appContent is hidden. User must accept terms.');
@@ -11346,7 +11343,16 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
           return;
         }
     
-        tryStartTour(3, 2000);
+        // Check if Shepherd.js loaded within a timeout
+        setTimeout(() => {
+          if (typeof Shepherd === 'undefined') {
+            console.error('Shepherd.js is not loaded after timeout.');
+            alert('Tour unavailable: Shepherd.js failed to load. Please refresh or check your internet connection.');
+            cleanupOnFailure();
+            return;
+          }
+          tryStartTour(3, 1000);
+        }, 3000);
       }
     
       document.addEventListener('DOMContentLoaded', () => {
