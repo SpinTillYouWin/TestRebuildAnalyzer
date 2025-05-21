@@ -6217,9 +6217,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         <span class="roulette-icon">🎰</span> Master the Wheel: Watch Our Video Guide! 🎥
                         <span class="by-styw">by S.T.Y.W</span>
                     </a>
-                    <button id="start-tour-btn" onclick="startTour()" class="option-button tour-button">
-                        <span class="tour-icon">🚀</span> Take the Tour!
-                    </button>
                     <a href="https://drive.google.com/file/d/154GfZaiNUfAFB73WEIA617ofdZbRaEIN/view?usp=drive_link" target="_blank" class="option-link guide-link">
                         <span class="guide-icon">📖</span> View Guide
                     </a>
@@ -6227,7 +6224,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
             </div>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Dancing+Script:wght@400;700&display=swap');
-    
                 #welcome-section {
                     margin: 10px auto;
                     max-width: 1200px;
@@ -6235,7 +6231,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     animation: neonFlicker 2s ease-in-out infinite;
                     text-align: center;
                 }
-    
                 .welcome-container {
                     background: linear-gradient(135deg, #1A1A1A, #000000);
                     border: 2px solid #3F000F;
@@ -6245,7 +6240,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     position: relative;
                     padding: 12px;
                 }
-    
                 .welcome-title {
                     display: flex;
                     align-items: center;
@@ -6262,25 +6256,21 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     margin-bottom: 10px;
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                 }
-    
                 .welcome-title:hover {
                     transform: scale(1.02);
                     box-shadow: 0 0 10px rgba(139, 0, 36, 0.7);
                 }
-    
                 .welcome-icon {
                     font-size: 20px;
                     animation: subtleGlow 1.5s ease-in-out infinite;
                 }
-    
                 .options-container {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     gap: 10px;
                 }
-    
-                .option-link, .option-button {
+                .option-link {
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -6296,35 +6286,19 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     max-width: 300px;
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                 }
-    
                 .video-link {
                     background: linear-gradient(90deg, #2A000A, #3F000F);
                 }
-    
-                .tour-button {
-                    background: linear-gradient(90deg, #2A000A, #3F000F) !important;
-                    border: none;
-                    cursor: pointer;
-                    font-family: 'Poppins', sans-serif !important;
-                    font-size: 14px !important;
-                    font-weight: 600 !important;
-                    color: #FFD700 !important;
-                    text-align: center;
-                }
-    
                 .guide-link {
                     background: linear-gradient(90deg, #2A000A, #3F000F);
                 }
-    
-                .option-link:hover, .option-button:hover {
+                .option-link:hover {
                     transform: scale(1.02);
                     box-shadow: 0 0 8px rgba(107, 0, 27, 0.7);
                 }
-    
-                .roulette-icon, .tour-icon, .guide-icon {
+                .roulette-icon, .guide-icon {
                     font-size: 18px;
                 }
-    
                 .by-styw {
                     font-family: 'Dancing Script', cursive;
                     font-size: 0.6em;
@@ -6332,17 +6306,14 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
                     animation: subtleGlow 1.5s ease-in-out infinite;
                 }
-    
                 @keyframes neonFlicker {
                     0%, 100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.5); }
                     50% { text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 6px rgba(0, 0, 0, 0.7); }
                 }
-    
                 @keyframes subtleGlow {
                     0%, 100% { text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
                     50% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
                 }
-    
                 @media (max-width: 768px) {
                     .welcome-title {
                         font-size: 14px;
@@ -6351,19 +6322,18 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     .welcome-icon {
                         font-size: 18px;
                     }
-                    .option-link, .option-button {
+                    .option-link {
                         font-size: 13px;
                         padding: 6px 10px;
                         max-width: 250px;
                     }
-                    .roulette-icon, .tour-icon, .guide-icon {
+                    .roulette-icon, .guide-icon {
                         font-size: 16px;
                     }
                     .by-styw {
                         font-size: 0.55em;
                     }
                 }
-    
                 @media (max-width: 600px) {
                     .welcome-title {
                         font-size: 12px;
@@ -6372,18 +6342,17 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     .welcome-icon {
                         font-size: 16px;
                     }
-                    .option-link, .option-button {
+                    .option-link {
                         font-size: 12px;
                         max-width: 200px;
                     }
-                    .roulette-icon, .tour-icon, .guide-icon {
+                    .roulette-icon, .guide-icon {
                         font-size: 14px;
                     }
                 }
-    
                 @media (prefers-reduced-motion: reduce) {
-                    .welcome-icon, .roulette-icon, .tour-icon, .guide-icon, 
-                    .welcome-title, .by-styw, .option-link, .option-button {
+                    .welcome-icon, .roulette-icon, .guide-icon, 
+                    .welcome-title, .by-styw, .option-link {
                         animation: none !important;
                         transition: none !important;
                     }
@@ -6392,8 +6361,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     """)
     
     # App Content (Header Section - Updated)
-    with gr.Group(visible=False, elem_id="appContent"):
-        # Header Row (No Buttons Row)
+    with gr.Group(elem_id="appContent"):
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
                 <div class="header-container">
@@ -6402,16 +6370,11 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         <span class="by-styw">by S.T.Y.W</span>
                         <span class="roulette-icon">
                             <svg width="40" height="40" viewBox="0 0 100 100" class="spin-roulette">
-                                <!-- Outer rim -->
                                 <circle cx="50" cy="50" r="45" fill="#8a0707" stroke="#339e45" stroke-width="5"/>
-                                <!-- Inner circle (green felt) -->
                                 <circle cx="50" cy="50" r="35" fill="#2e7d32"/>
-                                <!-- Alternating sections -->
                                 <path d="M50 15 A35 35 0 0 1 85 50 A35 35 0 0 1 50 85 A35 35 0 0 1 15 50 A35 35 0 0 1 50 15" fill="#ff4444"/>
                                 <path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 50 15" fill="#000000"/>
-                                <!-- Zero slot -->
                                 <circle cx="50" cy="20" r="5" fill="#e4f2e4"/>
-                                <!-- Center dot -->
                                 <circle cx="50" cy="50" r="5" fill="#000000"/>
                             </svg>
                         </span>
@@ -6459,7 +6422,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         color: transparent !important;
                         letter-spacing: 2px !important;
                         animation: shimmer 3s linear infinite !important;
-                        text-shadow: none !important; /* Remove glow from WheelPulse */
+                        text-shadow: none !important;
                     }
                     .by-styw {
                         font-family: 'Dancing Script', cursive !important;
@@ -6494,7 +6457,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
-                    /* Responsive adjustments */
                     @media (max-width: 768px) {
                         .header-title {
                             font-size: 2em !important;
@@ -6527,7 +6489,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                             border-radius: 8px !important;
                         }
                     }
-                    /* Reduced motion for accessibility */
                     @media (prefers-reduced-motion: reduce) {
                         .roulette-button, .action-button, .spin-counter, .number-badge, 
                         .hot-number, .trait-badge, .pattern-badge, .new-spin, 
@@ -9322,1660 +9283,1361 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
-    <script>
-      function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
-        script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
-        };
-        document.head.appendChild(script);
-    
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        document.head.appendChild(link);
-      }
-    
-      function debounce(func, wait) {
-          let timeout;
-          return function executedFunction(...args) {
-              const later = () => {
-                  clearTimeout(timeout);
-                  func(...args);
-              };
-              clearTimeout(timeout);
-              timeout = setTimeout(later, wait);
-          };
-      }
-    </script>
-    <style>
-        /* General Layout */
-        .gr-row { margin: 0 !important; padding: 5px 0 !important; }
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        .gr-box { border-radius: 5px !important; }
-        
-
-        /* Style for Dealer’s Spin Tracker accordion */
-        #sides-of-zero-accordion {
-            background-color: #f3e5f5 !important;
-            border: 2px solid #8e24aa !important;
-            border-radius: 8px !important;
-            padding: 12px !important;
-            margin-bottom: 15px !important;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
-            animation: fadeInAccordion 0.5s ease-in-out !important;
-        }
-        
-        @keyframes fadeInAccordion {
-            0% { opacity: 0; transform: translateY(5px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        #sides-of-zero-accordion > div {
-            background-color: transparent !important;
-        }
-        
-        #sides-of-zero-accordion summary {
-            background-color: #8e24aa !important;
-            color: #fff !important;
-            padding: 12px !important;
-            border-radius: 6px !important;
-            font-weight: bold !important;
-            font-size: 18px !important;
-            cursor: pointer !important;
-            transition: background-color 0.3s ease !important;
-        }
-        
-        #sides-of-zero-accordion summary:hover {
-            background-color: #6a1b9a !important;
-        }
-        
-        #sides-of-zero-accordion summary::after {
-            filter: invert(100%) !important;
-        }
-        
-        @media (max-width: 768px) {
+        <style>
+            /* General Layout */
+            .gr-row { margin: 0 !important; padding: 5px 0 !important; }
+            .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+            .gr-box { border-radius: 5px !important; }
+            
+            /* Style for Dealer’s Spin Tracker accordion */
             #sides-of-zero-accordion {
-                padding: 8px !important;
-            }
-            #sides-of-zero-accordion summary {
-                font-size: 16px !important;
-            }
-        }
-
-        
-        /* Style for Feedback Section accordion */
-        #feedback-section summary {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-        }
-        
-        /* Hide stray labels in the Sides of Zero section */
-        .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
-            display: none !important;
-        }
-        
-        /* Header Styling */
-        #header-row {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            flex-wrap: wrap !important;
-            background-color: white !important;
-            padding: 10px 0 !important;
-            width: 100% !important;
-            margin: 0 auto !important;
-            margin-bottom: 20px !important;
-        }
-        
-        .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
-        
-        /* Fix Selected Spins Label Cutoff */
-        #selected-spins-row {
-            width: 100% !important;
-            max-width: none !important;
-            overflow: visible !important;
-        }
-        #selected-spins label {
-            white-space: normal !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            display: block !important;
-            background-color: #87CEEB;
-            color: black;
-            padding: 10px 5px !important;
-            border-radius: 3px;
-            line-height: 1.5em !important;
-            font-size: 14px !important;
-            margin-top: 5px !important;
-        }
-        #selected-spins {
-            width: 100% !important;
-            min-width: 800px !important;
-        }
-        
-        /* Roulette Table */
-        .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
-        .roulette-button:hover { opacity: 0.8; }
-        .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
-        .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
-        .roulette-table { 
-            display: flex !important; 
-            flex-direction: column !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 5px !important; 
-            background-color: #2e7d32 !important;
-            border: 2px solid #d3d3d3 !important; 
-            border-radius: 5px !important; 
-            width: 100% !important; 
-            max-width: 600px !important; 
-            margin: 0 auto !important; 
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-        }
-        .table-row { 
-            display: flex !important; 
-            gap: 0 !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            flex-wrap: nowrap !important; 
-            line-height: 0 !important; 
-            min-width: 580px !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Responsive adjustments for desktop */
-        @media (min-width: 768px) {
-            .roulette-table {
-                max-width: 800px !important;
-            }
-            .table-row {
-                min-width: 754px !important;
-            }
-            .roulette-button, .empty-button {
-                width: 48px !important;
-                height: 48px !important;
-                font-size: 16px !important;
-            }
-        }
-        
-        /* Buttons */    
-        .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
-        button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
-        button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
-        
-        button.green-btn {
-            background-color: #28a745 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            padding: 8px 16px !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-            box-sizing: border-box !important;
-        }
-        button.green-btn:hover {
-            background-color: #218838 !important;
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
-        }
-        
-        button.clear-spins-btn {
-            background-color: #ff4444 !important;
-            color: white !important;
-            border: 1px solid #000 !important;
-            box-sizing: border-box !important;
-            display: inline-block !important;
-        }
-        button.clear-spins-btn:hover {
-            background-color: #cc0000 !important;
-        }
-        button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
-        button.generate-spins-btn:hover { background-color: #0056b3 !important; }
-        
-        /* NEW CODE: Add glow effect for buttons */
-        .action-button, .green-btn, .roulette-button {
-            transition: box-shadow 0.3s ease, transform 0.2s ease !important;
-        }
-        
-        .action-button:active, .green-btn:active, .roulette-button:active {
-            box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
-            transform: scale(1.05) !important; /* Slight scale for emphasis */
-        }
-        
-        /* Ensure glow works on mobile touch */
-        @media (max-width: 600px) {
-            .action-button:active, .green-btn:active, .roulette-button:active {
-                box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
-            }
-        }
-        
-        /* Optional: Glow for specific buttons like Analyze Spins */
-        .green-btn:active {
-            box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
-        }
-        
-        /* Ensure columns have appropriate spacing */
-        .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
-        
-        /* Compact Components */
-        .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .long-slider .gr-box { width: 100% !important; }
-        
-        /* Target the Accordion and its children */
-        .gr-accordion { background-color: #ffffff !important; }
-        .gr-accordion * { background-color: #ffffff !important; }
-        .gr-accordion .gr-column { background-color: #ffffff !important; }
-        .gr-accordion .gr-row { background-color: #ffffff !important; }
-        
-        /* Section Labels */
-        #selected-spins label {
-            background-color: #87CEEB;
-            color: black;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #spin-analysis label {
-            background-color: #90EE90 !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #strongest-numbers-table label {
-            background-color: #E6E6FA !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #number-of-random-spins label {
-            background-color: #FFDAB9 !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        #aggregated-scores label {
-            background-color: #FFB6C1 !important;
-            color: black !important;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        
-        /* Compact dropdown styling for Select Category and Select Strategy */
-        #select-category select, #strategy-dropdown select {
-            max-height: 150px !important;
-            overflow-y: auto !important;
-            scrollbar-width: thin !important;
-        }
-        #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
-            width: 6px;
-        }
-        #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
-            background-color: #888;
-            border-radius: 3px;
-        }
-    
-        
-        /* Scrollable Tables */
-        .scrollable-table {
-            max-height: 300px;
-            overflow-y: auto;
-            display: block;
-            width: 100%;
-        }
-        
-        /* Updated styling for the Dynamic Roulette Table */
-        .large-table {
-            max-height: 800px !important;
-            max-width: 1000px !important;
-            margin: 0 auto !important;
-            display: block !important;
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-            padding: 10px !important;
-        }
-        /* Dynamic Table Container */
-        .dynamic-table-container {
-            width: 100% !important;
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            padding: 20px 10px !important;
-            display: flex !important;
-            flex-direction: column !important; /* Ensure children stack vertically */
-            justify-content: center !important;
-            align-items: center !important;
-            box-sizing: border-box !important;
-        }
-        
-        /* Ensure all children of the container are centered */
-        .dynamic-table-container > * {
-            width: 100% !important;
-            max-width: 900px !important; /* Match the large-table max-width */
-            margin: 0 auto !important;
-        }
-        
-        /* Large Table */
-        .large-table {
-            max-height: 800px !important;
-            max-width: 900px !important;
-            width: 100% !important;
-            margin: 0 auto !important;
-            display: block !important;
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
-            padding: 15px !important;
-            box-sizing: border-box !important;
-            overflow: visible !important;
-            text-align: center !important; /* Center table content */
-            animation: tableFadeIn 0.5s ease-in-out !important; /* Add load animation */
-            /* Add gradient border */
-            background-clip: padding-box !important;
-            border-image: linear-gradient(45deg, #3b82f6, #1e90ff) 1 !important;
-        }
-        
-        /* Define the load animation */
-        @keyframes tableFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        .large-table table {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 auto !important;
-            text-align: center !important;
-        }
-        
-        .large-table th {
-            font-weight: bold !important;
-            color: #000000 !important;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
-            background: rgba(59, 130, 246, 0.1) !important;
-            padding: 10px !important;
-        }
-        
-        .large-table td {
-            padding: 8px !important;
-            text-align: center !important;
-            position: relative !important;
-            overflow: visible !important;
-        }
-        
-        /* Glowing Hover Effects for Hot Numbers (specific to Dynamic Roulette Table) */
-        .dynamic-roulette-table td.hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important;
-            transform: scale(1.1) !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        /* NEW: Enhanced Hot Number Corner Flash Effect */
-        .dynamic-roulette-table td.hot-number {
-            position: relative !important;
-            overflow: visible !important;
-        }
-        
-        /* Top-left corner highlight */
-        .dynamic-roulette-table td.hot-number::before {
-            content: '' !important;
-            position: absolute !important;
-            top: -3px !important;
-            left: -3px !important;
-            width: 10px !important;
-            height: 10px !important;
-            background-color: #ffd700 !important; /* Yellow to match existing glow */
-            border: 1px solid #ffffff !important; /* White border for contrast */
-            animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
-        }
-        
-        /* Bottom-right corner highlight */
-        .dynamic-roulette-table td.hot-number::after {
-            content: '' !important;
-            position: absolute !important;
-            bottom: -3px !important;
-            right: -3px !important;
-            width: 10px !important;
-            height: 10px !important;
-            background-color: #ffd700 !important;
-            border: 1px solid #ffffff !important;
-            animation: flashCorner 1.5s ease-in-out infinite !important;
-            z-index: 5 !important;
-        }
-        
-        /* Flashing animation for corners */
-        @keyframes flashCorner {
-            0%, 100% {
-                opacity: 1 !important;
-                transform: scale(1) !important;
-            }
-            50% {
-                opacity: 0.5 !important;
-                transform: scale(1.2) !important;
-            }
-        }
-        
-        /* Ensure hover effect remains intact and complements corner flash */
-        .dynamic-roulette-table td.hot-number:hover {
-            box-shadow: 0 0 12px 4px #ffd700 !important;
-            transform: scale(1.1) !important;
-            transition: all 0.3s ease !important;
-            z-index: 10 !important; /* Ensure hover effect is above corners */
-        }
-        
-        /* Responsive adjustments for smaller screens */
-        @media (max-width: 768px) {
-            .dynamic-roulette-table td.hot-number::before,
-            .dynamic-roulette-table td.hot-number::after {
-                width: 8px !important;
-                height: 8px !important;
-                top: -2px !important;
-                left: -2px !important;
-                bottom: -2px !important;
-                right: -2px !important;
-            }
-        }
-        
-        /* Tooltip Styles for Number Cells */
-        .dynamic-roulette-table td.has-tooltip:hover::after {
-            content: attr(data-tooltip) !important;
-            position: absolute !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 4px !important;
-            border: 1px solid #8c6bb1 !important;
-            bottom: 100% !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            white-space: nowrap !important;
-            z-index: 10 !important;
-            font-size: 12px !important;
-            font-family: Arial, sans-serif !important;
-            animation: fadeIn 0.3s ease !important;
-        }
-        
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        
-        /* Bet Tier Icons with Bounce Animation */
-        .dynamic-roulette-table td.top-tier::before {
-            content: "🔥" !important;
-            margin-right: 5px !important;
-            display: inline-block !important;
-            animation: bounce 0.5s ease-in-out !important;
-        }
-        
-        .dynamic-roulette-table td.middle-tier::before {
-            content: "⭐" !important;
-            margin-right: 5px !important;
-            display: inline-block !important;
-            animation: bounce 0.5s ease-in-out !important;
-        }
-        
-        .dynamic-roulette-table td.lower-tier::before {
-            content: "🌟" !important;
-            margin-right: 5px !important;
-            display: inline-block !important;
-            animation: bounce 0.5s ease-in-out !important;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        /* Progress Bar Styles for Bet Strength */
-        .dynamic-roulette-table .progress-bar {
-            width: 100% !important;
-            height: 5px !important;
-            background: #d3d3d3 !important;
-            border-radius: 3px !important;
-            margin-top: 3px !important;
-            position: relative !important;
-            display: block !important;
-        }
-        
-        .dynamic-roulette-table .progress-fill.top-tier {
-            height: 100% !important;
-            background: #ffd700 !important; /* Yellow for top-tier */
-            border-radius: 3px !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-        
-        .dynamic-roulette-table .progress-fill.middle-tier {
-            height: 100% !important;
-            background: #00ffff !important; /* Cyan for middle-tier */
-            border-radius: 3px !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-        
-        .dynamic-roulette-table .progress-fill.lower-tier {
-            height: 100% !important;
-            background: #00ff00 !important; /* Green for lower-tier */
-            border-radius: 3px !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-            .dynamic-table-container {
-                max-width: 90vw !important;
-                padding: 15px 5px !important;
-            }
-        
-            .dynamic-table-container > * {
-                max-width: 95% !important;
-            }
-        
-            .large-table {
-                max-width: 95% !important;
+                background-color: #f3e5f5 !important;
+                border: 2px solid #8e24aa !important;
+                border-radius: 8px !important;
                 padding: 12px !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+                animation: fadeInAccordion 0.5s ease-in-out !important;
             }
-        }
-        
-        @media (max-width: 768px) {
-            .dynamic-table-container {
-                max-width: 100vw !important;
-                padding: 10px 5px !important;
+            
+            @keyframes fadeInAccordion {
+                0% { opacity: 0; transform: translateY(5px); }
+                100% { opacity: 1; transform: translateY(0); }
             }
-        
-            .dynamic-table-container > * {
-                max-width: 100% !important;
+            
+            #sides-of-zero-accordion > div {
+                background-color: transparent !important;
             }
-        
-            .large-table {
-                max-width: 100% !important;
-                padding: 10px !important;
+            
+            #sides-of-zero-accordion summary {
+                background-color: #8e24aa !important;
+                color: #fff !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                font-weight: bold !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s ease !important;
             }
-        }
-        
-        /* Strategy Card Container */
-        .strategy-card {
-            max-width: 1000px !important;
-            margin: 0 auto !important;
-            padding: 20px !important;
-            background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Match the aesthetic of other sections */
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 10px !important;
-            animation: cardFadeIn 0.5s ease-in-out !important; /* Add load animation */
-        }
-        
-        /* Load animation for the strategy card */
-        @keyframes cardFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
+            
+            #sides-of-zero-accordion summary:hover {
+                background-color: #6a1b9a !important;
             }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
+            
+            #sides-of-zero-accordion summary::after {
+                filter: invert(100%) !important;
             }
-        }
-        
-        /* Style for dropdowns within the strategy card */
-        .strategy-card .gr-dropdown {
-            background: rgba(59, 130, 246, 0.1) !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            margin: 5px 0 !important;
-        }
-        
-        .strategy-card .gr-dropdown select {
-            background: transparent !important;
-            color: #ffffff !important;
-            border: none !important;
-            font-size: 14px !important;
-            padding: 5px !important;
-        }
-        
-        .strategy-card .gr-dropdown label {
-            background: transparent !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-            padding: 5px !important;
-        }
-        
-        /* Style for the reset button */
-        .strategy-card .gr-button {
-            background: #3b82f6 !important;
-            color: #ffffff !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-            transition: background 0.3s ease, transform 0.2s ease !important;
-        }
-        
-        .strategy-card .gr-button:hover {
-            background: #1e90ff !important;
-            transform: scale(1.05) !important;
-        }
-        
-        /* Style for sliders */
-        .strategy-card .gr-slider {
-            background: rgba(59, 130, 246, 0.1) !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-        }
-        
-        /* Style for the strategy recommendations output */
-        .strategy-card .strategy-box {
-            max-height: 300px !important;
-            overflow-y: auto !important;
-            padding: 10px !important;
-            background: rgba(255, 255, 255, 0.05) !important; /* Slightly lighter background for contrast */
-            border-radius: 8px !important;
-            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            animation: outputFadeIn 0.5s ease-in-out !important; /* Add load animation for the output */
-        }
-        
-        .strategy-card .strategy-box p, .strategy-card .strategy-box span, .strategy-card .strategy-box ul, .strategy-card .strategy-box li {
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            font-size: 14px !important;
-        }
-        
-        /* Load animation for the strategy output */
-        @keyframes outputFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.98);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        /* Ensure the row inside the card layouts dropdowns properly */
-        .strategy-card .gr-row {
-            display: flex !important;
-            gap: 10px !important;
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .strategy-card {
-                padding: 15px !important;
-            }
-        
-            .strategy-card .gr-row {
-                flex-direction: column !important;
-                align-items: center !important;
-            }
-        
-            .strategy-card .gr-dropdown {
-                width: 100% !important;
-                max-width: 300px !important;
-            }
-        
-            .strategy-card .gr-button {
-                width: 100% !important;
-                max-width: 300px !important;
-            }
-        }
-        
-        .strongest-numbers-table {
-            width: 100% !important;
-            max-width: 100% !important;
-            background: linear-gradient(135deg, #2a2a72, #4682b4) !important;
-            border-collapse: collapse !important;
-            border: 1px solid #3b82f6 !important;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
-            margin: 10px 0 !important;
-        }
-        
-        .strongest-numbers-table th, .strongest-numbers-table td {
-            padding: 8px 12px !important;
-            border: 1px solid #3b82f6 !important;
-            text-align: center !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.7) !important;
-        }
-        
-        .strongest-numbers-table th {
-            background: rgba(59, 130, 246, 0.2) !important;
-            font-weight: bold !important;
-        }
-        
-        .strongest-numbers-table td:nth-child(3), 
-        .strongest-numbers-table td:nth-child(6), 
-        .strongest-numbers-table td:nth-child(9) {
-            white-space: normal !important;
-            word-wrap: break-word !important;
-            max-width: 150px !important;
-        }
-        
-        /* Last Spins Container */
-        .last-spins-container {
-            background-color: #f5f5f5 !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin-top: 10px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Fade-in animation for Last Spins */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Pattern Badge for Spin Patterns */
-        .pattern-badge {
-            background-color: #ffd700 !important;
-            color: #333 !important;
-            padding: 2px 5px !important;
-            border-radius: 3px !important;
-            font-size: 10px !important;
-            margin-left: 5px !important;
-            cursor: pointer !important;
-            transition: transform 0.2s ease !important;
-        }
-        .pattern-badge:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 8px #ffd700 !important;
-        }
-        
-       /* Quick Trends Section for SpinTrend Radar */
-        .quick-trends {
-            background: linear-gradient(135deg, #d8bfd8 0%, #e6e6fa 100%) !important;
-            padding: 12px !important;
-            border-radius: 6px !important;
-            margin-bottom: 12px !important;
-            border: 1px solid #8c6bb1 !important;
-            box-shadow: 0 0 8px rgba(140, 107, 177, 0.3) !important;
-        }
-        
-        .quick-trends h4 {
-            margin: 0 0 8px 0 !important;
-            font-size: 16px !important;
-            color: #ff66cc !important;
-            text-shadow: 0 0 4px rgba(255, 102, 204, 0.5) !important;
-            font-weight: bold !important;
-        }
-        
-        .quick-trends ul {
-            margin: 0 !important;
-            padding-left: 15px !important;
-        }
-        
-        .quick-trends ul li {
-            color: #3e2723 !important;
-            font-size: 14px !important;
-            margin: 4px 0 !important;
-            font-weight: 500 !important;
-        }
-        
-        /* Spin animation for roulette table buttons */
-        .roulette-button:active {
-            animation: spin 0.5s ease-in-out !important;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Flash animation for new spins */
-        .flash.red {
-            animation: flashRed 0.3s ease-in-out;
-        }
-        .flash.green {
-            animation: flashGreen 0.3s ease-in-out;
-        }
-        .flash.black {
-            animation: flashBlack 0.3s ease-in-out;
-        }
-        @keyframes flashRed {
-            0%, 100% { background-color: red; }
-            50% { background-color: #ff3333; }
-        }
-        @keyframes flashGreen {
-            0%, 100% { background-color: green; }
-            50% { background-color: #33cc33; }
-        }
-        @keyframes flashBlack {
-            0%, 100% { background-color: black; }
-            50% { background-color: #333333; }
-        }
-        
-        /* Bounce animation for Dealer's Spin Tracker numbers */
-        .bounce {
-            animation: bounce 0.4s ease-in-out;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        
-        /* New: Flip animation for Last Spins new numbers */
-        .flip {
-            animation: flip 0.5s ease-in-out;
-        }
-        @keyframes flip {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
-        }
-        
-        /* New Spin Highlight Effect */
-        .new-spin {
-            position: relative !important;
-            animation: pulse-highlight 1s ease-in-out !important;
-        }
-        
-        @keyframes pulse-highlight {
-            0%, 100% { box-shadow: none; }
-            50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
-        }
-        
-        /* Color-coded highlights for new spins */
-        .new-spin.spin-red {
-            --highlight-color: rgba(255, 0, 0, 0.8) !important;
-        }
-        .new-spin.spin-black {
-            --highlight-color: rgba(255, 255, 255, 0.8) !important;
-        }
-        .new-spin.spin-green {
-            --highlight-color: rgba(0, 255, 0, 0.8) !important;
-        }
-
-        /* Spin Counter Styling */
-        .spin-counter {
-            font-size: 14px !important; /* Smaller text */
-            font-weight: bold !important;
-            color: #ffffff !important;
-            background: linear-gradient(135deg, #2e7d32, #1b5e20) !important;
-            padding: 6px 12px !important; /* Reduced padding */
-            border: 1px solid #ffffff !important; /* Thinner border */
-            border-radius: 8px !important; /* Slightly smaller radius */
-            margin: 5px auto !important; /* Less margin */
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important; /* Smaller shadow */
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) !important;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
-            position: relative !important;
-        }
-        .spin-counter:hover {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.7) !important; /* Smaller glow */
-            border-color: #ffd700 !important;
-            animation: sparkle-and-pulse 0.6s ease-in-out !important;
-        }
-        .spin-counter:hover::after {
-            content: attr(data-tip);
-            position: absolute !important;
-            top: -45px !important; /* Adjusted for smaller counter */
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 3px 6px !important; /* Smaller padding */
-            border-radius: 3px !important;
-            font-size: 9px !important; /* Smaller font */
-            max-width: 120px !important; /* Smaller width */
-            white-space: normal !important;
-            text-align: center !important;
-            z-index: 10 !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-        }
-        .spin-counter.glow {
-            animation: casino-flicker 1.8s ease-in-out infinite, color-shift 1.8s ease-in-out infinite !important;
-        }
-        .spin-counter.milestone {
-            animation: milestone-glow 1s ease-out !important;
-        }
-        @keyframes sparkle-and-pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                border-color: #ffffff;
-            }
-            50% {
-                transform: scale(1.15);
-                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
-                border-color: #ffd700;
-            }
-            100% {
-                transform: scale(1.1);
-                box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.7);
-                border-color: #ffd700;
-            }
-        }
-        @keyframes casino-flicker {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                border-color: #ffffff;
-            }
-            33% {
-                transform: scale(1.05);
-                box-shadow: 0 0 8px 4px rgba(255, 0, 0, 0.6);
-                border-color: #ff0000;
-            }
-            66% {
-                transform: scale(1.03);
-                box-shadow: 0 0 8px 4px rgba(0, 128, 0, 0.6);
-                border-color: #008000;
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.6);
-                border-color: #ffffff;
-            }
-        }
-        @keyframes color-shift {
-            0% { color: #ffffff; }
-            33% { color: #ff0000; }
-            66% { color: #008000; }
-            100% { color: #ffffff; }
-        }
-        @keyframes milestone-glow {
-            0% {
-                border-color: #ffffff;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            }
-            50% {
-                border-color: #ffd700;
-                box-shadow: 0 0 15px 7px rgba(255, 215, 0, 0.8);
-            }
-            100% {
-                border-color: #ffffff;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            }
-        }
-
-        </style>
-        <script>
-        const rouletteTips = [
-            "Bet on neighbors of hot numbers for better odds!",
-            "Red and black have equal chances, but zero is green!",
-            "Try the Martingale strategy for even-money bets.",
-            "Dozens cover 12 numbers for a balanced risk.",
-            "Watch for dealer biases in the Spin Tracker!",
-            "Fibonacci betting can manage your bankroll.",
-            "Columns offer a 2:1 payout—worth a try!",
-            "Zero’s neighbors are hot in European roulette."
-        ];
-        function setRandomTip() {
-            const counter = document.querySelector('.spin-counter');
-            if (counter) {
-                const randomTip = rouletteTips[Math.floor(Math.random() * rouletteTips.length)];
-                counter.setAttribute('data-tip', randomTip);
-            }
-        }
-        function playChipSound() {
-            const audio = new Audio('https://example.com/chip_clink.mp3'); // Replace with your sound file URL
-            audio.play().catch(error => console.log('Audio play failed:', error));
-        }
-        function updateSpinCounter() {
-            const counter = document.querySelector('.spin-counter');
-            if (counter) {
-                const currentCount = parseInt(counter.textContent.match(/\d+/)[0]) || 0;
-                counter.textContent = `Total Spins: ${currentCount}`;
-                counter.classList.add('glow');
-                playChipSound();
-                if (currentCount === 10 || currentCount === 50 || currentCount === 100) {
-                    counter.classList.add('milestone');
-                    setTimeout(() => counter.classList.remove('milestone'), 1000);
+            
+            @media (max-width: 768px) {
+                #sides-of-zero-accordion {
+                    padding: 8px !important;
+                }
+                #sides-of-zero-accordion summary {
+                    font-size: 16px !important;
                 }
             }
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            const counter = document.querySelector('.spin-counter');
-            if (counter) {
-                const observer = new MutationObserver(() => updateSpinCounter());
-                observer.observe(counter, { childList: true, characterData: true, subtree: true });
-                counter.addEventListener('mouseenter', setRandomTip);
-                setRandomTip(); // Set initial tip
+            
+            /* Hide stray labels in the Sides of Zero section */
+            .sides-of-zero-container + label, .last-spins-container + label:not(.long-slider label) {
+                display: none !important;
             }
-
-        /* Sides of Zero Container */
-        .sides-of-zero-container {
-            background-color: #ffffff !important;
-            border: 1px solid #d3d3d3 !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            margin: 10px 0 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* TITLE: Progress Bar Styles (UPDATED FOR CHANGE 7) */
-        .progress-bar {
-            width: 100% !important;
-            height: 6px !important;
-            min-height: 6px !important;
-            background-color: #d3d3d3 !important;
-            border-radius: 3px !important;
-            margin-top: 6px !important;
-            overflow: hidden !important;
-            display: block !important;
-        }
-        .progress-fill {
-            height: 100% !important;
-            border-radius: 3px !important;
-            transition: width 0.3s ease !important;
-            display: block !important;
-        }
-        
-        /* TITLE: Hot Streak Indicator (UPDATED FOR CHANGE 5) */
-        .hot-streak {
-            display: none !important;
-        }
-        .hot-streak:hover:after {
-            content: attr(title);
-            position: absolute;
-            background-color: #333 !important;
-            color: white !important;
-            padding: 6px 10px !important;
-            border-radius: 5px !important;
-            font-size: 12px !important;
-            font-family: Arial, sans-serif !important;
-            white-space: nowrap !important;
-            z-index: 20 !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
-            animation: fadeInTooltip 0.3s ease-in !important;
-        }
-        @keyframes fadeInTooltip {
-            0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        
-        /* Placeholder Section for Hit Percentage and SpinTrend Radar */
-        .placeholder-section {
-            background-color: #000 !important;
-            min-height: 200px !important;
-            height: 100% !important;
-            width: 100% !important;
-            border-radius: 5px !important;
-            box-sizing: border-box !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            color: #fff !important;
-            font-family: Arial, sans-serif !important;
-        }
-        
-        /* Ensure the columns are truly 50/50 and aligned */
-        .hit-percentage-container, .traits-container {
-            width: 100% !important;
-            max-width: none !important;
-            margin: 0 !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .placeholder-section {
-                min-height: 150px !important;
+            
+            /* Header Styling */
+            #header-row {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-wrap: wrap !important;
+                background-color: white !important;
+                padding: 10px 0 !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                margin-bottom: 20px !important;
             }
-            .hit-percentage-container, .traits-container {
+            
+            .header-title { text-align: center !important; font-size: 2.5em !important; margin: 0 !important; color: #333 !important; } 
+            
+            /* Fix Selected Spins Label Cutoff */
+            #selected-spins-row {
+                width: 100% !important;
+                max-width: none !important;
+                overflow: visible !important;
+            }
+            #selected-spins label {
+                white-space: normal !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                display: block !important;
+                background-color: #87CEEB;
+                color: black;
+                padding: 10px 5px !important;
+                border-radius: 3px;
+                line-height: 1.5em !important;
+                font-size: 14px !important;
+                margin-top: 5px !important;
+            }
+            #selected-spins {
+                width: 100% !important;
+                min-width: 800px !important;
+            }
+            
+            /* Roulette Table */
+            .roulette-button.green { background-color: green !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+            .roulette-button.red { background-color: red !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+            .roulette-button.black { background-color: black !important; color: white !important; border: 1px solid white !important; text-align: center !important; font-weight: bold !important; }
+            .roulette-button:hover { opacity: 0.8; }
+            .roulette-button.selected { border: 3px solid yellow !important; opacity: 0.9; }
+            .roulette-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; font-size: 14px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid white !important; box-sizing: border-box !important; }
+            .empty-button { margin: 0 !important; padding: 0 !important; width: 40px !important; height: 40px !important; border: 1px solid white !important; box-sizing: border-box !important; }
+            .roulette-table { 
+                display: flex !important; 
+                flex-direction: column !important; 
+                gap: 0 !important; 
+                margin: 0 !important; 
+                padding: 5px !important; 
+                background-color: #2e7d32 !important;
+                border: 2px solid #d3d3d3 !important; 
+                border-radius: 5px !important; 
+                width: 100% !important; 
+                max-width: 600px !important; 
+                margin: 0 auto !important; 
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+            }
+            .table-row { 
+                display: flex !important; 
+                gap: 0 !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                flex-wrap: nowrap !important; 
+                line-height: 0 !important; 
+                min-width: 580px !important;
+                white-space: nowrap !important;
+            }
+            
+            /* Responsive adjustments for desktop */
+            @media (min-width: 768px) {
+                .roulette-table {
+                    max-width: 800px !important;
+                }
+                .table-row {
+                    min-width: 754px !important;
+                }
+                .roulette-button, .empty-button {
+                    width: 48px !important;
+                    height: 48px !important;
+                    font-size: 16px !important;
+                }
+            }
+            
+            /* Buttons */    
+            .action-button { min-width: 120px !important; padding: 5px 10px !important; font-size: 14px !important; width: 100% !important; box-sizing: border-box !important; }
+            button.green-btn { background-color: #28a745 !important; color: white !important; border: 1px solid #000 !important; padding: 8px 16px !important; transition: transform 0.2s ease, box-shadow 0.2s ease !important; box-sizing: border-box !important; }
+            button.green-btn:hover { background-color: #218838 !important; transform: scale(1.05) !important; box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important; }
+            
+            button.green-btn {
+                background-color: #28a745 !important;
+                color: white !important;
+                border: 1px solid #000 !important;
+                padding: 8px 16px !important;
+                transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                box-sizing: border-box !important;
+            }
+            button.green-btn:hover {
+                background-color: #218838 !important;
+                transform: scale(1.05) !important;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+            }
+            
+            button.clear-spins-btn {
+                background-color: #ff4444 !important;
+                color: white !important;
+                border: 1px solid #000 !important;
+                box-sizing: border-box !important;
+                display: inline-block !important;
+            }
+            button.clear-spins-btn:hover {
+                background-color: #cc0000 !important;
+            }
+            button.generate-spins-btn { background-color: #007bff !important; color: white !important; border: 1px solid #000 !important; }
+            button.generate-spins-btn:hover { background-color: #0056b3 !important; }
+            
+            /* NEW CODE: Add glow effect for buttons */
+            .action-button, .green-btn, .roulette-button {
+                transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+            }
+            
+            .action-button:active, .green-btn:active, .roulette-button:active {
+                box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7) !important; /* Yellow glow */
+                transform: scale(1.05) !important; /* Slight scale for emphasis */
+            }
+            
+            /* Ensure glow works on mobile touch */
+            @media (max-width: 600px) {
+                .action-button:active, .green-btn:active, .roulette-button:active {
+                    box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.7) !important; /* Slightly smaller glow for mobile */
+                }
+            }
+            
+            /* Optional: Glow for specific buttons like Analyze Spins */
+            .green-btn:active {
+                box-shadow: 0 0 10px 5px rgba(40, 167, 69, 0.7) !important; /* Green glow for Analyze button */
+            }
+            
+            /* Ensure columns have appropriate spacing */
+            .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
+            
+            /* Compact Components */
+            .long-slider { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .long-slider .gr-box { width: 100% !important; }
+            
+            /* Target the Accordion and its children */
+            .gr-accordion { background-color: #ffffff !important; }
+            .gr-accordion * { background-color: #ffffff !important; }
+            .gr-accordion .gr-column { background-color: #ffffff !important; }
+            .gr-accordion .gr-row { background-color: #ffffff !important; }
+            
+            /* Section Labels */
+            #selected-spins label {
+                background-color: #87CEEB;
+                color: black;
+                padding: 5px;
+                border-radius: 3px;
+            }
+            #spin-analysis label {
+                background-color: #90EE90 !important;
+                color: black !important;
+                padding: 5px;
+                border-radius: 3px;
+            }
+            #strongest-numbers-table label {
+                background-color: #E6E6FA !important;
+                color: black !important;
+                padding: 5px;
+                border-radius: 3px;
+            }
+            #number-of-random-spins label {
+                background-color: #FFDAB9 !important;
+                color: black !important;
+                padding: 5px;
+                border-radius: 3px;
+            }
+            #aggregated-scores label {
+                background-color: #FFB6C1 !important;
+                color: black !important;
+                padding: 5px;
+                border-radius: 3px;
+            }
+            
+            /* Compact dropdown styling for Select Category and Select Strategy */
+            #select-category select, #strategy-dropdown select {
+                max-height: 150px !important;
+                overflow-y: auto !important;
+                scrollbar-width: thin !important;
+            }
+            #select-category select::-webkit-scrollbar, #strategy-dropdown select::-webkit-scrollbar {
+                width: 6px;
+            }
+            #select-category select::-webkit-scrollbar-thumb, #strategy-dropdown select::-webkit-scrollbar-thumb {
+                background-color: #888;
+                border-radius: 3px;
+            }
+            
+            /* Scrollable Tables */
+            .scrollable-table {
+                max-height: 300px;
+                overflow-y: auto;
+                display: block;
+                width: 100%;
+            }
+            
+            /* Updated styling for the Dynamic Roulette Table */
+            .large-table {
+                max-height: 800px !important;
+                max-width: 1000px !important;
+                margin: 0 auto !important;
+                display: block !important;
+                background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+                border: 2px solid #3b82f6 !important;
+                border-radius: 10px !important;
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+                padding: 10px !important;
+            }
+            /* Dynamic Table Container */
+            .dynamic-table-container {
+                width: 100% !important;
+                max-width: 1200px !important;
+                margin: 0 auto !important;
+                padding: 20px 10px !important;
+                display: flex !important;
+                flex-direction: column !important; /* Ensure children stack vertically */
+                justify-content: center !important;
+                align-items: center !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Ensure all children of the container are centered */
+            .dynamic-table-container > * {
+                width: 100% !important;
+                max-width: 900px !important; /* Match the large-table max-width */
+                margin: 0 auto !important;
+            }
+            
+            /* Large Table */
+            .large-table {
+                max-height: 800px !important;
+                max-width: 900px !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                display: block !important;
+                background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+                border: 2px solid #3b82f6 !important;
+                border-radius: 12px !important;
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
+                padding: 15px !important;
+                box-sizing: border-box !important;
+                overflow: visible !important;
+                text-align: center !important; /* Center table content */
+                animation: tableFadeIn 0.5s ease-in-out !important; /* Add load animation */
+                /* Add gradient border */
+                background-clip: padding-box !important;
+                border-image: linear-gradient(45deg, #3b82f6, #1e90ff) 1 !important;
+            }
+            
+            /* Define the load animation */
+            @keyframes tableFadeIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+            
+            .large-table table {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+                text-align: center !important;
+            }
+            
+            .large-table th {
+                font-weight: bold !important;
+                color: #000000 !important;
+                text-shadow: 0 0 5px rgba(0, 0, 0, 0.3) !important;
+                background: rgba(59, 130, 246, 0.1) !important;
+                padding: 10px !important;
+            }
+            
+            .large-table td {
+                padding: 8px !important;
+                text-align: center !important;
+                position: relative !important;
+                overflow: visible !important;
+            }
+            
+            /* Glowing Hover Effects for Hot Numbers (specific to Dynamic Roulette Table) */
+            .dynamic-roulette-table td.hot-number:hover {
+                box-shadow: 0 0 12px 4px #ffd700 !important;
+                transform: scale(1.1) !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            /* NEW: Enhanced Hot Number Corner Flash Effect */
+            .dynamic-roulette-table td.hot-number {
+                position: relative !important;
+                overflow: visible !important;
+            }
+            
+            /* Top-left corner highlight */
+            .dynamic-roulette-table td.hot-number::before {
+                content: '' !important;
+                position: absolute !important;
+                top: -3px !important;
+                left: -3px !important;
+                width: 10px !important;
+                height: 10px !important;
+                background-color: #ffd700 !important; /* Yellow to match existing glow */
+                border: 1px solid #ffffff !important; /* White border for contrast */
+                animation: flashCorner 1.5s ease-in-out infinite !important;
+                z-index: 5 !important;
+            }
+            
+            /* Bottom-right corner highlight */
+            .dynamic-roulette-table td.hot-number::after {
+                content: '' !important;
+                position: absolute !important;
+                bottom: -3px !important;
+                right: -3px !important;
+                width: 10px !important;
+                height: 10px !important;
+                background-color: #ffd700 !important;
+                border: 1px solid #ffffff !important;
+                animation: flashCorner 1.5s ease-in-out infinite !important;
+                z-index: 5 !important;
+            }
+            
+            /* Flashing animation for corners */
+            @keyframes flashCorner {
+                0%, 100% {
+                    opacity: 1 !important;
+                    transform: scale(1) !important;
+                }
+                50% {
+                    opacity: 0.5 !important;
+                    transform: scale(1.2) !important;
+                }
+            }
+            
+            /* Ensure hover effect remains intact and complements corner flash */
+            .dynamic-roulette-table td.hot-number:hover {
+                box-shadow: 0 0 12px 4px #ffd700 !important;
+                transform: scale(1.1) !important;
+                transition: all 0.3s ease !important;
+                z-index: 10 !important; /* Ensure hover effect is above corners */
+            }
+            
+            /* Responsive adjustments for smaller screens */
+            @media (max-width: 768px) {
+                .dynamic-roulette-table td.hot-number::before,
+                .dynamic-roulette-table td.hot-number::after {
+                    width: 8px !important;
+                    height: 8px !important;
+                    top: -2px !important;
+                    left: -2px !important;
+                    bottom: -2px !important;
+                    right: -2px !important;
+                }
+            }
+            
+            /* Tooltip Styles for Number Cells */
+            .dynamic-roulette-table td.has-tooltip:hover::after {
+                content: attr(data-tooltip) !important;
+                position: absolute !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 5px 10px !important;
+                border-radius: 4px !important;
+                border: 1px solid #8c6bb1 !important;
+                bottom: 100% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                white-space: nowrap !important;
+                z-index: 10 !important;
+                font-size: 12px !important;
+                font-family: Arial, sans-serif !important;
+                animation: fadeIn 0.3s ease !important;
+            }
+            
+            @keyframes fadeIn {
+                0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+                100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+            
+            /* Bet Tier Icons with Bounce Animation */
+            .dynamic-roulette-table td.top-tier::before {
+                content: "🔥" !important;
+                margin-right: 5px !important;
+                display: inline-block !important;
+                animation: bounce 0.5s ease-in-out !important;
+            }
+            
+            .dynamic-roulette-table td.middle-tier::before {
+                content: "⭐" !important;
+                margin-right: 5px !important;
+                display: inline-block !important;
+                animation: bounce 0.5s ease-in-out !important;
+            }
+            
+            .dynamic-roulette-table td.lower-tier::before {
+                content: "🌟" !important;
+                margin-right: 5px !important;
+                display: inline-block !important;
+                animation: bounce 0.5s ease-in-out !important;
+            }
+            
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-5px); }
+            }
+            
+            /* Progress Bar Styles for Bet Strength */
+            .dynamic-roulette-table .progress-bar {
+                width: 100% !important;
+                height: 5px !important;
+                background: #d3d3d3 !important;
+                border-radius: 3px !important;
+                margin-top: 3px !important;
+                position: relative !important;
+                display: block !important;
+            }
+            
+            .dynamic-roulette-table .progress-fill.top-tier {
+                height: 100% !important;
+                background: #ffd700 !important; /* Yellow for top-tier */
+                border-radius: 3px !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
+            
+            .dynamic-roulette-table .progress-fill.middle-tier {
+                height: 100% !important;
+                background: #00ffff !important; /* Cyan for middle-tier */
+                border-radius: 3px !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
+            
+            .dynamic-roulette-table .progress-fill.lower-tier {
+                height: 100% !important;
+                background: #00ff00 !important; /* Green for lower-tier */
+                border-radius: 3px !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 1200px) {
+                .dynamic-table-container {
+                    max-width: 90vw !important;
+                    padding: 15px 5px !important;
+                }
+            
+                .dynamic-table-container > * {
+                    max-width: 95% !important;
+                }
+            
+                .large-table {
+                    max-width: 95% !important;
+                    padding: 12px !important;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .dynamic-table-container {
+                    max-width: 100vw !important;
+                    padding: 10px 5px !important;
+                }
+            
+                .dynamic-table-container > * {
+                    max-width: 100% !important;
+                }
+            
+                .large-table {
+                    max-width: 100% !important;
+                    padding: 10px !important;
+                }
+            }
+            
+            /* Strategy Card Container */
+            .strategy-card {
+                max-width: 1000px !important;
+                margin: 0 auto !important;
+                padding: 20px !important;
+                background: linear-gradient(135deg, #2a2a72, #4682b4) !important; /* Match the aesthetic of other sections */
+                border: 2px solid #3b82f6 !important;
+                border-radius: 12px !important;
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+                animation: cardFadeIn 0.5s ease-in-out !important; /* Add load animation */
+            }
+            
+            /* Load animation for the strategy card */
+            @keyframes cardFadeIn {
+                0% {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            /* Style for dropdowns within the strategy card */
+            .strategy-card .gr-dropdown {
+                background: rgba(59, 130, 246, 0.1) !important;
+                border: 1px solid #3b82f6 !important;
+                border-radius: 5px !important;
+                margin: 5px 0 !important;
+            }
+            
+            .strategy-card .gr-dropdown select {
+                background: transparent !important;
+                color: #ffffff !important;
+                border: none !important;
+                font-size: 14px !important;
                 padding: 5px !important;
             }
-        }
-        
-        /* TITLE: Suggestion Box */
-        .suggestion-box {
-            background-color: #f0f8ff !important;
-            border: 1px solid #4682b4 !important;
-            border-radius: 5px !important;
-            padding: 5px !important;
-            font-size: 14px !important;
-        }
-        
-        /* TITLE: Spin Animation */
-        .play-btn:active {
-            animation: spin 0.5s ease-in-out !important;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* TITLE: Fade-In Animation */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in !important;
-        }
-        
-        /* Row containing Dynamic Table and Strategy Recommendations */
-        .dynamic-table-strategy-row {
-            display: flex !important;
-            gap: 25px !important;
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            width: 100% !important;
-            max-width: 1250px !important;
-            margin: 0 auto !important;
-            padding: 20px 10px !important;
-        }
-        
-        /* Strategy Recommendations Container (Left Side) */
-        .strategy-recommendations-container {
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: flex-start !important;
-            align-items: center !important;
-            width: 100% !important;
-            max-width: 450px !important;
-            margin: 0 auto !important;
-            padding: 15px !important;
-        }
-        
-        /* Strategy Card Styling */
-        .strategy-recommendations-container .strategy-card {
-            max-width: 100% !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 20px !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-        }
-        
-        /* Fix Dropdown Arrow Overlap */
-        .strategy-recommendations-container .gr-dropdown {
-            width: 100% !important;
-            min-width: 220px !important;
-            position: relative !important;
-        }
-        
-        .strategy-recommendations-container .gr-dropdown select {
-            width: 100% !important;
-            padding-right: 30px !important;
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            background: transparent !important;
-            color: #ffffff !important;
-            border: 1px solid #3b82f6 !important;
-            border-radius: 5px !important;
-            font-size: 14px !important;
-            padding: 8px 12px !important;
-            box-sizing: border-box !important;
-        }
-        
-        /* Custom Arrow for Dropdowns */
-        .strategy-recommendations-container .gr-dropdown::after {
-            content: '▼';
-            position: absolute !important;
-            right: 10px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            color: #ffffff !important;
-            font-size: 12px !important;
-            pointer-events: none !important;
-        }
-        
-        /* Ensure Dropdown Options Are Readable */
-        .strategy-recommendations-container .gr-dropdown select option {
-            background: #2a2a72 !important;
-            color: #ffffff !important;
-            font-size: 14px !important;
-        }
-        
-        /* Style for Dropdown Labels */
-        .strategy-recommendations-container .gr-dropdown label {
-            background: transparent !important;
-            color: #ffffff !important;
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
-            padding: 5px !important;
-            font-size: 14px !important;
-        }
-        
-        /* Ensure Strategy Output Box Fits Well */
-        .strategy-recommendations-container .strategy-box {
-            max-height: 300px !important;
-            overflow-y: auto !important;
-            padding: 15px !important;
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-radius: 8px !important;
-            box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
-            width: 100% !important;
-        }
-        
-        /* Dynamic Table Container (Right Side) */
-        .dynamic-table-strategy-row .dynamic-table-container {
-            max-width: 750px !important;
-            width: 100% !important;
-            padding: 15px !important;
-        }
-        
-        /* Dynamic Table Styling */
-        .dynamic-table-strategy-row .large-table {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding: 20px !important;
-            box-sizing: border-box !important;
-            overflow-x: auto !important;
-            border: 2px solid #3b82f6 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
-        }
-        
-        /* Responsive Adjustments */
-        @media (max-width: 1300px) {
-            .dynamic-table-strategy-row {
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 20px !important;
+            
+            .strategy-card .gr-dropdown label {
+                background: transparent !important;
+                color: #ffffff !important;
+                text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+                padding: 5px !important;
             }
-        
-            .dynamic-table-strategy-row .dynamic-table-container,
-            .dynamic-table-strategy-row .strategy-recommendations-container {
-                max-width: 100% !important;
+            
+            /* Style for the reset button */
+            .strategy-card .gr-button {
+                background: #3b82f6 !important;
+                color: #ffffff !important;
+                border: 1px solid #3b82f6 !important;
+                border-radius: 5px !important;
+                box-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+                transition: background 0.3s ease, transform 0.2s ease !important;
+            }
+            
+            .strategy-card .gr-button:hover {
+                background: #1e90ff !important;
+                transform: scale(1.05) !important;
+            }
+            
+            /* Style for sliders */
+            .strategy-card .gr-slider {
+                background: rgba(59, 130, 246, 0.1) !important;
+                border: 1px solid #3b82f6 !important;
+                border-radius: 5px !important;
+                color: #ffffff !important;
+                text-shadow: 0 0 5px rgba(59, 130, 246, 0.5) !important;
+            }
+            
+            /* Style for the strategy recommendations output */
+            .strategy-card .strategy-box {
+                max-height: 300px !important;
+                overflow-y: auto !important;
+                padding: 10px !important;
+                background: rgba(255, 255, 255, 0.05) !important; /* Slightly lighter background for contrast */
+                border-radius: 8px !important;
+                box-shadow: inset 0 0 5px rgba(59, 130, 246, 0.3) !important;
+                animation: outputFadeIn 0.5s ease-in-out !important; /* Add load animation for the output */
+            }
+            
+            .strategy-card .strategy-box p, .strategy-card .strategy-box span, .strategy-card .strategy-box ul, .strategy-card .strategy-box li {
+                color: #ffffff !important;
+                text-shadow: 0 0 5px rgba(59, 130, 246, 0.3) !important;
+                font-size: 14px !important;
+            }
+            
+            /* Load animation for the strategy output */
+            @keyframes outputFadeIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.98);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+            
+            /* Ensure the row inside the card layouts dropdowns properly */
+            .strategy-card .gr-row {
+                display: flex !important;
+                gap: 10px !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .strategy-card {
+                    padding: 15px !important;
+                }
+            
+                .strategy-card .gr-row {
+                    flex-direction: column !important;
+                    align-items: center !important;
+                }
+            
+                .strategy-card .gr-dropdown {
+                    width: 100% !important;
+                    max-width: 300px !important;
+                }
+            
+                .strategy-card .gr-button {
+                    width: 100% !important;
+                    max-width: 300px !important;
+                }
+            }
+            
+            .strongest-numbers-table {
                 width: 100% !important;
-            }
-        
-            .dynamic-table-strategy-row .large-table {
                 max-width: 100% !important;
+                background: linear-gradient(135deg, #2a2a72, #4682b4) !important;
+                border-collapse: collapse !important;
+                border: 1px solid #3b82f6 !important;
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.5) !important;
+                margin: 10px 0 !important;
             }
-        
-            .strategy-recommendations-container .strategy-card {
-                max-width: 100% !important;
+            
+            .strongest-numbers-table th, .strongest-numbers-table td {
+                padding: 8px 12px !important;
+                border: 1px solid #3b82f6 !important;
+                text-align: center !important;
+                color: #ffffff !important;
+                text-shadow: 0 0 5px rgba(59, 130, 246, 0.7) !important;
             }
-        
-            .strategy-recommendations-container .gr-dropdown {
-                min-width: 100% !important;
+            
+            .strongest-numbers-table th {
+                background: rgba(59, 130, 246, 0.2) !important;
+                font-weight: bold !important;
             }
-        }
-        
-        /* Pattern Alert Icons for Quick Trends */
-        .trend-icon {
-            display: inline-block;
-            font-size: 16px;
-            margin-right: 5px;
-            animation: subtle-rotate 2s linear infinite;
-        }
-        .trend-icon.hot { color: #ff4500; }
-        .trend-icon.cold { color: #00b7eb; }
-        .trend-icon.streak { color: #ffd700; }
-        @keyframes subtle-rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .quick-trends li {
-            display: flex;
-            align-items: center;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin-bottom: 5px;
-        }
-        
-        /* Quick Bet Suggestions for Quick Trends */
-        .bet-suggestion {
-            color: #ff4500;
-            font-style: italic;
-            background: rgba(255, 69, 0, 0.1);
-            padding: 5px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
-        }
-        
-        /* Debug Highlight for SpinTrend Radar */
-        .traits-overview.debug-highlight {
-            background: rgba(200, 200, 200, 0.2);
-            padding: 10px;
-            border: 1px solid #999;
-        }
-        
-        /* Ensure Traits Wrapper is Visible */
-        .traits-wrapper {
-            position: relative;
-            overflow: visible;
-            padding-bottom: 20px;
-        }
-        
-        /* Red/Black Switch Alert */
-        .switch-alert {
-            display: flex;
-            gap: 4px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.5);
-            border: 2px solid #666;
-            border-radius: 6px;
-            margin-top: 15px;
-            justify-content: center;
-            min-height: 40px;
-            align-items: center;
-            position: relative;
-            z-index: 100;
-        }
-        .switch-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-        }
-        .switch-dot.red { background: #ff4444; }
-        .switch-dot.black { background: #000000; }
-        .switch-dot.green { background: #388e3c; }
-        .switch-alert.high-switches {
-            border: 2px solid #ffd700;
-            animation: flash-border 1s infinite ease-in-out;
-        }
-        @keyframes flash-border {
-            0%, 100% { border-color: #ffd700; }
-            50% { border-color: #ffa500; }
-        }
-        .switch-alert:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            background: #333;
-            color: #fff;
-            padding: 5px;
-            border-radius: 3px;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            z-index: 101;
-        }
-        
-        /* Dozen Shift Indicator */
-        .dozen-shift-indicator {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 6px;
-            margin-top: 10px;
-            justify-content: center;
-            position: relative;
-            z-index: 100;
-        }
-        .dozen-badge {
-            display: inline-block;
-            font-size: 12px;
-            color: #fff;
-            background: #388e3c;
-            border-radius: 3px;
-            padding: 2px 4px;
-            animation: bounce 1s infinite ease-in-out;
-        }
-        .dozen-badge.d1 { background: #388e3c; }
-        .dozen-badge.d2 { background: #ff9800; }
-        .dozen-badge.d3 { background: #8e24aa; }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-        }
-        .dozen-shift-indicator:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            background: #333;
-            color: #fff;
-            padding: 5px;
-            border-radius: 3px;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            z-index: 101;
-        }
-        
-          /* Enhanced Red/Black Chopping Alert within Quick Trends */
-          .quick-trends .switch-alert {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 6px !important;
-            padding: 8px !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid #999 !important;
-            border-radius: 5px !important;
-            margin: 5px 0 !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            z-index: 10 !important;
-            transition: all 0.3s ease !important;
-          }
-          
-          .quick-trends .switch-dots-container {
-            display: flex !important;
-            gap: 5px !important;
-          }
-          
-          .quick-trends .switch-dot {
-            width: 14px !important;
-            height: 14px !important;
-            border-radius: 50% !important;
-            border: 1px solid #fff !important;
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
-          }
-          
-          .quick-trends .switch-dot.red { background: #ff4444 !important; }
-          .quick-trends .switch-dot.black { background: #000000 !important; }
-          .quick-trends .switch-dot.green { background: #388e3c !important; }
-          
-          .quick-trends .switch-alert.high-switches {
-            border: 2px solid #ffd700 !important;
-            background: rgba(255, 215, 0, 0.15) !important;
-            animation: chopping-glow 1.5s ease-in-out infinite !important;
-          }
-          
-          .quick-trends .chopping-alert {
-            display: flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            padding: 8px !important;
-            color: #ff4500 !important;
-            font-weight: bold !important;
-            font-size: 13px !important;
-            text-align: left !important;
-            text-shadow: 0 0 3px rgba(255, 69, 0, 0.4) !important;
-            border-radius: 5px !important;
-            z-index: 11 !important;
-          }
-          
-          @keyframes chopping-glow {
-            0%, 100% {
-              box-shadow: 0 0 8px rgba(255, 215, 0, 0.4) !important;
-              border-color: #ffd700 !important;
+            
+            .strongest-numbers-table td:nth-child(3), 
+            .strongest-numbers-table td:nth-child(6), 
+            .strongest-numbers-table td:nth-child(9) {
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                max-width: 150px !important;
             }
-            50% {
-              box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
-              border-color: #ffa500 !important;
+            
+            /* Last Spins Container */
+            .last-spins-container {
+                background-color: #f5f5f5 !important;
+                border: 1px solid #d3d3d3 !important;
+                padding: 10px !important;
+                border-radius: 5px !important;
+                margin-top: 10px !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
             }
-          }
-          
-          .quick-trends .switch-alert:hover::after {
-            content: attr(data-tooltip) !important;
-            position: absolute !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 4px !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            font-size: 11px !important;
-            z-index: 11 !important;
-            white-space: nowrap !important;
-          }
-          
-          .quick-trends .red-badge {
-            display: inline-block !important;
-            width: 14px !important;
-            height: 14px !important;
-            background: #ff4444 !important;
-            border-radius: 50% !important;
-            border: 1px solid #fff !important;
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
-            z-index: 11 !important;
-          }
-          
-          .quick-trends .black-badge {
-            display: inline-block !important;
-            width: 14px !important;
-            height: 14px !important;
-            background: #000000 !important;
-            border-radius: 50% !important;
-            border: 1px solid #fff !important;
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
-            z-index: 11 !important;
-          }
-          
-          .quick-trends .dozen-alert.d1 {
-            background: #FF6347 !important; /* Tomato red for 1st Dozen */
-            padding: 8px !important;
-            border-radius: 5px !important;
-            z-index: 10 !important;
-          }
-          
-          .quick-trends .dozen-alert.d2 {
-            background: #4682B4 !important; /* Steel blue for 2nd Dozen */
-            padding: 8px !important;
-            border-radius: 5px !important;
-            z-index: 10 !important;
-          }
-          
-          .quick-trends .dozen-alert.d3 {
-            background: #32CD32 !important; /* Lime green for 3rd Dozen */
-            padding: 8px !important;
-            border-radius: 5px !important;
-            z-index: 10 !important;
-          }
-          
-          /* Dozen Shift Indicator within Quick Trends */
-        .quick-trends .dozen-shift-indicator {
-            display: flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-            padding: 8px !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid #999 !important;
-            border-radius: 5px !important;
-            margin: 5px 0 !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            position: relative !important;
-            z-index: 10 !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .quick-trends .dozen-badge {
-            display: inline-block !important;
-            font-size: 12px !important;
-            color: #fff !important;
-            border-radius: 3px !important;
-            padding: 2px 4px !important;
-            animation: bounce 1s infinite ease-in-out !important;
-        }
-        
-        .quick-trends .dozen-badge.d1 { background: #388e3c !important; }
-        .quick-trends .dozen-badge.d2 { background: #ff9800 !important; }
-        .quick-trends .dozen-badge.d3 { background: #8e24aa !important; }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0) !important; }
-            50% { transform: translateY(-3px) !important; }
-        }
-        
-        .quick-trends .dozen-shift-indicator:hover::after {
-            content: attr(data-tooltip) !important;
-            position: absolute !important;
-            background: #333 !important;
-            color: #fff !important;
-            padding: 5px 10px !important;
-            border-radius: 4px !important;
-            top: -35px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            font-size: 11px !important;
-            z-index: 11 !important;
-            white-space: nowrap !important;
-        }
-          /* Tour Button */
-          .tour-button {
-            width: 150px !important;
-            height: 40px !important;
-            padding: 8px 15px !important;
-            background-color: #ff9800 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 5px !important;
-            cursor: pointer !important;
-            font-size: 14px !important;
-            font-weight: bold !important;
-            line-height: 1 !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-            box-sizing: border-box !important;
-            z-index: 100 !important;
-          }
-          .tour-button:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-          }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .quick-trends .switch-alert,
-            .quick-trends .dozen-shift-indicator {
-                padding: 6px !important;
+            
+            /* Fade-in animation for Last Spins */
+            .fade-in {
+                animation: fadeIn 0.5s ease-in;
             }
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            /* Pattern Badge for Spin Patterns */
+            .pattern-badge {
+                background-color: #ffd700 !important;
+                color: #333 !important;
+                padding: 2px 5px !important;
+                border-radius: 3px !important;
+                font-size: 10px !important;
+                margin-left: 5px !important;
+                cursor: pointer !important;
+                transition: transform 0.2s ease !important;
+            }
+            .pattern-badge:hover {
+                transform: scale(1.1) !important;
+                box-shadow: 0 0 8px #ffd700 !important;
+            }
+            
+            /* Quick Trends Section for SpinTrend Radar */
+            .quick-trends {
+                background: linear-gradient(135deg, #d8bfd8 0%, #e6e6fa 100%) !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+                margin-bottom: 12px !important;
+                border: 1px solid #8c6bb1 !important;
+                box-shadow: 0 0 8px rgba(140, 107, 177, 0.3) !important;
+            }
+            
+            .quick-trends h4 {
+                margin: 0 0 8px 0 !important;
+                font-size: 16px !important;
+                color: #ff66cc !important;
+                text-shadow: 0 0 4px rgba(255, 102, 204, 0.5) !important;
+                font-weight: bold !important;
+            }
+            
+            .quick-trends ul {
+                margin: 0 !important;
+                padding-left: 15px !important;
+            }
+            
+            .quick-trends ul li {
+                color: #3e2723 !important;
+                font-size: 14px !important;
+                margin: 4px 0 !important;
+                font-weight: 500 !important;
+            }
+            
+            /* Spin animation for roulette table buttons */
+            .roulette-button:active {
+                animation: spin 0.5s ease-in-out !important;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            /* Flash animation for new spins */
+            .flash.red {
+                animation: flashRed 0.3s ease-in-out;
+            }
+            .flash.green {
+                animation: flashGreen 0.3s ease-in-out;
+            }
+            .flash.black {
+                animation: flashBlack 0.3s ease-in-out;
+            }
+            @keyframes flashRed {
+                0%, 100% { background-color: red; }
+                50% { background-color: #ff3333; }
+            }
+            @keyframes flashGreen {
+                0%, 100% { background-color: green; }
+                50% { background-color: #33cc33; }
+            }
+            @keyframes flashBlack {
+                0%, 100% { background-color: black; }
+                50% { background-color: #333333; }
+            }
+            
+            /* Bounce animation for Dealer's Spin Tracker numbers */
+            .bounce {
+                animation: bounce 0.4s ease-in-out;
+            }
+            @keyframes bounce {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+            }
+            
+            /* New: Flip animation for Last Spins new numbers */
+            .flip {
+                animation: flip 0.5s ease-in-out;
+            }
+            @keyframes flip {
+                0% { transform: rotateY(0deg); }
+                100% { transform: rotateY(360deg); }
+            }
+            
+            /* New Spin Highlight Effect */
+            .new-spin {
+                position: relative !important;
+                animation: pulse-highlight 1s ease-in-out !important;
+            }
+            
+            @keyframes pulse-highlight {
+                0%, 100% { box-shadow: none; }
+                50% { box-shadow: 0 0 10px 5px var(--highlight-color); }
+            }
+            
+            /* Color-coded highlights for new spins */
+            .new-spin.spin-red {
+                --highlight-color: rgba(255, 0, 0, 0.8) !important;
+            }
+            .new-spin.spin-black {
+                --highlight-color: rgba(255, 255, 255, 0.8) !important;
+            }
+            .new-spin.spin-green {
+                --highlight-color: rgba(0, 255, 0, 0.8) !important;
+            }
+            
+            /* Spin Counter Styling */
+            .spin-counter {
+                font-size: 14px !important; /* Smaller text */
+                font-weight: bold !important;
+                color: #ffffff !important;
+                background: linear-gradient(135deg, #2e7d32, #1b5e20) !important;
+                padding: 6px 12px !important; /* Reduced padding */
+                border: 1px solid #ffffff !important; /* Thinner border */
+                border-radius: 8px !important; /* Slightly smaller radius */
+                margin: 5px auto !important; /* Less margin */
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important; /* Smaller shadow */
+                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5) !important;
+                transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+                position: relative !important;
+            }
+            .spin-counter:hover {
+                transform: scale(1.1) !important;
+                box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.7) !important; /* Smaller glow */
+                border-color: #ffd700 !important;
+                animation: sparkle-and-pulse 0.6s ease-in-out !important;
+            }
+            .spin-counter:hover::after {
+                content: attr(data-tip);
+                position: absolute !important;
+                top: -45px !important; /* Adjusted for smaller counter */
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 3px 6px !important; /* Smaller padding */
+                border-radius: 3px !important;
+                font-size: 9px !important; /* Smaller font */
+                max-width: 120px !important; /* Smaller width */
+                white-space: normal !important;
+                text-align: center !important;
+                z-index: 10 !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+            }
+            .spin-counter.glow {
+                animation: casino-flicker 1.8s ease-in-out infinite, color-shift 1.8s ease-in-out infinite !important;
+            }
+            .spin-counter.milestone {
+                animation: milestone-glow 1s ease-out !important;
+            }
+            @keyframes sparkle-and-pulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                    border-color: #ffffff;
+                }
+                50% {
+                    transform: scale(1.15);
+                    box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
+                    border-color: #ffd700;
+                }
+                100% {
+                    transform: scale(1.1);
+                    box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.7);
+                    border-color: #ffd700;
+                }
+            }
+            @keyframes casino-flicker {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                    border-color: #ffffff;
+                }
+                33% {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 8px 4px rgba(255, 0, 0, 0.6);
+                    border-color: #ff0000;
+                }
+                66% {
+                    transform: scale(1.03);
+                    box-shadow: 0 0 8px 4px rgba(0, 128, 0, 0.6);
+                    border-color: #008000;
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.6);
+                    border-color: #ffffff;
+                }
+            }
+            @keyframes color-shift {
+                0% { color: #ffffff; }
+                33% { color: #ff0000; }
+                66% { color: #008000; }
+                100% { color: #ffffff; }
+            }
+            @keyframes milestone-glow {
+                0% {
+                    border-color: #ffffff;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+                50% {
+                    border-color: #ffd700;
+                    box-shadow: 0 0 15px 7px rgba(255, 215, 0, 0.8);
+                }
+                100% {
+                    border-color: #ffffff;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+            }
+            
+            /* Pattern Alert Icons for Quick Trends */
+            .trend-icon {
+                display: inline-block;
+                font-size: 16px;
+                margin-right: 5px;
+                animation: subtle-rotate 2s linear infinite;
+            }
+            .trend-icon.hot { color: #ff4500; }
+            .trend-icon.cold { color: #00b7eb; }
+            .trend-icon.streak { color: #ffd700; }
+            @keyframes subtle-rotate {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .quick-trends li {
+                display: flex;
+                align-items: center;
+                padding: 5px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+            
+            /* Quick Bet Suggestions for Quick Trends */
+            .bet-suggestion {
+                color: #ff4500;
+                font-style: italic;
+                background: rgba(255, 69, 0, 0.1);
+                padding: 5px;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                font-weight: bold;
+                box-shadow: 0 0 5px rgba(255, 69, 0, 0.3);
+            }
+            
+            /* Debug Highlight for SpinTrend Radar */
+            .traits-overview.debug-highlight {
+                background: rgba(200, 200, 200, 0.2);
+                padding: 10px;
+                border: 1px solid #999;
+            }
+            
+            /* Ensure Traits Wrapper is Visible */
+            .traits-wrapper {
+                position: relative;
+                overflow: visible;
+                padding-bottom: 20px;
+            }
+            
+            /* Red/Black Switch Alert */
+            .switch-alert {
+                display: flex;
+                gap: 4px;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.5);
+                border: 2px solid #666;
+                border-radius: 6px;
+                margin-top: 15px;
+                justify-content: center;
+                min-height: 40px;
+                align-items: center;
+                position: relative;
+                z-index: 100;
+            }
+            .switch-dot {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+            }
+            .switch-dot.red { background: #ff4444; }
+            .switch-dot.black { background: #000000; }
+            .switch-dot.green { background: #388e3c; }
+            .switch-alert.high-switches {
+                border: 2px solid #ffd700;
+                animation: flash-border 1s infinite ease-in-out;
+            }
+            @keyframes flash-border {
+                0%, 100% { border-color: #ffd700; }
+                50% { border-color: #ffa500; }
+            }
+            .switch-alert:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                background: #333;
+                color: #fff;
+                padding: 5px;
+                border-radius: 3px;
+                top: -35px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 12px;
+                z-index: 101;
+            }
+            
+            /* Dozen Shift Indicator */
+            .dozen-shift-indicator {
+                display: flex;
+                align-items: center;
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 6px;
+                margin-top: 10px;
+                justify-content: center;
+                position: relative;
+                z-index: 100;
+            }
+            .dozen-badge {
+                display: inline-block;
+                font-size: 12px;
+                color: #fff;
+                background: #388e3c;
+                border-radius: 3px;
+                padding: 2px 4px;
+                animation: bounce 1s infinite ease-in-out;
+            }
+            .dozen-badge.d1 { background: #388e3c; }
+            .dozen-badge.d2 { background: #ff9800; }
+            .dozen-badge.d3 { background: #8e24aa; }
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-3px); }
+            }
+            .dozen-shift-indicator:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                background: #333;
+                color: #fff;
+                padding: 5px;
+                border-radius: 3px;
+                top: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 12px;
+                z-index: 101;
+            }
+            
+            /* Enhanced Red/Black Chopping Alert within Quick Trends */
+            .quick-trends .switch-alert {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 6px !important;
+                padding: 8px !important;
+                background: rgba(255, 255, 255, 0.2) !important;
+                border: 1px solid #999 !important;
+                border-radius: 5px !important;
+                margin: 5px 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                z-index: 10 !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            .quick-trends .switch-dots-container {
+                display: flex !important;
+                gap: 5px !important;
+            }
+            
             .quick-trends .switch-dot {
-                width: 12px !important;
-                height: 12px !important;
+                width: 14px !important;
+                height: 14px !important;
+                border-radius: 50% !important;
+                border: 1px solid #fff !important;
+                box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
             }
+            
+            .quick-trends .switch-dot.red { background: #ff4444 !important; }
+            .quick-trends .switch-dot.black { background: #000000 !important; }
+            .quick-trends .switch-dot.green { background: #388e3c !important; }
+            
+            .quick-trends .switch-alert.high-switches {
+                border: 2px solid #ffd700 !important;
+                background: rgba(255, 215, 0, 0.15) !important;
+                animation: chopping-glow 1.5s ease-in-out infinite !important;
+            }
+            
             .quick-trends .chopping-alert {
-                font-size: 12px !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                padding: 8px !important;
+                color: #ff4500 !important;
+                font-weight: bold !important;
+                font-size: 13px !important;
+                text-align: left !important;
+                text-shadow: 0 0 3px rgba(255, 69, 0, 0.4) !important;
+                border-radius: 5px !important;
+                z-index: 11 !important;
             }
+            
+            @keyframes chopping-glow {
+                0%, 100% {
+                    box-shadow: 0 0 8px rgba(255, 215, 0, 0.4) !important;
+                    border-color: #ffd700 !important;
+                }
+                50% {
+                    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
+                    border-color: #ffa500 !important;
+                }
+            }
+            
+            .quick-trends .switch-alert:hover::after {
+                content: attr(data-tooltip) !important;
+                position: absolute !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 5px 10px !important;
+                border-radius: 4px !important;
+                top: -35px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                font-size: 11px !important;
+                z-index: 11 !important;
+                white-space: nowrap !important;
+            }
+            
+            .quick-trends .red-badge {
+                display: inline-block !important;
+                width: 14px !important;
+                height: 14px !important;
+                background: #ff4444 !important;
+                border-radius: 50% !important;
+                border: 1px solid #fff !important;
+                box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
+                z-index: 11 !important;
+            }
+            
+            .quick-trends .black-badge {
+                display: inline-block !important;
+                width: 14px !important;
+                height: 14px !important;
+                background: #000000 !important;
+                border-radius: 50% !important;
+                border: 1px solid #fff !important;
+                box-shadow: 0 0 3px rgba(0, 0, 0, 0.2) !important;
+                z-index: 11 !important;
+            }
+            
+            .quick-trends .dozen-alert.d1 {
+                background: #FF6347 !important; /* Tomato red for 1st Dozen */
+                padding: 8px !important;
+                border-radius: 5px !important;
+                z-index: 10 !important;
+            }
+            
+            .quick-trends .dozen-alert.d2 {
+                background: #4682B4 !important; /* Steel blue for 2nd Dozen */
+                padding: 8px !important;
+                border-radius: 5px !important;
+                z-index: 10 !important;
+            }
+            
+            .quick-trends .dozen-alert.d3 {
+                background: #32CD32 !important; /* Lime green for 3rd Dozen */
+                padding: 8px !important;
+                border-radius: 5px !important;
+                z-index: 10 !important;
+            }
+            
+            /* Dozen Shift Indicator within Quick Trends */
+            .quick-trends .dozen-shift-indicator {
+                display: flex !important;
+                align-items: center !important;
+                gap: 5px !important;
+                padding: 8px !important;
+                background: rgba(255, 255, 255, 0.2) !important;
+                border: 1px solid #999 !important;
+                border-radius: 5px !important;
+                margin: 5px 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                z-index: 10 !important;
+                transition: all 0.3s ease !important;
+            }
+            
             .quick-trends .dozen-badge {
-                font-size: 11px !important;
-                padding: 1px 3px !important;
+                display: inline-block !important;
+                font-size: 12px !important;
+                color: #fff !important;
+                border-radius: 3px !important;
+                padding: 2px 4px !important;
+                animation: bounce 1s infinite ease-in-out !important;
             }
-            .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
-                font-size: 11px !important;
+            
+            .quick-trends .dozen-badge.d1 { background: #388e3c !important; }
+            .quick-trends .dozen-badge.d2 { background: #ff9800 !important; }
+            .quick-trends .dozen-badge.d3 { background: #8e24aa !important; }
+            
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0) !important; }
+                50% { transform: translateY(-3px) !important; }
             }
-        }
-    </style>
+            
+            .quick-trends .dozen-shift-indicator:hover::after {
+                content: attr(data-tooltip) !important;
+                position: absolute !important;
+                background: #333 !important;
+                color: #fff !important;
+                padding: 5px 10px !important;
+                border-radius: 4px !important;
+                top: -35px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                font-size: 11px !important;
+                z-index: 11 !important;
+                white-space: nowrap !important;
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 600px) {
+                .quick-trends .switch-alert,
+                .quick-trends .dozen-shift-indicator {
+                    padding: 6px !important;
+                }
+                .quick-trends .switch-dot {
+                    width: 12px !important;
+                    height: 12px !important;
+                }
+                .quick-trends .chopping-alert {
+                    font-size: 12px !important;
+                }
+                .quick-trends .dozen-badge {
+                    font-size: 11px !important;
+                    padding: 1px 3px !important;
+                }
+                .quick-trends .dozen-shift-indicator span:not(.dozen-badge) {
+                    font-size: 11px !important;
+                }
+            }
+        </style>
+        <script>
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            const rouletteTips = [
+                "Bet on neighbors of hot numbers for better odds!",
+                "Red and black have equal chances, but zero is green!",
+                "Try the Martingale strategy for even-money bets.",
+                "Dozens cover 12 numbers for a balanced risk.",
+                "Watch for dealer biases in the Spin Tracker!",
+                "Fibonacci betting can manage your bankroll.",
+                "Columns offer a 2:1 payout—worth a try!",
+                "Zero’s neighbors are hot in European roulette."
+            ];
+            
+            function setRandomTip() {
+                const counter = document.querySelector('.spin-counter');
+                if (counter) {
+                    const randomTip = rouletteTips[Math.floor(Math.random() * rouletteTips.length)];
+                    counter.setAttribute('data-tip', randomTip);
+                }
+            }
+            
+            function playChipSound() {
+                const audio = new Audio('https://example.com/chip_clink.mp3'); // Replace with your sound file URL
+                audio.play().catch(error => console.log('Audio play failed:', error));
+            }
+            
+            function updateSpinCounter() {
+                const counter = document.querySelector('.spin-counter');
+                if (counter) {
+                    const currentCount = parseInt(counter.textContent.match(/\d+/)[0]) || 0;
+                    counter.textContent = `Total Spins: ${currentCount}`;
+                    counter.classList.add('glow');
+                    playChipSound();
+                    if (currentCount === 10 || currentCount === 50 || currentCount === 100) {
+                        counter.classList.add('milestone');
+                        setTimeout(() => counter.classList.remove('milestone'), 1000);
+                    }
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                const counter = document.querySelector('.spin-counter');
+                if (counter) {
+                    const observer = new MutationObserver(() => updateSpinCounter());
+                    observer.observe(counter, { childList: true, characterData: true, subtree: true });
+                    counter.addEventListener('mouseenter', setRandomTip);
+                    setRandomTip(); // Set initial tip
+                }
+            });
+        </script>
     """)
     print("CSS Updated")
    
