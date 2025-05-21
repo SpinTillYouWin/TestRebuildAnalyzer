@@ -6722,7 +6722,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                 formData.append('terms_version', termsVersion);
                 formData.append('action', 'User agreed to Terms and Privacy Policy');
     
-                fetch('https://formspree.io/f/mnnpllqq', {
+                fetch('https://formspree.io/f/mwpozyjq', {
                     method: 'POST',
                     body: formData,
                     headers: { 'Accept': 'application/json' }
