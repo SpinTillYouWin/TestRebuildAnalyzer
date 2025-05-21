@@ -6203,593 +6203,6 @@ def select_next_spin_top_pick(last_spin_count, trait_filter=None, trait_match_we
 
 # Lines after (context, unchanged from Part 2)
 with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
-    # T&C and Privacy Policy Modal (Fixed Positioning)
-    gr.HTML("""
-    <div class="modal-overlay" id="termsModal">
-        <div class="modal-content">
-            <div class="tabs">
-                <div class="tab active" onclick="showTab('terms')">Terms and Conditions</div>
-                <div class="tab" onclick="showTab('privacy')">Privacy Policy</div>
-            </div>
-            <!-- Terms and Conditions -->
-            <div class="tab-content active" id="terms">
-                <h2>WheelPulse Terms and Conditions</h2>
-                <p><strong>Last Updated: May 13, 2025</strong></p>
-                <div class="scrollable-content">
-                    <p>Welcome to WheelPulse, an educational app by S.T.Y.W. for analyzing roulette patterns. Expand each section below to read the full terms.</p>
-                    <details>
-                        <summary>1. Purpose and Scope of the App</summary>
-                        <ul>
-                            <li><strong>Educational Use Only</strong>: WheelPulse is for educational purposes to analyze roulette spin data and simulate strategies theoretically. It is not a gambling platform.</li>
-                            <li><strong>Prohibited Use</strong>: Do not use for real-money gambling or betting. We’re not responsible for losses from such use.</li>
-                            <li><strong>Features Covered</strong>:
-                                <ul>
-                                    <li><strong>Spin Analysis</strong>: Tracks spins to display trends (e.g., hit percentages, hot/cold numbers).</li>
-                                    <li><strong>Strategy Recommendations</strong>: Offers theoretical strategies (e.g., Martingale, Fibonacci) for study.</li>
-                                    <li><strong>Betting Progression Tracker</strong>: Simulates betting progressions for learning.</li>
-                                    <li><strong>Hot/Cold Numbers</strong>: Identifies frequent/infrequent numbers for analysis.</li>
-                                    <li><strong>Dealer’s Spin Tracker</strong>: Analyzes spins to study potential biases.</li>
-                                    <li><strong>Casino Data Insights</strong>: Allows input of hypothetical casino data to explore trends.</li>
-                                    <li><strong>Feedback Form</strong>: Collects optional user feedback.</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>2. Eligibility</summary>
-                        <ul>
-                            <li>You must be 19+ and reside where using the app for education is legal.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>3. Intellectual Property</summary>
-                        <ul>
-                            <li>The app, its design, code, and content are owned by S.T.Y.W. and protected by Canadian and international copyright laws.</li>
-                            <li>You’re granted a limited, non-exclusive license for personal, educational use. Do not copy, modify, or reverse-engineer the app without permission.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>4. User Conduct and Prohibited Activities</summary>
-                        <ul>
-                            <li>Do not use for illegal purposes, gambling, or to disrupt the app’s functionality.</li>
-                            <li>Do not misuse the app’s outputs to promote gambling.</li>
-                            <li>Do not submit false or harmful data via the feedback form.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>5. Feature-Specific Terms</summary>
-                        <ul>
-                            <li><strong>Spin Analysis and Trends</strong>: Results are theoretical and do not predict outcomes. We’re not liable for decisions based on these.</li>
-                            <li><strong>Strategy Recommendations</strong>: Strategies (e.g., Hot Bet, Fibonacci) are simulations for education. Using them for gambling is prohibited.</li>
-                            <li><strong>Betting Progression Tracker</strong>: Simulates progressions (e.g., Martingale). We’re not liable for losses if applied in real betting.</li>
-                            <li><strong>Hot/Cold Numbers and Dealer’s Spin Tracker</strong>: For educational analysis only. Reliance for gambling is at your risk.</li>
-                            <li><strong>Casino Data Insights</strong>: User-entered data is unverified. We’re not responsible for errors or decisions based on it.</li>
-                            <li><strong>Feedback Form</strong>: By submitting, you grant us a royalty-free license to use your suggestions. Personal info is subject to our Privacy Policy.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>6. Privacy</summary>
-                        <ul>
-                            <li>We protect your privacy. See our <a href="javascript:showTab('privacy')">Privacy Policy</a> for details.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>7. No Financial or Gambling Advice</summary>
-                        <ul>
-                            <li>App outputs are for education, not financial or gambling advice. Roulette is random, and we’re not liable for losses from reliance on outputs.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>8. Limitation of Liability</summary>
-                        <ul>
-                            <li><strong>As-Is Basis</strong>: The app is provided “as is” without warranties of accuracy or fitness.</li>
-                            <li><strong>No Liability for Misuse</strong>: We’re not liable for damages from gambling, errors, data loss, or app interruptions.</li>
-                            <li><strong>Maximum Liability</strong>: Our total liability is capped at CAD $50.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>9. Indemnification</summary>
-                        <ul>
-                            <li>You agree to indemnify S.T.Y.W. from claims arising from your misuse of the app or violation of these Terms.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>10. Termination</summary>
-                        <ul>
-                            <li>We may suspend your access if you violate these Terms.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>11. Governing Law and Dispute Resolution</summary>
-                        <ul>
-                            <li>These Terms are governed by Ontario, Canada laws. Disputes will be resolved in Ontario courts.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>12. Changes to the Terms</summary>
-                        <ul>
-                            <li>We may update these Terms. Continued use after changes means you accept them.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>13. Contact Information</summary>
-                        <ul>
-                            <li>Questions? Message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>14. Severability</summary>
-                        <ul>
-                            <li>If any provision is invalid, the remaining provisions remain in effect.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>15. Entire Agreement</summary>
-                        <ul>
-                            <li>These Terms and our Privacy Policy are the entire agreement between you and S.T.Y.W.</li>
-                        </ul>
-                    </details>
-                    <h3>Acceptance of Terms</h3>
-                    <p>By checking the box below, you confirm you are 19+, agree to these Terms and our <a href="javascript:showTab('privacy')">Privacy Policy</a>, and will use the app for education only, not gambling.</p>
-                </div>
-            </div>
-            <!-- Privacy Policy -->
-            <div class="tab-content" id="privacy">
-                <h2>WheelPulse Privacy Policy</h2>
-                <p><strong>Last Updated: May 13, 2025</strong></p>
-                <div class="scrollable-content">
-                    <p>We’re committed to your privacy under Canada’s <em>PIPEDA</em>. Expand each section to read more.</p>
-                    <details>
-                        <summary>1. Information We Collect</summary>
-                        <ul>
-                            <li><strong>Non-Personal Data</strong>:
-                                <ul>
-                                    <li><strong>Spin History and Inputs</strong>: Data you enter, such as roulette spins, casino data insights, and betting progressions, is stored locally on your device using localStorage. This data powers features like spin analysis, hot/cold numbers, and dealer’s spin tracking.</li>
-                                    <li><strong>Usage Data</strong>: We may collect anonymized data on how you interact with the app (e.g., which features like strategy recommendations or progression trackers are used most) to improve WheelPulse.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Personal Information</strong>:
-                                <ul>
-                                    <li><strong>Consent Email</strong>: When you agree to our Terms and Conditions, you may optionally provide an email address, which we use to log your consent for legal purposes.</li>
-                                    <li><strong>Feedback Form</strong>: If you choose to submit feedback, you may provide your name, email, and feedback content. This is entirely optional.</li>
-                                    <li>We do not collect any other personal information unless you voluntarily provide it through feedback.</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>2. How We Use Your Information</summary>
-                        <ul>
-                            <li><strong>Enable App Features</strong>: We use your non-personal data (e.g., spin history, casino data inputs) to power features like spin analysis, strategy recommendations (e.g., Martingale, Fibonacci), betting progression tracking, hot/cold number identification, and dealer’s spin tracking for bias analysis.</li>
-                            <li><strong>Improve the App</strong>: Feedback you provide (if any) helps us enhance WheelPulse’s functionality and user experience. Anonymized usage data (e.g., which features are used most) may also be used to make improvements.</li>
-                            <li><strong>Record Consent</strong>: If you provide an email when agreeing to these terms, we use it to log your consent for legal purposes, as required under Canada’s <em>PIPEDA</em>.</li>
-                            <li><strong>Comply with Legal Obligations</strong>: We may use your information to meet legal requirements, such as responding to lawful requests or ensuring compliance with applicable laws.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>3. How We Share Your Information</summary>
-                        <ul>
-                            <li>We do not sell or share your data for marketing purposes.</li>
-                            <li><strong>Service Providers</strong>: If you provide an email for consent or feedback, we share it with Formspree (our form processing provider) to log your consent or feedback securely.</li>
-                            <li><strong>Legal Requirements</strong>: We may share your information if required by law (e.g., to comply with a court order or legal process).</li>
-                            <li><strong>Business Transfers</strong>: If S.T.Y.W. undergoes a business transfer (e.g., merger), your data may be shared, but we’ll ensure it remains protected under this policy.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>4. Data Storage and Security</summary>
-                        <ul>
-                            <li><strong>Local Storage</strong>: Spin data, casino data inputs, and other non-personal data are stored locally on your device via localStorage. This data is not transmitted to our servers unless you submit feedback including such data.</li>
-                            <li><strong>Consent and Feedback Data</strong>: Emails provided for consent or feedback are securely transmitted to Formspree and retained for up to 12 months, or longer if required for legal purposes.</li>
-                            <li><strong>Security Measures</strong>: We use reasonable measures (e.g., encryption for Formspree submissions) to protect your data, but no method is 100% secure. You use the app at your own risk.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>5. Your Rights and Choices</summary>
-                        <ul>
-                            <li><strong>Access and Correction</strong>: You can request access to or correction of your personal data (e.g., consent email, feedback) by contacting us.</li>
-                            <li><strong>Deletion</strong>: You can request deletion of your consent email or feedback data, though we may retain it if required for legal purposes.</li>
-                            <li><strong>Withdraw Consent</strong>: You can withdraw consent for us to process your personal data, but this may limit your ability to use the feedback form.</li>
-                            <li><strong>Clear Local Data</strong>: To delete spin data or other local data, clear your browser’s cache or localStorage.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>6. Cookies and Tracking Technologies</summary>
-                        <ul>
-                            <li>We do not use cookies. We use localStorage to store non-personal data (e.g., spin history, casino data) on your device for app functionality.</li>
-                            <li>You can clear this data by resetting your browser’s cache or localStorage, which will reset your app data (e.g., spin history).</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>7. Children’s Privacy</summary>
-                        <ul>
-                            <li>WheelPulse is not intended for users under 19. We do not knowingly collect personal information from individuals under 19.</li>
-                            <li>If we learn such data has been collected, we will delete it promptly.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>8. International Users</summary>
-                        <ul>
-                            <li>Data you provide (e.g., consent email, feedback) is processed in Canada, where S.T.Y.W. is based.</li>
-                            <li>If you use WheelPulse from outside Canada, you consent to your data being transferred to and processed in Canada under this policy.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>9. Changes to This Privacy Policy</summary>
-                        <ul>
-                            <li>We may update this Privacy Policy to reflect changes in our practices or legal requirements.</li>
-                            <li>We’ll notify you of significant changes by updating the “Last Updated” date at the top of this policy. Continued use of WheelPulse after changes means you accept the updated policy.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>10. Contact Us</summary>
-                        <ul>
-                            <li>For questions about this Privacy Policy or your data, message us on our <a href="https://www.facebook.com/SpinTillYouWin" target="_blank">Spin Till You Win Facebook page</a>.</li>
-                        </ul>
-                    </details>
-                    <details>
-                        <summary>11. Governing Law</summary>
-                        <ul>
-                            <li>This Privacy Policy is governed by the laws of Ontario, Canada, consistent with Canada’s <em>PIPEDA</em>.</li>
-                            <li>Any disputes related to this policy will be resolved in Ontario courts.</li>
-                        </ul>
-                    </details>
-                    <h3>Acceptance</h3>
-                    <p>By checking the box below, you consent to this Privacy Policy and our <a href="javascript:showTab('terms')">Terms and Conditions</a>.</p>
-                </div>
-            </div>
-            <div class="email-container">
-                <label for="userEmail" style="font-size: 13px; color: #333;">Email (Optional, for consent records):</label>
-                <input type="email" id="userEmail" placeholder="Enter your email (optional)" style="width: 100%; padding: 6px; border: 1px solid #d3d3d3; border-radius: 4px; font-size: 12px; margin-top: 5px;">
-            </div>
-            <div class="checkbox-container">
-                <input type="checkbox" id="agreeTerms" onchange="toggleAgreeButton()">
-                <label for="agreeTerms">I am 19+ and agree to the Terms and Conditions and Privacy Policy</label>
-            </div>
-            <button class="agree-btn" id="agreeBtn" disabled onclick="acceptTermsAndLogConsent()">I Agree</button>
-            <div id="consentMessage" style="margin-top: 10px; text-align: center; font-size: 12px; color: #555;"></div>
-        </div>
-    </div>
-    <style>
-        body.modal-open {
-            overflow: hidden;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex !important;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            visibility: visible;
-            overflow: hidden;
-        }
-        .modal-overlay[style*="display: none"] {
-            visibility: hidden;
-        }
-        .modal-content {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 70vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            font-family: Arial, sans-serif;
-            position: relative;
-            overflow: hidden;
-        }
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #2e7d32;
-            margin-bottom: 10px;
-        }
-        .tab {
-            flex: 1;
-            padding: 6px;
-            text-align: center;
-            cursor: pointer;
-            background: #f5f5f5;
-            color: #333;
-            font-weight: bold;
-            font-size: 14px;
-            transition: background 0.3s ease;
-        }
-        .tab.active {
-            background: #2e7d32;
-            color: white;
-        }
-        .tab:hover:not(.active) {
-            background: #e0e0e0;
-        }
-        .tab-content {
-            display: none;
-            flex-grow: 1;
-            overflow: hidden;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .scrollable-content {
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 10px;
-            margin-bottom: 10px;
-            scroll-behavior: smooth;
-        }
-        .scrollable-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .scrollable-content::-webkit-scrollbar-thumb {
-            background: #2e7d32;
-            border-radius: 3px;
-        }
-        .scrollable-content::-webkit-scrollbar-track {
-            background: #f5f5f5;
-        }
-        .tab-content h2 {
-            color: #2e7d32;
-            margin: 0 0 8px 0;
-            font-size: 20px;
-        }
-        .tab-content h3 {
-            color: #333;
-            font-size: 15px;
-            margin: 8px 0 6px;
-        }
-        .tab-content p, .tab-content li {
-            color: #555;
-            line-height: 1.5;
-            font-size: 12px;
-            margin: 4px 0;
-        }
-        .tab-content ul {
-            padding-left: 15px;
-            margin: 5px 0;
-        }
-        .tab-content li {
-            margin-bottom: 4px;
-        }
-        .tab-content a {
-            color: #2e7d32;
-            text-decoration: underline;
-        }
-        .tab-content a:hover {
-            color: #1b5e20;
-        }
-        .tab-content details {
-            margin: 8px 0;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            padding: 5px;
-        }
-        .tab-content summary {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            padding: 4px;
-            color: #333;
-        }
-        .tab-content details[open] summary {
-            background: #f5f5f5;
-        }
-        .email-container {
-            margin: 10px 0;
-        }
-        .checkbox-container {
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .checkbox-container input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-color: #fff;
-            border: 2px solid #2e7d32;
-            border-radius: 3px;
-            position: relative;
-            outline: none;
-        }
-        .checkbox-container input:checked {
-            background-color: #2e7d32;
-            border-color: #2e7d32;
-        }
-        .checkbox-container input:checked::after {
-            content: '✔';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 12px;
-            line-height: 1;
-        }
-        .checkbox-container input:hover {
-            border-color: #1b5e20;
-        }
-        .checkbox-container input:focus {
-            box-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
-        }
-        .checkbox-container label {
-            font-size: 13px;
-            color: #333;
-            font-weight: bold;
-        }
-        .agree-btn {
-            background: #28a745;
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            width: 100%;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-        .agree-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .agree-btn:hover:not(:disabled) {
-            background: #1b5e20;
-            transform: scale(1.02);
-        }
-        @media (max-width: 600px) {
-            .modal-content {
-                padding: 10px;
-                max-width: 90%;
-                max-height: 65vh;
-            }
-            .tabs {
-                flex-direction: column;
-            }
-            .tab {
-                padding: 5px;
-                font-size: 12px;
-            }
-            .scrollable-content {
-                max-height: 250px;
-            }
-            .tab-content h2 {
-                font-size: 18px;
-            }
-            .tab-content h3 {
-                font-size: 14px;
-            }
-            .tab-content p, .tab-content li, .checkbox-container label {
-                font-size: 11px;
-            }
-            .tab-content details {
-                padding: 4px;
-            }
-            .tab-content summary {
-                font-size: 12px;
-                padding: 3px;
-            }
-            .agree-btn {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-            .checkbox-container input {
-                width: 16px;
-                height: 16px;
-            }
-        }
-    </style>
-    <script>
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-                content.querySelector('.scrollable-content').scrollTop = 0;
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            const activeContent = document.getElementById(tabId);
-            activeContent.classList.add('active');
-            activeContent.querySelector('.scrollable-content').scrollTop = 0;
-            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-        }
-    
-        function toggleAgreeButton() {
-            const checkbox = document.getElementById('agreeTerms');
-            const agreeBtn = document.getElementById('agreeBtn');
-            agreeBtn.disabled = !checkbox.checked;
-        }
-    
-        function acceptTermsAndLogConsent() {
-            const email = document.getElementById('userEmail').value.trim();
-            const timestamp = new Date().toISOString();
-            const termsVersion = 'May 13, 2025';
-            const consentMessageDiv = document.getElementById('consentMessage');
-    
-            if (email) {
-                consentMessageDiv.innerHTML = '<p style="color: #333;">Recording your consent...</p>';
-    
-                const formData = new FormData();
-                formData.append('email', email);
-                formData.append('timestamp', timestamp);
-                formData.append('terms_version', termsVersion);
-                formData.append('action', 'User agreed to Terms and Privacy Policy');
-    
-                fetch('https://formspree.io/f/mnnpllqq', {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        consentMessageDiv.innerHTML = '<p style="color: green;">Consent recorded successfully!</p>';
-                        localStorage.setItem('termsAccepted', 'true');
-                        document.getElementById('termsModal').style.visibility = 'hidden';
-                        document.getElementById('appContent').style.display = 'block';
-                        document.body.classList.remove('modal-open');
-                    } else {
-                        consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Please try again.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to log consent:', error);
-                    consentMessageDiv.innerHTML = '<p style="color: red;">We couldn’t record your consent. Proceeding anyway...</p>';
-                    localStorage.setItem('termsAccepted', 'true');
-                    document.getElementById('termsModal').style.visibility = 'hidden';
-                    document.getElementById('appContent').style.display = 'block';
-                    document.body.classList.remove('modal-open');
-                });
-            } else {
-                localStorage.setItem('termsAccepted', 'true');
-                document.getElementById('termsModal').style.visibility = 'hidden';
-                document.getElementById('appContent').style.display = 'block';
-                document.body.classList.remove('modal-open');
-            }
-        }
-    
-        window.onload = function() {
-            if (localStorage.getItem('termsAccepted') === 'true') {
-                document.getElementById('termsModal').style.visibility = 'hidden';
-                document.getElementById('appContent').style.display = 'block';
-                document.body.classList.remove('modal-open');
-            } else {
-                document.getElementById('termsModal').style.visibility = 'visible';
-                document.getElementById('appContent').style.display = 'none';
-                document.body.classList.add('modal-open');
-                
-                const modalContent = document.querySelector('.modal-content');
-                const scrollableContent = document.querySelector('.scrollable-content.active');
-                if (modalContent) {
-                    modalContent.scrollTop = 0;
-                }
-                if (scrollableContent) {
-                    scrollableContent.scrollTop = 0;
-                }
-    
-                if ('scrollRestoration' in history) {
-                    history.scrollRestoration = 'manual';
-                }
-    
-                setTimeout(() => {
-                    window.scrollTo(0, 0);
-                    if (modalContent) {
-                        modalContent.scrollTop = 0;
-                    }
-                    if (scrollableContent) {
-                        scrollableContent.scrollTop = 0;
-                    }
-                }, 0);
-            }
-        };
-    </script>
-    """)
 
     # Static Centered Options Section (Above Header)
     gr.HTML("""
@@ -6978,7 +6391,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     """)
     
     # App Content (Header Section - Updated)
-    with gr.Group(visible=False, elem_id="appContent"):
+    with gr.Group(elem_id="appContent"):
         # Header Row (No Buttons Row)
         with gr.Row(elem_id="header-row"):
             gr.HTML("""
@@ -7124,26 +6537,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                     }
                 </style>
             """)
-    
-        # Ensure app content is shown after acceptance
-        gr.HTML("""
-            <script>
-                window.onload = function() {
-                    if (localStorage.getItem('termsAccepted') === 'true') {
-                        document.getElementById('appContent').style.display = 'block';
-                    }
-                };
-            </script>
-            <style>
-                #appContent {
-                    display: none;
-                }
-                #appContent[style*="display: block"] {
-                    display: block !important;
-                }
-            </style>
-        """)
-
 
     # Updated Selected Spins Accordion Styling
     gr.HTML("""
@@ -8384,19 +7777,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
         }
     </style>
     <script>
-        // Debounce function to smooth out rapid updates
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-    
+
         // Update spins display with debouncing
         const updateSpinsDisplay = debounce(function() {
             const container = document.querySelector('.last-spins-container');
@@ -9908,25 +9289,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     
     # CSS (end of the previous section, for context)
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
     <script>
-      function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
-        script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
-        };
-        document.head.appendChild(script);
-    
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        document.head.appendChild(link);
-      }
-    
       function debounce(func, wait) {
           let timeout;
           return function executedFunction(...args) {
@@ -9944,8 +9307,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
         .gr-column { margin: 0 !important; padding: 5px !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; }
         .gr-box { border-radius: 5px !important; }
-        
-
+    
         /* Style for Dealer’s Spin Tracker accordion */
         #sides-of-zero-accordion {
             background-color: #f3e5f5 !important;
@@ -11565,343 +10927,357 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     """)
     print("CSS Updated")
    
-    # Shepherd.js Tour Script
+    # Shepherd.js Tour Script (updated for reliability and debugging)
+    # --- Start of Change: Replaced entire Shepherd.js Tour Script ---
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script>
-      function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
-        script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
-          alert('Tour unavailable: Shepherd.js failed to load from both sources. Please try again later.');
-        };
-        document.head.appendChild(script);
-    
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        document.head.appendChild(link);
-      }
-    
-      const tour = new Shepherd.Tour({
-        defaultStepOptions: {
-          cancelIcon: { enabled: true },
-          scrollTo: { behavior: 'smooth', block: 'center' },
-          classes: 'shepherd-theme-arrows',
-          buttons: [
-            { text: 'Back', action: function() { return this.back(); } },
-            { text: 'Next', action: function() { return this.next(); } },
-            { text: 'Skip', action: function() { return this.cancel(); } }
-          ]
-        },
-        useModalOverlay: true
-      });
-    
-      function logStep(stepId, nextStepId) {
-        return () => {
-          console.log(`Moving from ${stepId} to ${nextStepId}`);
-          tour.next();
-        };
-      }
-    
-      function forceAccordionOpen(accordionSelector) {
-        console.log(`Attempting to open accordion: ${accordionSelector}`);
-        return new Promise(resolve => {
-          const accordion = document.querySelector(accordionSelector);
-          if (!accordion) {
-            console.warn(`Accordion ${accordionSelector} not found`);
-            resolve();
-            return;
-          }
-          console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200));
-          const toggle = accordion.querySelector('input.accordion-toggle');
-          const content = accordion.querySelector('.accordion-content');
-          if (toggle && content && window.getComputedStyle(content).display === 'none') {
-            console.log(`Opening ${accordionSelector} via toggle`);
-            toggle.checked = true;
-            content.style.display = 'block !important';
-            accordion.setAttribute('open', '');
-            setTimeout(() => {
-              if (window.getComputedStyle(content).display === 'none') {
-                console.warn(`Fallback: Forcing visibility for ${accordionSelector}`);
-                content.style.display = 'block !important';
-              }
-              resolve();
-            }, 500);
-          } else {
-            console.log(`${accordionSelector} already open or no toggle/content found`);
-            resolve();
-          }
-        });
-      }
-    
-      tour.addStep({
-        id: 'part1',
-        title: 'Your Roulette Adventure Begins!',
-        text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#header-row', on: 'bottom' },
-        buttons: [
-          { text: 'Next', action: logStep('Part 1', 'Part 2') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part2',
-        title: 'Spin the Wheel, Start the Thrill!',
-        text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.roulette-table', on: 'right' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 2', 'Part 3') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part3',
-        title: 'Peek at Your Spin Streak!',
-        text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.last-spins-container', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 3', 'Part 4') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part4',
-        title: 'Master Your Spin Moves!',
-        text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#undo-spins-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 4', 'Part 5') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part5',
-        title: 'Jot Spins, Count Wins!',
-        text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#selected-spins', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 5', 'Part 6') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part6',
-        title: 'Analyze and Reset Like a Pro!',
-        text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.green-btn', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 6', 'Part 7') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part7',
-        title: 'Light Up Your Lucky Spots!',
-        text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 7', 'Part 8') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part8',
-        title: 'Bet Smart, Track the Art!',
-        text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '.betting-progression', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('.betting-progression');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 8', 'Part 9') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part9',
-        title: 'Paint Your Winning Hue!',
-        text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#color-code-key', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#color-code-key');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 9', 'Part 10') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part10',
-        title: 'Decode the Color Clue!',
-        text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#color-code-key', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#color-code-key');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 10', 'Part 11') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part11',
-        title: 'Unleash the Spin Secrets!',
-        text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#spin-analysis', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#spin-analysis');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 11', 'Part 12') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part12',
-        title: 'Save Your Spin Glory!',
-        text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#save-load-session', on: 'top' },
-        beforeShowPromise: function() {
-          return forceAccordionOpen('#save-load-session');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 12', 'Part 13') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part13',
-        title: 'Pick Your Strategy Groove!',
-        text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#select-category', on: 'left' },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Next', action: logStep('Part 13', 'Part 14') },
-          { text: 'Skip', action: tour.cancel }
-        ]
-      });
-    
-      tour.addStep({
-        id: 'part14',
-        title: 'Boost Wins with Casino Intel!',
-        text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
-        attachTo: { element: '#casino-data-insights', on: 'bottom' },
-        beforeShowPromise: function() {
-          console.log('Starting Step 14: Casino Data Insights');
-          return forceAccordionOpen('#casino-data-insights');
-        },
-        buttons: [
-          { text: 'Back', action: tour.back },
-          { text: 'Finish', action: function() {
-            console.log('Tour completed at Step 14');
-            tour.complete();
-            document.querySelector('.shepherd-modal-overlay-container')?.classList.remove('shepherd-modal-is-visible');
-          } }
-        ]
-      });
-    
-      function tryStartTour(attempts = 3, delay = 2000) {
-        if (attempts <= 0) {
-          console.error('Max attempts reached. Tour failed.');
-          alert('Tour unavailable: Components not loaded after multiple attempts. Please refresh.');
-          return;
+        // Debugging function to log element availability
+        function checkElements() {
+            const elements = [
+                '#header-row',
+                '.roulette-table',
+                '.last-spins-container',
+                '#undo-spins-btn',
+                '#selected-spins',
+                '.green-btn',
+                '#dynamic-table-heading',
+                '.betting-progression',
+                '#color-code-key',
+                '#spin-analysis',
+                '#save-load-session',
+                '#select-category',
+                '#casino-data-insights'
+            ];
+            elements.forEach(el => {
+                console.log(`Checking ${el}: ${!!document.querySelector(el) ? 'Found' : 'Not found'}`);
+            });
         }
-        setTimeout(() => {
-          console.log(`Checking DOM elements for tour (attempt ${4 - attempts}/3)...`);
-          const criticalElements = [
-            '#header-row',
-            '.roulette-table',
-            '#selected-spins',
-            '#undo-spins-btn',
-            '.last-spins-container',
-            '.green-btn',
-            '#dynamic-table-heading',
-            '.betting-progression',
-            '#color-code-key',
-            '#spin-analysis',
-            '#save-load-session',
-            '#select-category',
-            '#casino-data-insights'
-          ];
-          const missingElements = criticalElements.filter(el => !document.querySelector(el));
-          if (missingElements.length > 0) {
-            console.warn(`Retrying (${attempts} attempts left)... Missing: ${missingElements.join(', ')}`);
-            tryStartTour(attempts - 1, delay);
-          } else {
-            console.log('All critical elements found. Starting tour.');
-            try {
-              tour.start();
-              console.log('Tour started successfully.');
-            } catch (error) {
-              console.error('Error starting tour:', error);
-              alert('Tour failed to start due to an unexpected error. Please check the console for details.');
+    
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded. Initializing Shepherd.js tour...');
+            checkElements();
+    
+            // Check if Shepherd.js is loaded
+            if (typeof Shepherd === 'undefined') {
+                console.error('Shepherd.js not loaded. Tour unavailable.');
+                alert('Tour unavailable: Failed to load Shepherd.js. Please refresh the page.');
+                const btn = document.querySelector('#start-tour-btn');
+                if (btn) btn.innerHTML = '🚀 Take the Tour!';
+                return;
             }
-          }
-        }, delay);
-      }
     
-      function startTour() {
-        console.log('Tour starting... Attempting to initialize Shepherd.js tour.');
-        const btn = document.querySelector('#start-tour-btn');
-        if (btn) {
-          btn.innerHTML = 'Loading Tour...';
-        }
-        if (typeof Shepherd === 'undefined') {
-          console.error('Shepherd.js is not loaded. Check CDN or network connectivity.');
-          alert('Tour unavailable: Shepherd.js failed to load. Please refresh the page or check your internet connection.');
-          if (btn) btn.innerHTML = '🚀 Take the Tour!';
-          return;
-        }
-        tryStartTour(3, 5000);
-        setTimeout(() => {
-          if (btn) btn.innerHTML = '🚀 Take the Tour!';
-        }, 10000);
-      }
+            // Initialize tour
+            const tour = new Shepherd.Tour({
+                defaultStepOptions: {
+                    cancelIcon: { enabled: true },
+                    scrollTo: { behavior: 'smooth', block: 'center' },
+                    classes: 'shepherd-theme-arrows',
+                    buttons: [
+                        { text: 'Back', action: function() { return this.back(); } },
+                        { text: 'Next', action: function() { return this.next(); } },
+                        { text: 'Skip', action: function() { return this.cancel(); } }
+                    ]
+                },
+                useModalOverlay: true
+            });
     
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM Loaded, #header-row exists:', !!document.querySelector('#header-row'));
-        console.log('DOM Loaded, .betting-progression exists:', !!document.querySelector('.betting-progression'));
-        console.log('DOM Loaded, #casino-data-insights exists:', !!document.querySelector('#casino-data-insights'));
-        console.log('Shepherd.js available:', typeof Shepherd !== 'undefined');
-        const tourButton = document.querySelector('#start-tour-btn');
-        if (tourButton) {
-          tourButton.addEventListener('click', (e) => {
-            console.log('Tour button clicked');
-            startTour();
-          });
-        } else {
-          console.error('Tour button (#start-tour-btn) not found');
-        }
-      });
+            // Function to log step transitions
+            function logStep(stepId, nextStepId) {
+                return () => {
+                    console.log(`Moving from ${stepId} to ${nextStepId}`);
+                    tour.next();
+                };
+            }
+    
+            // Function to force open accordions
+            function forceAccordionOpen(accordionSelector) {
+                console.log(`Attempting to open accordion: ${accordionSelector}`);
+                return new Promise(resolve => {
+                    const accordion = document.querySelector(accordionSelector);
+                    if (!accordion) {
+                        console.warn(`Accordion ${accordionSelector} not found`);
+                        resolve();
+                        return;
+                    }
+                    console.log(`Accordion DOM structure:`, accordion.outerHTML.slice(0, 200));
+                    const toggle = accordion.querySelector('input.accordion-toggle');
+                    const content = accordion.querySelector('.accordion-content');
+                    if (toggle && content && window.getComputedStyle(content).display === 'none') {
+                        console.log(`Opening ${accordionSelector} via toggle`);
+                        toggle.checked = true;
+                        content.style.display = 'block !important';
+                        accordion.setAttribute('open', '');
+                        setTimeout(() => {
+                            if (window.getComputedStyle(content).display === 'none') {
+                                console.warn(`Fallback: Forcing visibility for ${accordionSelector}`);
+                                content.style.display = 'block !important';
+                            }
+                            resolve();
+                        }, 500);
+                    } else {
+                        console.log(`${accordionSelector} already open or no toggle/content found`);
+                        resolve();
+                    }
+                });
+            }
+    
+            // Tour steps (restored original 14 steps)
+            tour.addStep({
+                id: 'part1',
+                title: 'Your Roulette Adventure Begins!',
+                text: 'Welcome to the Roulette Spin Analyzer! This tour will guide you through the key features to master your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/H7TLQr1HnY0?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#header-row', on: 'bottom' },
+                buttons: [
+                    { text: 'Next', action: logStep('Part 1', 'Part 2') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part2',
+                title: 'Spin the Wheel, Start the Thrill!',
+                text: 'Click numbers on the European Roulette Table to record spins and track your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/ja454kZwndo?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '.roulette-table', on: 'right' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 2', 'Part 3') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part3',
+                title: 'Peek at Your Spin Streak!',
+                text: 'View your recent spins here, color-coded for easy tracking.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/a9brOFMy9sA?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '.last-spins-container', on: 'bottom' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 3', 'Part 4') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part4',
+                title: 'Master Your Spin Moves!',
+                text: 'Use these buttons to undo spins, generate random spins, or clear the display.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/xG8z1S4HJK4?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#undo-spins-btn', on: 'bottom' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 4', 'Part 5') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part5',
+                title: 'Jot Spins, Count Wins!',
+                text: 'Manually enter spins here (e.g., 5, 12, 0) to analyze your game.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/2-k1EyKUM8U?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#selected-spins', on: 'bottom' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 5', 'Part 6') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part6',
+                title: 'Analyze and Reset Like a Pro!',
+                text: 'Click "Analyze Spins" to break down your spins and get insights.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/8plHP2RIR3o?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '.green-btn', on: 'bottom' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 6', 'Part 7') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part7',
+                title: 'Light Up Your Lucky Spots!',
+                text: 'The Dynamic Roulette Table highlights trending numbers and bets based on your strategy.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/zT9d06sn07E?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#dynamic-table-heading', on: 'bottom' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 7', 'Part 8') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part8',
+                title: 'Bet Smart, Track the Art!',
+                text: 'Track your betting progression (e.g., Martingale, Fibonacci) to manage your bankroll.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/jkE-w2MOJ0o?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '.betting-progression', on: 'top' },
+                beforeShowPromise: function() {
+                    return forceAccordionOpen('.betting-progression');
+                },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 8', 'Part 9') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part9',
+                title: 'Paint Your Winning Hue!',
+                text: 'Customize colors for the Dynamic Table to highlight hot and cold bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pUtW2HnWVL8?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#color-code-key', on: 'top' },
+                beforeShowPromise: function() {
+                    return forceAccordionOpen('#color-code-key');
+                },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 9', 'Part 10') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part10',
+                title: 'Decode the Color Clue!',
+                text: 'Understand the color coding to make informed betting decisions.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/PGBEoOOh9Gk?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#color-code-key', on: 'top' },
+                beforeShowPromise: function() {
+                    return forceAccordionOpen('#color-code-key');
+                },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 10', 'Part 11') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part11',
+                title: 'Unleash the Spin Secrets!',
+                text: 'Dive into detailed spin analysis to uncover patterns and trends.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/MpcuwWnMdrg?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#spin-analysis', on: 'top' },
+                beforeShowPromise: function() {
+                    return forceAccordionOpen('#spin-analysis');
+                },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 11', 'Part 12') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part12',
+                title: 'Save Your Spin Glory!',
+                text: 'Save your session or load a previous one to continue your analysis.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/pHLEa2I0jjE?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#save-load-session', on: 'top' },
+                beforeShowPromise: function() {
+                    return forceAccordionOpen('#save-load-session');
+                },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 12', 'Part 13') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part13',
+                title: 'Pick Your Strategy Groove!',
+                text: 'Choose a betting strategy to optimize your game plan.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/iuGEltUVbqc?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#select-category', on: 'left' },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Next', action: logStep('Part 13', 'Part 14') },
+                    { text: 'Skip', action: tour.cancel }
+                ]
+            });
+    
+            tour.addStep({
+                id: 'part14',
+                title: 'Boost Wins with Casino Intel!',
+                text: 'Enter casino data to highlight winning trends and make smarter bets.<br><iframe width="280" height="158" src="https://www.youtube.com/embed/FJIczwv9_Ss?fs=0" frameborder="0"></iframe>',
+                attachTo: { element: '#casino-data-insights', on: 'bottom' },
+                beforeShowPromise: function() {
+                    console.log('Starting Step 14: Casino Data Insights');
+                    return forceAccordionOpen('#casino-data-insights');
+                },
+                buttons: [
+                    { text: 'Back', action: tour.back },
+                    { text: 'Finish', action: function() {
+                        console.log('Tour completed at Step 14');
+                        tour.complete();
+                        document.querySelector('.shepherd-modal-overlay-container')?.classList.remove('shepherd-modal-is-visible');
+                    } }
+                ]
+            });
+    
+            // Start tour with retry mechanism
+            function startTour() {
+                console.log('Tour button clicked. Attempting to start tour...');
+                const btn = document.querySelector('#start-tour-btn');
+                if (btn) btn.innerHTML = 'Loading Tour...';
+    
+                function tryStartTour(attempts = 3, delay = 2000) {
+                    if (attempts <= 0) {
+                        console.error('Max attempts reached. Tour failed.');
+                        alert('Tour unavailable: Components not loaded after multiple attempts. Please refresh.');
+                        if (btn) btn.innerHTML = '🚀 Take the Tour!';
+                        return;
+                    }
+                    setTimeout(() => {
+                        console.log(`Attempt ${4 - attempts}/3...`);
+                        checkElements();
+                        const criticalElements = [
+                            '#header-row',
+                            '.roulette-table',
+                            '#selected-spins',
+                            '#undo-spins-btn',
+                            '.last-spins-container',
+                            '.green-btn',
+                            '#dynamic-table-heading',
+                            '.betting-progression',
+                            '#color-code-key',
+                            '#spin-analysis',
+                            '#save-load-session',
+                            '#select-category',
+                            '#casino-data-insights'
+                        ];
+                        const missingElements = criticalElements.filter(el => !document.querySelector(el));
+                        if (missingElements.length > 0) {
+                            console.warn(`Retrying (${attempts} attempts left)... Missing: ${missingElements.join(', ')}`);
+                            tryStartTour(attempts - 1, delay);
+                        } else {
+                            console.log('All critical elements found. Starting tour.');
+                            try {
+                                tour.start();
+                                console.log('Tour started successfully.');
+                            } catch (error) {
+                                console.error('Error starting tour:', error);
+                                alert('Tour failed to start. Please check the console.');
+                            }
+                            if (btn) btn.innerHTML = '🚀 Take the Tour!';
+                        }
+                    }, delay);
+                }
+    
+                tryStartTour();
+            }
+    
+            // Attach event listener to button
+            const tourButton = document.querySelector('#start-tour-btn');
+            if (tourButton) {
+                tourButton.addEventListener('click', startTour);
+                console.log('Tour button listener attached.');
+            } else {
+                console.error('Tour button (#start-tour-btn) not found.');
+            }
+        });
     </script>
     """)
+
     
     # Event Handlers
     try:
@@ -13222,62 +12598,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     except Exception as e:
         print(f"Error in clear_cold_button.click handler: {str(e)}")
 
-    try:
-        spins_textbox.change(
-            fn=validate_spins_input,
-            inputs=[spins_textbox],
-            outputs=[spins_display, last_spin_display]
-        ).then(
-            fn=lambda spins_display, count, show_trends: format_spins_as_html(spins_display, count, show_trends),
-            inputs=[spins_display, last_spin_count, show_trends_state],
-            outputs=[last_spin_display]
-        ).then(
-            fn=analyze_spins,
-            inputs=[spins_display, strategy_dropdown, neighbours_count_slider, strong_numbers_count_slider],
-            outputs=[
-                spin_analysis_output, even_money_output, dozens_output, columns_output,
-                streets_output, corners_output, six_lines_output, splits_output,
-                sides_output, straight_up_html, top_18_html, strongest_numbers_output,
-                dynamic_table_output, strategy_output, sides_of_zero_display
-            ]
-        ).then(
-            fn=update_spin_counter,
-            inputs=[],
-            outputs=[spin_counter]
-        ).then(
-            fn=dozen_tracker,
-            inputs=[dozen_tracker_spins_dropdown, dozen_tracker_consecutive_hits_dropdown, dozen_tracker_alert_checkbox, dozen_tracker_sequence_length_dropdown, dozen_tracker_follow_up_spins_dropdown, dozen_tracker_sequence_alert_checkbox],
-            outputs=[gr.State(), dozen_tracker_output, dozen_tracker_sequence_output]
-        ).then(
-            fn=even_money_tracker,
-            inputs=[
-                even_money_tracker_spins_dropdown,
-                even_money_tracker_consecutive_hits_dropdown,
-                even_money_tracker_alert_checkbox,
-                even_money_tracker_combination_mode_dropdown,
-                even_money_tracker_red_checkbox,
-                even_money_tracker_black_checkbox,
-                even_money_tracker_even_checkbox,
-                even_money_tracker_odd_checkbox,
-                even_money_tracker_low_checkbox,
-                even_money_tracker_high_checkbox,
-                even_money_tracker_identical_traits_checkbox,
-                even_money_tracker_consecutive_identical_dropdown
-            ],
-            outputs=[gr.State(), even_money_tracker_output]
-        ).then(
-            fn=select_next_spin_top_pick,
-            inputs=[top_pick_spin_count],
-            outputs=[top_pick_display]
-        ).then(
-            fn=lambda: print(f"After spins_textbox change: state.last_spins = {state.last_spins}"),
-            inputs=[],
-            outputs=[]
-        )
-    except Exception as e:
-        print(f"Error in spins_textbox.change handler: {str(e)}")
-    
-
     def toggle_labouchere(progression):
         """Show/hide Labouchere sequence input based on selected progression."""
         return gr.update(visible=progression == "Labouchere")
@@ -13567,11 +12887,16 @@ print("Starting Gradio launch...")
 auth_credentials = json.loads(os.environ.get("GRADIO_AUTH", "[]"))
 auth_tuples = [(cred["username"], cred["password"]) for cred in auth_credentials]
 
+# Fallback for testing (remove in production)
+if not auth_tuples:
+    print("Warning: No credentials in GRADIO_AUTH. Using default for testing.")
+    auth_tuples = [("testuser", "testpass")]
+
 # Launch with authentication
 demo.launch(
     auth=auth_tuples,
     server_name="0.0.0.0",
     server_port=7860,
-    prevent_thread_lock=True  # Recommended for Hugging Face Spaces
+    prevent_thread_lock=True
 )
 print("Gradio launch completed.")
