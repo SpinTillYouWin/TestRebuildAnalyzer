@@ -13562,5 +13562,16 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
 
 # Launch the interface
 print("Starting Gradio launch...")
-demo.launch()
+
+# Load authentication credentials from Hugging Face secrets
+auth_credentials = json.loads(os.environ.get("GRADIO_AUTH", "[]"))
+auth_tuples = [(cred["username"], cred["password"]) for cred in auth_credentials]
+
+# Launch with authentication
+demo.launch(
+    auth=auth_tuples,
+    server_name="0.0.0.0",
+    server_port=7860,
+    prevent_thread_lock=True  # Recommended for Hugging Face Spaces
+)
 print("Gradio launch completed.")
