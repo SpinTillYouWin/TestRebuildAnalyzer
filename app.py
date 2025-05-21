@@ -9297,7 +9297,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
                         const formData = new FormData(form);
                         const messageDiv = document.getElementById("form-message");
                         messageDiv.innerHTML = '<p style="color: #333;">Submitting your feedback...</p>';
-                        fetch("https://formspree.io/f/mnnpllqq", {
+                        fetch("https://formspree.io/f/mwpozyjq", {
                             method: "POST",
                             body: formData,
                             headers: {
