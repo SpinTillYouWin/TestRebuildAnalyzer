@@ -9323,18 +9323,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
     # CSS (end of the previous section, for context)
     gr.HTML("""
     <script>
-      function debounce(func, wait) {
-          let timeout;
-          return function executedFunction(...args) {
-              const later = () => {
-                  clearTimeout(timeout);
-                  func(...args);
-              };
-              clearTimeout(timeout);
-              timeout = setTimeout(later, wait);
-          };
-      }
-    </script>
     <style>
         /* General Layout */
         .gr-row { margin: 0 !important; padding: 5px 0 !important; }
@@ -10963,30 +10951,39 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
    
     # Shepherd.js Tour Script
     gr.HTML("""
-    <link rel="stylesheet" href="https://unpkg.com/shepherd.js@10.0.1/dist/css/shepherd.css" id="shepherd-css">
-    <script src="https://unpkg.com/shepherd.js@10.0.1/dist/js/shepherd.min.js" onerror="loadShepherdFallback()" id="shepherd-js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.min.css" id="shepherd-css">
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js" id="shepherd-js" onerror="loadShepherdFallback()"></script>
     <script>
       function loadShepherdFallback() {
-        console.warn('Shepherd.js CDN failed to load. Attempting to load from fallback...');
+        console.warn('Primary Shepherd.js CDN (jsDelivr) failed. Attempting fallback...');
+        const existingFallback = document.getElementById('shepherd-js-fallback');
+        if (existingFallback) {
+          console.log('Fallback already loaded, skipping.');
+          return;
+        }
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/shepherd/10.0.1/js/shepherd.min.js';
         script.id = 'shepherd-js-fallback';
         script.onerror = () => {
-          console.error('Shepherd.js fallback also failed. Tour will be unavailable.');
+          console.error('Shepherd.js fallback (cdnjs) also failed.');
           alert('Tour unavailable: Shepherd.js failed to load from both sources. Please refresh or check your internet connection.');
           cleanupOnFailure();
         };
-        script.onload = () => console.log('Shepherd.js loaded from fallback.');
+        script.onload = () => console.log('Shepherd.js loaded from fallback (cdnjs).');
         document.head.appendChild(script);
     
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css';
-        link.id = 'shepherd-css-fallback';
-        document.head.appendChild(link);
+        const existingCssFallback = document.getElementById('shepherd-css-fallback');
+        if (!existingCssFallback) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://cdnjs.cloudflare.com/ajax/libs/shepherd/10.0.1/css/shepherd.min.css';
+          link.id = 'shepherd-css-fallback';
+          document.head.appendChild(link);
+        }
       }
     
       function cleanupOnFailure() {
+        console.log('Cleaning up after tour failure...');
         const btn = document.querySelector('#start-tour-btn');
         if (btn) {
           btn.disabled = false;
@@ -10996,6 +10993,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
         if (overlay) {
           overlay.classList.remove('shepherd-modal-is-visible');
           overlay.style.display = 'none';
+          overlay.remove();
         }
       }
     
@@ -11007,6 +11005,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
           return null;
         }
     
+        console.log('Initializing Shepherd.js tour...');
         const tour = new Shepherd.Tour({
           defaultStepOptions: {
             cancelIcon: { enabled: true },
@@ -11030,6 +11029,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
           if (overlay) {
             overlay.classList.remove('shepherd-modal-is-visible');
             overlay.style.display = 'none';
+            overlay.remove();
           }
           const btn = document.querySelector('#start-tour-btn');
           if (btn) {
@@ -11343,7 +11343,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
           return;
         }
     
-        // Check if Shepherd.js loaded within a timeout
         setTimeout(() => {
           if (typeof Shepherd === 'undefined') {
             console.error('Shepherd.js is not loaded after timeout.');
@@ -11352,7 +11351,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
             return;
           }
           tryStartTour(3, 1000);
-        }, 3000);
+        }, 5000);
       }
     
       document.addEventListener('DOMContentLoaded', () => {
@@ -11370,6 +11369,16 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
           console.error('Tour button (#start-tour-btn) not found');
         }
       });
+    
+      // Force-remove stray overlays on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.querySelector('.shepherd-modal-overlay-container');
+        if (overlay) {
+          overlay.classList.remove('shepherd-modal-is-visible');
+          overlay.style.display = 'none';
+          overlay.remove();
+        }
+      });
     </script>
     <style>
       .shepherd-modal-overlay-container {
@@ -11381,7 +11390,7 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
       }
     </style>
     """)
-   
+
     # Event Handlers
     try:
         spins_textbox.change(
