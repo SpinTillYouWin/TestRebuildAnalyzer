@@ -1,4 +1,23 @@
 import gradio as gr
+from huggingface_hub import whoami
+import os
+
+def check_auth():
+    try:
+        token = os.getenv("HF_TOKEN")
+        if not token:
+            raise ValueError("No token found")
+        user_info = whoami(token=token)
+        orgs = [org["name"] for org in user_info.get("orgs", [])]
+        if "wheelpulsepro" not in orgs:
+            raise gr.Error("Access denied: Not a wheelpulsepro member")
+        return user_info["name"]
+    except Exception as e:
+        raise gr.Error(f"Authentication failed: {str(e)}")
+
+check_auth()  # Run check before app loads
+
+# Your original Gradio app code follows...
 import math
 import pandas as pd
 import json
