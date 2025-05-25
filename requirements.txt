@@ -1,2 +1,4 @@
 gradio
 pandas
+plotly
+gradio>=4.0
