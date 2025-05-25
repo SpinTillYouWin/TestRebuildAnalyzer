@@ -12644,5 +12644,6 @@ with gr.Blocks(title="WheelPulse PRO by S.T.Y.W 📈") as demo:
 
 # Launch the interface
 print("Starting Gradio launch...")
-demo.launch()
+port = int(os.getenv("PORT", 10000))
+demo.launch(server_name="0.0.0.0", server_port=port)
 print("Gradio launch completed.")
